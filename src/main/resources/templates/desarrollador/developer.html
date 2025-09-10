@@ -1,0 +1,739 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>TELITO DEVELOPER PORTAL | Inicio</title>
+  <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+  <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url("https://rsms.me/inter/inter.css");
+
+
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .dashboard-header {
+      margin-top: 2rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+
+
+    .dashboard-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .dashboard-subtitle {
+      color: var(--tblr-secondary-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(120deg, var(--tblr-primary), var(--tblr-primary-dark));
+      margin-top: 2rem;
+      color: white;
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+
+    .welcome-banner .welcome-title,
+    .welcome-banner .welcome-text {
+      color: var(--tblr-body-color);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+
+    .welcome-content {
+      position: relative;
+      z-index: 2;
+      max-width: 600px;
+    }
+
+    .welcome-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .welcome-text {
+      margin-bottom: 1.5rem;
+      opacity: 0.9;
+    }
+
+    .welcome-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .welcome-banner::before {
+      content: "";
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      width: 200px;
+      height: 200px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+    }
+
+    .welcome-banner::after {
+      content: "";
+      position: absolute;
+      bottom: -30px;
+      right: 50px;
+      width: 150px;
+      height: 150px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background-color: var(--tblr-bg-surface);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .stat-content {
+      flex: 1;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      color: var(--tblr-secondary-color);
+      font-size: 0.875rem;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-card {
+      background-color: var(--tblr-bg-surface);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 1.125rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .api-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .api-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid var(--tblr-border-color);
+      gap: 1rem;
+    }
+
+    .api-item:last-child {
+      border-bottom: none;
+    }
+
+    .api-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .api-info {
+      flex: 1;
+    }
+
+    .api-name {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .api-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.875rem;
+      color: var(--tblr-secondary-color);
+    }
+
+    .api-action {
+      padding: 0.5rem 1rem;
+      background-color: var(--tblr-primary-light);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    .activity-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 1rem;
+      border-bottom: 1px solid var(--tblr-border-color);
+      gap: 1rem;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .activity-content {
+      flex: 1;
+      color: var(--tblr-body-color);
+    }
+
+    .activity-title {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .activity-description {
+      font-size: 0.875rem;
+      color: var(--tblr-secondary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .activity-time {
+      font-size: 0.75rem;
+      color: var(--tblr-secondary-color);
+    }
+
+    .quick-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .quick-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem;
+      background-color: var(--tblr-bg-surface-secondary);
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .quick-action:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .action-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+      color: var(--tblr-primary);
+    }
+
+    .action-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .notification-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .notification-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 1rem;
+      border-bottom: 1px solid var(--tblr-border-color);
+      gap: 1rem;
+    }
+
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+
+    .notification-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-title {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .notification-description {
+      font-size: 0.875rem;
+      color: var(--tblr-secondary-color);
+    }
+
+    .notification-time {
+      font-size: 0.75rem;
+      color: var(--tblr-secondary-color);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .welcome-actions {
+        flex-direction: column;
+      }
+
+      .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+
+  <div th:replace="desarrollador/header.html :: header"></div>
+
+  <!-- Main -->
+  <div class="content">
+    <div class="dashboard-container">
+
+
+      <div class="welcome-banner">
+        <div class="welcome-content">
+          <h2 class="welcome-title">¡Bienvenido de nuevo, Juan!</h2>
+          <p class="welcome-text">Tu última actividad fue hace 2 horas. Tienes 3 APIs activas y 2 tickets de soporte abiertos.</p>
+          <div class="welcome-actions">
+            <button class="btn btn-primary">
+              <i class="fas fa-rocket"></i> Crear nuevo proyecto
+            </button>
+            <a href="apis" class="btn btn-outline-light">
+              <i class="fas fa-search"></i> Explorar APIs
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
+            <i class="fas fa-bolt"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">12,458</div>
+            <div class="stat-label">Requests hoy</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background-color: rgba(var(--tblr-success-rgb), 0.1); color: var(--tblr-success);">
+            <i class="fas fa-check-circle"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">99.7%</div>
+            <div class="stat-label">Tasa de éxito</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background-color: rgba(var(--tblr-warning-rgb), 0.1); color: var(--tblr-warning);">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">142 ms</div>
+            <div class="stat-label">Latencia promedio</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background-color: rgba(var(--tblr-danger-rgb), 0.1); color: var(--tblr-danger);">
+            <i class="fas fa-exclamation-triangle"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">23</div>
+            <div class="stat-label">Errores en 24h</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-code"></i> Mis APIs Recientes</h3>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-outline-secondary">Ver todas</button>
+            </div>
+          </div>
+
+          <ul class="api-list">
+            <li class="api-item">
+              <div class="api-icon" style="background-color: rgba(66, 153, 225, 0.1); color: #4299e1;">
+                <i class="fas fa-user-circle"></i>
+              </div>
+              <div class="api-info">
+                <div class="api-name">API de Usuarios</div>
+                <div class="api-meta">
+                  <span>v2.1.4</span>
+                  <span>•</span>
+                  <span>1,245 requests hoy</span>
+                </div>
+              </div>
+              <button class="api-action">Administrar</button>
+            </li>
+
+            <li class="api-item">
+              <div class="api-icon" style="background-color: rgba(47, 179, 68, 0.1); color: #2fb344;">
+                <i class="fas fa-credit-card"></i>
+              </div>
+              <div class="api-info">
+                <div class="api-name">API de Pagos</div>
+                <div class="api-meta">
+                  <span>v1.5.2</span>
+                  <span>•</span>
+                  <span>842 transactions hoy</span>
+                </div>
+              </div>
+              <button class="api-action">Administrar</button>
+            </li>
+
+            <li class="api-item">
+              <div class="api-icon" style="background-color: rgba(247, 104, 8, 0.1); color: #f76808;">
+                <i class="fas fa-box"></i>
+              </div>
+              <div class="api-info">
+                <div class="api-name">API de Productos</div>
+                <div class="api-meta">
+                  <span>v3.0.1</span>
+                  <span>•</span>
+                  <span>568 requests hoy</span>
+                </div>
+              </div>
+              <button class="api-action">Administrar</button>
+            </li>
+          </ul>
+
+          <div class="quick-actions-grid">
+            <div class="quick-action">
+              <div class="action-icon">
+                <i class="fas fa-plus"></i>
+              </div>
+              <div class="action-label">Nueva API</div>
+            </div>
+
+            <div class="quick-action">
+              <div class="action-icon">
+                <i class="fas fa-book"></i>
+              </div>
+              <div class="action-label">Documentación</div>
+            </div>
+
+            <div class="quick-action">
+              <div class="action-icon">
+                <i class="fas fa-sliders-h"></i>
+              </div>
+              <div class="action-label">Configuración</div>
+            </div>
+
+            <div class="quick-action">
+              <div class="action-icon">
+                <i class="fas fa-key"></i>
+              </div>
+              <div class="action-label">API Keys</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-bell"></i> Notificaciones</h3>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-outline-secondary">Ver todas</button>
+            </div>
+          </div>
+
+          <ul class="notification-list">
+            <li class="notification-item">
+              <div class="notification-icon" style="background-color: rgba(var(--tblr-success-rgb), 0.1); color: var(--tblr-success);">
+                <i class="fas fa-check"></i>
+              </div>
+              <div class="notification-content">
+                <div class="notification-title">Nueva versión disponible</div>
+                <div class="notification-description">API de Usuarios v2.2.0 está disponible</div>
+              </div>
+              <div class="notification-time">Hace 2h</div>
+            </li>
+
+            <li class="notification-item">
+              <div class="notification-icon" style="background-color: rgba(var(--tblr-warning-rgb), 0.1); color: var(--tblr-warning);">
+                <i class="fas fa-exclamation"></i>
+              </div>
+              <div class="notification-content">
+                <div class="notification-title">Mantenimiento programado</div>
+                <div class="notification-description">El próximo sábado de 2:00 a 4:00 AM</div>
+              </div>
+              <div class="notification-time">Ayer</div>
+            </li>
+
+            <li class="notification-item">
+              <div class="notification-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
+                <i class="fas fa-info"></i>
+              </div>
+              <div class="notification-content">
+                <div class="notification-title">Nuevo tutorial disponible</div>
+                <div class="notification-description">Cómo implementar webhooks</div>
+              </div>
+              <div class="notification-time">15 Mayo</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-history"></i> Actividad Reciente</h3>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-outline-secondary">Ver todo</button>
+            </div>
+          </div>
+
+          <ul class="activity-list">
+            <li class="activity-item">
+              <div class="activity-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
+                <i class="fas fa-code"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">Implementaste webhooks de pagos</div>
+                <div class="activity-description">Configuraste webhooks para recibir notificaciones de cambios de estado en pagos</div>
+                <div class="activity-time">Hace 2 horas</div>
+              </div>
+            </li>
+
+            <li class="activity-item">
+              <div class="activity-icon" style="background-color: rgba(var(--tblr-success-rgb), 0.1); color: var(--tblr-success);">
+                <i class="fas fa-check"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">Solicitud de API Key aprobada</div>
+                <div class="activity-description">Tu solicitud para la API de Analytics fue aprobada automáticamente</div>
+                <div class="activity-time">Hace 1 día</div>
+              </div>
+            </li>
+
+            <li class="activity-item">
+              <div class="activity-icon" style="background-color: rgba(var(--tblr-warning-rgb), 0.1); color: var(--tblr-warning);">
+                <i class="fas fa-exclamation"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">Alerta de rate limit</div>
+                <div class="activity-description">Tu aplicación se acercó al 80% de tu límite de requests diarios</div>
+                <div class="activity-time">Hace 2 días</div>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-ticket-alt"></i> Tickets de Soporte</h3>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-outline-secondary">Ver todos</button>
+            </div>
+          </div>
+
+          <ul class="activity-list">
+            <li class="activity-item">
+              <div class="activity-icon" style="background-color: rgba(var(--tblr-warning-rgb), 0.1); color: var(--tblr-warning);">
+                <i class="fas fa-clock"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">Problema con autenticación OAuth2</div>
+                <div class="activity-description">Ticket #1234 - En progreso</div>
+                <div class="activity-time">Actualizado hace 3h</div>
+              </div>
+            </li>
+
+            <li class="activity-item">
+              <div class="activity-icon" style="background-color: rgba(var(--tblr-success-rgb), 0.1); color: var(--tblr-success);">
+                <i class="fas fa-check"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">Consulta sobre webhooks</div>
+                <div class="activity-description">Ticket #1228 - Resuelto</div>
+                <div class="activity-time">Hace 2 días</div>
+              </div>
+            </li>
+
+            <li class="activity-item">
+              <div class="activity-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
+                <i class="fas fa-plus"></i>
+              </div>
+              <div class="activity-content">
+                <div class="activity-title">Abrir nuevo ticket</div>
+                <div class="activity-description">¿Necesitas ayuda con algo?</div>
+                <button class="api-action" style="margin-top: 0.5rem;">Crear ticket</button>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+</div>
+
+<script>
+
+  document.querySelectorAll('.quick-action').forEach(action => {
+    action.addEventListener('click', function() {
+      const actionType = this.querySelector('.action-label').textContent;
+
+      switch(actionType) {
+        case 'Nueva API':
+          alert('Redirigiendo a creación de nueva API');
+          break;
+        case 'Documentación':
+          alert('Abriendo documentación');
+          break;
+        case 'Configuración':
+          alert('Abriendo configuración');
+          break;
+        case 'API Keys':
+          alert('Gestionando API Keys');
+          break;
+      }
+    });
+  });
+
+  document.querySelectorAll('.api-action').forEach(button => {
+    button.addEventListener('click', function() {
+      const action = this.textContent;
+      const apiItem = this.closest('.api-item');
+      const apiName = apiItem ? apiItem.querySelector('.api-name').textContent : 'Recurso';
+
+      if (action === 'Administrar') {
+        alert(`Administrando ${apiName}`);
+      } else if (action === 'Crear ticket') {
+        alert('Creando nuevo ticket de soporte');
+      }
+    });
+  });
+
+
+  document.addEventListener('DOMContentLoaded', function() {
+
+    console.log('Dashboard cargado - simulando datos');
+  });
+</script>
+
+<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
+</body>
+</html>
+

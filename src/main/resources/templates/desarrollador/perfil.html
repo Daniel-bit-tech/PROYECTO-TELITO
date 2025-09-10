@@ -1,0 +1,791 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>TELITO DEVELOPER PORTAL | Mi Perfil</title>
+    <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+    <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url("https://rsms.me/inter/inter.css");
+
+        .profile-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .profile-header {
+            padding: 2rem 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .profile-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--tblr-border-color);
+            margin-bottom: 2rem;
+        }
+
+        .profile-tab {
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .profile-tab.active {
+            color: var(--tblr-primary);
+            border-bottom-color: var(--tblr-primary);
+        }
+
+        .profile-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        .profile-sidebar {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        .profile-avatar {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .avatar-img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1rem;
+            border: 4px solid var(--tblr-border-color);
+        }
+
+        .avatar-upload {
+            position: relative;
+            display: inline-block;
+        }
+
+        .avatar-edit {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: var(--tblr-primary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .profile-info {
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-name {
+            font-weight: 600;
+            font-size: 1.25rem;
+            text-align: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-role {
+            color: var(--tblr-primary);
+            text-align: center;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background-color: var(--tblr-bg-surface-secondary);
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--tblr-secondary-color);
+            font-size: 0.875rem;
+        }
+
+        .profile-main {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--tblr-border-color);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+
+        .form-text {
+            font-size: 0.875rem;
+            color: var(--tblr-secondary-color);
+            margin-top: 0.25rem;
+        }
+
+        .badge {
+            padding: 0.35rem 0.65rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-primary {
+            background-color: rgba(var(--tblr-primary-rgb), 0.1);
+            color: var(--tblr-primary);
+        }
+
+        .badge-success {
+            background-color: rgba(var(--tblr-success-rgb), 0.1);
+            color: var(--tblr-success);
+        }
+
+        .badge-warning {
+            background-color: rgba(var(--tblr-warning-rgb), 0.1);
+            color: var(--tblr-warning);
+        }
+
+        .api-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .api-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 8px;
+        }
+
+        .api-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .api-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background-color: var(--tblr-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .api-details h4 {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .api-details p {
+            color: var(--tblr-secondary-color);
+            font-size: 0.875rem;
+        }
+
+        .activity-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 8px;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--tblr-bg-surface-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--tblr-primary);
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-desc {
+            color: var(--tblr-secondary-color);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .activity-time {
+            color: var(--tblr-secondary-color);
+            font-size: 0.75rem;
+        }
+
+        .btn-primary {
+            background-color: var(--tblr-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--tblr-border-color);
+            color: var(--tblr-body-color);
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--tblr-primary-dark);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--tblr-bg-surface-secondary);
+        }
+
+        @media (max-width: 1024px) {
+            .profile-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .profile-tabs {
+                flex-direction: column;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .api-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+
+    <div th:replace="desarrollador/header.html :: header"></div>
+
+    <div class="content">
+        <div class="profile-container">
+            <div class="profile-header">
+                <h1 class="profile-title">Mi Perfil</h1>
+                <p class="profile-subtitle">Gestiona tu información personal, preferencias y actividad</p>
+            </div>
+
+            <div class="profile-tabs">
+                <div class="profile-tab active" data-tab="overview">Resumen</div>
+                <div class="profile-tab" data-tab="personal">Información Personal</div>
+                <div class="profile-tab" data-tab="security">Seguridad</div>
+                <div class="profile-tab" data-tab="preferences">Preferencias</div>
+            </div>
+
+            <div class="profile-content">
+                <div class="profile-sidebar">
+                    <div class="profile-avatar">
+                        <div class="avatar-upload">
+                            <img src="https://ui-avatars.com/api/?name=Juan+Perez&background=4299e1&color=fff" alt="Avatar" class="avatar-img">
+                            <label for="avatar-input" class="avatar-edit">
+                                <i class="fas fa-camera"></i>
+                                <input type="file" id="avatar-input" accept="image/*" style="display: none;">
+                            </label>
+                        </div>
+                        <h2 class="profile-name">Juan Pérez</h2>
+                        <div class="profile-role">Desarrollador Senior</div>
+                        <span class="badge badge-primary">Usuario Premium</span>
+                    </div>
+
+                    <div class="profile-info">
+                        <p><i class="fas fa-envelope"></i> juan.perez@ejemplo.com</p>
+                        <p><i class="fas fa-building"></i> Empresa XYZ</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Lima, Perú</p>
+                    </div>
+
+                    <div class="profile-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">12</div>
+                            <div class="stat-label">Proyectos</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">47</div>
+                            <div class="stat-label">APIs Usadas</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">3</div>
+                            <div class="stat-label">Tickets Abiertos</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">28</div>
+                            <div class="stat-label">Contribuciones</div>
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" style="width: 100%;">
+                        <i class="fas fa-download"></i> Descargar Perfil
+                    </button>
+                </div>
+
+                <div class="profile-main">
+                    <div id="overview" class="profile-tab-content">
+                        <h3 class="section-title">Resumen de Actividad</h3>
+
+                        <div class="activity-list">
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h4 class="activity-title">Nueva integración de API</h4>
+                                    <p class="activity-desc">Has integrado la API de Pagos en el proyecto E-commerce Mobile App</p>
+                                    <span class="activity-time">Hace 2 horas</span>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-comment"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h4 class="activity-title">Feedback enviado</h4>
+                                    <p class="activity-desc">Has enviado comentarios sobre la documentación de la API de Usuarios</p>
+                                    <span class="activity-time">Ayer a las 14:32</span>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-key"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h4 class="activity-title">Nueva API Key generada</h4>
+                                    <p class="activity-desc">Has generado una nueva clave para la API de Analytics</p>
+                                    <span class="activity-time">15 de Agosto, 2023</span>
+                                </div>
+                            </div>
+
+                            <div class="activity-item">
+                                <div class="activity-icon">
+                                    <i class="fas fa-book"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h4 class="activity-title">Documentación consultada</h4>
+                                    <p class="activity-desc">Has accedido a la documentación de la API de Notificaciones</p>
+                                    <span class="activity-time">14 de Agosto, 2023</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="section-title" style="margin-top: 2rem;">APIs Recientes</h3>
+
+                        <div class="api-list">
+                            <div class="api-item">
+                                <div class="api-info">
+                                    <div class="api-icon">
+                                        <i class="fas fa-credit-card"></i>
+                                    </div>
+                                    <div class="api-details">
+                                        <h4>API de Pagos</h4>
+                                        <p>Procesamiento de transacciones y gestión de pagos</p>
+                                    </div>
+                                </div>
+                                <span class="badge badge-success">Activa</span>
+                            </div>
+
+                            <div class="api-item">
+                                <div class="api-info">
+                                    <div class="api-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="api-details">
+                                        <h4>API de Usuarios</h4>
+                                        <p>Gestión de autenticación y perfiles de usuario</p>
+                                    </div>
+                                </div>
+                                <span class="badge badge-success">Activa</span>
+                            </div>
+
+                            <div class="api-item">
+                                <div class="api-info">
+                                    <div class="api-icon">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </div>
+                                    <div class="api-details">
+                                        <h4>API de Analytics</h4>
+                                        <p>Métricas y análisis de datos en tiempo real</p>
+                                    </div>
+                                </div>
+                                <span class="badge badge-warning">Pendiente de renovación</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="personal" class="profile-tab-content" style="display: none;">
+                        <h3 class="section-title">Información Personal</h3>
+
+                        <form id="personal-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Nombre</label>
+                                    <input type="text" class="form-control" value="Juan">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Apellido</label>
+                                    <input type="text" class="form-control" value="Pérez">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Correo Electrónico</label>
+                                <input type="email" class="form-control" value="juan.perez@ejemplo.com">
+                                <div class="form-text">Este es el correo que utilizas para iniciar sesión</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Empresa</label>
+                                <input type="text" class="form-control" value="Empresa XYZ">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Cargo</label>
+                                <input type="text" class="form-control" value="Desarrollador Senior">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Biografía</label>
+                                <textarea class="form-control" rows="4">Desarrollador full-stack con 5 años de experiencia en integración de APIs y desarrollo de aplicaciones web y móviles.</textarea>
+                                <div class="form-text">Una breve descripción sobre ti y tu experiencia</div>
+                            </div>
+
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> Guardar Cambios
+                            </button>
+                        </form>
+                    </div>
+
+                    <div id="security" class="profile-tab-content" style="display: none;">
+                        <h3 class="section-title">Configuración de Seguridad</h3>
+
+                        <div class="form-group">
+                            <label class="form-label">Contraseña</label>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <div style="flex: 1;">••••••••••••</div>
+                                <button class="btn-outline">
+                                    <i class="fas fa-edit"></i> Cambiar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Autenticación de Dos Factores</label>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <div style="flex: 1;">Desactivada</div>
+                                <button class="btn-outline">
+                                    <i class="fas fa-shield-alt"></i> Activar
+                                </button>
+                            </div>
+                            <div class="form-text">Protege tu cuenta con verificación en dos pasos</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Sesiones Activas</label>
+                            <div style="border: 1px solid var(--tblr-border-color); border-radius: 8px; overflow: hidden;">
+                                <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--tblr-border-color);">
+                                    <div>
+                                        <div>Chrome - Windows</div>
+                                        <div class="form-text">Lima, Perú · Esta sesión</div>
+                                    </div>
+                                    <button class="btn-outline">
+                                        <i class="fas fa-times"></i> Cerrar
+                                    </button>
+                                </div>
+                                <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <div>Firefox - MacOS</div>
+                                        <div class="form-text">Lima, Perú · Hace 3 días</div>
+                                    </div>
+                                    <button class="btn-outline">
+                                        <i class="fas fa-times"></i> Cerrar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="section-title">API Keys</h3>
+
+                        <div class="api-list">
+                            <div class="api-item">
+                                <div class="api-info">
+                                    <div class="api-icon">
+                                        <i class="fas fa-key"></i>
+                                    </div>
+                                    <div class="api-details">
+                                        <h4>API de Pagos - Producción</h4>
+                                        <p>Creada el 12/08/2023</p>
+                                    </div>
+                                </div>
+                                <button class="btn-outline">
+                                    <i class="fas fa-copy"></i> Copiar
+                                </button>
+                            </div>
+
+                            <div class="api-item">
+                                <div class="api-info">
+                                    <div class="api-icon">
+                                        <i class="fas fa-key"></i>
+                                    </div>
+                                    <div class="api-details">
+                                        <h4>API de Analytics - Testing</h4>
+                                        <p>Creada el 05/08/2023</p>
+                                    </div>
+                                </div>
+                                <button class="btn-outline">
+                                    <i class="fas fa-copy"></i> Copiar
+                                </button>
+                            </div>
+                        </div>
+
+                        <button class="btn-primary">
+                            <i class="fas fa-plus"></i> Generar Nueva API Key
+                        </button>
+                    </div>
+
+                    <div id="preferences" class="profile-tab-content" style="display: none;">
+                        <h3 class="section-title">Preferencias</h3>
+
+                        <div class="form-group">
+                            <label class="form-label">Idioma</label>
+                            <select class="form-select">
+                                <option selected>Español</option>
+                                <option>English</option>
+                                <option>Português</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Zona Horaria</label>
+                            <select class="form-select">
+                                <option selected>(GMT-05:00) Lima, Bogotá, Quito</option>
+                                <option>(GMT-03:00) Buenos Aires, Montevideo</option>
+                                <option>(GMT-06:00) Ciudad de México</option>
+                                <option>(GMT-04:00) Santiago, Caracas</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Tema</label>
+                            <select class="form-select">
+                                <option selected>Claro</option>
+                                <option>Oscuro</option>
+                                <option>Automático (según sistema)</option>
+                            </select>
+                        </div>
+
+                        <h3 class="section-title">Notificaciones</h3>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" id="notif-email" checked>
+                                <label for="notif-email">Notificaciones por correo electrónico</label>
+                            </div>
+                            <div class="form-text">Recibe actualizaciones importantes por email</div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" id="notif-product" checked>
+                                <label for="notif-product">Novedades de productos</label>
+                            </div>
+                            <div class="form-text">Información sobre nuevas funcionalidades y APIs</div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" id="notif-security" checked>
+                                <label for="notif-security">Alertas de seguridad</label>
+                            </div>
+                            <div class="form-text">Notificaciones sobre accesos y actividad inusual</div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                <input type="checkbox" id="notif-marketing">
+                                <label for="notif-marketing">Contenido promocional</label>
+                            </div>
+                            <div class="form-text">Ofertas especiales y contenido de marketing</div>
+                        </div>
+
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-save"></i> Guardar Preferencias
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+</div>
+
+<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
+
+<script>
+
+    document.querySelectorAll('.profile-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Desactivar todas las pestañas
+            document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.profile-tab-content').forEach(c => c.style.display = 'none');
+
+            // Activar la pestaña clickeada
+            this.classList.add('active');
+            const tabId = this.getAttribute('data-tab');
+            document.getElementById(tabId).style.display = 'block';
+        });
+    });
+
+
+    document.getElementById('avatar-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.querySelector('.avatar-img').src = e.target.result;
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+
+    document.getElementById('personal-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Información personal actualizada correctamente');
+    });
+
+
+    document.querySelectorAll('.btn-primary').forEach(btn => {
+        if (btn.textContent.includes('Generar Nueva API Key')) {
+            btn.addEventListener('click', function() {
+                if (confirm('¿Estás seguro de que deseas generar una nueva API Key? La clave actual se invalidará.')) {
+                    alert('Nueva API Key generada correctamente');
+                }
+            });
+        }
+    });
+</script>
+</body>
+</html>

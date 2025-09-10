@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>TELITO DEVELOPER PORTAL | Feedback</title>
+    <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+    <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url("https://rsms.me/inter/inter.css");
+
+
+
+        .catalog-header {
+            padding: 2rem 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .catalog-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .catalog-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .feedback-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .feedback-header {
+            padding: 2rem 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .feedback-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .feedback-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .feedback-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--tblr-border-color);
+            margin-bottom: 2rem;
+        }
+
+        .feedback-tab {
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .feedback-tab.active {
+            color: var(--tblr-primary);
+            border-bottom-color: var(--tblr-primary);
+        }
+
+        .feedback-form-container {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .feedback-form-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+
+        .rating-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .rating-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .rating-star {
+            font-size: 1.5rem;
+            color: var(--tblr-border-color);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .rating-star.active,
+        .rating-star:hover {
+            color: #ffc107;
+        }
+
+        .feedback-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .feedback-card {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding: 0;
+        }
+
+        .feedback-meta {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feedback-author {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .feedback-date {
+            color: var(--tblr-secondary-color);
+            font-size: 0.875rem;
+        }
+
+        .feedback-rating {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .feedback-star {
+            color: #ffc107;
+            font-size: 0.875rem;
+        }
+
+        .feedback-content {
+            margin-bottom: 1rem;
+        }
+
+        .feedback-subject {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feedback-message {
+            color: var(--tblr-body-color);
+            line-height: 1.5;
+        }
+
+        .feedback-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--tblr-secondary-color);
+        }
+
+        .feedback-api {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feedback-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: rgba(var(--tblr-warning-rgb), 0.1);
+            color: var(--tblr-warning);
+        }
+
+        .status-reviewed {
+            background-color: rgba(var(--tblr-success-rgb), 0.1);
+            color: var(--tblr-success);
+        }
+
+        .status-closed {
+            background-color: rgba(var(--tblr-secondary-rgb), 0.1);
+            color: var(--tblr-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-description {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--tblr-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--tblr-primary-dark);
+        }
+
+        @media (max-width: 768px) {
+            .feedback-tabs {
+                flex-direction: column;
+            }
+
+            .feedback-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .feedback-footer {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+
+    <div th:replace="desarrollador/header.html :: header"></div>
+
+    <div class="content">
+        <div class="feedback-container">
+            <div class="catalog-header rounded-3 px-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="catalog-title">Feedback y Sugerencias</h1>
+                        <p class="catalog-subtitle">Comparte tus comentarios, califica nuestras APIs y ayúdanos a mejorar</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="feedback-tabs">
+                <div class="feedback-tab active" data-tab="give-feedback">Dejar Feedback</div>
+                <div class="feedback-tab" data-tab="my-feedback">Mi Feedback</div>
+                <div class="feedback-tab" data-tab="roadmap">Roadmap y Mejoras</div>
+            </div>
+
+            <div id="give-feedback" class="feedback-tab-content">
+                <div class="feedback-form-container">
+                    <h3 class="feedback-form-title">Comparte tu experiencia</h3>
+                    <form id="feedback-form">
+                        <div class="form-group">
+                            <label class="form-label">Seleccionar API o recurso</label>
+                            <select class="form-select" id="feedback-api" required>
+                                <option value="">Selecciona una API o recurso</option>
+                                <option value="api-users">API de Usuarios</option>
+                                <option value="api-payments">API de Pagos</option>
+                                <option value="api-products">API de Productos</option>
+                                <option value="api-notifications">API de Notificaciones</option>
+                                <option value="api-analytics">API de Analytics</option>
+                                <option value="portal">Portal de Desarrolladores</option>
+                                <option value="documentation">Documentación</option>
+                                <option value="other">Otro</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Asunto</label>
+                            <input type="text" class="form-control" id="feedback-subject" placeholder="Resumen de tu feedback" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Tipo de feedback</label>
+                            <select class="form-select" id="feedback-type" required>
+                                <option value="">Selecciona un tipo</option>
+                                <option value="suggestion">Sugerencia de mejora</option>
+                                <option value="bug">Reporte de error</option>
+                                <option value="documentation">Problema con documentación</option>
+                                <option value="compliment">Elogio</option>
+                                <option value="question">Pregunta</option>
+                            </select>
+                        </div>
+
+                        <div class="rating-container">
+                            <div class="rating-title">Calificación</div>
+                            <div class="rating-stars">
+                                <span class="rating-star" data-value="1"><i class="far fa-star"></i></span>
+                                <span class="rating-star" data-value="2"><i class="far fa-star"></i></span>
+                                <span class="rating-star" data-value="3"><i class="far fa-star"></i></span>
+                                <span class="rating-star" data-value="4"><i class="far fa-star"></i></span>
+                                <span class="rating-star" data-value="5"><i class="far fa-star"></i></span>
+                            </div>
+                            <input type="hidden" id="feedback-rating" value="0">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Mensaje</label>
+                            <textarea class="form-control form-textarea" id="feedback-message" placeholder="Describe tu experiencia, sugerencia o problema en detalle..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-check">
+                                <input type="checkbox" id="feedback-contact">
+                                <span class="form-check-label">Pueden contactarme para seguir hablando de este feedback</span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i> Enviar Feedback
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="my-feedback" class="feedback-tab-content" style="display: none;">
+                <div class="feedback-list">
+
+                    <div class="feedback-card">
+                        <div class="feedback-header">
+                            <div class="feedback-meta">
+                                <div class="feedback-author">Juan Pérez</div>
+                                <div class="feedback-date">15 de Agosto, 2023</div>
+                            </div>
+                            <div class="feedback-rating">
+                                <span class="feedback-star"><i class="fas fa-star"></i></span>
+                                <span class="feedback-star"><i class="fas fa-star"></i></span>
+                                <span class="feedback-star"><i class="fas fa-star"></i></span>
+                                <span class="feedback-star"><i class="fas fa-star"></i></span>
+                                <span class="feedback-star"><i class="far fa-star"></i></span>
+                            </div>
+                        </div>
+                        <div class="feedback-content">
+                            <div class="feedback-subject">Excelente documentación para la API de Pagos</div>
+                            <div class="feedback-message">
+                                La documentación de la API de Pagos es muy clara y los ejemplos de código son extremadamente útiles.
+                                Me gustaría ver más ejemplos en Python y una sección de troubleshooting para casos edge.
+                            </div>
+                        </div>
+                        <div class="feedback-footer">
+                            <div class="feedback-api">
+                                <i class="fas fa-credit-card"></i> API de Pagos • Sugerencia de mejora
+                            </div>
+                            <span class="feedback-status status-reviewed">Revisado</span>
+                        </div>
+                    </div>
+
+
+                    <div class="feedback-card">
+                        <div class="feedback-header">
+                            <div class="feedback-meta">
+                                <div class="feedback-author">María García</div>
+                                <div class="feedback-date">12 de Agosto, 2023</div>
+                            </div>
+                            <div class="feedback-rating">
+                                <span class="feedback-star"><i class="fas fa-star"></i></span>
+                                <span class="feedback-star"><i class="fas fa-star"></i></span>
+                                <span class="feedback-star"><i class="fas fa-star"></i></span>
+                                <span class="feedback-star"><i class="far fa-star"></i></span>
+                                <span class="feedback-star"><i class="far fa-star"></i></span>
+                            </div>
+                        </div>
+                        <div class="feedback-content">
+                            <div class="feedback-subject">Problema con el endpoint de reembolsos</div>
+                            <div class="feedback-message">
+                                El endpoint de reembolsos devuelve un error 500 cuando se intenta procesar un reembolso parcial
+                                para transacciones mayores a 30 días. He probado con diferentes parámetros pero el error persiste.
+                            </div>
+                        </div>
+                        <div class="feedback-footer">
+                            <div class="feedback-api">
+                                <i class="fas fa-credit-card"></i> API de Pagos • Reporte de error
+                            </div>
+                            <span class="feedback-status status-pending">En revisión</span>
+                        </div>
+                    </div>
+
+
+                    <div class="feedback-card">
+                        <div class="feedback-header">
+                            <div class="feedback-meta">
+                                <div class="feedback-author">Carlos Rodríguez</div>
+                                <div class="feedback-date">5 de Agosto, 2023</div>
+                            </div>
+                            <div class="feedback-rating">
+                                <span class="feedback-star"><i class="fas fa-star"></i></span>
+                                <span class="feedback-star"><i class="fas fa-star"></i></span>
+                                <span class="feedback-star"><i class="fas fa-star"></i></span>
+                                <span class="feedback-star"><i class="fas fa-star"></i></span>
+                                <span class="feedback-star"><i class="fas fa-star"></i></span>
+                            </div>
+                        </div>
+                        <div class="feedback-content">
+                            <div class="feedback-subject">Me encanta el nuevo playground</div>
+                            <div class="feedback-message">
+                                El nuevo playground para probar APIs es increíble. Ahorra mucho tiempo en desarrollo y testing.
+                                Sería genial si pudieran añadir la posibilidad de guardar las configuraciones de prueba.
+                            </div>
+                        </div>
+                        <div class="feedback-footer">
+                            <div class="feedback-api">
+                                <i class="fas fa-laptop-code"></i> Portal de Desarrolladores • Elogio
+                            </div>
+                            <span class="feedback-status status-closed">Implementado</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="roadmap" class="feedback-tab-content" style="display: none;">
+                <div class="feedback-form-container">
+                    <h3 class="feedback-form-title">Roadmap y Mejoras Planificadas</h3>
+                    <p>Basado en el feedback de nuestra comunidad, estas son las mejoras que estamos implementando:</p>
+
+                    <div class="form-group">
+                        <h4>Próximos Lanzamientos (Q3 2023)</h4>
+                        <ul>
+                            <li>SDK oficial para Python y Go</li>
+                            <li>Nuevo endpoint para suscripciones recurrentes en API de Pagos</li>
+                            <li>Mejoras en la documentación con más ejemplos prácticos</li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <h4>En Desarrollo</h4>
+                        <ul>
+                            <li>Integración con Postman Collections</li>
+                            <li>Sistema de monitoreo de APIs en tiempo real</li>
+                            <li>Funcionalidad de "guardar configuración" en el playground</li>
+                        </ul>
+                    </div>
+
+                    <div class="form-group">
+                        <h4>En Planeación</h4>
+                        <ul>
+                            <li>API GraphQL unificada</li>
+                            <li>Sistema de webhooks para eventos importantes</li>
+                            <li>Portal traducido a 5 idiomas adicionales</li>
+                        </ul>
+                    </div>
+
+                    <p>¿Tienes ideas adicionales? <a href="#" class="switch-tab" data-tab="give-feedback">Comparte tu feedback</a> con nosotros.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+</div>
+
+<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
+
+<script>
+
+    document.querySelectorAll('.feedback-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+
+            document.querySelectorAll('.feedback-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.feedback-tab-content').forEach(c => c.style.display = 'none');
+
+
+            this.classList.add('active');
+            const tabId = this.getAttribute('data-tab');
+            document.getElementById(tabId).style.display = 'block';
+        });
+    });
+
+
+    document.querySelectorAll('.rating-star').forEach(star => {
+        star.addEventListener('click', function() {
+            const value = parseInt(this.getAttribute('data-value'));
+            document.getElementById('feedback-rating').value = value;
+
+
+            document.querySelectorAll('.rating-star').forEach(s => {
+                const starValue = parseInt(s.getAttribute('data-value'));
+                if (starValue <= value) {
+                    s.innerHTML = '<i class="fas fa-star"></i>';
+                    s.classList.add('active');
+                } else {
+                    s.innerHTML = '<i class="far fa-star"></i>';
+                    s.classList.remove('active');
+                }
+            });
+        });
+    });
+
+
+    document.getElementById('feedback-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const rating = document.getElementById('feedback-rating').value;
+        if (rating === '0') {
+            alert('Por favor, proporciona una calificación con las estrellas');
+            return;
+        }
+
+
+        console.log('Feedback enviado:', {
+            api: document.getElementById('feedback-api').value,
+            subject: document.getElementById('feedback-subject').value,
+            type: document.getElementById('feedback-type').value,
+            rating: rating,
+            message: document.getElementById('feedback-message').value,
+            contact: document.getElementById('feedback-contact').checked
+        });
+
+        alert('¡Gracias por tu feedback! Tu comentario ha sido enviado al equipo de Telito.');
+        this.reset();
+
+
+        document.querySelectorAll('.rating-star').forEach(s => {
+            s.innerHTML = '<i class="far fa-star"></i>';
+            s.classList.remove('active');
+        });
+        document.getElementById('feedback-rating').value = '0';
+    });
+
+
+    document.querySelectorAll('.switch-tab').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tabId = this.getAttribute('data-tab');
+            document.querySelectorAll('.feedback-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.feedback-tab-content').forEach(c => c.style.display = 'none');
+
+            document.querySelector(`.feedback-tab[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).style.display = 'block';
+        });
+    });
+</script>
+</body>
+</html>

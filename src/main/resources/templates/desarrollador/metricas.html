@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>TELITO DEVELOPER PORTAL | Métricas</title>
+    <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+    <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url("https://rsms.me/inter/inter.css");
+
+
+        .metrics-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .metrics-header {
+            padding: 2rem 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .metrics-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .metrics-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .filters-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: var(--tblr-bg-surface-secondary);
+            border-radius: 8px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+
+        .date-range {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .date-input {
+            padding: 0.5rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .metric-card {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .metric-title {
+            font-weight: 600;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--tblr-body-color);
+        }
+
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--tblr-body-color);
+        }
+
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .change-positive {
+            color: var(--tblr-success);
+        }
+
+        .change-negative {
+            color: var(--tblr-danger);
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-container {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .chart-title {
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--tblr-body-color);
+        }
+
+        .chart-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chart-canvas {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .alerts-container {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+
+        .alerts-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .alerts-title {
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--tblr-body-color);
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--tblr-border-color);
+            gap: 0.75rem;
+        }
+
+        .alert-item:last-child {
+            border-bottom: none;
+        }
+
+        .alert-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .alert-icon-error {
+            background-color: rgba(var(--tblr-danger-rgb), 0.1);
+            color: var(--tblr-danger);
+        }
+
+        .alert-icon-warning {
+            background-color: rgba(var(--tblr-warning-rgb), 0.1);
+            color: var(--tblr-warning);
+        }
+
+        .alert-icon-info {
+            background-color: rgba(var(--tblr-info-rgb), 0.1);
+            color: var(--tblr-info);
+        }
+
+        .alert-content {
+            flex: 1;
+        }
+
+        .alert-title {
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+            color: var(--tblr-body-color);
+        }
+
+        .alert-description {
+            font-size: 0.875rem;
+            color: var(--tblr-secondary-color);
+        }
+
+        .alert-time {
+            font-size: 0.75rem;
+            color: var(--tblr-secondary-color);
+            white-space: nowrap;
+        }
+
+        .api-list {
+            margin-top: 2rem;
+        }
+
+        .api-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .api-table th {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--tblr-border-color);
+            font-weight: 600;
+            color: var(--tblr-secondary-color);
+        }
+
+        .api-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--tblr-border-color);
+            vertical-align: middle;
+        }
+
+        .api-table tr:hover {
+            background-color: var(--tblr-bg-surface-secondary);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-active {
+            background-color: var(--tblr-success);
+        }
+
+        .status-warning {
+            background-color: var(--tblr-warning);
+        }
+
+        .status-error {
+            background-color: var(--tblr-danger);
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background-color: rgba(var(--tblr-success-rgb), 0.1);
+            color: var(--tblr-success);
+        }
+
+        .badge-warning {
+            background-color: rgba(var(--tblr-warning-rgb), 0.1);
+            color: var(--tblr-warning);
+        }
+
+        .badge-danger {
+            background-color: rgba(var(--tblr-danger-rgb), 0.1);
+            color: var(--tblr-danger);
+        }
+
+        @media (max-width: 1024px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .filters-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+
+    <div th:replace="desarrollador/header.html :: header"></div>
+
+    <!-- Main  -->
+    <div class="content">
+        <div class="metrics-container">
+            <div class="metrics-header">
+                <h1 class="metrics-title">Métricas y Monitoreo</h1>
+                <p class="metrics-subtitle">Monitorea el consumo, rendimiento y estado de tus APIs en tiempo real</p>
+            </div>
+
+            <div class="filters-bar">
+                <div class="filter-group">
+                    <select class="filter-select" id="api-select">
+                        <option value="all">Todas las APIs</option>
+                        <option value="api-users">API de Usuarios</option>
+                        <option value="api-payments">API de Pagos</option>
+                        <option value="api-products">API de Productos</option>
+                        <option value="api-orders">API de Pedidos</option>
+                    </select>
+
+                    <select class="filter-select" id="environment-select">
+                        <option value="prod">Producción</option>
+                        <option value="qa">QA</option>
+                        <option value="dev">Desarrollo</option>
+                    </select>
+                </div>
+
+                <div class="date-range">
+                    <input type="date" class="date-input" id="start-date" value="2023-05-01">
+                    <span>a</span>
+                    <input type="date" class="date-input" id="end-date" value="2023-05-31">
+                </div>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title"><i class="fas fa-bolt"></i> Total de Requests</h3>
+                    </div>
+                    <div class="metric-value">245,831</div>
+                    <div class="metric-change change-positive">
+                        <i class="fas fa-arrow-up"></i> 12.5% vs período anterior
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title"><i class="fas fa-clock"></i> Latencia Promedio</h3>
+                    </div>
+                    <div class="metric-value">142 ms</div>
+                    <div class="metric-change change-negative">
+                        <i class="fas fa-arrow-up"></i> 5.2% vs período anterior
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title"><i class="fas fa-check-circle"></i> Tasa de Éxito</h3>
+                    </div>
+                    <div class="metric-value">99.2%</div>
+                    <div class="metric-change change-positive">
+                        <i class="fas fa-arrow-up"></i> 0.8% vs período anterior
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <h3 class="metric-title"><i class="fas fa-exclamation-triangle"></i> Tasa de Error</h3>
+                    </div>
+                    <div class="metric-value">0.8%</div>
+                    <div class="metric-change change-negative">
+                        <i class="fas fa-arrow-up"></i> 0.2% vs período anterior
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Consumo de API (Requests por hora)</h3>
+                        <div class="chart-actions">
+                            <button class="btn btn-sm btn-outline-secondary">24h</button>
+                            <button class="btn btn-sm btn-outline-primary">7d</button>
+                            <button class="btn btn-sm btn-outline-secondary">30d</button>
+                        </div>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="requestsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Distribución de Status Codes</h3>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="statusCodesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Latencia por Endpoint (ms)</h3>
+                    </div>
+                    <div class="chart-canvas">
+                        <canvas id="latencyChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="alerts-container">
+                    <div class="alerts-header">
+                        <h3 class="alerts-title">Alertas Recientes</h3>
+                        <button class="btn btn-sm btn-outline-primary">Ver todas</button>
+                    </div>
+
+                    <div class="alert-list">
+                        <div class="alert-item">
+                            <div class="alert-icon alert-icon-error">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">Aumento de errores 5xx en API de Pagos</div>
+                                <div class="alert-description">Tasa de error aumentó del 0.5% al 3.2% en los últimos 30 minutos</div>
+                            </div>
+                            <div class="alert-time">Hace 15 min</div>
+                        </div>
+
+                        <div class="alert-item">
+                            <div class="alert-icon alert-icon-warning">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">Aumento de latencia en API de Usuarios</div>
+                                <div class="alert-description">Latencia p95 aumentó de 200ms a 450ms</div>
+                            </div>
+                            <div class="alert-time">Hace 2 h</div>
+                        </div>
+
+                        <div class="alert-item">
+                            <div class="alert-icon alert-icon-info">
+                                <i class="fas fa-info-circle"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">Patrón de tráfico inusual</div>
+                                <div class="alert-description">Aumento del 40% en requests a API de Productos</div>
+                            </div>
+                            <div class="alert-time">Ayer, 16:32</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="api-list">
+                <div class="chart-header">
+                    <h3 class="chart-title">Rendimiento por API</h3>
+                </div>
+
+                <table class="api-table">
+                    <thead>
+                    <tr>
+                        <th>API</th>
+                        <th>Estado</th>
+                        <th>Requests</th>
+                        <th>Latencia (p95)</th>
+                        <th>Tasa de Error</th>
+                        <th>Tendencia</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>API de Usuarios</td>
+                        <td><span class="status-indicator status-active"></span> Activo</td>
+                        <td>84,291</td>
+                        <td>156 ms</td>
+                        <td><span class="badge badge-success">0.2%</span></td>
+                        <td><i class="fas fa-arrow-up text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td>API de Pagos</td>
+                        <td><span class="status-indicator status-active"></span> Activo</td>
+                        <td>62,457</td>
+                        <td>210 ms</td>
+                        <td><span class="badge badge-warning">1.8%</span></td>
+                        <td><i class="fas fa-arrow-up text-danger"></i></td>
+                    </tr>
+                    <tr>
+                        <td>API de Productos</td>
+                        <td><span class="status-indicator status-active"></span> Activo</td>
+                        <td>45,123</td>
+                        <td>98 ms</td>
+                        <td><span class="badge badge-success">0.4%</span></td>
+                        <td><i class="fas fa-arrow-down text-success"></i></td>
+                    </tr>
+                    <tr>
+                        <td>API de Pedidos</td>
+                        <td><span class="status-indicator status-warning"></span> Inestable</td>
+                        <td>38,547</td>
+                        <td>312 ms</td>
+                        <td><span class="badge badge-danger">3.2%</span></td>
+                        <td><i class="fas fa-arrow-up text-danger"></i></td>
+                    </tr>
+                    <tr>
+                        <td>API de Catálogo</td>
+                        <td><span class="status-indicator status-active"></span> Activo</td>
+                        <td>15,413</td>
+                        <td>124 ms</td>
+                        <td><span class="badge badge-success">0.1%</span></td>
+                        <td><i class="fas fa-minus text-secondary"></i></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+</div>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const requestsCtx = document.getElementById('requestsChart').getContext('2d');
+        const requestsChart = new Chart(requestsCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '02:00', '04:00', '06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'],
+                datasets: [{
+                    label: 'Requests',
+                    data: [1200, 900, 800, 1100, 2300, 2800, 3200, 3000, 2800, 2500, 2100, 1800],
+                    borderColor: '#206bc4',
+                    backgroundColor: 'rgba(32, 107, 196, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+
+        const statusCodesCtx = document.getElementById('statusCodesChart').getContext('2d');
+        const statusCodesChart = new Chart(statusCodesCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['2xx (Éxito)', '3xx (Redirección)', '4xx (Cliente)', '5xx (Servidor)'],
+                datasets: [{
+                    data: [245831, 12452, 1832, 654],
+                    backgroundColor: [
+                        '#2fb344',
+                        '#ff922b',
+                        '#f76808',
+                        '#e03131'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+
+        const latencyCtx = document.getElementById('latencyChart').getContext('2d');
+        const latencyChart = new Chart(latencyCtx, {
+            type: 'bar',
+            data: {
+                labels: ['/users', '/users/{id}', '/products', '/products/search', '/orders', '/payments'],
+                datasets: [{
+                    label: 'Latencia p95 (ms)',
+                    data: [142, 98, 124, 156, 210, 185],
+                    backgroundColor: '#4299e1'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            drawBorder: false
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                }
+            }
+        });
+
+
+        document.getElementById('api-select').addEventListener('change', updateCharts);
+        document.getElementById('environment-select').addEventListener('change', updateCharts);
+        document.getElementById('start-date').addEventListener('change', updateCharts);
+        document.getElementById('end-date').addEventListener('change', updateCharts);
+
+        function updateCharts() {
+
+            const api = document.getElementById('api-select').value;
+            const environment = document.getElementById('environment-select').value;
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+
+
+            console.log('Actualizando gráficos con filtros:', {api, environment, startDate, endDate});
+
+
+            setTimeout(() => {
+                alert(`Gráficos actualizados con los filtros seleccionados: API=${api}, Entorno=${environment}, Fechas=${startDate} a ${endDate}`);
+            }, 500);
+        }
+    });
+</script>
+
+<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
+</body>
+</html>
