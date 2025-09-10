@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <title>TELITO DEVELOPER PORTAL | Gestión de Proyectos</title>
+  <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+  <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+  <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url("https://rsms.me/inter/inter.css");
+
+
+    .projects-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .projects-header {
+      padding: 2rem 0 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .projects-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .projects-subtitle {
+      color: var(--tblr-secondary-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .projects-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding: 1rem;
+      background-color: var(--tblr-bg-surface-secondary);
+      border-radius: 8px;
+    }
+
+    .search-box {
+      flex: 1;
+      max-width: 400px;
+      position: relative;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 3rem;
+      border: 1px solid var(--tblr-border-color);
+      border-radius: 4px;
+      background-color: var(--tblr-bg-surface);
+      color: var(--tblr-body-color);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--tblr-secondary-color);
+    }
+
+    .filter-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .filter-btn {
+      padding: 0.5rem 1rem;
+      background-color: var(--tblr-bg-surface);
+      border: 1px solid var(--tblr-border-color);
+      border-radius: 4px;
+      color: var(--tblr-body-color);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .filter-btn.active {
+      background-color: var(--tblr-primary);
+      color: white;
+      border-color: var(--tblr-primary);
+    }
+
+    .btn-new-project {
+      padding: 0.75rem 1.5rem;
+      background-color: var(--tblr-primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .project-card {
+      background-color: var(--tblr-bg-surface);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+      height: 100%;
+    }
+
+    .project-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .project-title {
+      font-weight: 600;
+      font-size: 1.125rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .project-description {
+      color: var(--tblr-secondary-color);
+      font-size: 0.875rem;
+      margin-bottom: 1rem;
+      flex: 1;
+    }
+
+    .project-status {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .status-active {
+      background-color: rgba(var(--tblr-success-rgb), 0.1);
+      color: var(--tblr-success);
+    }
+
+    .status-inactive {
+      background-color: rgba(var(--tblr-secondary-rgb), 0.1);
+      color: var(--tblr-secondary);
+    }
+
+    .status-archived {
+      background-color: rgba(var(--tblr-warning-rgb), 0.1);
+      color: var(--tblr-warning);
+    }
+
+    .project-meta {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      color: var(--tblr-secondary-color);
+    }
+
+    .project-apis {
+      margin-bottom: 1rem;
+    }
+
+    .apis-title {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .apis-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .api-tag {
+      padding: 0.25rem 0.5rem;
+      background-color: var(--tblr-bg-surface-secondary);
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: var(--tblr-secondary-color);
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .project-environments {
+      margin-bottom: 1rem;
+    }
+
+    .environments-title {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .environments-list {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .environment-badge {
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .env-production {
+      background-color: rgba(var(--tblr-success-rgb), 0.1);
+      color: var(--tblr-success);
+    }
+
+    .env-staging {
+      background-color: rgba(var(--tblr-warning-rgb), 0.1);
+      color: var(--tblr-warning);
+    }
+
+    .env-development {
+      background-color: rgba(var(--tblr-primary-rgb), 0.1);
+      color: var(--tblr-primary);
+    }
+
+    .project-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: auto;
+    }
+
+    .project-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .btn-primary {
+      background-color: var(--tblr-primary);
+      color: white;
+      border: none;
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid var(--tblr-border-color);
+      color: var(--tblr-body-color);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      background-color: var(--tblr-bg-surface);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .empty-icon {
+      font-size: 3rem;
+      color: var(--tblr-secondary-color);
+      margin-bottom: 1rem;
+    }
+
+    .empty-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-description {
+      color: var(--tblr-secondary-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: var(--tblr-bg-surface);
+      border-radius: 8px;
+      width: 600px;
+      max-width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--tblr-border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-weight: 600;
+      font-size: 1.125rem;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--tblr-secondary-color);
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--tblr-border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--tblr-border-color);
+      border-radius: 4px;
+      background-color: var(--tblr-bg-surface);
+      color: var(--tblr-body-color);
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .form-select {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--tblr-border-color);
+      border-radius: 4px;
+      background-color: var(--tblr-bg-surface);
+      color: var(--tblr-body-color);
+    }
+
+    .form-check {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-text {
+      font-size: 0.875rem;
+      color: var(--tblr-secondary-color);
+      margin-top: 0.25rem;
+    }
+
+    .api-selector {
+      border: 1px solid var(--tblr-border-color);
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .api-option {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--tblr-border-color);
+    }
+
+    .api-option:last-child {
+      border-bottom: none;
+    }
+
+    .environment-config {
+      border: 1px solid var(--tblr-border-color);
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .environment-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .environment-title {
+      font-weight: 500;
+    }
+
+    @media (max-width: 1024px) {
+      .projects-grid {
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      }
+    }
+
+    @media (max-width: 768px) {
+      .projects-actions {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+      }
+
+      .search-box {
+        max-width: 100%;
+      }
+
+      .projects-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .filter-buttons {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+
+  <div th:replace="desarrollador/header.html :: header"></div>
+
+
+  <div class="content">
+    <div class="projects-container">
+      <div class="projects-header">
+        <h1 class="projects-title">Gestión de Proyectos</h1>
+        <p class="projects-subtitle">Crea y administra tus proyectos, asocia APIs y configura entornos</p>
+      </div>
+
+      <div class="projects-actions">
+        <div class="search-box">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" class="search-input" placeholder="Buscar proyectos...">
+        </div>
+
+        <div class="filter-buttons">
+          <button class="filter-btn active">
+            <i class="fas fa-layer-group"></i> Todos
+          </button>
+          <button class="filter-btn">
+            <i class="fas fa-play-circle"></i> Activos
+          </button>
+          <button class="filter-btn">
+            <i class="fas fa-archive"></i> Archivados
+          </button>
+        </div>
+
+        <button class="btn-new-project" id="new-project-btn">
+          <i class="fas fa-plus"></i> Nuevo Proyecto
+        </button>
+      </div>
+
+      <div class="projects-grid">
+        <!-- Proyecto 1 -->
+        <div class="project-card">
+          <div class="project-header">
+            <div>
+              <h3 class="project-title">E-commerce Mobile App</h3>
+              <span class="project-status status-active">Activo</span>
+            </div>
+            <i class="fas fa-shopping-cart" style="font-size: 1.5rem; color: #4299e1;"></i>
+          </div>
+          <p class="project-description">
+            Aplicación móvil de comercio electrónico con procesamiento de pagos y gestión de inventario.
+          </p>
+          <div class="project-meta">
+                        <span class="meta-item">
+                            <i class="fas fa-calendar"></i> Creado: 15/05/2023
+                        </span>
+            <span class="meta-item">
+                            <i class="fas fa-code-branch"></i> v1.2.4
+                        </span>
+          </div>
+          <div class="project-apis">
+            <div class="apis-title">APIs asociadas:</div>
+            <div class="apis-list">
+                            <span class="api-tag">
+                                <i class="fas fa-credit-card"></i> Pagos
+                            </span>
+              <span class="api-tag">
+                                <i class="fas fa-box"></i> Productos
+                            </span>
+              <span class="api-tag">
+                                <i class="fas fa-user-circle"></i> Usuarios
+                            </span>
+            </div>
+          </div>
+          <div class="project-environments">
+            <div class="environments-title">Entornos configurados:</div>
+            <div class="environments-list">
+              <span class="environment-badge env-production">Producción</span>
+              <span class="environment-badge env-staging">Staging</span>
+            </div>
+          </div>
+          <div class="project-actions">
+            <button class="project-btn btn-primary">
+              <i class="fas fa-edit"></i> Editar
+            </button>
+            <button class="project-btn btn-outline">
+              <i class="fas fa-cog"></i> Configurar
+            </button>
+          </div>
+        </div>
+
+
+        <div class="project-card">
+          <div class="project-header">
+            <div>
+              <h3 class="project-title">Dashboard Analytics</h3>
+              <span class="project-status status-active">Activo</span>
+            </div>
+            <i class="fas fa-chart-line" style="font-size: 1.5rem; color: #2fb344;"></i>
+          </div>
+          <p class="project-description">
+            Panel de control para análisis de datos y métricas de negocio en tiempo real.
+          </p>
+          <div class="project-meta">
+                        <span class="meta-item">
+                            <i class="fas fa-calendar"></i> Creado: 22/04/2023
+                        </span>
+            <span class="meta-item">
+                            <i class="fas fa-code-branch"></i> v2.0.1
+                        </span>
+          </div>
+          <div class="project-apis">
+            <div class="apis-title">APIs asociadas:</div>
+            <div class="apis-list">
+                            <span class="api-tag">
+                                <i class="fas fa-chart-bar"></i> Analytics
+                            </span>
+              <span class="api-tag">
+                                <i class="fas fa-user-circle"></i> Usuarios
+                            </span>
+            </div>
+          </div>
+          <div class="project-environments">
+            <div class="environments-title">Entornos configurados:</div>
+            <div class="environments-list">
+              <span class="environment-badge env-production">Producción</span>
+              <span class="environment-badge env-staging">Staging</span>
+              <span class="environment-badge env-development">Desarrollo</span>
+            </div>
+          </div>
+          <div class="project-actions">
+            <button class="project-btn btn-primary">
+              <i class="fas fa-edit"></i> Editar
+            </button>
+            <button class="project-btn btn-outline">
+              <i class="fas fa-cog"></i> Configurar
+            </button>
+          </div>
+        </div>
+
+
+        <div class="project-card">
+          <div class="project-header">
+            <div>
+              <h3 class="project-title">Customer Support Portal</h3>
+              <span class="project-status status-inactive">Inactivo</span>
+            </div>
+            <i class="fas fa-headset" style="font-size: 1.5rem; color: #f76808;"></i>
+          </div>
+          <p class="project-description">
+            Portal de atención al cliente con sistema de tickets y chat en vivo.
+          </p>
+          <div class="project-meta">
+                        <span class="meta-item">
+                            <i class="fas fa-calendar"></i> Creado: 10/03/2023
+                        </span>
+            <span class="meta-item">
+                            <i class="fas fa-code-branch"></i> v0.9.5
+                        </span>
+          </div>
+          <div class="project-apis">
+            <div class="apis-title">APIs asociadas:</div>
+            <div class="apis-list">
+                            <span class="api-tag">
+                                <i class="fas fa-ticket-alt"></i> Soporte
+                            </span>
+              <span class="api-tag">
+                                <i class="fas fa-user-circle"></i> Usuarios
+                            </span>
+              <span class="api-tag">
+                                <i class="fas fa-bell"></i> Notificaciones
+                            </span>
+            </div>
+          </div>
+          <div class="project-environments">
+            <div class="environments-title">Entornos configurados:</div>
+            <div class="environments-list">
+              <span class="environment-badge env-staging">Staging</span>
+              <span class="environment-badge env-development">Desarrollo</span>
+            </div>
+          </div>
+          <div class="project-actions">
+            <button class="project-btn btn-primary">
+              <i class="fas fa-edit"></i> Editar
+            </button>
+            <button class="project-btn btn-outline">
+              <i class="fas fa-play-circle"></i> Activar
+            </button>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+</div>
+
+
+<div class="modal" id="project-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 class="modal-title">Nuevo Proyecto</h3>
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form id="project-form">
+        <div class="form-group">
+          <label class="form-label">Nombre del Proyecto</label>
+          <input type="text" class="form-control" id="project-name" placeholder="Mi aplicación web" required>
+          <div class="form-text">Un nombre descriptivo para tu proyecto</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-control form-textarea" id="project-description" placeholder="Describe el propósito y funcionalidades de tu proyecto..." required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Seleccionar APIs</label>
+          <div class="api-selector">
+            <div class="api-option">
+              <input type="checkbox" id="api-users" name="apis" value="api-users">
+              <label for="api-users">API de Usuarios - Gestión de usuarios y autenticación</label>
+            </div>
+            <div class="api-option">
+              <input type="checkbox" id="api-payments" name="apis" value="api-payments">
+              <label for="api-payments">API de Pagos - Procesamiento de transacciones</label>
+            </div>
+            <div class="api-option">
+              <input type="checkbox" id="api-products" name="apis" value="api-products">
+              <label for="api-products">API de Productos - Gestión de catálogo e inventario</label>
+            </div>
+            <div class="api-option">
+              <input type="checkbox" id="api-notifications" name="apis" value="api-notifications">
+              <label for="api-notifications">API de Notificaciones - Envío de emails y notificaciones</label>
+            </div>
+            <div class="api-option">
+              <input type="checkbox" id="api-analytics" name="apis" value="api-analytics">
+              <label for="api-analytics">API de Analytics - Métricas y análisis de datos</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Configurar Entornos</label>
+          <div class="environment-config">
+            <div class="environment-header">
+              <span class="environment-title">Entorno de Producción</span>
+              <input type="checkbox" id="env-production" checked>
+            </div>
+            <div class="form-group">
+              <label class="form-label">URL Base</label>
+              <input type="url" class="form-control" placeholder="https://api.telito.com/v1">
+            </div>
+          </div>
+
+          <div class="environment-config">
+            <div class="environment-header">
+              <span class="environment-title">Entorno de Staging</span>
+              <input type="checkbox" id="env-staging" checked>
+            </div>
+            <div class="form-group">
+              <label class="form-label">URL Base</label>
+              <input type="url" class="form-control" placeholder="https://staging-api.telito.com/v1">
+            </div>
+          </div>
+
+          <div class="environment-config">
+            <div class="environment-header">
+              <span class="environment-title">Entorno de Desarrollo</span>
+              <input type="checkbox" id="env-development" checked>
+            </div>
+            <div class="form-group">
+              <label class="form-label">URL Base</label>
+              <input type="url" class="form-control" placeholder="https://dev-api.telito.com/v1">
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="saveProject()">Crear Proyecto</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+  document.getElementById('new-project-btn').addEventListener('click', function() {
+    document.getElementById('project-modal').style.display = 'flex';
+  });
+
+  function closeModal() {
+    document.getElementById('project-modal').style.display = 'none';
+  }
+
+  function saveProject() {
+    const projectName = document.getElementById('project-name').value;
+    const projectDescription = document.getElementById('project-description').value;
+
+    if (!projectName || !projectDescription) {
+      alert('Por favor, complete todos los campos obligatorios.');
+      return;
+    }
+
+
+    const selectedApis = [];
+    document.querySelectorAll('input[name="apis"]:checked').forEach(api => {
+      selectedApis.push(api.value);
+    });
+
+    if (selectedApis.length === 0) {
+      alert('Por favor, seleccione al menos una API.');
+      return;
+    }
+
+
+    console.log('Proyecto guardado:', {
+      name: projectName,
+      description: projectDescription,
+      apis: selectedApis,
+      environments: {
+        production: document.getElementById('env-production').checked,
+        staging: document.getElementById('env-staging').checked,
+        development: document.getElementById('env-development').checked
+      }
+    });
+
+
+    closeModal();
+    document.getElementById('project-form').reset();
+
+
+    alert('Proyecto creado exitosamente');
+  }
+
+
+  window.addEventListener('click', function(e) {
+    const modal = document.getElementById('project-modal');
+    if (e.target === modal) {
+      closeModal();
+    }
+  });
+
+
+  const searchInput = document.querySelector('.search-input');
+  searchInput.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    console.log('Buscando proyectos:', searchTerm);
+
+
+  });
+
+
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+
+      const filterType = this.textContent.trim();
+      console.log('Filtrando por:', filterType);
+    });
+  });
+</script>
+
+<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
+</body>
+</html>

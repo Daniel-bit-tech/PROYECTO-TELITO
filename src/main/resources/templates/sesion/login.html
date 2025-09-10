@@ -23,8 +23,9 @@
 
 
       .login__form {
-         box-shadow: 0 0 20px rgba(128, 0, 128, 0.3),
-         0 0 35px rgba(128, 0, 128, 0.1);
+         box-shadow: 0 0 20px rgba(0, 51, 102, 0.3),
+         0 0 35px rgba(0, 51, 102, 0.1);
+
          text-align: center;
          border-radius: 12px;
          opacity: 0;
@@ -41,8 +42,9 @@
          letter-spacing: 2px;
          text-transform: uppercase;
          color: #fff;
-         text-shadow: 0 0 10px rgba(186, 85, 211, 0.6);
-         border-bottom: 2px solid rgb(186, 85, 211);
+         text-shadow: 0 0 10px rgba(0, 51, 102, 0.3);
+         border-bottom: 2px solid rgb(0, 0, 205);
+
 
          display: inline-block;
          padding-bottom: 6px;
@@ -89,10 +91,14 @@
             <label for="user-check" class="login__check-label">Recuerdame</label>
          </div>
 
-         <a th:href="@{/forgot-password}" class="login__forgot">¿Olvidaste tu contraseña?</a>
+         <a th:href="@{/forgot-password }" class="login__forgot">¿Olvidaste tu contraseña?</a>
       </div>
 
-      <button type="submit" class="login__button">Ingresar</button>
+      <button type="button" class="login__button" onclick="location.href='/developer'">
+         Ingresar
+      </button>
+
+
 
       <div class="login__register">
          No tienes una cuenta? <a href="/register">Registrate</a>

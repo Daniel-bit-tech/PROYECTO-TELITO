@@ -11,14 +11,14 @@ public class PasswordController {
 
     @GetMapping("/forgot-password")
     public String mostrarFormulario() {
-        return "olvidarpass";
+        return "sesion/olvidarpass";
     }
 
 
     @PostMapping("/forgot-password")
     public String procesarRecuperacion(@RequestParam("email") String email, Model model) {
 
-        return "olvidarpass";
+        return "sesion/olvidarpass";
     }
 }
 
