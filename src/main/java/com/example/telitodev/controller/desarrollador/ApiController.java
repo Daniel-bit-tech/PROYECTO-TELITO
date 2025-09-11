@@ -70,13 +70,16 @@ public class ApiController {
     @GetMapping("/{id}/docs")
 //    @PreAuthorize("hasAnyRole('DEV','SADMIN','QA','PO')")
     @PreAuthorize("isAuthenticated()")
-    public String detalleApi(@PathVariable Integer id, Model model, Authentication auth) {
+    public String detalleApi(@PathVariable Integer id,
+                             @RequestParam(value = "fecha",required = false) String fecha,
+                             Model model, Authentication auth) {
 
-        Optional<Api> api = apiRepository.findById(id);
-        if (api.isPresent()) {
-            model.addAttribute("api", api.get());
+        System.out.println("\n\n\n DOCS \n");
 
-            List<Documentacion> docs = documentacionRepository.findByApi_IdApi(id);
+        boolean apiExists = apiRepository.existsById(id);
+        if (apiExists) {
+
+            List<Documentacion> docs = documentacionRepository.findByApi_IdApiOrderByFechaCreacionDesc(id);
             model.addAttribute("docs", docs);
         }
 
@@ -84,7 +87,7 @@ public class ApiController {
         String correo = auth.getName();
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-
+        model.addAttribute("fecha", fecha);
 
 
         return "desarrollador/documentacion";
