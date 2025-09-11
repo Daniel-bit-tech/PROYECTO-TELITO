@@ -68,7 +68,7 @@ public class Api {
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Ticket> tickets;
     
-    @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<VersionApi> versionesApi;
     
     // Constructores
