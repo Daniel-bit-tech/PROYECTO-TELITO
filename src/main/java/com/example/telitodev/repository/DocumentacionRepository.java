@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface DocumentacionRepository extends JpaRepository<Documentacion, Integer> {
 
-    List<Documentacion> findByApi_IdApi(Integer id);
+    List<Documentacion> findByApi_IdApiOrderByFechaCreacionDesc(Integer id);
 }

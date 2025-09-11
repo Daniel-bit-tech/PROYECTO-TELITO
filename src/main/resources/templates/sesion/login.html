@@ -101,7 +101,7 @@
             <label for="user-check" class="login__check-label">Recuerdame</label>
          </div>
 
-         <a th:href="@{/forgot-password }" class="login__forgot">¿Olvidaste tu contraseña?</a>
+         <a th:href="@{/forgot-password}" class="login__forgot">¿Olvidaste tu contraseña?</a>
       </div>
 
       <button type="submit" class="login__button">
@@ -111,7 +111,7 @@
 
 
       <div class="login__register">
-         No tienes una cuenta? <a href="/register">Registrate</a>
+         No tienes una cuenta? <a th:href="@{/register}">Regístrate</a>
       </div>
    </form>
 </div>

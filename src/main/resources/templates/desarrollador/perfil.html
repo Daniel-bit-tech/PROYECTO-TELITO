@@ -411,32 +411,32 @@
 
                     <div class="profile-info">
                         <p th:text="${usuario.correo}"><i class="fas fa-envelope"></i> juan.perez@ejemplo.com</p>
-                        <p><i class="fas fa-building"></i> Empresa XYZ</p>
-                        <p><i class="fas fa-map-marker-alt"></i> Lima, Perú</p>
+<!--                        <p><i class="fas fa-building"></i> Empresa XYZ</p>-->
+<!--                        <p><i class="fas fa-map-marker-alt"></i> Lima, Perú</p>-->
                     </div>
 
-                    <div class="profile-stats">
-                        <div class="stat-item">
-                            <div class="stat-value">12</div>
-                            <div class="stat-label">Proyectos</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">47</div>
-                            <div class="stat-label">APIs Usadas</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value" th:text="${usuario.nombre}">3</div>
-                            <div class="stat-label">Tickets Abiertos</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">28</div>
-                            <div class="stat-label">Contribuciones</div>
-                        </div>
-                    </div>
+<!--                    <div class="profile-stats">-->
+<!--                        <div class="stat-item">-->
+<!--                            <div class="stat-value">12</div>-->
+<!--                            <div class="stat-label">Proyectos</div>-->
+<!--                        </div>-->
+<!--                        <div class="stat-item">-->
+<!--                            <div class="stat-value">47</div>-->
+<!--                            <div class="stat-label">APIs Usadas</div>-->
+<!--                        </div>-->
+<!--                        <div class="stat-item">-->
+<!--                            <div class="stat-value" th:text="${usuario.nombre}">3</div>-->
+<!--                            <div class="stat-label">Tickets Abiertos</div>-->
+<!--                        </div>-->
+<!--                        <div class="stat-item">-->
+<!--                            <div class="stat-value">28</div>-->
+<!--                            <div class="stat-label">Contribuciones</div>-->
+<!--                        </div>-->
+<!--                    </div>-->
 
-                    <button class="btn-primary" style="width: 100%;">
-                        <i class="fas fa-download"></i> Descargar Perfil
-                    </button>
+<!--                    <button class="btn-primary" style="width: 100%;">-->
+<!--                        <i class="fas fa-download"></i> Descargar Perfil-->
+<!--                    </button>-->
                 </div>
 
                 <div class="profile-main">
@@ -583,155 +583,155 @@
                             <label class="form-label">Contraseña</label>
                             <div style="display: flex; gap: 1rem; align-items: center;">
                                 <div style="flex: 1;">••••••••••••</div>
-                                <button class="btn-outline">
+                                <a th:href="@{/forgot-password}" class="btn-outline">
                                     <i class="fas fa-edit"></i> Cambiar
-                                </button>
+                                </a>
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Autenticación de Dos Factores</label>
-                            <div style="display: flex; gap: 1rem; align-items: center;">
-                                <div style="flex: 1;">Desactivada</div>
-                                <button class="btn-outline">
-                                    <i class="fas fa-shield-alt"></i> Activar
-                                </button>
-                            </div>
-                            <div class="form-text">Protege tu cuenta con verificación en dos pasos</div>
-                        </div>
+<!--                        <div class="form-group">-->
+<!--                            <label class="form-label">Autenticación de Dos Factores</label>-->
+<!--                            <div style="display: flex; gap: 1rem; align-items: center;">-->
+<!--                                <div style="flex: 1;">Desactivada</div>-->
+<!--                                <button class="btn-outline">-->
+<!--                                    <i class="fas fa-shield-alt"></i> Activar-->
+<!--                                </button>-->
+<!--                            </div>-->
+<!--                            <div class="form-text">Protege tu cuenta con verificación en dos pasos</div>-->
+<!--                        </div>-->
 
-                        <div class="form-group">
-                            <label class="form-label">Sesiones Activas</label>
-                            <div style="border: 1px solid var(--tblr-border-color); border-radius: 8px; overflow: hidden;">
-                                <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--tblr-border-color);">
-                                    <div>
-                                        <div>Chrome - Windows</div>
-                                        <div class="form-text">Lima, Perú · Esta sesión</div>
-                                    </div>
-                                    <button class="btn-outline">
-                                        <i class="fas fa-times"></i> Cerrar
-                                    </button>
-                                </div>
-                                <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: center;">
-                                    <div>
-                                        <div>Firefox - MacOS</div>
-                                        <div class="form-text">Lima, Perú · Hace 3 días</div>
-                                    </div>
-                                    <button class="btn-outline">
-                                        <i class="fas fa-times"></i> Cerrar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+<!--                        <div class="form-group">-->
+<!--                            <label class="form-label">Sesiones Activas</label>-->
+<!--                            <div style="border: 1px solid var(&#45;&#45;tblr-border-color); border-radius: 8px; overflow: hidden;">-->
+<!--                                <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(&#45;&#45;tblr-border-color);">-->
+<!--                                    <div>-->
+<!--                                        <div>Chrome - Windows</div>-->
+<!--                                        <div class="form-text">Lima, Perú · Esta sesión</div>-->
+<!--                                    </div>-->
+<!--                                    <button class="btn-outline">-->
+<!--                                        <i class="fas fa-times"></i> Cerrar-->
+<!--                                    </button>-->
+<!--                                </div>-->
+<!--                                <div style="padding: 1rem; display: flex; justify-content: space-between; align-items: center;">-->
+<!--                                    <div>-->
+<!--                                        <div>Firefox - MacOS</div>-->
+<!--                                        <div class="form-text">Lima, Perú · Hace 3 días</div>-->
+<!--                                    </div>-->
+<!--                                    <button class="btn-outline">-->
+<!--                                        <i class="fas fa-times"></i> Cerrar-->
+<!--                                    </button>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
 
-                        <h3 class="section-title">API Keys</h3>
+<!--                        <h3 class="section-title">API Keys</h3>-->
 
-                        <div class="api-list">
-                            <div class="api-item">
-                                <div class="api-info">
-                                    <div class="api-icon">
-                                        <i class="fas fa-key"></i>
-                                    </div>
-                                    <div class="api-details">
-                                        <h4>API de Pagos - Producción</h4>
-                                        <p>Creada el 12/08/2023</p>
-                                    </div>
-                                </div>
-                                <button class="btn-outline">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
+<!--                        <div class="api-list">-->
+<!--                            <div class="api-item">-->
+<!--                                <div class="api-info">-->
+<!--                                    <div class="api-icon">-->
+<!--                                        <i class="fas fa-key"></i>-->
+<!--                                    </div>-->
+<!--                                    <div class="api-details">-->
+<!--                                        <h4>API de Pagos - Producción</h4>-->
+<!--                                        <p>Creada el 12/08/2023</p>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <button class="btn-outline">-->
+<!--                                    <i class="fas fa-copy"></i> Copiar-->
+<!--                                </button>-->
+<!--                            </div>-->
 
-                            <div class="api-item">
-                                <div class="api-info">
-                                    <div class="api-icon">
-                                        <i class="fas fa-key"></i>
-                                    </div>
-                                    <div class="api-details">
-                                        <h4>API de Analytics - Testing</h4>
-                                        <p>Creada el 05/08/2023</p>
-                                    </div>
-                                </div>
-                                <button class="btn-outline">
-                                    <i class="fas fa-copy"></i> Copiar
-                                </button>
-                            </div>
-                        </div>
+<!--                            <div class="api-item">-->
+<!--                                <div class="api-info">-->
+<!--                                    <div class="api-icon">-->
+<!--                                        <i class="fas fa-key"></i>-->
+<!--                                    </div>-->
+<!--                                    <div class="api-details">-->
+<!--                                        <h4>API de Analytics - Testing</h4>-->
+<!--                                        <p>Creada el 05/08/2023</p>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <button class="btn-outline">-->
+<!--                                    <i class="fas fa-copy"></i> Copiar-->
+<!--                                </button>-->
+<!--                            </div>-->
+<!--                        </div>-->
 
-                        <button class="btn-primary">
-                            <i class="fas fa-plus"></i> Generar Nueva API Key
-                        </button>
+<!--                        <button class="btn-primary">-->
+<!--                            <i class="fas fa-plus"></i> Generar Nueva API Key-->
+<!--                        </button>-->
                     </div>
 
-                    <div id="preferences" class="profile-tab-content" style="display: none;">
-                        <h3 class="section-title">Preferencias</h3>
+<!--                    <div id="preferences" class="profile-tab-content" style="display: none;">-->
+<!--                        <h3 class="section-title">Preferencias</h3>-->
 
-                        <div class="form-group">
-                            <label class="form-label">Idioma</label>
-                            <select class="form-select">
-                                <option selected>Español</option>
-                                <option>English</option>
-                                <option>Português</option>
-                            </select>
-                        </div>
+<!--                        <div class="form-group">-->
+<!--                            <label class="form-label">Idioma</label>-->
+<!--                            <select class="form-select">-->
+<!--                                <option selected>Español</option>-->
+<!--                                <option>English</option>-->
+<!--                                <option>Português</option>-->
+<!--                            </select>-->
+<!--                        </div>-->
 
-                        <div class="form-group">
-                            <label class="form-label">Zona Horaria</label>
-                            <select class="form-select">
-                                <option selected>(GMT-05:00) Lima, Bogotá, Quito</option>
-                                <option>(GMT-03:00) Buenos Aires, Montevideo</option>
-                                <option>(GMT-06:00) Ciudad de México</option>
-                                <option>(GMT-04:00) Santiago, Caracas</option>
-                            </select>
-                        </div>
+<!--                        <div class="form-group">-->
+<!--                            <label class="form-label">Zona Horaria</label>-->
+<!--                            <select class="form-select">-->
+<!--                                <option selected>(GMT-05:00) Lima, Bogotá, Quito</option>-->
+<!--                                <option>(GMT-03:00) Buenos Aires, Montevideo</option>-->
+<!--                                <option>(GMT-06:00) Ciudad de México</option>-->
+<!--                                <option>(GMT-04:00) Santiago, Caracas</option>-->
+<!--                            </select>-->
+<!--                        </div>-->
 
-                        <div class="form-group">
-                            <label class="form-label">Tema</label>
-                            <select class="form-select">
-                                <option selected>Claro</option>
-                                <option>Oscuro</option>
-                                <option>Automático (según sistema)</option>
-                            </select>
-                        </div>
+<!--                        <div class="form-group">-->
+<!--                            <label class="form-label">Tema</label>-->
+<!--                            <select class="form-select">-->
+<!--                                <option selected>Claro</option>-->
+<!--                                <option>Oscuro</option>-->
+<!--                                <option>Automático (según sistema)</option>-->
+<!--                            </select>-->
+<!--                        </div>-->
 
-                        <h3 class="section-title">Notificaciones</h3>
+<!--                        <h3 class="section-title">Notificaciones</h3>-->
 
-                        <div class="form-group">
-                            <div class="form-check">
-                                <input type="checkbox" id="notif-email" checked>
-                                <label for="notif-email">Notificaciones por correo electrónico</label>
-                            </div>
-                            <div class="form-text">Recibe actualizaciones importantes por email</div>
-                        </div>
+<!--                        <div class="form-group">-->
+<!--                            <div class="form-check">-->
+<!--                                <input type="checkbox" id="notif-email" checked>-->
+<!--                                <label for="notif-email">Notificaciones por correo electrónico</label>-->
+<!--                            </div>-->
+<!--                            <div class="form-text">Recibe actualizaciones importantes por email</div>-->
+<!--                        </div>-->
 
-                        <div class="form-group">
-                            <div class="form-check">
-                                <input type="checkbox" id="notif-product" checked>
-                                <label for="notif-product">Novedades de productos</label>
-                            </div>
-                            <div class="form-text">Información sobre nuevas funcionalidades y APIs</div>
-                        </div>
+<!--                        <div class="form-group">-->
+<!--                            <div class="form-check">-->
+<!--                                <input type="checkbox" id="notif-product" checked>-->
+<!--                                <label for="notif-product">Novedades de productos</label>-->
+<!--                            </div>-->
+<!--                            <div class="form-text">Información sobre nuevas funcionalidades y APIs</div>-->
+<!--                        </div>-->
 
-                        <div class="form-group">
-                            <div class="form-check">
-                                <input type="checkbox" id="notif-security" checked>
-                                <label for="notif-security">Alertas de seguridad</label>
-                            </div>
-                            <div class="form-text">Notificaciones sobre accesos y actividad inusual</div>
-                        </div>
+<!--                        <div class="form-group">-->
+<!--                            <div class="form-check">-->
+<!--                                <input type="checkbox" id="notif-security" checked>-->
+<!--                                <label for="notif-security">Alertas de seguridad</label>-->
+<!--                            </div>-->
+<!--                            <div class="form-text">Notificaciones sobre accesos y actividad inusual</div>-->
+<!--                        </div>-->
 
-                        <div class="form-group">
-                            <div class="form-check">
-                                <input type="checkbox" id="notif-marketing">
-                                <label for="notif-marketing">Contenido promocional</label>
-                            </div>
-                            <div class="form-text">Ofertas especiales y contenido de marketing</div>
-                        </div>
+<!--                        <div class="form-group">-->
+<!--                            <div class="form-check">-->
+<!--                                <input type="checkbox" id="notif-marketing">-->
+<!--                                <label for="notif-marketing">Contenido promocional</label>-->
+<!--                            </div>-->
+<!--                            <div class="form-text">Ofertas especiales y contenido de marketing</div>-->
+<!--                        </div>-->
 
-                        <button type="submit" class="btn-primary">
-                            <i class="fas fa-save"></i> Guardar Preferencias
-                        </button>
-                    </div>
+<!--                        <button type="submit" class="btn-primary">-->
+<!--                            <i class="fas fa-save"></i> Guardar Preferencias-->
+<!--                        </button>-->
+<!--                    </div>-->
                 </div>
             </div>
         </div>
