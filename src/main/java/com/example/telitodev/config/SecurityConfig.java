@@ -104,7 +104,8 @@ public class SecurityConfig {
                         case "ROLE_QA":
                             return "/qa/home";
                         case "ROLE_PO":
-                            return "/po/home";
+//                            return "/po/home";
+                            return "/po/Dashboard";
                         default:
                             return "/login";
                     }
