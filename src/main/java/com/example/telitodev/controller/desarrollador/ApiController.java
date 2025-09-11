@@ -1,15 +1,60 @@
 package com.example.telitodev.controller.desarrollador;
 
 
+import com.example.telitodev.entity.Api;
+import com.example.telitodev.repository.ApiRepository;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 @Controller
+@RequestMapping("/apis")
+
 public class ApiController {
 
-    @GetMapping("/apis")
-    public String showapis() {
+    final ApiRepository apiRepository;
+
+    public ApiController(ApiRepository apiRepository) {
+        this.apiRepository = apiRepository;
+    }
+
+    @GetMapping()
+    public String catalogo(@RequestParam(value = "dominios",required = false) List<String> selDominios,
+                           @RequestParam(value = "tags", required = false) List<String> selTags,
+                           @RequestParam(value = "nombre", required = false) String nombre,
+                            Model model, Authentication authentication) {
+        String dominios = selDominios == null ? null : String.join(",", selDominios);
+        String tags = selTags == null ? null : String.join(",", selTags);
+
+        System.out.println("dominios: " + dominios);
+        System.out.println("tags: " + tags);
+
+        List<Api> apis = apiRepository.findByFilters(nombre, dominios, tags);
+        for (Api api : apis) {
+            System.out.println("api " + api.getNombre());
+
+        }
+
+        model.addAttribute("apis", apis);
+        model.addAttribute("tags", selTags);
+        model.addAttribute("dominios", selDominios);
+
+
         return "desarrollador/apis";
+    }
+
+    @GetMapping("/{id}")
+    public String detalleApi(@PathVariable Integer id, Model model, Authentication authentication) {
+
+
+
+        return "desarrollador/apis/" + id;
     }
 
 

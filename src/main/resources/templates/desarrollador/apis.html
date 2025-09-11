@@ -332,7 +332,7 @@
 
   <!-- Main -->
   <div class="content">
-    < class="catalog-container">
+    <div> class="catalog-container">
       <main class="container-xl mt-4">
 
         <div class="catalog-header rounded-3 px-4">
@@ -349,7 +349,7 @@
       <div class="search-filters">
         <div class="search-box">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" class="search-input" name="nombre" placeholder="Buscar APIs por nombre">
+          <input type="text" class="search-input" id="search" name="nombre" placeholder="Buscar APIs por nombre">
         </div>
 
 <!--        <div class="filter-buttons">-->
@@ -369,7 +369,8 @@
       </div>
 
       <div class="catalog-content">
-        <form method="get" action="/apis">
+        <form method="get" action="/apis" id="filterForm">
+            <input type="hidden" name="nombre" id="nombreHidden">
         <div class="filters-sidebar">
           <div class="filter-section">
             <h3 class="filter-section-title">
@@ -468,24 +469,29 @@
         </div>
         </div>
 
-        <div class="pagination">
-          <button class="pagination-btn">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          <button class="pagination-btn active">1</button>
-          <button class="pagination-btn">2</button>
-          <button class="pagination-btn">3</button>
-          <button class="pagination-btn">
-            <i class="fas fa-chevron-right"></i>
-          </button>
-        </div>
+<!--        Falta Paginacion <div class="pagination">-->
+<!--          <button class="pagination-btn">-->
+<!--            <i class="fas fa-chevron-left"></i>-->
+<!--          </button>-->
+<!--          <button class="pagination-btn active">1</button>-->
+<!--          <button class="pagination-btn">2</button>-->
+<!--          <button class="pagination-btn">3</button>-->
+<!--          <button class="pagination-btn">-->
+<!--            <i class="fas fa-chevron-right"></i>-->
+<!--          </button>-->
+<!--        </div>-->
       </main>
+    </div>
     </div>
 
     <div id="footer-placeholder"></div>
   </div>
 
   <script>
+
+      document.getElementById('filterForm').addEventListener('submit', function() {
+          document.getElementById('nombreHidden').value = document.getElementById('search').value;
+      });
 
     document.querySelectorAll('.filter-btn').forEach(btn => {
       btn.addEventListener('click', function() {
