@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" crossorigin="">
+   <link rel="stylesheet" th:href="@{/login/assets/css/styles.css}">
+   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+   <title>Ingreso - Telito</title>
+   <style>
+
+      @keyframes fadeInUp {
+         0% {
+            opacity: 0;
+            transform: translateY(20px);
+         }
+         100% {
+            opacity: 1;
+            transform: translateY(0);
+         }
+      }
+
+
+      .login__form {
+         box-shadow: 0 0 20px rgba(128, 0, 128, 0.3),
+         0 0 35px rgba(128, 0, 128, 0.1);
+         text-align: center;
+         border-radius: 12px;
+         opacity: 0;
+         animation: fadeInUp 1s ease forwards;
+         animation-delay: 0.3s;
+      }
+
+
+
+      .login__title {
+         font-family: 'Orbitron', sans-serif;
+         font-size: 2.2rem;
+         font-weight: 600;
+         letter-spacing: 2px;
+         text-transform: uppercase;
+         color: #fff;
+         text-shadow: 0 0 10px rgba(186, 85, 211, 0.6);
+         border-bottom: 2px solid rgb(186, 85, 211);
+
+         display: inline-block;
+         padding-bottom: 6px;
+         margin-bottom: 5px;
+      }
+
+
+      .login__subtitle {
+         font-family: 'Orbitron', sans-serif;
+         font-size: 1rem;
+         font-weight: 300;
+         color: #cfd5d9;
+         letter-spacing: 1px;
+         margin-top: 5px;
+         margin-bottom: 1.5rem;
+      }
+   </style>
+</head>
+
+
+<body>
+<div class="login">
+   <img th:src="@{/login/assets/img/login-bg.png}" alt="image" class="login__bg">
+
+   <form th:action="@{/login}" method="post" class="login__form">
+   <h1 class="login__title"><i class="ri-terminal-box-fill"></i> Telito</h1>
+      <h2 class="login__subtitle">Developer Portal</h2>
+
+      <div class="login__inputs">
+         <div class="login__box">
+            <input type="email" placeholder="Correo institucional" required class="login__input">
+            <i class="ri-mail-fill"></i>
+         </div>
+
+         <div class="login__box">
+            <input type="password" placeholder="Contraseña" required class="login__input">
+            <i class="ri-lock-2-fill"></i>
+         </div>
+      </div>
+
+      <div class="login__check">
+         <div class="login__check-box">
+            <input type="checkbox" class="login__check-input" id="user-check">
+            <label for="user-check" class="login__check-label">Recuerdame</label>
+         </div>
+
+         <a th:href="@{/forgot-password}" class="login__forgot">¿Olvidaste tu contraseña?</a>
+      </div>
+
+      <button type="submit" class="login__button">Ingresar</button>
+
+      <div class="login__register">
+         No tienes una cuenta? <a href="/register">Registrate</a>
+      </div>
+   </form>
+</div>
+</body>
+</html>

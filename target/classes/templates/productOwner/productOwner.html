@@ -1,0 +1,482 @@
+<html lang="es" data-bs-theme="dark" class="translated-ltr"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>TELITO DEVELOPER PORTAL | Sistema de Reservas Deportivas</title>
+    <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet">
+    <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet">
+    <style>
+        @import url("https://rsms.me/inter/inter.css");
+        .api-card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.2s ease;
+        }
+        .quick-action-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .chatbot-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #206bc4;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .api-status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .sport-icon {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 8px;
+        }
+    </style>
+    <style type="text/css">/* Copyright 2021 Google Inc. All Rights Reserved. */<br>.goog-te-banner-frame{left:0px;top:0px;height:39px;width:100%;z-index:10000001;position:fixed;border:none;border-bottom:1px solid #6b90da;margin:0;-moz-box-shadow:0 0 8px 1px #999999;-webkit-box-shadow:0 0 8px 1px #999999;box-shadow:0 0 8px 1px #999999;_position:absolute}.goog-te-menu-frame{z-index:10000002;position:fixed;border:none;-moz-box-shadow:0 3px 8px 2px #999999;-webkit-box-shadow:0 3px 8px 2px #999999;box-shadow:0 3px 8px 2px #999999;_position:absolute}.goog-te-ftab-frame{z-index:10000000;border:none;margin:0}.goog-te-gadget{font-family:arial;font-size:11px;color:#666;white-space:nowrap}.goog-te-gadget img{vertical-align:middle;border:none}.goog-te-gadget-simple{background-color:#fff;border-left:1px solid #d5d5d5;border-top:1px solid #9b9b9b;border-bottom:1px solid #e8e8e8;border-right:1px solid #d5d5d5;font-size:10pt;display:inline-block;padding-top:1px;padding-bottom:2px;cursor:pointer;zoom:1;*display:inline}.goog-te-gadget-icon{margin-left:2px;margin-right:2px;width:19px;height:19px;border:none;vertical-align:middle}.goog-te-combo{margin-left:4px;margin-right:4px;vertical-align:baseline;*vertical-align:middle}.goog-te-gadget .goog-te-combo{margin:4px 0}.goog-logo-link,.goog-logo-link:link,.goog-logo-link:visited,.goog-logo-link:hover,.goog-logo-link:active{font-size:12px;font-weight:bold;color:#444;text-decoration:none}.goog-te-banner .goog-logo-link,.goog-close-link{display:block;margin:0px 10px}.goog-te-banner .goog-logo-link{padding-top:2px;padding-left:4px}.goog-te-combo,.goog-te-banner *,.goog-te-ftab *,.goog-te-menu *,.goog-te-menu2 *,.goog-te-balloon *{font-family:arial;font-size:10pt}.goog-te-banner{margin:0;background-color:#e4effb;overflow:hidden}.goog-te-banner img{border:none}.goog-te-banner-content{color:#000}.goog-te-banner-content img{vertical-align:middle}.goog-te-banner-info{color:#666;vertical-align:top;margin-top:0px;font-size:7pt}.goog-te-banner-margin{width:8px}.goog-te-button{border-color:#e7e7e7;border-style:none solid solid none;border-width:0 1px 1px 0}.goog-te-button div{border-color:#cccccc #999999 #999999 #cccccc;border-right:1px solid #999999;border-style:solid;border-width:1px;height:20px}.goog-te-button button{background:transparent;border:none;cursor:pointer;height:20px;overflow:hidden;margin:0;vertical-align:top;white-space:nowrap}.goog-te-button button:active{background:none repeat scroll 0 0 #cccccc}.goog-te-ftab{margin:0px;background-color:#fff;white-space:nowrap}.goog-te-ftab-link{text-decoration:none;font-weight:bold;font-size:10pt;border:1px outset #888;padding:6px 10px;white-space:nowrap;position:absolute;left:0px;top:0px}.goog-te-ftab-link img{margin-left:2px;margin-right:2px;width:19px;height:19px;border:none;vertical-align:middle}.goog-te-ftab-link span{text-decoration:underline;margin-left:2px;margin-right:2px;vertical-align:middle}.goog-float-top .goog-te-ftab-link{padding:2px 2px;border-top-width:0px}.goog-float-bottom .goog-te-ftab-link{padding:2px 2px;border-bottom-width:0px}.goog-te-menu-value{text-decoration:none;color:#0000cc;white-space:nowrap;margin-left:4px;margin-right:4px}.goog-te-menu-value span{text-decoration:underline}.goog-te-menu-value img{margin-left:2px;margin-right:2px}.goog-te-gadget-simple .goog-te-menu-value{color:#000}.goog-te-gadget-simple .goog-te-menu-value span{text-decoration:none}.goog-te-menu{background-color:#ffffff;text-decoration:none;border:2px solid #c3d9ff;overflow-y:scroll;overflow-x:hidden;position:absolute;left:0;top:0}.goog-te-menu-item{padding:3px;text-decoration:none}.goog-te-menu-item,.goog-te-menu-item:link{color:#0000cc;background:#ffffff}.goog-te-menu-item:visited{color:#551a8b}.goog-te-menu-item:hover{background:#c3d9ff}.goog-te-menu-item:active{color:#0000cc}.goog-te-menu2{background-color:#ffffff;text-decoration:none;border:1px solid #6b90da;overflow:hidden;padding:4px}.goog-te-menu2-colpad{width:16px}.goog-te-menu2-separator{margin:6px 0;height:1px;background-color:#aaa;overflow:hidden}.goog-te-menu2-item div,.goog-te-menu2-item-selected div{padding:4px}.goog-te-menu2-item .indicator{display:none}.goog-te-menu2-item-selected .indicator{display:auto}.goog-te-menu2-item-selected .text{padding-left:4px;padding-right:4px}.goog-te-menu2-item,.goog-te-menu2-item-selected{text-decoration:none}.goog-te-menu2-item div,.goog-te-menu2-item:link div,.goog-te-menu2-item:visited div,.goog-te-menu2-item:active div{color:#0000cc;background:#ffffff}.goog-te-menu2-item:hover div{color:#ffffff;background:#3366cc}.goog-te-menu2-item-selected div,.goog-te-menu2-item-selected:link div,.goog-te-menu2-item-selected:visited div,.goog-te-menu2-item-selected:hover div,.goog-te-menu2-item-selected:active div{color:#000;font-weight:bold}.goog-te-balloon{background-color:#ffffff;overflow:hidden;padding:8px;border:none;-moz-border-radius:10px;border-radius:10px}.goog-te-balloon-frame{background-color:#ffffff;border:1px solid #6b90da;-moz-box-shadow:0 3px 8px 2px #999999;-webkit-box-shadow:0 3px 8px 2px #999999;box-shadow:0 3px 8px 2px #999999;-moz-border-radius:8px;border-radius:8px}.goog-te-balloon img{border:none}.goog-te-balloon-text{margin-top:6px}.goog-te-balloon-zippy{margin-top:6px;white-space:nowrap}.goog-te-balloon-zippy *{vertical-align:middle}.goog-te-balloon-zippy .minus{background-image:url(//www.google.com/images/zippy_minus_sm.gif)}.goog-te-balloon-zippy .plus{background-image:url(//www.google.com/images/zippy_plus_sm.gif)}.goog-te-balloon-zippy span{color:#00c;text-decoration:underline;cursor:pointer;margin:0 4px}.goog-te-balloon-form{margin:6px 0 0 0}.goog-te-balloon-form form{margin:0}.goog-te-balloon-form form textarea{margin-bottom:4px;width:100%}.goog-te-balloon-footer{margin:6px 0 4px 0}.goog-te-spinner-pos{z-index:1000;position:fixed;transition-delay:0.6s;left:-1000px;top:-1000px}.goog-te-spinner-animation{background:#ccc;display:flex;align-items:center;justify-content:center;width:104px;height:104px;border-radius:50px;background:#fff url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4=) 50% 50% no-repeat;transition:all 0.6s ease-in-out;transform:scale(0.4);opacity:0}.goog-te-spinner-animation-show{transform:scale(0.5);opacity:1}.goog-te-spinner{margin:2px 0 0 2px;animation:goog-te-spinner-rotator 1.4s linear infinite}@keyframes goog-te-spinner-rotator{0%{transform:rotate(0deg)}100%{transform:rotate(270deg)}}.goog-te-spinner-path{stroke-dasharray:187;stroke-dashoffset:0;stroke:#4285f4;transform-origin:center;animation:goog-te-spinner-dash 1.4s ease-in-out infinite}@keyframes goog-te-spinner-dash{0%{stroke-dashoffset:187}50%{stroke-dashoffset:46.75;transform:rotate(135deg)}100%{stroke-dashoffset:187;transform:rotate(450deg)}}#goog-gt-tt html,#goog-gt-tt body,#goog-gt-tt div,#goog-gt-tt span,#goog-gt-tt iframe,#goog-gt-tt h1,#goog-gt-tt h2,#goog-gt-tt h3,#goog-gt-tt h4,#goog-gt-tt h5,#goog-gt-tt h6,#goog-gt-tt p,#goog-gt-tt a,#goog-gt-tt img,#goog-gt-tt ol,#goog-gt-tt ul,#goog-gt-tt li,#goog-gt-tt table,#goog-gt-tt form,#goog-gt-tt tbody,#goog-gt-tt tr,#goog-gt-tt td{margin:0;padding:0;border:0;font-size:100%;font:inherit;vertical-align:baseline;text-align:left;line-height:normal}#goog-gt-tt ol,#goog-gt-tt ul{list-style:none}#goog-gt-tt table{border-collapse:collapse;border-spacing:0}#goog-gt-tt caption,#goog-gt-tt th,#goog-gt-tt td{text-align:left;font-weight:normal}#goog-gt-tt input::-moz-focus-inner{border:0}div#goog-gt-tt{padding:10px 14px}#goog-gt-tt{color:#222;background-color:#ffffff;border:1px solid #eee;box-shadow:0 4px 16px rgba(0,0,0,.2);-moz-box-shadow:0 4px 16px rgba(0,0,0,.2);-webkit-box-shadow:0 4px 16px rgba(0,0,0,.2);display:none;font-family:arial;font-size:10pt;width:420px;padding:12px;position:absolute;z-index:10000}#goog-gt-tt .original-text,.gt-hl-layer{clear:both;font-size:10pt;position:relative;text-align:justify;width:100%}#goog-gt-tt .title{color:#999;font-family:arial,sans-serif;margin:4px 0;text-align:left}#goog-gt-tt .close-button{display:none}#goog-gt-tt .logo{float:left;margin:0px}#goog-gt-tt .activity-links{display:inline-block}#goog-gt-tt .started-activity-container{display:none;width:100%}#goog-gt-tt .activity-root{margin-top:20px}#goog-gt-tt .left{float:left}#goog-gt-tt .right{float:right}#goog-gt-tt .bottom{min-height:15px;position:relative;height:1%}#goog-gt-tt .status-message{background:-moz-linear-gradient(top,#29910d 0%,#20af0e 100%);background:-webkit-linear-gradient(top,#29910d 0%,#20af0e 100%);background:-o-linear-gradient(top,#29910d 0%,#20af0e 100%);background:-ms-linear-gradient(top,#29910d 0%,#20af0e 100%);background:linear-gradient(top,#29910d 0%,#20af0e 100%);background:#29910d;border-radius:4px;-moz-border-radius:4px;-webkit-border-radius:4px;box-shadow:inset 0px 2px 2px #1e6609;-moz-box-shadow:inset 0px 2px 2px #1e6609;-webkit-box-shadow:inset 0px 2px 2px #1e6609;color:white;font-size:9pt;font-weight:bolder;margin-top:12px;padding:6px;text-shadow:1px 1px 1px #1e6609}#goog-gt-tt .activity-link{color:#1155cc;cursor:pointer;font-family:arial;font-size:11px;margin-right:15px;text-decoration:none}#goog-gt-tt textarea{font-family:arial;resize:vertical;width:100%;margin-bottom:10px;-webkit-border-radius:1px;-moz-border-radius:1px;border-radius:1px;border:1px solid #d9d9d9;border-top:1px solid silver;font-size:13px;height:auto;overflow-y:auto;padding:1px}#goog-gt-tt textarea:focus{-webkit-box-shadow:inset 0 1px 2px rgba(0,0,0,0.3);-moz-box-shadow:inset 0 1px 2px rgba(0,0,0,0.3);box-shadow:inset 0 1px 2px rgba(0,0,0,0.3);border:1px solid #4d90fe;outline:none}#goog-gt-tt .activity-cancel{margin-right:10px}#goog-gt-tt .translate-form{min-height:25px;vertical-align:middle;padding-top:8px}#goog-gt-tt .translate-form .activity-form{margin-bottom:5px;margin-bottom:0px}#goog-gt-tt .translate-form .activity-form input{display:inline-block;min-width:54px;*min-width:70px;border:1px solid #dcdcdc;border:1px solid rgba(0,0,0,0.1);text-align:center;color:#444;font-size:11px;font-weight:bold;height:27px;outline:0;padding:0 8px;vertical-align:middle;line-height:27px;margin:0 16px 0 0;box-shadow:0 1px 2px rgba(0,0,0,.1);-moz-box-shadow:0 1px 2px rgba(0,0,0,.1);-webkit-box-shadow:0 1px 2px rgba(0,0,0,.1);-webkit-border-radius:2px;-moz-border-radius:2px;border-radius:2px;-webkit-transition:all 0.218s;-moz-transition:all 0.218s;-o-transition:all 0.218s;transition:all 0.218s;background-color:#f5f5f5;background-image:-webkit-gradient(linear,left top,left bottom,from(#f5f5f5),to(#f1f1f1));background-image:-webkit-linear-gradient(top,#f5f5f5,#f1f1f1);background-image:-moz-linear-gradient(top,#f5f5f5,#f1f1f1);background-image:-ms-linear-gradient(top,#f5f5f5,#f1f1f1);background-image:-o-linear-gradient(top,#f5f5f5,#f1f1f1);background-image:linear-gradient(top,#f5f5f5,#f1f1f1);-webkit-user-select:none;-moz-user-select:none;cursor:default}#goog-gt-tt .translate-form .activity-form input:hover{border:1px solid #c6c6c6;color:#222;-webkit-transition:all 0.0s;-moz-transition:all 0.0s;-o-transition:all 0.0s;transition:all 0.0s;background-color:#f8f8f8;background-image:-webkit-gradient(linear,left top,left bottom,from(#f8f8f8),to(#f1f1f1));background-image:-webkit-linear-gradient(top,#f8f8f8,#f1f1f1);background-image:-moz-linear-gradient(top,#f8f8f8,#f1f1f1);background-image:-ms-linear-gradient(top,#f8f8f8,#f1f1f1);background-image:-o-linear-gradient(top,#f8f8f8,#f1f1f1);background-image:linear-gradient(top,#f8f8f8,#f1f1f1)}#goog-gt-tt .translate-form .activity-form input:active{border:1px solid #c6c6c6;color:#333;background-color:#f6f6f6;background-image:-webkit-gradient(linear,left top,left bottom,from(#f6f6f6),to(#f1f1f1));background-image:-webkit-linear-gradient(top,#f6f6f6,#f1f1f1);background-image:-moz-linear-gradient(top,#f6f6f6,#f1f1f1);background-image:-ms-linear-gradient(top,#f6f6f6,#f1f1f1);background-image:-o-linear-gradient(top,#f6f6f6,#f1f1f1);background-image:linear-gradient(top,#f6f6f6,#f1f1f1)}#goog-gt-tt .translate-form .activity-form input:focus #goog-gt-tt .translate-form .activity-form input.focus #goog-gt-tt .translate-form .activity-form input:active,#goog-gt-tt .translate-form .activity-form input:focus:active,#goog-gt-tt .translate-form .activity-form input:.focus:active{box-shadow:inset 0 0 0 1px rgba(255,255,255,0.5);-webkit-box-shadow:inset 0 0 0 1px rgba(255,255,255,0.5);-moz-box-shadow:inset 0 0 0 1px rgba(255,255,255,0.5)}#goog-gt-tt .translate-form .activity-form input:focus,#goog-gt-tt .translate-form .activity-form input.focus{outline:none;border:1px solid #4d90fe;z-index:4!important}#goog-gt-tt .translate-form .activity-form input.selected{background-color:#eeeeee;background-image:-webkit-gradient(linear,left top,left bottom,from(#eeeeee),to(#e0e0e0));background-image:-webkit-linear-gradient(top,#eeeeee,#e0e0e0);background-image:-moz-linear-gradient(top,#eeeeee,#e0e0e0);background-image:-ms-linear-gradient(top,#eeeeee,#e0e0e0);background-image:-o-linear-gradient(top,#eeeeee,#e0e0e0);background-image:linear-gradient(top,#eeeeee,#e0e0e0);-webkit-box-shadow:inset 0px 1px 2px rgba(0,0,0,0.1);-moz-box-shadow:inset 0px 1px 2px rgba(0,0,0,0.1);box-shadow:inset 0px 1px 2px rgba(0,0,0,0.1);border:1px solid #ccc;color:#333}#goog-gt-tt .translate-form .activity-form input.activity-submit{color:white;border-color:#3079ed;background-color:#4d90fe;background-image:-webkit-gradient(linear,left top,left bottom,from(#4d90fe),to(#4787ed));background-image:-webkit-linear-gradient(top,#4d90fe,#4787ed);background-image:-moz-linear-gradient(top,#4d90fe,#4787ed);background-image:-ms-linear-gradient(top,#4d90fe,#4787ed);background-image:-o-linear-gradient(top,#4d90fe,#4787ed);background-image:linear-gradient(top,#4d90fe,#4787ed)}#goog-gt-tt .translate-form .activity-form input.activity-submit:hover #goog-gt-tt .translate-form .activity-form input.activity-submit:focus,#goog-gt-tt .translate-form .activity-form input.activity-submit.focus #goog-gt-tt .translate-form .activity-form input.activity-submit:active{border-color:#3079ed;background-color:#357ae8;background-image:-webkit-gradient(linear,left top,left bottom,from(#4d90fe),to(#357ae8));background-image:-webkit-linear-gradient(top,#4d90fe,#357ae8);background-image:-moz-linear-gradient(top,#4d90fe,#357ae8);background-image:-ms-linear-gradient(top,#4d90fe,#357ae8);background-image:-o-linear-gradient(top,#4d90fe,#357ae8);background-image:linear-gradient(top,#4d90fe,#357ae8)}#goog-gt-tt .translate-form .activity-form input.activity-submit:hover{box-shadow:inset 0 0 0 1px #fff,0px 1px 1px rgba(0,0,0,0.1);-webkit-box-shadow:inset 0 0 0 1px #fff,0px 1px 1px rgba(0,0,0,0.1);-moz-box-shadow:inset 0 0 0 1px #fff,0px 1px 1px rgba(0,0,0,0.1)}#goog-gt-tt .translate-form .activity-form input:focus,#goog-gt-tt .translate-form .activity-form input.focus,#goog-gt-tt .translate-form .activity-form input:active,#goog-gt-tt .translate-form .activity-form input:hover,#goog-gt-tt .translate-form .activity-form input.activity-submit:focus,#goog-gt-tt .translate-form .activity-form input.activity-submit.focus,#goog-gt-tt .translate-form .activity-form input.activity-submit:active,#goog-gt-tt .translate-form .activity-form input.activity-submit:hover{border-color:#3079ed}#goog-gt-tt .gray{color:#999;font-family:arial,sans-serif}#goog-gt-tt .alt-helper-text{color:#999;font-size:11px;font-family:arial,sans-serif;margin:15px 0px 5px 0px}#goog-gt-tt .alt-error-text{color:#800;display:none;font-size:9pt}.goog-text-highlight{background-color:#c9d7f1;-webkit-box-shadow:2px 2px 4px #9999aa;-moz-box-shadow:2px 2px 4px #9999aa;box-shadow:2px 2px 4px #9999aa;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;position:relative}#goog-gt-tt .alt-menu.goog-menu{background:#ffffff;border:1px solid #dddddd;-webkit-box-shadow:0px 3px 3px #888;-moz-box-shadow:0px 2px 20px #888;box-shadow:0px 2px 4px #99a;min-width:0;outline:none;padding:0;position:absolute;z-index:2000}#goog-gt-tt .alt-menu .goog-menuitem{cursor:pointer;padding:2px 5px 5px;margin-right:0px;border-style:none}#goog-gt-tt .alt-menu div.goog-menuitem:hover{background:#ddd}#goog-gt-tt .alt-menu .goog-menuitem h1{font-size:100%;font-weight:bold;margin:4px 0px}#goog-gt-tt .alt-menu .goog-menuitem strong{color:#345aad}#goog-gt-tt .goog-submenu-arrow{text-align:right;position:absolute;right:0;left:auto}#goog-gt-tt .goog-menuitem-rtl .goog-submenu-arrow{text-align:left;position:absolute;left:0;right:auto}#goog-gt-tt .gt-hl-text,#goog-gt-tt .trans-target-highlight{background-color:#f1ea00;border-radius:4px;-webkit-border-radius:4px;-moz-border-radius:4px;-moz-box-shadow:rgba(0,0,0,.5) 3px 3px 4px;-webkit-box-shadow:rgba(0,0,0,.5) 3px 3px 4px;box-shadow:rgba(0,0,0,.5) 3px 3px 4px;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;color:#f1ea00;cursor:pointer;margin:-2px -2px -2px -3px;padding:2px 2px 2px 3px;position:relative}#goog-gt-tt .trans-target-highlight{color:#222}#goog-gt-tt .gt-hl-layer{color:white;position:absolute!important}#goog-gt-tt .trans-target,#goog-gt-tt .trans-target .trans-target-highlight{background-color:#c9d7f1;border-radius:4px 4px 0px 0px;-webkit-border-radius:4px 4px 0px 0px;-moz-border-radius:4px 4px 0px 0px;-moz-box-shadow:rgba(0,0,0,.5) 3px 3px 4px;-webkit-box-shadow:rgba(0,0,0,.5) 3px 3px 4px;box-shadow:rgba(0,0,0,.5) 3px 3px 4px;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;cursor:pointer;margin:-2px -2px -2px -3px;padding:2px 2px 3px 3px;position:relative}#goog-gt-tt span:focus{outline:none}#goog-gt-tt .trans-edit{background-color:transparent;border:1px solid #4d90fe;border-radius:0em;-webkit-border-radius:0em;-moz-border-radius:0em;margin:-2px;padding:1px}#goog-gt-tt .gt-trans-highlight-l{border-left:2px solid red;margin-left:-2px}#goog-gt-tt .gt-trans-highlight-r{border-right:2px solid red;margin-right:-2px}#goog-gt-tt #alt-input{padding:2px}#goog-gt-tt #alt-input-text{font-size:11px;padding:2px 2px 3px;margin:0;background-color:#fff;color:#333;border:1px solid #d9d9d9;border-top:1px solid #c0c0c0;display:inline-block;vertical-align:top;height:21px;box-sizing:border-box;-webkit-box-sizing:border-box;-moz-box-sizing:border-box;-webkit-border-radius:1px}#goog-gt-tt #alt-input-text:hover{border:1px solid #b9b9b9;border-top:1px solid #a0a0a0;-webkit-box-shadow:inset 0px 1px 2px rgba(0,0,0,0.1);-moz-box-shadow:inset 0px 1px 2px rgba(0,0,0,0.1);box-shadow:inset 0px 1px 2px rgba(0,0,0,0.1)}#goog-gt-tt #alt-input-text:focus{-webkit-box-shadow:inset 0px 1px 2px rgba(0,0,0,0.3);-moz-box-shadow:inset 0px 1px 2px rgba(0,0,0,0.3);box-shadow:inset 0px 1px 2px rgba(0,0,0,0.3);outline:none;border:1px solid #4d90fe}#goog-gt-tt #alt-input-submit{font-size:11px;padding:2px 6px 3px;margin:0 0 0 2px;height:21px}.goog-te-spinner-pos, #goog-gt-tt {display: none;}</style></head>
+
+<body>
+<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+    <header class="navbar navbar-expand-md d-print-none">
+        <div class="container-xl">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Alternar navegación">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-brand">
+                <a href="index.html" class="d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-ball-football me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+                        <path d="M12 7l4.76 3.45l-1.76 5.55h-6l-1.76 -5.55z"></path>
+                        <path d="M12 7v-4m3 13l2.5 3m-.74 -8.55l3.74 -1.45m-11.44 7.05l-2.56 2.95m.74 -8.55l-3.74 -1.45"></path>
+                    </svg>
+                    <span class="fw-bold"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">TELITO</font></font></span><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">| Portal para desarrolladores
+                </font></font></a>
+            </div>
+
+            <div class="navbar-nav flex-row order-md-last">
+                <div class="nav-item d-none d-md-flex me-3">
+                    <div class="btn-list" style="width: 500px;">
+                        <input type="text" class="form-control" placeholder="Buscar APIs, documentación, recursos...">
+                    </div>
+<a href="documentacion">Ver documentacion</a>                </div>
+
+                <div class="d-none d-md-flex">
+                    <div class="nav-item">
+                        <a href="?theme=dark" class="n@GetMapping("/productOwner/documentacion")
+                        public String showDocumentacion() {
+                            return "productOwner/documentacion";
+                        }av-link px-0 hide-theme-dark" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="Modo oscuro" data-bs-original-title="Modo oscuro">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+                            </svg>
+                        </a>
+                        <a href="?theme=light" class="nav-link px-0 hide-theme-light" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="Modo claro" data-bs-original-title="Modo claro">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
+                                <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"></path>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="nav-item dropdown d-none d-md-flex me-3">
+                        <a href="#" class="nav-link px-0" data-bs-toggle="dropdown" tabindex="-1" aria-label="Mostrar notificaciones">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"></path>
+                                <path d="M9 17v1a3 3 0 0 0 6 0v-1"></path>
+                            </svg>
+                            <span class="badge bg-red"></span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card">
+                            <div class="card">
+                                <div class="card-header d-flex">
+                                    <h3 class="card-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Notificaciones</font></font></h3>
+                                    <div class="btn-close ms-auto" data-bs-dismiss="dropdown"></div>
+                                </div>
+                                <div class="list-group list-group-flush list-group-hoverable">
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="status-dot status-dot-animated bg-red d-block"></span>
+                                            </div>
+                                            <div class="col text-truncate">
+                                                <a href="#" class="text-body d-block"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Nueva versión API Reservas v2.1</font></font></a>
+                                                <div class="d-block text-secondary text-truncate mt-n1"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Nuevos endpoints para pagos con imagen</font></font></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto"><span class="status-dot d-block bg-yellow"></span></div>
+                                            <div class="col text-truncate">
+                                                <a href="#" class="text-body d-block"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Mantenimiento programado</font></font></a>
+                                                <div class="d-block text-secondary text-truncate mt-n1"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Sábado 23:00 - 02:00 (#215)</font></font></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto"><span class="status-dot d-block bg-green"></span></div>
+                                            <div class="col text-truncate">
+                                                <a href="#" class="text-body d-block"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Nuevo tutorial disponible</font></font></a>
+                                                <div class="d-block text-secondary text-truncate mt-n1"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Cómo integrar el módulo de pagos con imagen</font></font></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link d-flex lh-1 p-0 px-2" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario">
+                            <span class="avatar avatar-sm" style="background-image: url(./tabler/static/avatars/000m.jpg)"> </span>
+                            <div class="d-none d-xl-block ps-2">
+                                <div><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Esteban López</font></font></div>
+                                <div class="mt-1 small text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Desarrollador</font></font></div>
+                            </div>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                            <a href="#" class="dropdown-item"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Estado</font></font></a>
+                            <a href="./profile.html" class="dropdown-item"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Perfil</font></font></a>
+                            <a href="#" class="dropdown-item"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Retroalimentación</font></font></a>
+                            <div class="dropdown-divider"></div>
+                            <a href="./settings.html" class="dropdown-item"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Configuración</font></font></a>
+                            <a href="./sign-in.html" class="dropdown-item"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Cerrar Sesión</font></font></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <header class="navbar-expand-md">
+        <div class="collapse navbar-collapse" id="navbar-menu">
+            <div class="navbar">
+                <div class="container-xl">
+                    <div class="row flex-column flex-md-row flex-fill align-items-center">
+                        <div class="col">
+                            <ul class="navbar-nav">
+                                <li class="nav-item active">
+                                    <a class="nav-link" href="">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12l-2 0l9 -9l9 9l-2 0"></path>
+                        <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"></path>
+                        <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"></path>
+                      </svg>
+                    </span>
+                                        <span class="nav-link-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Inicio</font></font></span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="./docs.html">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 3v4a1 1 0 0 0 1 1h4"></path>
+                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path>
+                      </svg>
+                    </span>
+                                        <span class="nav-link-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Catalogo</font></font></span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="./apis.html">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 13h5"></path>
+                        <path d="M12 16v-8h3a2 2 0 0 1 2 2v1a2 2 0 0 1 -2 2h-3"></path>
+                        <path d="M20 8v8"></path>
+                        <path d="M9 16v-5.5a2.5 2.5 0 0 0 -5 0v5.5"></path>
+                      </svg>
+                    </span>
+                                        <span class="nav-link-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">FeedBack
+                    </font></font></span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="./sandbox.html">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 9l3 3l-3 3"></path>
+                        <path d="M13 15l3 0"></path>
+                        <path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"></path>
+                      </svg>
+                    </span>
+
+                                        <span class="nav-link-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Roadmap</font></font></span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="./sandbox.html">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 9l3 3l-3 3"></path>
+                        <path d="M13 15l3 0"></path>
+                        <path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"></path>
+                      </svg>
+                    </span>
+
+                                        <span class="nav-link-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">BackLog</font></font></span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="./support.html">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 5l0 2"></path>
+                        <path d="M15 11l0 2"></path>
+                        <path d="M15 17l0 2"></path>
+                        <path d="M5 5h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-3a2 2 0 0 0 0 -4v-3a2 2 0 0 1 2 -2"></path>
+                      </svg>
+                    </span>
+                                        <span class="nav-link-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Solicitudes</font></font></span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="./metrics.html">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
+                        <path d="M9 8m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
+                        <path d="M15 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
+                      </svg>
+                    </span>
+                                        <span class="nav-link-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Métricas</font></font></span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="page-wrapper">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Catalogo - APIS</font></font></h3>
+                </div>
+                <div class="card-body border-bottom py-3">
+                    <div class="d-flex">
+                        <div class="text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+                            Mostrar
+                        </font></font><div class="mx-2 d-inline-block">
+                            <input type="text" class="form-control form-control-sm" value="8" size="3" aria-label="Recuento de facturas">
+                        </div><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+                            entradas
+                        </font></font></div>
+                        <div class="ms-auto text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+                            Buscar:
+                        </font></font><div class="ms-2 d-inline-block">
+                            <input type="text" class="form-control form-control-sm" aria-label="Buscar factura">
+                        </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-selectable card-table table-vcenter text-nowrap datatable">
+                        <thead>
+                        <tr>
+
+                            <th class="w-1"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+                                No.
+                            </font></font><!-- Download SVG icon from http://tabler.io/icons/icon/chevron-up -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm icon-thick icon-2">
+                                    <path d="M6 15l6 -6l6 6"></path>
+                                </svg>
+                            </th>
+                            <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Nombre
+                            </font></font></th>
+                            <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Usos</font></font></th>
+                            <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Encargados</font></font></th>
+                            <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Tipo</font></font></th>
+                            <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">estado</font></font></th>
+                            <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Descripcion</font></font></th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+
+                            <td><span class="text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1</font></font></span></td>
+                            <td><a href="invoice.html" class="text-reset" tabindex="-1"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Pagos</font></font></a></td>
+                            <td>
+                                <font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+                                    Cobro de productos
+                                </font></font></td>
+                            <td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Equipo C</font></font></td>
+                            <td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Restapi</font></font></td>
+                            <td><span class="badge bg-success me-1"></span><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Produccion</font></font></td>
+                            <td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Esta api permite...</font></font></td>
+                            <td class="text-end">
+                            <span class="dropdown">
+                              <button class="btn dropdown-toggle align-text-top show" data-bs-boundary="viewport" data-bs-toggle="dropdown" aria-expanded="true"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Acciones</font></font></button>
+                              <div class="dropdown-menu dropdown-menu-end show" style="position: absolute; inset: 0px 0px auto auto; margin: 0px; transform: translate(179px, 42px);" data-popper-placement="bottom-end">
+                                <a class="dropdown-item" href="productOwner/documentacion"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver documentacion</font></font></a>
+                                <a class="dropdown-item" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver KPIs</font></font></a>
+                              </div>
+                            </span>
+                            </td>
+                        </tr>
+
+
+
+
+
+
+
+                        </tbody>
+                    </table>
+                </div><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+                ---------------
+            </font></font><div class="card-footer">
+                <div class="row g-2 justify-content-center justify-content-sm-between">
+                    <div class="col-auto d-flex align-items-center">
+                        <p class="m-0 text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Mostrando </font></font><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1 a 8</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;"> de </font></font><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">16 entradas</font></font></strong></p>
+                    </div>
+                    <div class="col-auto">
+                        <ul class="pagination m-0 ms-auto">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                    <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-left -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
+                                        <path d="M15 6l-6 6l6 6"></path>
+                                    </svg>
+                                </a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1</font></font></a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2</font></font></a>
+                            </li>
+                            <li class="page-item active">
+                                <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">3</font></font></a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">4</font></font></a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">5</font></font></a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="#">
+                                    <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-right -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
+                                        <path d="M9 6l6 6l-6 6"></path>
+                                    </svg>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="chatbot-container">
+        <div class="chatbot-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasChatbot">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-message-chatbot" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z"></path>
+                <path d="M9.5 9h.01"></path>
+                <path d="M14.5 9h.01"></path>
+                <path d="M9.5 13a3.5 3.5 0 0 0 5 0"></path>
+            </svg>
+        </div>
+    </div>
+
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasChatbot">
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Asistente Virtual</font></font></h2>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="chat-messages p-3">
+                <div class="chat-message chat-message-left">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <span class="avatar avatar-sm" style="background-image: url(./tabler/static/avatars/000f.jpg)"></span>
+                        </div>
+                        <div class="flex-fill ms-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">¡Hola! Soy tu asistente para el sistema de reservas deportivas. ¿En qué puedo ayudarte hoy?</font></font></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input p-3 border-top">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Escribe tu pregunta...">
+                    <button class="btn btn-primary" type="button"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Enviar</font></font></button>
+                </div>
+                <div class="mt-2 text-center">
+                    <small class="text-muted"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Preguntas frecuentes:</font></font></small>
+                    <div class="mt-1">
+                        <a href="#" class="badge badge-outline text-reset"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">¿Cómo integrar pagos con imagen?</font></font></a>
+                        <a href="#" class="badge badge-outline text-reset"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">API de Reservas documentación</font></font></a>
+                        <a href="#" class="badge badge-outline text-reset"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Problemas de autenticación</font></font></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer footer-transparent d-print-none">
+        <div class="container-xl">
+            <div class="row text-center align-items-center flex-row-reverse">
+                <div class="col-lg-auto ms-lg-auto">
+                    <ul class="list-inline list-inline-dots mb-0">
+                        <li class="list-inline-item"><a href="#" class="link-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Soporte</font></font></a></li>
+                        <li class="list-inline-item"><a href="#" class="link-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Documentación</font></font></a></li>
+                    </ul>
+                </div>
+                <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                    <ul class="list-inline list-inline-dots mb-0">
+                        <li class="list-inline-item"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+                            Copyright © 2025
+                        </font></font><a href="" class="link-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">TELITO Sports Reservations</font></font></a><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">. Todos los derechos reservados.
+                        </font></font></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="tabler/dist/js/tabler.min.js?1757307620"></script><div id="goog-gt-tt" class="skiptranslate" dir="ltr"><div style="padding: 8px;"><div><div class="logo"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciLz4=" width="20" height="20" alt="Google Translate"></div></div></div><div class="top" style="padding: 8px; float: left; width: 100%;"><h1 class="title gray">Original text</h1></div><div class="middle" style="padding: 8px;"><div class="original-text"></div></div><div class="bottom" style="padding: 8px;"><div class="activity-links"><span class="activity-link">Contribute a better translation</span><span class="activity-link"></span></div><div class="started-activity-container"><hr style="color: #CCC; background-color: #CCC; height: 1px; border: none;"><div class="activity-root"></div></div></div><div class="status-message" style="display: none;"></div></div>
+<div class="goog-te-spinner-pos goog-te-spinner-pos-show"><div class="goog-te-spinner-animation goog-te-spinner-animation-show"><svg xmlns="http://www.w3.org/2000/svg" class="goog-te-spinner" width="96px" height="96px" viewBox="0 0 66 66"><circle class="goog-te-spinner-path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle></svg></div></div></body></html>

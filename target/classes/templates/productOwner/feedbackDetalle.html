@@ -1,0 +1,453 @@
+<html lang="es" data-bs-theme="dark"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>TELITO DEVELOPER PORTAL | Sistema de Reservas Deportivas</title>
+    <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet">
+    <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet">
+    <style>
+        @import url("https://rsms.me/inter/inter.css");
+        .api-card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.2s ease;
+        }
+        .quick-action-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .chatbot-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #206bc4;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .api-status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .sport-icon {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+    <header class="navbar navbar-expand-md d-print-none">
+        <div class="container-xl">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu" aria-controls="navbar-menu" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="navbar-brand">
+                <a href="index.html" class="d-flex align-items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-ball-football me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                        <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"></path>
+                        <path d="M12 7l4.76 3.45l-1.76 5.55h-6l-1.76 -5.55z"></path>
+                        <path d="M12 7v-4m3 13l2.5 3m-.74 -8.55l3.74 -1.45m-11.44 7.05l-2.56 2.95m.74 -8.55l-3.74 -1.45"></path>
+                    </svg>
+                    <span class="fw-bold">TELITO</span> | Developer Portal
+                </a>
+            </div>
+
+            <div class="navbar-nav flex-row order-md-last">
+                <div class="nav-item d-none d-md-flex me-3">
+                    <div class="btn-list" style="width: 500px;">
+                        <input type="text" class="form-control" placeholder="Buscar APIs, documentación, recursos...">
+                    </div>
+                </div>
+
+                <div class="d-none d-md-flex">
+                    <div class="nav-item">
+                        <a href="?theme=dark" class="nav-link px-0 hide-theme-dark" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="Modo oscuro" data-bs-original-title="Modo oscuro">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+                            </svg>
+                        </a>
+                        <a href="?theme=light" class="nav-link px-0 hide-theme-light" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="Modo claro" data-bs-original-title="Modo claro">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
+                                <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"></path>
+                            </svg>
+                        </a>
+                    </div>
+
+                    <div class="nav-item dropdown d-none d-md-flex me-3">
+                        <a href="#" class="nav-link px-0" data-bs-toggle="dropdown" tabindex="-1" aria-label="Mostrar notificaciones">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"></path>
+                                <path d="M9 17v1a3 3 0 0 0 6 0v-1"></path>
+                            </svg>
+                            <span class="badge bg-red"></span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-arrow dropdown-menu-end dropdown-menu-card">
+                            <div class="card">
+                                <div class="card-header d-flex">
+                                    <h3 class="card-title">Notificaciones</h3>
+                                    <div class="btn-close ms-auto" data-bs-dismiss="dropdown"></div>
+                                </div>
+                                <div class="list-group list-group-flush list-group-hoverable">
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="status-dot status-dot-animated bg-red d-block"></span>
+                                            </div>
+                                            <div class="col text-truncate">
+                                                <a href="#" class="text-body d-block">Nueva versión API Reservas v2.1</a>
+                                                <div class="d-block text-secondary text-truncate mt-n1">Nuevos endpoints para pagos con imagen</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto"><span class="status-dot d-block bg-yellow"></span></div>
+                                            <div class="col text-truncate">
+                                                <a href="#" class="text-body d-block">Mantenimiento programado</a>
+                                                <div class="d-block text-secondary text-truncate mt-n1">Sábado 23:00 - 02:00 (#215)</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto"><span class="status-dot d-block bg-green"></span></div>
+                                            <div class="col text-truncate">
+                                                <a href="#" class="text-body d-block">Nuevo tutorial disponible</a>
+                                                <div class="d-block text-secondary text-truncate mt-n1">Cómo integrar el módulo de pagos con imagen</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link d-flex lh-1 p-0 px-2" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario">
+                            <span class="avatar avatar-sm" style="background-image: url(./tabler/static/avatars/000m.jpg)"> </span>
+                            <div class="d-none d-xl-block ps-2">
+                                <div>Esteban Lopez</div>
+                                <div class="mt-1 small text-secondary">Desarrollador</div>
+                            </div>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                            <a href="#" class="dropdown-item">Estado</a>
+                            <a href="verPerfil" class="dropdown-item">Perfil</a>
+                            <a href="#" class="dropdown-item">Feedback</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="./settings.html" class="dropdown-item">Configuración</a>
+                            <a href="./sign-in.html" class="dropdown-item">Cerrar Sesión</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <header class="navbar-expand-md">
+        <div class="collapse navbar-collapse" id="navbar-menu">
+            <div class="navbar">
+                <div class="container-xl">
+                    <div class="row flex-column flex-md-row flex-fill align-items-center">
+                        <div class="col">
+                            <ul class="navbar-nav">
+                                <li class="nav-item active">
+                                    <a class="nav-link" href="./">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12l-2 0l9 -9l9 9l-2 0"></path>
+                        <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7"></path>
+                        <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6"></path>
+                      </svg>
+                    </span>
+                                        <span class="nav-link-title">Inicio</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="catalogo">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 3v4a1 1 0 0 0 1 1h4"></path>
+                        <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"></path>
+                      </svg>
+                    </span>
+                                        <span class="nav-link-title">Catalogo</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="backlog">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 13h5"></path>
+                        <path d="M12 16v-8h3a2 2 0 0 1 2 2v1a2 2 0 0 1 -2 2h-3"></path>
+                        <path d="M20 8v8"></path>
+                        <path d="M9 16v-5.5a2.5 2.5 0 0 0 -5 0v5.5"></path>
+                      </svg>
+                    </span>
+                                        <span class="nav-link-title">BackLog</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="bandejaSolicitud">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M8 9l3 3l-3 3"></path>
+                        <path d="M13 15l3 0"></path>
+                        <path d="M3 4m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"></path>
+                      </svg>
+                    </span>
+                                        <span class="nav-link-title">Solicitudes</span>
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="feedback">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M15 5l0 2"></path>
+                        <path d="M15 11l0 2"></path>
+                        <path d="M15 17l0 2"></path>
+                        <path d="M5 5h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-3a2 2 0 0 0 0 -4v-3a2 2 0 0 1 2 -2"></path>
+                      </svg>
+                    </span>
+                                        <span class="nav-link-title">Feedback</span>
+                                    </a>
+                                </li>
+
+                                <li class="nav-item">
+                                    <a class="nav-link" href="Dashboard">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
+                        <path d="M9 8m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
+                        <path d="M15 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
+                      </svg>
+                    </span>
+                                        <span class="nav-link-title">Métricas</span>
+                                    </a>
+                                </li><li class="nav-item">
+                                <a class="nav-link" href="roadmap">
+                    <span class="nav-link-icon d-md-none d-lg-inline-block">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 12m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
+                        <path d="M9 8m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v10a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
+                        <path d="M15 4m0 1a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v14a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1z"></path>
+                      </svg>
+                    </span>
+                                    <span class="nav-link-title">Roadmap</span>
+                                </a>
+                            </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="page-wrapper">
+        <!-- BEGIN PAGE HEADER -->
+        <div class="page-header d-print-none" aria-label="Page header">
+            <div class="container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col">
+                        <h2 class="page-title">Detalles de Feedback</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE HEADER -->
+        <!-- BEGIN PAGE BODY -->
+        <div class="page-body">
+            <div class="container-xl">
+                <div class="card">
+                    <div class="row g-0">
+
+                        <div class="col-12 col-md-9 d-flex flex-column">
+                            <div class="card-body">
+
+                                <h3 class="card-title">Solicitante</h3>
+                                <div class="row align-items-center">
+                                    <div class="col-auto"><span class="avatar avatar-xl" style="background-image: url(./static/avatars/000m.jpg)"> </span></div>
+                                    <div class="col-auto">
+
+                                    </div>
+                                    <div class="col-auto">
+
+                                    </div>
+                                </div>
+                                <h3 class="card-title mt-4">Russel Pope</h3>
+                                <div class="row g-3">
+                                    <div class="col-md">
+                                        <div class="form-label">Cargo</div>
+                                        <div class="mt-3">
+                                            <span class="badge bg-purple-lt">QA</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="form-label">Email</div>
+                                        <div class="mt-3">
+                                            <span class="badge bg-purple-lt">Pope@gmail.com</span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <h3 class="card-title mt-4">API solicitada</h3>
+
+                                <div>
+                                    <div class="row g-2">
+
+
+                                    </div>
+                                </div>
+
+                                <p class="card-subtitle">Pagos API</p>
+                                <h3 class="card-title mt-4">Tipo de Solicitud</h3>
+                                <div>
+                                    <div class="row g-2">
+                                    </div>
+                                </div>
+                                <p class="card-subtitle">Mejora del API</p>
+
+                                <div class="col col-lg-6">
+                                    <div class="chat-bubble">
+                                        <div class="chat-bubble-title">
+                                            <div class="row">
+                                                <div class="col chat-bubble-author">Comentario</div>
+
+                                            </div>
+                                        </div>
+                                        <div class="chat-bubble-body">
+                                            <p>La API de pagos tiene errores al procesar transacciones grandes</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            <div class="card-footer bg-transparent mt-auto">
+                                <div class="btn-list justify-content-end">
+                                    <a class="btn btn-pinterest"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-pinterest -->
+
+                                        Volver</a>
+                                    <a class="btn btn-youtube"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-youtube -->
+                                        Rechazar Solicitud</a>
+                                    <a class="btn btn-bitbucket"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-bitbucket -->Marcar como resulto
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE BODY -->
+        <!--  BEGIN FOOTER  -->
+
+        <!--  END FOOTER  -->
+    </div>
+
+
+    <div class="chatbot-container">
+        <div class="chatbot-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasChatbot">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-message-chatbot" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z"></path>
+                <path d="M9.5 9h.01"></path>
+                <path d="M14.5 9h.01"></path>
+                <path d="M9.5 13a3.5 3.5 0 0 0 5 0"></path>
+            </svg>
+        </div>
+    </div>
+
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasChatbot">
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title">Asistente Virtual</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="chat-messages p-3">
+                <div class="chat-message chat-message-left">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <span class="avatar avatar-sm" style="background-image: url(./tabler/static/avatars/000f.jpg)"></span>
+                        </div>
+                        <div class="flex-fill ms-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p>¡Hola! Soy tu asistente para el sistema de reservas deportivas. ¿En qué puedo ayudarte hoy?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input p-3 border-top">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Escribe tu pregunta...">
+                    <button class="btn btn-primary" type="button">Enviar</button>
+                </div>
+                <div class="mt-2 text-center">
+                    <small class="text-muted">Preguntas frecuentes:</small>
+                    <div class="mt-1">
+                        <a href="#" class="badge badge-outline text-reset">¿Cómo integrar pagos con imagen?</a>
+                        <a href="#" class="badge badge-outline text-reset">API de Reservas documentación</a>
+                        <a href="#" class="badge badge-outline text-reset">Problemas de autenticación</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer footer-transparent d-print-none">
+        <div class="container-xl">
+            <div class="row text-center align-items-center flex-row-reverse">
+                <div class="col-lg-auto ms-lg-auto">
+                    <ul class="list-inline list-inline-dots mb-0">
+                        <li class="list-inline-item"><a href="#" class="link-secondary">Soporte</a></li>
+                        <li class="list-inline-item"><a href="#" class="link-secondary">Documentación</a></li>
+                    </ul>
+                </div>
+                <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                    <ul class="list-inline list-inline-dots mb-0">
+                        <li class="list-inline-item">
+                            Copyright © 2025
+                            <a href="." class="link-secondary">TELITO Sports Reservations</a>. Todos los derechos reservados.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
+</body></html>
