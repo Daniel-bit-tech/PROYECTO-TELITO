@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
    <meta charset="UTF-8">
@@ -69,32 +69,42 @@
 <div class="login">
    <img th:src="@{/login/assets/img/login-bg.png}" alt="image" class="login__bg">
 
-   <form th:action="@{/login}" method="post" class="login__form">
+   <form th:action="@{/login}" method="POST" class="login__form">
    <h1 class="login__title"><i class="ri-terminal-box-fill"></i> Telito</h1>
       <h2 class="login__subtitle">Developer Portal</h2>
 
+      <div th:if="${error}" class="login__error">
+         <i class="ri-error-warning-fill"></i>
+         <span th:text="${error}">Credenciales inválidas</span>
+      </div>
+
+      <div th:if="${logout}" class="login__success">
+         <i class="ri-check-fill"></i>
+         <span th:text="${logout}">Has cerrado sesión correctamente</span>
+      </div>
+
       <div class="login__inputs">
          <div class="login__box">
-            <input type="email" placeholder="Correo institucional" required class="login__input">
+            <input type="email" id="username" name="username" placeholder="Correo institucional" required class="login__input">
             <i class="ri-mail-fill"></i>
          </div>
 
          <div class="login__box">
-            <input type="password" placeholder="Contraseña" required class="login__input">
+            <input type="password" id="password" name="password" placeholder="Contraseña" required class="login__input">
             <i class="ri-lock-2-fill"></i>
          </div>
       </div>
 
       <div class="login__check">
          <div class="login__check-box">
-            <input type="checkbox" class="login__check-input" id="user-check">
+            <input type="checkbox" name="remember-me" class="login__check-input" id="user-check">
             <label for="user-check" class="login__check-label">Recuerdame</label>
          </div>
 
          <a th:href="@{/forgot-password }" class="login__forgot">¿Olvidaste tu contraseña?</a>
       </div>
 
-      <button type="button" class="login__button" onclick="location.href='/developer'">
+      <button type="submit" class="login__button">
          Ingresar
       </button>
 

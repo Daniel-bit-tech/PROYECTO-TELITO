@@ -30,7 +30,7 @@ public class Comentario {
     private Issue issue;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idUsuario", nullable = false)
+    @JoinColumn(name = "idUsuario", nullable = false, referencedColumnName = "dni")
     private Usuario usuario;
     
     // Constructores

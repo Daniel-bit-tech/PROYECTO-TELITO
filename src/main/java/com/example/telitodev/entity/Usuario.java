@@ -9,19 +9,20 @@ import java.util.List;
 public class Usuario {
     
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "dni", length = 8)
     private String dni;
     
     @Column(name = "nombre", nullable = false, length = 50)
     private String nombre;
     
-    @Column(name = "apellido paterno", nullable = false, length = 25)
+    @Column(name = "apellido_paterno", nullable = false, length = 25)
     private String apellidoPaterno;
     
-    @Column(name = "apellido materno", nullable = false, length = 25)
+    @Column(name = "apellido_materno", nullable = false, length = 25)
     private String apellidoMaterno;
     
-    @Column(name = "correo", nullable = false, length = 150)
+    @Column(name = "correo", nullable = false, length = 150, unique = true)
     private String correo;
     
     @Column(name = "contrasena", nullable = false, length = 256)
@@ -33,7 +34,7 @@ public class Usuario {
     @Column(name = "estado", nullable = false)
     private Boolean estado;
     
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idRol", nullable = false)
     private Rol rol;
     
