@@ -2,9 +2,10 @@ package com.example.telitodev.controller.desarrollador;
 
 
 import com.example.telitodev.entity.Api;
+import com.example.telitodev.entity.Documentacion;
 import com.example.telitodev.entity.Usuario;
-import com.example.telitodev.repository.ApiRepository;
-import com.example.telitodev.repository.UsuarioRepository;
+import com.example.telitodev.repository.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,10 +24,16 @@ public class ApiController {
 
     final ApiRepository apiRepository;
     final UsuarioRepository usuarioRepository;
+    final DocumentacionRepository documentacionRepository;
+    final VersionApiRepository versionApiRepository;
+    final EjemplosCodigoRepository ejemplosCodigoRepository;
 
-    public ApiController(ApiRepository apiRepository, UsuarioRepository usuarioRepository) {
+    public ApiController(ApiRepository apiRepository, UsuarioRepository usuarioRepository, VersionApiRepository versionApiRepository, DocumentacionRepository documentacionRepository, VersionApiRepository versionApiRepository1, EjemplosCodigoRepository ejemplosCodigoRepository) {
         this.apiRepository = apiRepository;
         this.usuarioRepository = usuarioRepository;
+        this.documentacionRepository = documentacionRepository;
+        this.versionApiRepository = versionApiRepository1;
+        this.ejemplosCodigoRepository = ejemplosCodigoRepository;
     }
 
     @GetMapping()
@@ -46,9 +53,11 @@ public class ApiController {
 
         }
 
-        String correo = auth.getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
-        model.addAttribute("usuario", usuario);
+        if (auth != null && auth.isAuthenticated()) {
+            String correo = auth.getName();
+            Usuario usuario = usuarioRepository.findByCorreo(correo);
+            model.addAttribute("usuario", usuario);
+        }
 
         model.addAttribute("apis", apis);
         model.addAttribute("tags", selTags);
@@ -58,10 +67,18 @@ public class ApiController {
         return "desarrollador/apis";
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{id}/docs")
+//    @PreAuthorize("hasAnyRole('DEV','SADMIN','QA','PO')")
+    @PreAuthorize("isAuthenticated()")
     public String detalleApi(@PathVariable Integer id, Model model, Authentication auth) {
 
         Optional<Api> api = apiRepository.findById(id);
+        if (api.isPresent()) {
+            model.addAttribute("api", api.get());
+
+            List<Documentacion> docs = documentacionRepository.findByApi_IdApi(id);
+            model.addAttribute("docs", docs);
+        }
 
 
         String correo = auth.getName();
@@ -70,9 +87,21 @@ public class ApiController {
 
 
 
-        return "desarrollador/apis/" + id;
+        return "desarrollador/documentacion";
     }
 
+
+    @GetMapping("/{id}/test")
+    @PreAuthorize("isAuthenticated()")
+    public String testApi(@PathVariable Integer id, Model model, Authentication auth) {
+        Optional<Api> api = apiRepository.findById(id);
+        if (api.isPresent()) {
+            model.addAttribute("api", api.get());
+
+        }
+
+        return "desarrollador/sandbox";
+    }
 
 
 

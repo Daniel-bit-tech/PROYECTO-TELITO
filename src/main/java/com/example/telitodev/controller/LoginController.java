@@ -31,7 +31,7 @@ public class LoginController {
             model.addAttribute("error", error);
         }
         if (logout != null) {
-            model.addAttribute("msg", "Sesion cerrada con exito");
+            model.addAttribute("logout", "Sesion cerrada con exito");
         }
         return "sesion/login";
     }

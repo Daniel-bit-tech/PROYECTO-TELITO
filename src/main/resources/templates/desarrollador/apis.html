@@ -332,7 +332,7 @@
 
   <!-- Main -->
   <div class="content">
-    <div> class="catalog-container">
+    <div class="catalog-container">
       <main class="container-xl mt-4">
 
         <div class="catalog-header rounded-3 px-4">
@@ -441,7 +441,7 @@
             <div class="api-meta">
             <span class="meta-item">
                 <i class="fas fa-code-branch"></i>
-<!--                <span th:text="${api.version != null ? api.version : 'v1.0'}"></span>-->
+                <span th:text="${api.versionesApi != null ? api.versionesApi.getFirst().version : 'v1.0'}"></span>
             </span>
               <span class="meta-item">
                 <i class="fas fa-bolt"></i>

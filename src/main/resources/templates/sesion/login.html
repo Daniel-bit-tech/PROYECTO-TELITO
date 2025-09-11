@@ -73,14 +73,14 @@
    <h1 class="login__title"><i class="ri-terminal-box-fill"></i> Telito</h1>
       <h2 class="login__subtitle">Developer Portal</h2>
 
-      <div th:if="${error}" class="login__error">
+      <div th:if="${error!=null || !error.isEmpty()}" class="login__error">
          <i class="ri-error-warning-fill"></i>
          <span th:text="${error}">Credenciales inválidas</span>
       </div>
 
-      <div th:if="${logout}" class="login__success">
+      <div th:if="${logout!=null || !logout.isEmpty()}" class="login__success">
          <i class="ri-check-fill"></i>
-         <span th:text="${logout}">Has cerrado sesión correctamente</span>
+         <span >Has cerrado sesión correctamente</span>
       </div>
 
       <div class="login__inputs">
