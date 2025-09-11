@@ -28,7 +28,7 @@ public class Ticket {
     private Timestamp fechaFinal;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idUsuario", nullable = false)
+    @JoinColumn(name = "idUsuario", nullable = false, referencedColumnName = "dni")
     private Usuario usuario;
     
     @ManyToOne(fetch = FetchType.LAZY)

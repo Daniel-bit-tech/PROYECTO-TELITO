@@ -29,7 +29,7 @@ public class AuditLog {
     private Timestamp fecha;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idUsuario")
+    @JoinColumn(name = "idUsuario", referencedColumnName = "dni")
     private Usuario usuario;
     
     public enum AccionAudit {

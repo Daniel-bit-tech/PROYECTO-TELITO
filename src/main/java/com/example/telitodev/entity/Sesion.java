@@ -29,7 +29,7 @@ public class Sesion {
     private EstadoSesion estado;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idUsuario", nullable = false)
+    @JoinColumn(name = "idUsuario", nullable = false, referencedColumnName = "dni")
     private Usuario usuario;
     
     public enum EstadoSesion {

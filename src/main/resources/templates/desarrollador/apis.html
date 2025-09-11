@@ -332,7 +332,7 @@
 
   <!-- Main -->
   <div class="content">
-    <div class="catalog-container">
+    < class="catalog-container">
       <main class="container-xl mt-4">
 
         <div class="catalog-header rounded-3 px-4">
@@ -349,315 +349,123 @@
       <div class="search-filters">
         <div class="search-box">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" class="search-input" placeholder="Buscar APIs por nombre, descripción o tags...">
+          <input type="text" class="search-input" name="nombre" placeholder="Buscar APIs por nombre">
         </div>
 
-        <div class="filter-buttons">
-          <button class="filter-btn active">
-            <i class="fas fa-layer-group"></i> Todas
-          </button>
-          <button class="filter-btn">
-            <i class="fas fa-check-circle"></i> Activas
-          </button>
-          <button class="filter-btn">
-            <i class="fas fa-star"></i> Populares
-          </button>
-          <button class="filter-btn">
-            <i class="fas fa-clock"></i> Recientes
-          </button>
-        </div>
+<!--        <div class="filter-buttons">-->
+<!--          <button class="filter-btn active">-->
+<!--            <i class="fas fa-layer-group"></i> Todas-->
+<!--          </button>-->
+<!--          <button class="filter-btn">-->
+<!--            <i class="fas fa-check-circle"></i> Activas-->
+<!--          </button>-->
+<!--          <button class="filter-btn">-->
+<!--            <i class="fas fa-star"></i> Populares-->
+<!--          </button>-->
+<!--          <button class="filter-btn">-->
+<!--            <i class="fas fa-clock"></i> Recientes-->
+<!--          </button>-->
+<!--        </div>-->
       </div>
 
       <div class="catalog-content">
+        <form method="get" action="/apis">
         <div class="filters-sidebar">
           <div class="filter-section">
             <h3 class="filter-section-title">
-              <i class="fas fa-tag"></i> Categorías
+              <i class="fas fa-signal"></i> Dominios
             </h3>
             <div class="filter-tags">
+<!--              <label class="filter-tag">-->
+<!--                <input type="checkbox" name="dominios" checked> Todos los Dominios-->
+<!--              </label>-->
               <label class="filter-tag">
-                <input type="checkbox" checked> Todas las categorías
+                <input type="checkbox" name="dominios" value="Seguridad"> Seguridad
               </label>
               <label class="filter-tag">
-                <input type="checkbox"> Pagos
+                <input type="checkbox" name="dominios" value="Finanzas"> Finanzas
               </label>
               <label class="filter-tag">
-                <input type="checkbox"> Usuarios
+                <input type="checkbox" name="dominios" value="Logistica"> Logistica
               </label>
-              <label class="filter-tag">
-                <input type="checkbox"> Productos
-              </label>
-              <label class="filter-tag">
-                <input type="checkbox"> Logística
-              </label>
-              <label class="filter-tag">
-                <input type="checkbox"> Notificaciones
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="filter-section">
-                <h3 class="filter-section-title">
-                  <i class="fas fa-code"></i> Tecnología
-                </h3>
-                <div class="filter-tags">
-                  <label class="filter-tag">
-                    <input type="checkbox" checked> Todas
-                  </label>
-                  <label class="filter-tag">
-                    <input type="checkbox"> REST
-                  </label>
-                  <label class="filter-tag">
-                    <input type="checkbox"> GraphQL
-                  </label>
-                  <label class="filter-tag">
-                    <input type="checkbox"> Webhooks
-                  </label>
-                  <label class="filter-tag">
-                    <input type="checkbox"> Eventos
-                  </label>
-                </div>
             </div>
-
-            <div class="filter-section">
-              <h3 class="filter-section-title">
-                <i class="fas fa-signal"></i> Estado
-              </h3>
-              <div class="filter-tags">
-                <label class="filter-tag">
-                  <input type="checkbox" checked> Todos
-                </label>
-                <label class="filter-tag">
-                  <input type="checkbox"> Producción
-                </label>
-                <label class="filter-tag">
-                  <input type="checkbox"> QA
-                </label>
-                <label class="filter-tag">
-                  <input type="checkbox"> Beta
-                </label>
-                <label class="filter-tag">
-                  <input type="checkbox"> Descontinuado
-                </label>
-              </div>
-            </div>
-
-            <button class="btn-api btn-primary" style="width: 100%;">
-              <i class="fas fa-filter"></i> Aplicar Filtros
-            </button>
           </div>
 
-          <div class="apis-grid">
-
-            <div class="api-card">
-              <div class="api-header">
-                <div>
-                  <h3 class="api-title">API de Usuarios</h3>
-                  <span class="api-status status-production">Producción</span>
-                </div>
-                <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #4299e1;"></i>
-              </div>
-              <p class="api-description">
-                Gestiona usuarios, perfiles, autenticación y autorización en tu aplicación.
-              </p>
-              <div class="api-meta">
-                            <span class="meta-item">
-                                <i class="fas fa-code-branch"></i> v2.1.4
-                            </span>
-                <span class="meta-item">
-                                <i class="fas fa-bolt"></i> 98% uptime
-                            </span>
-              </div>
-              <div class="api-tags">
-                <span class="api-tag">REST</span>
-                <span class="api-tag">JSON</span>
-                <span class="api-tag">OAuth2</span>
-              </div>
-              <div class="api-actions">
-                <button class="btn-api btn-primary">
-                  <i class="fas fa-book"></i> Documentación
-                </button>
-                <button class="btn-api btn-outline">
-                  <i class="fas fa-play"></i> Probar
-                </button>
-              </div>
-            </div>
-
-
-            <div class="api-card">
-              <div class="api-header">
-                <div>
-                  <h3 class="api-title">API de Pagos</h3>
-                  <span class="api-status status-production">Producción</span>
-                </div>
-                <i class="fas fa-credit-card" style="font-size: 1.5rem; color: #2fb344;"></i>
-              </div>
-              <p class="api-description">
-                Procesa pagos seguros con múltiples métodos y gestiona transacciones.
-              </p>
-              <div class="api-meta">
-                            <span class="meta-item">
-                                <i class="fas fa-code-branch"></i> v1.5.2
-                            </span>
-                <span class="meta-item">
-                                <i class="fas fa-bolt"></i> 99.9% uptime
-                            </span>
-              </div>
-              <div class="api-tags">
-                <span class="api-tag">REST</span>
-                <span class="api-tag">PCI DSS</span>
-                <span class="api-tag">Webhooks</span>
-              </div>
-              <div class="api-actions">
-                <button class="btn-api btn-primary">
-                  <i class="fas fa-book"></i> Documentación
-                </button>
-                <button class="btn-api btn-outline">
-                  <i class="fas fa-play"></i> Probar
-                </button>
-              </div>
-            </div>
-
-
-            <div class="api-card">
-              <div class="api-header">
-                <div>
-                  <h3 class="api-title">API de Productos</h3>
-                  <span class="api-status status-production">Producción</span>
-                </div>
-                <i class="fas fa-box" style="font-size: 1.5rem; color: #f76808;"></i>
-              </div>
-              <p class="api-description">
-                Administra catálogos de productos, inventario y categorías.
-              </p>
-              <div class="api-meta">
-                            <span class="meta-item">
-                                <i class="fas fa-code-branch"></i> v3.0.1
-                            </span>
-                <span class="meta-item">
-                                <i class="fas fa-bolt"></i> 99.5% uptime
-                            </span>
-              </div>
-              <div class="api-tags">
-                <span class="api-tag">REST</span>
-                <span class="api-tag">GraphQL</span>
-                <span class="api-tag">JSON</span>
-              </div>
-              <div class="api-actions">
-                <button class="btn-api btn-primary">
-                  <i class="fas fa-book"></i> Documentación
-                </button>
-                <button class="btn-api btn-outline">
-                  <i class="fas fa-play"></i> Probar
-                </button>
-              </div>
-            </div>
-
-
-            <div class="api-card">
-              <div class="api-header">
-                <div>
-                  <h3 class="api-title">API de Pedidos</h3>
-                  <span class="api-status status-qa">QA</span>
-                </div>
-                <i class="fas fa-shopping-cart" style="font-size: 1.5rem; color: #ff922b;"></i>
-              </div>
-              <p class="api-description">
-                Gestiona órdenes de compra, seguimiento y estados de entrega.
-              </p>
-              <div class="api-meta">
-                            <span class="meta-item">
-                                <i class="fas fa-code-branch"></i> v2.0.0-rc1
-                            </span>
-                <span class="meta-item">
-                                <i class="fas fa-bolt"></i> 97% uptime
-                            </span>
-              </div>
-              <div class="api-tags">
-                <span class="api-tag">REST</span>
-                <span class="api-tag">Webhooks</span>
-                <span class="api-tag">JSON</span>
-              </div>
-              <div class="api-actions">
-                <button class="btn-api btn-primary">
-                  <i class="fas fa-book"></i> Documentación
-                </button>
-                <button class="btn-api btn-outline">
-                  <i class="fas fa-play"></i> Probar
-                </button>
-              </div>
-            </div>
-
-
-            <div class="api-card">
-              <div class="api-header">
-                <div>
-                  <h3 class="api-title">API de Notificaciones</h3>
-                  <span class="api-status status-production">Producción</span>
-                </div>
-                <i class="fas fa-bell" style="font-size: 1.5rem; color: #ae3ec9;"></i>
-              </div>
-              <p class="api-description">
-                Envía notificaciones por email, SMS y push a tus usuarios.
-              </p>
-              <div class="api-meta">
-                            <span class="meta-item">
-                                <i class="fas fa-code-branch"></i> v1.2.3
-                            </span>
-                <span class="meta-item">
-                                <i class="fas fa-bolt"></i> 99.8% uptime
-                            </span>
-              </div>
-              <div class="api-tags">
-                <span class="api-tag">REST</span>
-                <span class="api-tag">Webhooks</span>
-                <span class="api-tag">Eventos</span>
-              </div>
-              <div class="api-actions">
-                <button class="btn-api btn-primary">
-                  <i class="fas fa-book"></i> Documentación
-                </button>
-                <button class="btn-api btn-outline">
-                  <i class="fas fa-play"></i> Probar
-                </button>
-              </div>
-            </div>
-
-
-            <div class="api-card">
-              <div class="api-header">
-                <div>
-                  <h3 class="api-title">API de Análiticas</h3>
-                  <span class="api-status status-deprecated">Descontinuado</span>
-                </div>
-                <i class="fas fa-chart-line" style="font-size: 1.5rem; color: #e03131;"></i>
-              </div>
-              <p class="api-description">
-                Accede a métricas y análisis de uso de tus aplicaciones (será reemplazado por v2).
-              </p>
-              <div class="api-meta">
-                            <span class="meta-item">
-                                <i class="fas fa-code-branch"></i> v1.0.5
-                            </span>
-                <span class="meta-item">
-                                <i class="fas fa-bolt"></i> 95% uptime
-                            </span>
-              </div>
-              <div class="api-tags">
-                <span class="api-tag">REST</span>
-                <span class="api-tag">JSON</span>
-                <span class="api-tag">GraphQL</span>
-              </div>
-              <div class="api-actions">
-                <button class="btn-api btn-primary">
-                  <i class="fas fa-book"></i> Documentación
-                </button>
-                <button class="btn-api btn-outline">
-                  <i class="fas fa-play"></i> Probar
-                </button>
-              </div>
+          <div class="filter-section">
+            <h3 class="filter-section-title">
+              <i class="fas fa-tag"></i> Tag
+            </h3>
+            <div class="filter-tags">
+<!--              <label class="filter-tag">-->
+<!--                <input type="checkbox" checked> Todas-->
+<!--              </label>-->
+              <label class="filter-tag">
+                <input type="checkbox" name="tags" value="REST"> REST
+              </label>
+              <label class="filter-tag">
+                <input type="checkbox" name="tags" value="GraphQL"> GraphQL
+              </label>
+              <label class="filter-tag">
+                <input type="checkbox" name="tags" value="Webhook"> Webhooks
+              </label>
+              <label class="filter-tag">
+                <input type="checkbox" name="tags" value="Eventos"> Eventos
+              </label>
             </div>
           </div>
+
+          <button type="submit" class="btn-api btn-primary" style="width: 100%;">
+            <i class="fas fa-filter"></i> Aplicar Filtros
+          </button>
+        </div>
+        </form>
+
+
+        <div class="apis-grid">
+          <div class="api-card" th:each="api : ${apis}">
+            <div class="api-header">
+              <div>
+                <h3 class="api-title" th:text="${api.nombre}">Nombre API</h3>
+                <!-- Ejemplo: mostrar estado según dominio o tag -->
+                <span class="api-status status-production"
+                      th:text="${api.dominio}">Producción</span>
+              </div>
+              <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #4299e1;"></i>
+            </div>
+
+            <p class="api-description" th:text="${api.descripcion}">
+              Descripción de la API
+            </p>
+
+            <div class="api-meta">
+            <span class="meta-item">
+                <i class="fas fa-code-branch"></i>
+<!--                <span th:text="${api.version != null ? api.version : 'v1.0'}"></span>-->
+            </span>
+              <span class="meta-item">
+                <i class="fas fa-bolt"></i>
+                <!-- Ejemplo: uptime fijo o calculado -->
+                98% uptime
+            </span>
+            </div>
+
+            <div class="api-tags">
+
+              <span class="api-tag" th:text="${api.tag}"></span>
+<!--              <span class="api-tag" th:each="t : ${#strings.arraySplit(api.tag, ',')}"-->
+<!--                    th:text="${t}"></span>-->
+            </div>
+
+            <div class="api-actions">
+              <a th:href="@{'/apis/' + ${api.idApi} + '/docs'}" class="btn-api btn-primary">
+                <i class="fas fa-book"></i> Documentación
+              </a>
+              <a th:href="@{'/apis/' + ${api.idApi} + '/test'}" class="btn-api btn-outline">
+                <i class="fas fa-play"></i> Probar
+              </a>
+            </div>
+          </div>
+        </div>
         </div>
 
         <div class="pagination">
@@ -671,7 +479,7 @@
             <i class="fas fa-chevron-right"></i>
           </button>
         </div>
-      </div>
+      </main>
     </div>
 
     <div id="footer-placeholder"></div>
