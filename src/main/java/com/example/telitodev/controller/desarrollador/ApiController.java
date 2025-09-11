@@ -82,7 +82,7 @@ public class ApiController {
 
 
         String correo = auth.getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
 
 
