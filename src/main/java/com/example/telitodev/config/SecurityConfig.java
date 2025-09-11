@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         // Públicas
                         .requestMatchers("/", "/login/**", "/registro", "/apis", "/tabler/**").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**", "/static/**").permitAll()
                         .requestMatchers("/error", "/acceso-denegado").permitAll()
 
                         .requestMatchers("/cat").permitAll()
@@ -97,22 +97,18 @@ public class SecurityConfig {
 
                     switch (authority.getAuthority()) {
                         case "ROLE_SADMIN":
-                            System.out.println("ROLE_SADMIN");
                             return "/admin/home";
                         case "ROLE_DEV":
-                            System.out.println("ROLE_DEV");
                             return "/dev/home";
                         case "ROLE_QA":
-                            System.out.println("ROLE_QA");
                             return "/qa/home";
                         case "ROLE_PO":
-                            System.out.println("ROLE_PO");
                             return "/po/home";
                         default:
-                            return "/home";
+                            return "/login";
                     }
                 }
-                return "/home";
+                return "/login";
             }
         };
     }

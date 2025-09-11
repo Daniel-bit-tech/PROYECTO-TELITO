@@ -258,19 +258,19 @@
 
                 <div class="nav-item dropdown">
                     <a href="#" class="nav-link d-flex lh-1 p-0" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario">
-                        <span class="avatar avatar-sm user-avatar" style="background-image: url(https://ui-avatars.com/api/?name=Juan+Lopez&background=4361ee&color=fff)"> </span>
+                        <span class="avatar avatar-sm user-avatar" th:style="'background-image: url(https://ui-avatars.com/api/?name='+${usuario.nombre}+'+'+${usuario.apellidoPaterno}+'&background=4361ee&color=fff)'"> </span>
                         <div class="d-none d-xl-block ps-2 text-white">
-                            <div>Juan Perez</div>
-                            <div class="mt-1 small opacity-75">Desarrollador</div>
+                            <div th:text="${usuario.nombre}">Juan Perez</div>
+                            <div class="mt-1 small opacity-75" th:text="${usuario.rol.descripcion}">Desarrollador</div>
                         </div>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                        <a href="./perfil" class="dropdown-item d-flex align-items-center">
+                        <a th:href="@{/perfil}" class="dropdown-item d-flex align-items-center">
                             <i class="fas fa-user me-2"></i> Perfil
                         </a>
 
                         <div class="dropdown-divider"></div>
-                        <a href="./login" class="dropdown-item d-flex align-items-center">
+                        <a th:href="@{/login}" class="dropdown-item d-flex align-items-center">
                             <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
                         </a>
                     </div>
@@ -302,7 +302,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="./apis">
+                        <a class="nav-link" th:href="@{/apis}">
                 <span class="nav-link-icon d-md-none d-lg-inline-block">
                   <i class="fas fa-code"></i>
                 </span>

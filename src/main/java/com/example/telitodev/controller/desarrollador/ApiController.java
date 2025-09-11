@@ -2,7 +2,9 @@ package com.example.telitodev.controller.desarrollador;
 
 
 import com.example.telitodev.entity.Api;
+import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.repository.ApiRepository;
+import com.example.telitodev.repository.UsuarioRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/apis")
@@ -19,16 +22,18 @@ import java.util.List;
 public class ApiController {
 
     final ApiRepository apiRepository;
+    final UsuarioRepository usuarioRepository;
 
-    public ApiController(ApiRepository apiRepository) {
+    public ApiController(ApiRepository apiRepository, UsuarioRepository usuarioRepository) {
         this.apiRepository = apiRepository;
+        this.usuarioRepository = usuarioRepository;
     }
 
     @GetMapping()
     public String catalogo(@RequestParam(value = "dominios",required = false) List<String> selDominios,
                            @RequestParam(value = "tags", required = false) List<String> selTags,
                            @RequestParam(value = "nombre", required = false) String nombre,
-                            Model model, Authentication authentication) {
+                            Model model, Authentication auth) {
         String dominios = selDominios == null ? null : String.join(",", selDominios);
         String tags = selTags == null ? null : String.join(",", selTags);
 
@@ -41,6 +46,10 @@ public class ApiController {
 
         }
 
+        String correo = auth.getName();
+        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        model.addAttribute("usuario", usuario);
+
         model.addAttribute("apis", apis);
         model.addAttribute("tags", selTags);
         model.addAttribute("dominios", selDominios);
@@ -50,7 +59,14 @@ public class ApiController {
     }
 
     @GetMapping("/{id}")
-    public String detalleApi(@PathVariable Integer id, Model model, Authentication authentication) {
+    public String detalleApi(@PathVariable Integer id, Model model, Authentication auth) {
+
+        Optional<Api> api = apiRepository.findById(id);
+
+
+        String correo = auth.getName();
+        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        model.addAttribute("usuario", usuario);
 
 
 
