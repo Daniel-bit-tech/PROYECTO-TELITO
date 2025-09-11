@@ -1,0 +1,375 @@
+<html lang="es" data-bs-theme="dark"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>TELITO DEVELOPER PORTAL | Sistema de Reservas Deportivas</title>
+    <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet">
+    <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet">
+    <style>
+        @import url("https://rsms.me/inter/inter.css");
+        .api-card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.2s ease;
+        }
+        .quick-action-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .chatbot-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #206bc4;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .api-status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .sport-icon {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+    <div th:replace="productOwner/header_po.html :: header"></div>
+
+    <!-- Main Content -->
+    <div class="page-wrapper">
+        <!-- BEGIN PAGE HEADER -->
+        <div class="page-header d-print-none" aria-label="Page header">
+            <div class="container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col">
+                        <h2 class="page-title">Feedback</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE HEADER -->
+        <!-- BEGIN PAGE BODY -->
+        <div class="page-body">
+            <div class="container-xl">
+                <div class="row row-cards">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">PAGO - API</font></font></h3>
+                                <p class="text-secondary"><font style="vertical-align: inherit;"></font></p><h3 class="card-title mt-4"><font style="vertical-align: inherit;">Usuario</font></h3><font style="vertical-align: inherit;">
+                                <p class="card-subtitle">Juan Perez</p></font>
+                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Cargo</h3>
+                                    <p class="card-subtitle">DEV</p></font>
+                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Estado</h3>
+                                    <p class="card-subtitle">Pendiente</p></font><p></p>
+                            </div>
+                            <!-- Card footer -->
+                            <div class="card-footer">
+                                <div class="d-flex">
+                                    <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
+                                    <a href="/feedbackDetalle" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div><div class="col-md-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">PAGO - API</font></font></h3>
+                            <p class="text-secondary"><font style="vertical-align: inherit;"></font></p><h3 class="card-title mt-4"><font style="vertical-align: inherit;">Usuario</font></h3><font style="vertical-align: inherit;">
+                            <p class="card-subtitle">Juan Perez</p></font>
+                            <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Cargo</h3>
+                                <p class="card-subtitle">DEV</p></font>
+                            <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Estado</h3>
+                                <p class="card-subtitle">Pendiente</p></font><p></p>
+                        </div>
+                        <!-- Card footer -->
+                        <div class="card-footer">
+                            <div class="d-flex">
+                                <a href="feedbackDetalle" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
+                                <a href="feedbackDetalle" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">PAGO - API</font></font></h3>
+                                <p class="text-secondary"><font style="vertical-align: inherit;"></font></p><h3 class="card-title mt-4"><font style="vertical-align: inherit;">Usuario</font></h3><font style="vertical-align: inherit;">
+                                <p class="card-subtitle">Juan Perez</p></font>
+                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Cargo</h3>
+                                    <p class="card-subtitle">DEV</p></font>
+                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Estado</h3>
+                                    <p class="card-subtitle">Pendiente</p></font><p></p>
+                            </div>
+                            <!-- Card footer -->
+                            <div class="card-footer">
+                                <div class="d-flex">
+                                    <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
+                                    <a href="#" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">PAGO - API</font></font></h3>
+                                <p class="text-secondary"><font style="vertical-align: inherit;"></font></p><h3 class="card-title mt-4"><font style="vertical-align: inherit;">Usuario</font></h3><font style="vertical-align: inherit;">
+                                <p class="card-subtitle">Juan Perez</p></font>
+                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Cargo</h3>
+                                    <p class="card-subtitle">DEV</p></font>
+                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Estado</h3>
+                                    <p class="card-subtitle">Pendiente</p></font><p></p>
+                            </div>
+                            <!-- Card footer -->
+                            <div class="card-footer">
+                                <div class="d-flex">
+                                    <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
+                                    <a href="#" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">PAGO - API</font></font></h3>
+                                <p class="text-secondary"><font style="vertical-align: inherit;"></font></p><h3 class="card-title mt-4"><font style="vertical-align: inherit;">Usuario</font></h3><font style="vertical-align: inherit;">
+                                <p class="card-subtitle">Juan Perez</p></font>
+                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Cargo</h3>
+                                    <p class="card-subtitle">DEV</p></font>
+                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Estado</h3>
+                                    <p class="card-subtitle">Pendiente</p></font><p></p>
+                            </div>
+                            <!-- Card footer -->
+                            <div class="card-footer">
+                                <div class="d-flex">
+                                    <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
+                                    <a href="#" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">PAGO - API</font></font></h3>
+                                <p class="text-secondary"><font style="vertical-align: inherit;"></font></p><h3 class="card-title mt-4"><font style="vertical-align: inherit;">Usuario</font></h3><font style="vertical-align: inherit;">
+                                <p class="card-subtitle">Juan Perez</p></font>
+                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Cargo</h3>
+                                    <p class="card-subtitle">DEV</p></font>
+                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Estado</h3>
+                                    <p class="card-subtitle">Pendiente</p></font><p></p>
+                            </div>
+                            <!-- Card footer -->
+                            <div class="card-footer">
+                                <div class="d-flex">
+                                    <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
+                                    <a href="#" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">PAGO - API</font></font></h3>
+                                <p class="text-secondary"><font style="vertical-align: inherit;"></font></p><h3 class="card-title mt-4"><font style="vertical-align: inherit;">Usuario</font></h3><font style="vertical-align: inherit;">
+                                <p class="card-subtitle">Juan Perez</p></font>
+                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Cargo</h3>
+                                    <p class="card-subtitle">DEV</p></font>
+                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Estado</h3>
+                                    <p class="card-subtitle">Pendiente</p></font><p></p>
+                            </div>
+                            <!-- Card footer -->
+                            <div class="card-footer">
+                                <div class="d-flex">
+                                    <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
+                                    <a href="#" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div><div class="col-md-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">PAGO - API</font></font></h3>
+                            <p class="text-secondary"><font style="vertical-align: inherit;"></font></p><h3 class="card-title mt-4"><font style="vertical-align: inherit;">Usuario</font></h3><font style="vertical-align: inherit;">
+                            <p class="card-subtitle">Juan Perez</p></font>
+                            <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Cargo</h3>
+                                <p class="card-subtitle">DEV</p></font>
+                            <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Estado</h3>
+                                <p class="card-subtitle">Pendiente</p></font><p></p>
+                        </div>
+                        <!-- Card footer -->
+                        <div class="card-footer">
+                            <div class="d-flex">
+                                <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
+                                <a href="#" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+                </div>
+                <div class="card-body">
+
+                    <ul class="pagination">
+                        <li class="page-item disabled">
+                            <a class="page-link page-text" href="#" tabindex="-1" aria-disabled="true"> Previous </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">1</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">2</a>
+                        </li>
+                        <li class="page-item active">
+                            <a class="page-link" href="#">3</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">4</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">5</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link page-text" href="#"> Next </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE BODY -->
+        <!--  BEGIN FOOTER  -->
+
+        <!--  END FOOTER  -->
+    </div>
+
+
+    <div class="chatbot-container">
+        <div class="chatbot-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasChatbot">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-message-chatbot" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z"></path>
+                <path d="M9.5 9h.01"></path>
+                <path d="M14.5 9h.01"></path>
+                <path d="M9.5 13a3.5 3.5 0 0 0 5 0"></path>
+            </svg>
+        </div>
+    </div>
+
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasChatbot">
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title">Asistente Virtual</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="chat-messages p-3">
+                <div class="chat-message chat-message-left">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <span class="avatar avatar-sm" style="background-image: url(./tabler/static/avatars/000f.jpg)"></span>
+                        </div>
+                        <div class="flex-fill ms-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p>¡Hola! Soy tu asistente para el sistema de reservas deportivas. ¿En qué puedo ayudarte hoy?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input p-3 border-top">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Escribe tu pregunta...">
+                    <button class="btn btn-primary" type="button">Enviar</button>
+                </div>
+                <div class="mt-2 text-center">
+                    <small class="text-muted">Preguntas frecuentes:</small>
+                    <div class="mt-1">
+                        <a href="#" class="badge badge-outline text-reset">¿Cómo integrar pagos con imagen?</a>
+                        <a href="#" class="badge badge-outline text-reset">API de Reservas documentación</a>
+                        <a href="#" class="badge badge-outline text-reset">Problemas de autenticación</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+</div>
+
+<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
+<div class="tooltip bs-tooltip-auto fade show" role="tooltip" id="tooltip401309" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(983px, 54px, 0px);" data-popper-placement="bottom"><div class="tooltip-arrow" style="position: absolute; transform: translate3d(42.5px, 0px, 0px); left: 0px;"></div><div class="tooltip-inner">Modo claro</div></div></body></html>

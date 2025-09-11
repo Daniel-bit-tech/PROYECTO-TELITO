@@ -1,0 +1,260 @@
+<html lang="es" data-bs-theme="dark"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>TELITO DEVELOPER PORTAL | Sistema de Reservas Deportivas</title>
+    <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet">
+    <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet">
+    <style>
+        @import url("https://rsms.me/inter/inter.css");
+        .api-card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.2s ease;
+        }
+        .quick-action-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .chatbot-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #206bc4;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .api-status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .sport-icon {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+    <div th:replace="productOwner/header_po.html :: header"></div>
+
+    <!-- Main Content -->
+    <div class="page-wrapper">
+        <!-- BEGIN PAGE HEADER -->
+        <div class="page-header d-print-none" aria-label="Page header">
+            <div class="container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col">
+                        <h2 class="page-title">Solicitud</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE HEADER -->
+        <!-- BEGIN PAGE BODY -->
+        <div class="page-body">
+            <div class="container-xl">
+                <div class="card">
+                    <div class="row g-0">
+
+                        <div class="col-12 col-md-9 d-flex flex-column">
+                            <div class="card-body">
+
+                                <h3 class="card-title">Solicitante</h3>
+                                <div class="row align-items-center">
+                                    <div class="col-auto"><span class="avatar avatar-xl" style="background-image: url(./static/avatars/000m.jpg)"> </span></div>
+                                    <div class="col-auto">
+
+                                    </div>
+                                    <div class="col-auto">
+
+                                    </div>
+                                </div>
+                                <h3 class="card-title mt-4">Russel Pope</h3>
+                                <div class="row g-3">
+                                    <div class="col-md">
+                                        <div class="form-label">Cargo</div>
+                                        <div class="mt-3">
+                                            <span class="badge bg-purple-lt">QA</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="form-label">Email</div>
+                                        <div class="mt-3">
+                                            <span class="badge bg-purple-lt">Pope@gmail.com</span>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <h3 class="card-title mt-4">API solicitada</h3>
+
+                                <div>
+                                    <div class="row g-2">
+
+
+                                    </div>
+                                </div>
+
+                                <p class="card-subtitle">Pagos API</p>
+                                <h3 class="card-title mt-4">Tipo de solicitud</h3>
+                                <div>
+                                    <div class="row g-2">
+                                    </div>
+                                </div>
+                                <p class="card-subtitle">Entorno a Sandbox</p>
+
+                                <div class="col col-lg-6">
+                                    <div class="chat-bubble">
+                                        <div class="chat-bubble-title">
+                                            <div class="row">
+                                                <div class="col chat-bubble-author">Motivo</div>
+
+                                            </div>
+                                        </div>
+                                        <div class="chat-bubble-body">
+                                            <p>Necesita procesar pagos en la plataforma de ecommerce, además de necesitar el entorno de prueba tipo Sandbox en su aplicación web</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+                            <div class="card-footer bg-transparent mt-auto">
+                                <div class="btn-list justify-content-end">
+                                    <a class="btn btn-pinterest"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-pinterest -->
+
+                                        Volver</a>
+                                    <a class="btn btn-youtube"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-youtube -->
+                                        Rechazar Solicitud</a>
+                                    <a class="btn btn-bitbucket"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-bitbucket -->
+                                        Aceptar Solicitud</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE BODY -->
+        <!--  BEGIN FOOTER  -->
+        <footer class="footer footer-transparent d-print-none">
+            <div class="container-xl">
+                <div class="row text-center align-items-center flex-row-reverse">
+                    <div class="col-lg-auto ms-lg-auto">
+                        <ul class="list-inline list-inline-dots mb-0">
+                            <li class="list-inline-item"><a href="https://docs.tabler.io" target="_blank" class="link-secondary" rel="noopener">Documentation</a></li>
+                            <li class="list-inline-item"><a href="./license.html" class="link-secondary">License</a></li>
+                            <li class="list-inline-item">
+                                <a href="https://github.com/tabler/tabler" target="_blank" class="link-secondary" rel="noopener">Source code</a>
+                            </li>
+                            <li class="list-inline-item">
+                                <a href="https://github.com/sponsors/codecalm" target="_blank" class="link-secondary" rel="noopener">
+                                    <!-- Download SVG icon from http://tabler.io/icons/icon/heart -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-pink icon-inline icon-4">
+                                        <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"></path>
+                                    </svg>
+                                    Sponsor
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                        <ul class="list-inline list-inline-dots mb-0">
+                            <li class="list-inline-item">
+                                Copyright © 2025
+                                <a href="." class="link-secondary">Tabler</a>. All rights reserved.
+                            </li>
+                            <li class="list-inline-item">
+                                <a href="./changelog.html" class="link-secondary" rel="noopener"> v1.4.0 </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+        <!--  END FOOTER  -->
+    </div>
+
+
+    <div class="chatbot-container">
+        <div class="chatbot-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasChatbot">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-message-chatbot" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z"></path>
+                <path d="M9.5 9h.01"></path>
+                <path d="M14.5 9h.01"></path>
+                <path d="M9.5 13a3.5 3.5 0 0 0 5 0"></path>
+            </svg>
+        </div>
+    </div>
+
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasChatbot">
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title">Asistente Virtual</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="chat-messages p-3">
+                <div class="chat-message chat-message-left">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <span class="avatar avatar-sm" style="background-image: url(./tabler/static/avatars/000f.jpg)"></span>
+                        </div>
+                        <div class="flex-fill ms-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p>¡Hola! Soy tu asistente para el sistema de reservas deportivas. ¿En qué puedo ayudarte hoy?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input p-3 border-top">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Escribe tu pregunta...">
+                    <button class="btn btn-primary" type="button">Enviar</button>
+                </div>
+                <div class="mt-2 text-center">
+                    <small class="text-muted">Preguntas frecuentes:</small>
+                    <div class="mt-1">
+                        <a href="#" class="badge badge-outline text-reset">¿Cómo integrar pagos con imagen?</a>
+                        <a href="#" class="badge badge-outline text-reset">API de Reservas documentación</a>
+                        <a href="#" class="badge badge-outline text-reset">Problemas de autenticación</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+</div>
+
+<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
+</body></html>
