@@ -1,0 +1,226 @@
+<html lang="es" data-bs-theme="dark"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>TELITO DEVELOPER PORTAL | Sistema de Reservas Deportivas</title>
+    <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet">
+    <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet">
+    <style>
+        @import url("https://rsms.me/inter/inter.css");
+        .api-card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.2s ease;
+        }
+        .quick-action-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .chatbot-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #206bc4;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .api-status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .sport-icon {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+    <div th:replace="productOwner/header_po.html :: header"></div>
+
+    <!-- Main Content -->
+    <div class="page-wrapper">
+        <!-- BEGIN PAGE HEADER -->
+        <div class="page-header d-print-none" aria-label="Page header">
+            <div class="container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col">
+                        <h2 class="page-title">Documentacion</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE HEADER -->
+        <!-- BEGIN PAGE BODY -->
+        <div class="page-body">
+            <div class="container-xl">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Uso de Negocio</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="col-md-6 col-xl-12">
+
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Nombre</div>
+                                <div class="datagrid-content">Pagos - API</div>
+                            </div>
+
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Estado</div>
+                                <div class="datagrid-content">
+                                    <span class="status status-green">Produccion</span>
+                                </div></div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Descripcion</div>
+                                <div class="datagrid-content">Esta API permite gestionar pagos en linea de manera rápida y segura</div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="card-header">
+                        <h3 class="card-title">Uso de Negocio</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="col-md-6 col-xl-12">
+
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Casos de uso</div>
+                                <div class="datagrid-content">Procesamiento de pagos en tiempo real en plataformas de e-commerce</div>
+                            </div>
+
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Impacto</div>
+                                <div class="datagrid-content">Mejora la tasa de conversion y experiencia del usuario</div>
+                            </div>
+
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Ejemplo de integración</div>
+                                <div class="datagrid-content">Plataforma StoreFront que utiliza la API para gestionar pagos en línea, permitiendo a los usuarios realizar compras seguras sin salir del sitio</div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-header">
+                        <h3 class="card-title">Beneficios y Limitaciones</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="col-md-6 col-xl-12">
+
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Beneficios</div>
+                                <div class="datagrid-content">Pagos a tiempo real, ademas de mejorar la experiencia del usuario</div>
+                            </div>
+
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Limitaciones</div>
+                                <div class="datagrid-content">Comision del 0.5% por transaccion</div>
+                            </div>
+
+                            <div class="datagrid">
+                                <div class="datagrid-title">Requisitos Técnicos</div>
+                                <div class="datagrid-item-content"></div>
+
+
+
+                                <div class="datagrid-item-content">Autenticacion:OAuth 2.0</div><div class="datagrid-item-content">version actual 2.0</div>
+
+                                <div class="datagrid-item-content">Formato de datos: JSON</div>
+                                <div class="datagrid-item-content">Disponibilidad: 99.9% SLA</div>
+
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE BODY -->
+        <!--  BEGIN FOOTER  -->
+
+        <!--  END FOOTER  -->
+    </div>
+
+
+    <div class="chatbot-container">
+        <div class="chatbot-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasChatbot">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-message-chatbot" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z"></path>
+                <path d="M9.5 9h.01"></path>
+                <path d="M14.5 9h.01"></path>
+                <path d="M9.5 13a3.5 3.5 0 0 0 5 0"></path>
+            </svg>
+        </div>
+    </div>
+
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasChatbot">
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title">Asistente Virtual</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="chat-messages p-3">
+                <div class="chat-message chat-message-left">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <span class="avatar avatar-sm" style="background-image: url(./tabler/static/avatars/000f.jpg)"></span>
+                        </div>
+                        <div class="flex-fill ms-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p>¡Hola! Soy tu asistente para el sistema de reservas deportivas. ¿En qué puedo ayudarte hoy?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input p-3 border-top">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Escribe tu pregunta...">
+                    <button class="btn btn-primary" type="button">Enviar</button>
+                </div>
+                <div class="mt-2 text-center">
+                    <small class="text-muted">Preguntas frecuentes:</small>
+                    <div class="mt-1">
+                        <a href="#" class="badge badge-outline text-reset">¿Cómo integrar pagos con imagen?</a>
+                        <a href="#" class="badge badge-outline text-reset">API de Reservas documentación</a>
+                        <a href="#" class="badge badge-outline text-reset">Problemas de autenticación</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+</div>
+
+<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
+</body></html>

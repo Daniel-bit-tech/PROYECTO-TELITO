@@ -1,0 +1,293 @@
+<html lang="es" data-bs-theme="dark"><head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>TELITO DEVELOPER PORTAL | Sistema de Reservas Deportivas</title>
+    <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet">
+    <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet">
+    <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet">
+    <style>
+        @import url("https://rsms.me/inter/inter.css");
+        .api-card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.2s ease;
+        }
+        .quick-action-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .chatbot-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #206bc4;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .api-status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .sport-icon {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+    <div th:replace="productOwner/header_po.html :: header"></div>
+
+
+    <!-- Main Content -->
+    <div class="page-wrapper">
+        <!-- BEGIN PAGE HEADER -->
+        <div class="page-header d-print-none" aria-label="Page header">
+            <div class="container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col">
+                        <h2 class="page-title">Catalogo</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE HEADER -->
+        <!-- BEGIN PAGE BODY -->
+        <div class="page-body">
+            <div class="container-xl">
+                <div class="row row-cards">
+                    <div class="col-12">
+                        <div class="card">
+
+                            <div class="card-body border-bottom py-3">
+                                <div class="d-flex">
+                                    <div class="text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+                                        Mostrar
+                                    </font></font><div class="mx-2 d-inline-block">
+                                        <input type="text" class="form-control form-control-sm" value="8" size="3" aria-label="Recuento de facturas">
+                                    </div><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+                                        entradas
+                                    </font></font></div>
+                                    <div class="ms-auto text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+                                        Buscar:
+                                    </font></font><div class="ms-2 d-inline-block">
+                                        <input type="text" class="form-control form-control-sm" aria-label="Buscar factura">
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-selectable card-table table-vcenter text-nowrap datatable">
+                                    <thead>
+                                    <tr>
+
+                                        <th class="w-1"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+                                            No.
+                                        </font></font><!-- Download SVG icon from http://tabler.io/icons/icon/chevron-up -->
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm icon-thick icon-2">
+                                                <path d="M6 15l6 -6l6 6"></path>
+                                            </svg>
+                                        </th>
+                                        <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Nombre
+                                        </font></font></th>
+                                        <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Tipo</font></font></th>
+                                        <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Encargados</font></font></th>
+                                        <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Prioridad</font></font></th>
+                                        <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">estado</font></font></th>
+                                        <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Descripcion</font></font></th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+
+                                        <td><span class="text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1</font></font></span></td>
+                                        <td><a href="invoice.html" class="text-reset" tabindex="-1"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Pagos</font></font></a></td>
+                                        <td>
+                                            <font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Bug/Error</font></font></td>
+                                        <td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Jose quiños / Dev</font></font></td>
+                                        <td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Alta</font></font></td>
+                                        <td><span class="badge bg-success me-1"></span><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">En desarrollo</font></font></td>
+                                        <td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Como PO quiero que la API...</font></font></td>
+                                        <td class="text-end">
+                            <span class="dropdown">
+                              <button class="btn dropdown-toggle align-text-top show" data-bs-boundary="viewport" data-bs-toggle="dropdown" aria-expanded="true"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Acciones</font></font></button>
+                              <div class="dropdown-menu dropdown-menu-end show" style="position: absolute; inset: 0px 0px auto auto; margin: 0px; transform: translate(179px, 42px);" data-popper-placement="bottom-end">
+                                                    <a class="dropdown-item" href=""><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Marcar como resuelto</font></font></a>
+
+                              </div>
+                            </span>
+                                        </td>
+                                    </tr>
+
+
+
+
+
+
+
+                                    </tbody>
+                                </table>
+                            </div><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
+                            ---------------
+                        </font></font><div class="card-footer">
+                            <div class="row g-2 justify-content-center justify-content-sm-between">
+                                <div class="col-auto d-flex align-items-center">
+                                    <p class="m-0 text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Mostrando </font></font><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1 a 8</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;"> de </font></font><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">16 entradas</font></font></strong></p>
+                                </div>
+                                <div class="col-auto">
+                                    <ul class="pagination m-0 ms-auto">
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                                <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-left -->
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
+                                                    <path d="M15 6l-6 6l6 6"></path>
+                                                </svg>
+                                            </a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1</font></font></a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2</font></font></a>
+                                        </li>
+                                        <li class="page-item active">
+                                            <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">3</font></font></a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">4</font></font></a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">5</font></font></a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="#">
+                                                <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-right -->
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
+                                                    <path d="M9 6l6 6l-6 6"></path>
+                                                </svg>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+
+
+
+
+
+
+                </div>
+            </div>
+        </div>
+        <!-- END PAGE BODY -->
+        <!--  BEGIN FOOTER  -->
+        <div id="footer-placeholder"></div>
+        <!--  END FOOTER  -->
+    </div>
+
+
+    <div class="chatbot-container">
+        <div class="chatbot-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasChatbot">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-message-chatbot" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                <path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z"></path>
+                <path d="M9.5 9h.01"></path>
+                <path d="M14.5 9h.01"></path>
+                <path d="M9.5 13a3.5 3.5 0 0 0 5 0"></path>
+            </svg>
+        </div>
+    </div>
+
+
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasChatbot">
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title">Asistente Virtual</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div class="chat-messages p-3">
+                <div class="chat-message chat-message-left">
+                    <div class="d-flex">
+                        <div class="flex-shrink-0">
+                            <span class="avatar avatar-sm" style="background-image: url(./tabler/static/avatars/000f.jpg)"></span>
+                        </div>
+                        <div class="flex-fill ms-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <p>¡Hola! Soy tu asistente para el sistema de reservas deportivas. ¿En qué puedo ayudarte hoy?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chat-input p-3 border-top">
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Escribe tu pregunta...">
+                    <button class="btn btn-primary" type="button">Enviar</button>
+                </div>
+                <div class="mt-2 text-center">
+                    <small class="text-muted">Preguntas frecuentes:</small>
+                    <div class="mt-1">
+                        <a href="#" class="badge badge-outline text-reset">¿Cómo integrar pagos con imagen?</a>
+                        <a href="#" class="badge badge-outline text-reset">API de Reservas documentación</a>
+                        <a href="#" class="badge badge-outline text-reset">Problemas de autenticación</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer footer-transparent d-print-none">
+        <div class="container-xl">
+            <div class="row text-center align-items-center flex-row-reverse">
+                <div class="col-lg-auto ms-lg-auto">
+                    <ul class="list-inline list-inline-dots mb-0">
+                        <li class="list-inline-item"><a href="#" class="link-secondary">Soporte</a></li>
+                        <li class="list-inline-item"><a href="#" class="link-secondary">Documentación</a></li>
+                    </ul>
+                </div>
+                <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                    <ul class="list-inline list-inline-dots mb-0">
+                        <li class="list-inline-item">
+                            Copyright © 2025
+                            <a href="." class="link-secondary">TELITO Sports Reservations</a>. Todos los derechos reservados.
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
+<div class="tooltip bs-tooltip-auto fade show" role="tooltip" id="tooltip401309" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(983px, 54px, 0px);" data-popper-placement="bottom"><div class="tooltip-arrow" style="position: absolute; transform: translate3d(42.5px, 0px, 0px); left: 0px;"></div><div class="tooltip-inner">Modo claro</div></div></body></html>
