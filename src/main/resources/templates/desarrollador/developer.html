@@ -1,19 +1,19 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <title>TELITO DEVELOPER PORTAL | Inicio</title>
-  <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
-  <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+  <link th:href="|/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-flags.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-socials.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-payments.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-vendors.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-marketing.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-themes.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/preview/css/demo.css?1757307620|" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     @import url("https://rsms.me/inter/inter.css");
@@ -394,7 +394,7 @@
 </head>
 
 <body>
-<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
 <div class="page">
 
   <div th:replace="desarrollador/header.html :: header"></div>
@@ -406,8 +406,8 @@
 
       <div class="welcome-banner">
         <div class="welcome-content">
-          <h2 class="welcome-title">¡Bienvenido de nuevo, Juan!</h2>
-          <p class="welcome-text">Tu última actividad fue hace 2 horas. Tienes 3 APIs activas y 2 tickets de soporte abiertos.</p>
+          <h2 class="welcome-title">¡Hola otra vez, <span th:text="${usuario.nombre}">Juan</span>!</h2>
+          <p class="welcome-text">Tienes <span th:text="${credActivas}">0</span> APIs con credenciales activas y <span th:text="${notificaciones}">0</span> notificaciones sin leer.</p>
           <div class="welcome-actions">
             <button class="btn btn-primary">
               <i class="fas fa-rocket"></i> Crear nuevo proyecto
