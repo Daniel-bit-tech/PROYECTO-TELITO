@@ -398,19 +398,19 @@
                 <div class="profile-sidebar">
                     <div class="profile-avatar">
                         <div class="avatar-upload">
-                            <img src="https://ui-avatars.com/api/?name=Juan+Perez&background=4299e1&color=fff" alt="Avatar" class="avatar-img">
+                            <img th:src="'https://ui-avatars.com/api/?name='+${usuario.nombre}+'+'+${usuario.apellidoPaterno}+'&background=4361ee&color=fff'" alt="Avatar" class="avatar-img">
                             <label for="avatar-input" class="avatar-edit">
                                 <i class="fas fa-camera"></i>
                                 <input type="file" id="avatar-input" accept="image/*" style="display: none;">
                             </label>
                         </div>
-                        <h2 class="profile-name">Juan Pérez</h2>
-                        <div class="profile-role">Desarrollador Senior</div>
-                        <span class="badge badge-primary">Usuario Premium</span>
+                        <h2 class="profile-name" th:text="${usuario.nombre}">Juan Pérez</h2>
+                        <div class="profile-role" th:text="${usuario.rol.descripcion}">Desarrollador</div>
+                        <span class="badge badge-primary" th:text="${usuario.nombre}+' '+${usuario.apellidoPaterno}+' '+${usuario.apellidoMaterno}">Usuario Premium</span>
                     </div>
 
                     <div class="profile-info">
-                        <p><i class="fas fa-envelope"></i> juan.perez@ejemplo.com</p>
+                        <p th:text="${usuario.correo}"><i class="fas fa-envelope"></i> juan.perez@ejemplo.com</p>
                         <p><i class="fas fa-building"></i> Empresa XYZ</p>
                         <p><i class="fas fa-map-marker-alt"></i> Lima, Perú</p>
                     </div>
@@ -425,7 +425,7 @@
                             <div class="stat-label">APIs Usadas</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-value">3</div>
+                            <div class="stat-value" th:text="${usuario.nombre}">3</div>
                             <div class="stat-label">Tickets Abiertos</div>
                         </div>
                         <div class="stat-item">
@@ -540,39 +540,39 @@
                             <div class="form-row">
                                 <div class="form-group">
                                     <label class="form-label">Nombre</label>
-                                    <input type="text" class="form-control" value="Juan">
+                                    <input type="text" class="form-control" th:value="${usuario.nombre}" readonly>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Apellido</label>
-                                    <input type="text" class="form-control" value="Pérez">
+                                    <input type="text" class="form-control" th:value="${usuario.apellidoPaterno}+' '+${usuario.apellidoMaterno}" readonly>
                                 </div>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Correo Electrónico</label>
-                                <input type="email" class="form-control" value="juan.perez@ejemplo.com">
+                                <input type="email" class="form-control" th:value="${usuario.correo}" readonly>
                                 <div class="form-text">Este es el correo que utilizas para iniciar sesión</div>
                             </div>
 
-                            <div class="form-group">
-                                <label class="form-label">Empresa</label>
-                                <input type="text" class="form-control" value="Empresa XYZ">
-                            </div>
+<!--                            <div class="form-group">-->
+<!--                                <label class="form-label">Empresa</label>-->
+<!--                                <input type="text" class="form-control" value="Empresa XYZ">-->
+<!--                            </div>-->
 
-                            <div class="form-group">
-                                <label class="form-label">Cargo</label>
-                                <input type="text" class="form-control" value="Desarrollador Senior">
-                            </div>
+<!--                            <div class="form-group">-->
+<!--                                <label class="form-label">Cargo</label>-->
+<!--                                <input type="text" class="form-control" value="Desarrollador Senior">-->
+<!--                            </div>-->
 
-                            <div class="form-group">
-                                <label class="form-label">Biografía</label>
-                                <textarea class="form-control" rows="4">Desarrollador full-stack con 5 años de experiencia en integración de APIs y desarrollo de aplicaciones web y móviles.</textarea>
-                                <div class="form-text">Una breve descripción sobre ti y tu experiencia</div>
-                            </div>
+<!--                            <div class="form-group">-->
+<!--                                <label class="form-label">Biografía</label>-->
+<!--                                <textarea class="form-control" rows="4">Desarrollador full-stack con 5 años de experiencia en integración de APIs y desarrollo de aplicaciones web y móviles.</textarea>-->
+<!--                                <div class="form-text">Una breve descripción sobre ti y tu experiencia</div>-->
+<!--                            </div>-->
 
-                            <button type="submit" class="btn-primary">
-                                <i class="fas fa-save"></i> Guardar Cambios
-                            </button>
+<!--                            <button type="submit" class="btn-primary">-->
+<!--                                <i class="fas fa-save"></i> Guardar Cambios-->
+<!--                            </button>-->
                         </form>
                     </div>
 
