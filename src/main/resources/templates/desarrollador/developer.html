@@ -407,12 +407,12 @@
       <div class="welcome-banner">
         <div class="welcome-content">
           <h2 class="welcome-title">¡Hola otra vez, <span th:text="${usuario.nombre}">Juan</span>!</h2>
-          <p class="welcome-text">Tienes <span th:text="${credActivas}">0</span> APIs con credenciales activas y <span th:text="${notificaciones}">0</span> notificaciones sin leer.</p>
+          <p class="welcome-text">Tienes <span th:text="${NcredActivas}">0</span> APIs con credenciales activas y <span th:text="${Nnotis}">0</span> notificaciones sin leer.</p>
           <div class="welcome-actions">
             <button class="btn btn-primary">
               <i class="fas fa-rocket"></i> Crear nuevo proyecto
             </button>
-            <a href="apis" class="btn btn-outline-light">
+            <a th:href="@{/apis}" class="btn btn-outline-light">
               <i class="fas fa-search"></i> Explorar APIs
             </a>
           </div>
@@ -465,55 +465,34 @@
         <div class="dashboard-card">
           <div class="card-header">
             <h3 class="card-title"><i class="fas fa-code"></i> Mis APIs Recientes</h3>
-            <div class="card-actions">
-              <button class="btn btn-sm btn-outline-secondary">Ver todas</button>
-            </div>
+<!--            <div class="card-actions">-->
+<!--              <button class="btn btn-sm btn-outline-secondary">Ver todas</button>-->
+<!--            </div>-->
           </div>
 
           <ul class="api-list">
-            <li class="api-item">
+            <li class="api-item" th:each="cred : ${credenciales}">
               <div class="api-icon" style="background-color: rgba(66, 153, 225, 0.1); color: #4299e1;">
-                <i class="fas fa-user-circle"></i>
+                <i class="fas fa-cube"></i>
               </div>
-              <div class="api-info">
-                <div class="api-name">API de Usuarios</div>
-                <div class="api-meta">
-                  <span>v2.1.4</span>
-                  <span>•</span>
-                  <span>1,245 requests hoy</span>
-                </div>
-              </div>
-              <button class="api-action">Administrar</button>
-            </li>
 
-            <li class="api-item">
-              <div class="api-icon" style="background-color: rgba(47, 179, 68, 0.1); color: #2fb344;">
-                <i class="fas fa-credit-card"></i>
-              </div>
               <div class="api-info">
-                <div class="api-name">API de Pagos</div>
-                <div class="api-meta">
-                  <span>v1.5.2</span>
-                  <span>•</span>
-                  <span>842 transactions hoy</span>
-                </div>
-              </div>
-              <button class="api-action">Administrar</button>
-            </li>
+                <div class="api-name" th:text="${cred.api.nombre}">Nombre API</div>
 
-            <li class="api-item">
-              <div class="api-icon" style="background-color: rgba(247, 104, 8, 0.1); color: #f76808;">
-                <i class="fas fa-box"></i>
-              </div>
-              <div class="api-info">
-                <div class="api-name">API de Productos</div>
                 <div class="api-meta">
-                  <span>v3.0.1</span>
+                  <span th:text="${cred.api.versionesApi.getFirst().getVersion()}">v1.X</span>
                   <span>•</span>
-                  <span>568 requests hoy</span>
+                  <span>
+          Credencial creada:
+          <span th:text="${#temporals.format(cred.fechaCreacion.toLocalDateTime(), 'dd/MM/yyyy')}">01/01/2025</span>
+          </span>
                 </div>
               </div>
-              <button class="api-action">Administrar</button>
+
+              <button class="api-action"
+                      th:onclick="'location.href=\'/apis/' + ${cred.api.idApi} + '/docs\''">
+                Ver Documentación
+              </button>
             </li>
           </ul>
 
@@ -551,43 +530,24 @@
         <div class="dashboard-card">
           <div class="card-header">
             <h3 class="card-title"><i class="fas fa-bell"></i> Notificaciones</h3>
-            <div class="card-actions">
-              <button class="btn btn-sm btn-outline-secondary">Ver todas</button>
-            </div>
+<!--            <div class="card-actions">-->
+<!--              <button class="btn btn-sm btn-outline-secondary">Ver todas</button>-->
+<!--            </div>-->
           </div>
 
           <ul class="notification-list">
-            <li class="notification-item">
-              <div class="notification-icon" style="background-color: rgba(var(--tblr-success-rgb), 0.1); color: var(--tblr-success);">
-                <i class="fas fa-check"></i>
+            <li class="notification-item" th:each="noti : ${notificaciones}">
+              <div class="notification-icon"
+                   th:style="'background-color: rgba(var(--tblr-' + ${noti.leido ? 'success' : 'primary'} + '-rgb), 0.1); color: var(--tblr-' + ${noti.leido ? 'success' : 'primary'} + ');'">
+                <i class="fas" th:classappend="${noti.leido ? 'fa-envelope-open' : 'fa-envelope'}"></i>
               </div>
-              <div class="notification-content">
-                <div class="notification-title">Nueva versión disponible</div>
-                <div class="notification-description">API de Usuarios v2.2.0 está disponible</div>
-              </div>
-              <div class="notification-time">Hace 2h</div>
-            </li>
 
-            <li class="notification-item">
-              <div class="notification-icon" style="background-color: rgba(var(--tblr-warning-rgb), 0.1); color: var(--tblr-warning);">
-                <i class="fas fa-exclamation"></i>
-              </div>
               <div class="notification-content">
-                <div class="notification-title">Mantenimiento programado</div>
-                <div class="notification-description">El próximo sábado de 2:00 a 4:00 AM</div>
+                <div class="notification-title" th:text="${#strings.substringBefore(noti.mensaje, ':')}">Título</div>
+                <div class="notification-description" th:text="${#strings.substringAfter(noti.mensaje, ':')}">Descripción</div>
               </div>
-              <div class="notification-time">Ayer</div>
-            </li>
 
-            <li class="notification-item">
-              <div class="notification-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
-                <i class="fas fa-info"></i>
-              </div>
-              <div class="notification-content">
-                <div class="notification-title">Nuevo tutorial disponible</div>
-                <div class="notification-description">Cómo implementar webhooks</div>
-              </div>
-              <div class="notification-time">15 Mayo</div>
+              <div class="notification-time" th:text="${#temporals.format(noti.fecha.toLocalDateTime(), 'dd MMM HH:mm')}">Hace 2h</div>
             </li>
           </ul>
         </div>

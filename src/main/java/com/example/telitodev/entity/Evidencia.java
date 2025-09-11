@@ -11,13 +11,14 @@ public class Evidencia {
     
     @Column(name = "nombre", nullable = false, length = 200)
     private String nombre;
-    
-    @Column(name = "evidencia", nullable = false, length = 200)
-    private String evidencia;
+
+    @Lob
+    @Column(name = "evidencia", nullable = false)
+    private byte[] evidencia;
     
     @Lob
-    @Column(name = "descripción")
-    private byte[] descripcion;
+    @Column(name = "descripción", length = 200)
+    private String descripcion;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumns({
@@ -29,7 +30,7 @@ public class Evidencia {
     // Constructores
     public Evidencia() {}
     
-    public Evidencia(String nombre, String evidencia, byte[] descripcion, Issue issue) {
+    public Evidencia(String nombre, byte[] evidencia, String descripcion, Issue issue) {
         this.nombre = nombre;
         this.evidencia = evidencia;
         this.descripcion = descripcion;
@@ -56,19 +57,19 @@ public class Evidencia {
         this.nombre = nombre;
     }
     
-    public String getEvidencia() {
+    public byte[] getEvidencia() {
         return evidencia;
     }
     
-    public void setEvidencia(String evidencia) {
+    public void setEvidencia(byte[] evidencia) {
         this.evidencia = evidencia;
     }
     
-    public byte[] getDescripcion() {
+    public String getDescripcion() {
         return descripcion;
     }
     
-    public void setDescripcion(byte[] descripcion) {
+    public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
     

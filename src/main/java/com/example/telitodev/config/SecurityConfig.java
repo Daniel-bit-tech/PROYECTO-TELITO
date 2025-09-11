@@ -95,7 +95,6 @@ public class SecurityConfig {
 
                 for (GrantedAuthority authority : authorities) {
                     String role = authority.getAuthority();
-                    System.out.println("Rol detectado: " + role);
 
                     switch (authority.getAuthority()) {
                         case "ROLE_SADMIN":
