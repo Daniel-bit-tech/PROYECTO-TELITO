@@ -60,7 +60,7 @@
 <body>
 <script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
-    <div th:replace="productOwner/header_po.html :: header"></div>
+    <div th:replace="po/header_po.html :: header"></div>
 
     <!-- Main Content -->
     <div class="page-wrapper">
@@ -109,6 +109,7 @@
 
 
 
+
                     <div class="col-md-6 col-lg-3">
                         <div class="card">
                             <div class="card-body">
@@ -124,46 +125,7 @@
                             <div class="card-footer">
                                 <div class="d-flex">
                                     <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
-                                    <a href="/feedbackDetalle" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div><div class="col-md-6 col-lg-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <h3 class="card-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">PAGO - API</font></font></h3>
-                            <p class="text-secondary"><font style="vertical-align: inherit;"></font></p><h3 class="card-title mt-4"><font style="vertical-align: inherit;">Usuario</font></h3><font style="vertical-align: inherit;">
-                            <p class="card-subtitle">Juan Perez</p></font>
-                            <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Cargo</h3>
-                                <p class="card-subtitle">DEV</p></font>
-                            <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Estado</h3>
-                                <p class="card-subtitle">Pendiente</p></font><p></p>
-                        </div>
-                        <!-- Card footer -->
-                        <div class="card-footer">
-                            <div class="d-flex">
-                                <a href="feedbackDetalle" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
-                                <a href="feedbackDetalle" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                    <div class="col-md-6 col-lg-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <h3 class="card-title"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">PAGO - API</font></font></h3>
-                                <p class="text-secondary"><font style="vertical-align: inherit;"></font></p><h3 class="card-title mt-4"><font style="vertical-align: inherit;">Usuario</font></h3><font style="vertical-align: inherit;">
-                                <p class="card-subtitle">Juan Perez</p></font>
-                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Cargo</h3>
-                                    <p class="card-subtitle">DEV</p></font>
-                                <font style="vertical-align: inherit;"><h3 class="card-title mt-4">Estado</h3>
-                                    <p class="card-subtitle">Pendiente</p></font><p></p>
-                            </div>
-                            <!-- Card footer -->
-                            <div class="card-footer">
-                                <div class="d-flex">
-                                    <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
-                                    <a href="#" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                                    <a th:href="@{/po/feedbackDetalle}" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
                                 </div>
                             </div>
                         </div>
@@ -184,7 +146,7 @@
                             <div class="card-footer">
                                 <div class="d-flex">
                                     <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
-                                    <a href="#" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                                    <a th:href="@{/po/feedbackDetalle}" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
                                 </div>
                             </div>
                         </div>
@@ -204,7 +166,7 @@
                             <div class="card-footer">
                                 <div class="d-flex">
                                     <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
-                                    <a href="#" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                                    <a th:href="@{/po/feedbackDetalle}" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
                                 </div>
                             </div>
                         </div>
@@ -224,7 +186,7 @@
                             <div class="card-footer">
                                 <div class="d-flex">
                                     <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
-                                    <a href="#" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                                    <a th:href="@{/po/feedbackDetalle}" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
                                 </div>
                             </div>
                         </div>
@@ -244,7 +206,7 @@
                             <div class="card-footer">
                                 <div class="d-flex">
                                     <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
-                                    <a href="#" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                                    <a th:href="@{/po/feedbackDetalle}" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
                                 </div>
                             </div>
                         </div>
@@ -263,7 +225,7 @@
                         <div class="card-footer">
                             <div class="d-flex">
                                 <a href="#" class="btn btn-link"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Resuelto</font></font></a>
-                                <a href="#" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
+                                <a th:href="@{/po/feedbackDetalle}" class="btn btn-primary ms-auto"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Detalles</font></font></a>
                             </div>
                         </div>
                     </div>

@@ -60,7 +60,7 @@
 <body>
 <script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
-    <div th:replace="productOwner/header_po.html :: header"></div>
+    <div th:replace="po/header_po.html :: header"></div>
 
     <!-- Main Content -->
     <div class="page-wrapper">
@@ -69,7 +69,7 @@
             <div class="container-xl">
                 <div class="row g-2 align-items-center">
                     <div class="col">
-                        <h2 class="page-title">Detalles de Feedback</h2>
+                        <h2 class="page-title">Solicitud</h2>
                     </div>
                 </div>
             </div>
@@ -120,23 +120,23 @@
                                 </div>
 
                                 <p class="card-subtitle">Pagos API</p>
-                                <h3 class="card-title mt-4">Tipo de Solicitud</h3>
+                                <h3 class="card-title mt-4">Tipo de solicitud</h3>
                                 <div>
                                     <div class="row g-2">
                                     </div>
                                 </div>
-                                <p class="card-subtitle">Mejora del API</p>
+                                <p class="card-subtitle">Entorno a Sandbox</p>
 
                                 <div class="col col-lg-6">
                                     <div class="chat-bubble">
                                         <div class="chat-bubble-title">
                                             <div class="row">
-                                                <div class="col chat-bubble-author">Comentario</div>
+                                                <div class="col chat-bubble-author">Motivo</div>
 
                                             </div>
                                         </div>
                                         <div class="chat-bubble-body">
-                                            <p>La API de pagos tiene errores al procesar transacciones grandes</p>
+                                            <p>Necesita procesar pagos en la plataforma de ecommerce, además de necesitar el entorno de prueba tipo Sandbox en su aplicación web</p>
                                         </div>
                                     </div>
                                 </div>
@@ -150,8 +150,8 @@
                                         Volver</a>
                                     <a class="btn btn-youtube"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-youtube -->
                                         Rechazar Solicitud</a>
-                                    <a class="btn btn-bitbucket"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-bitbucket -->Marcar como resulto
-                                    </a>
+                                    <a class="btn btn-bitbucket"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-bitbucket -->
+                                        Aceptar Solicitud</a>
                                 </div>
                             </div>
                         </div>
@@ -161,7 +161,41 @@
         </div>
         <!-- END PAGE BODY -->
         <!--  BEGIN FOOTER  -->
-
+        <footer class="footer footer-transparent d-print-none">
+            <div class="container-xl">
+                <div class="row text-center align-items-center flex-row-reverse">
+                    <div class="col-lg-auto ms-lg-auto">
+                        <ul class="list-inline list-inline-dots mb-0">
+                            <li class="list-inline-item"><a href="https://docs.tabler.io" target="_blank" class="link-secondary" rel="noopener">Documentation</a></li>
+                            <li class="list-inline-item"><a href="./license.html" class="link-secondary">License</a></li>
+                            <li class="list-inline-item">
+                                <a href="https://github.com/tabler/tabler" target="_blank" class="link-secondary" rel="noopener">Source code</a>
+                            </li>
+                            <li class="list-inline-item">
+                                <a href="https://github.com/sponsors/codecalm" target="_blank" class="link-secondary" rel="noopener">
+                                    <!-- Download SVG icon from http://tabler.io/icons/icon/heart -->
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-pink icon-inline icon-4">
+                                        <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"></path>
+                                    </svg>
+                                    Sponsor
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-12 col-lg-auto mt-3 mt-lg-0">
+                        <ul class="list-inline list-inline-dots mb-0">
+                            <li class="list-inline-item">
+                                Copyright © 2025
+                                <a href="." class="link-secondary">Tabler</a>. All rights reserved.
+                            </li>
+                            <li class="list-inline-item">
+                                <a href="./changelog.html" class="link-secondary" rel="noopener"> v1.4.0 </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
         <!--  END FOOTER  -->
     </div>
 
@@ -221,6 +255,6 @@
     <div id="footer-placeholder"></div>
 </div>
 
-<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
-<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
+<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
 </body></html>
