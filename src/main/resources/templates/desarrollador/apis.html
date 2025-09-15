@@ -441,7 +441,7 @@
             <div class="api-meta">
             <span class="meta-item">
                 <i class="fas fa-code-branch"></i>
-                <span th:text="${api.versionesApi != null ? api.versionesApi.getFirst().version : 'v1.0'}"></span>
+                <span th:text="${api.versionesApi != null ? api.versionesApi.get(0).version : 'v1.0'}"></span>
             </span>
               <span class="meta-item">
                 <i class="fas fa-bolt"></i>

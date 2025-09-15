@@ -6,18 +6,18 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>Search for Jobs - Tabler - Premium and Open Source dashboard template with responsive and high quality UI.</title>
     <!-- BEGIN GLOBAL MANDATORY STYLES -->
-    <link href="/dist/css/tabler.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler.css?1757307617" rel="stylesheet" />
     <!-- END GLOBAL MANDATORY STYLES -->
     <!-- BEGIN PLUGINS STYLES -->
-    <link href="/dist/css/tabler-flags.css?1757307617" rel="stylesheet" />
-    <link href="/dist/css/tabler-socials.css?1757307617" rel="stylesheet" />
-    <link href="/dist/css/tabler-payments.css?1757307617" rel="stylesheet" />
-    <link href="./dist/css/tabler-vendors.css?1757307617" rel="stylesheet" />
-    <link href="./dist/css/tabler-marketing.css?1757307617" rel="stylesheet" />
-    <link href="./dist/css/tabler-themes.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-flags.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-socials.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-payments.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-vendors.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-marketing.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-themes.css?1757307617" rel="stylesheet" />
     <!-- END PLUGINS STYLES -->
     <!-- BEGIN DEMO STYLES -->
-    <link href="./preview/css/demo.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/preview/css/demo.css?1757307617" rel="stylesheet" />
     <!-- END DEMO STYLES -->
     <!-- BEGIN CUSTOM FONT -->
     <style>
@@ -27,7 +27,7 @@
 </head>
 <body>
 <!-- BEGIN GLOBAL THEME SCRIPT -->
-<script src="./dist/js/tabler-theme.min.js?1757307617"></script>
+<script src="/tabler/dist/js/tabler-theme.min.js?1757307617"></script>
 <!-- END GLOBAL THEME SCRIPT -->
 <div class="page">
     <!-- BEGIN NAVBAR  -->
@@ -295,7 +295,7 @@
                         <div class="col">
                             <!-- BEGIN NAVBAR MENU -->
                             <ul class="navbar-nav">
-                                <li class="nav-item active">
+                                <li class="nav-item">
                                     <a class="nav-link" href="1-catalogo.html">
                         <span class="nav-link-icon d-md-none d-lg-inline-block"
                         ><!-- Download SVG icon from http://tabler.io/icons/icon/home -->
@@ -318,7 +318,7 @@
                                         <span class="nav-link-title"> Catálogo </span>
                                     </a>
                                 </li>
-                                <li class="nav-item dropdown">
+                                <li class="nav-item dropdown active">
                                     <a
                                             class="nav-link" href="1-reporte.html"
                                     >
@@ -441,7 +441,7 @@
                 <div class="row g-2 align-items-center">
 
                     <div class="col" style="text-align:center">
-                        <h2>APIS</h2>
+                        <h2>Tarjeta de reportes</h2>
                     </div>
                     <!-- Page title actions -->
                     <div class="col-auto ms-auto d-print-none">
@@ -498,22 +498,40 @@
                                 </label>
                             </div>
 
-                            <div class="form-label">TAGS</div>
+                            <div class="form-label">ESTADO</div>
+                            <div class="mb-4">
+                                <div class="mb-4">
+                                    <label class="form-check">
+                                        <input type="radio" class="form-check-input" name="form-estado" value="1" checked />
+                                        <span class="form-check-label">APROBADO</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="radio" class="form-check-input" name="form-estado" value="2" checked />
+                                        <span class="form-check-label">FALLIDO</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input type="radio" class="form-check-input" name="form-estado" value="3" />
+                                        <span class="form-check-label">CON INCIDENCIAS</span>
+                                    </label>
+
+                                </div>
+                            </div>
+                            <div class="form-label">FECHA</div>
                             <div class="mb-4">
                                 <label class="form-check">
-                                    <input type="checkbox" class="form-check-input" name="form-type[]" value="1" checked />
-                                    <span class="form-check-label">REST</span>
+                                    <input type="radio" class="form-check-input" name="form-salary" value="1" checked />
+                                    <span class="form-check-label">Último día</span>
                                 </label>
                                 <label class="form-check">
-                                    <input type="checkbox" class="form-check-input" name="form-type[]" value="2" checked />
-                                    <span class="form-check-label">GraphQL</span>
+                                    <input type="radio" class="form-check-input" name="form-salary" value="2" checked />
+                                    <span class="form-check-label">Última semana</span>
                                 </label>
                                 <label class="form-check">
-                                    <input type="checkbox" class="form-check-input" name="form-type[]" value="3" />
-                                    <span class="form-check-label">Eventos</span>
+                                    <input type="radio" class="form-check-input" name="form-salary" value="3" />
+                                    <span class="form-check-label">Último mes</span>
                                 </label>
-                            </div>
 
+                            </div>
                             <div class="mt-5">
                                 <button class="btn btn-primary w-100">Confirmar cambios</button>
                                 <a href="#" class="btn btn-link w-100"> Resetear </a>
@@ -554,19 +572,21 @@
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-md">
-                                                        Contrato de API:
-                                                        <a href="#">[ver contrato]</a>
+                                                        Fecha: 17/02/2025
                                                     </div>
-                                                    <div class="col-md-auto">
+                                                </div>
+                                                <div class="row">
+                                                    <div class="col-md">
                                                         Descripción: Procesa pagos con tarjeta en tiempo real
                                                     </div>
                                                 </div>
-                                                <div>
-                                                    <div class="col-md">
-                                                        Documentación:
-                                                        <a href="#">[Ver Documentación]</a>
-                                                    </div>
+                                                <br>
+
+                                                <div class="col-lg-6">
+                                                    <a href="#" class="btn btn-primary">Ver detalles</a>
+                                                    <a href="#" class="btn btn-danger">Generar issue</a>
                                                 </div>
+
                                             </div>
                                         </div>
                                     </div>
@@ -595,7 +615,7 @@
                                                 </div>
                                                 <div class="row">
                                                     <div clas="col-md">
-                                                        Estado: <span style="color:#ffcc00">TESTING</span>
+                                                        Estado: <span style="color:red">FALLIDO</span>
                                                     </div>
                                                     <div class="col-md-auto">
                                                         Versión: 2.1
@@ -603,18 +623,18 @@
                                                 </div>
                                                 <div class="row">
                                                     <div class="col-md">
-                                                        Contrato de API:
-                                                        <a href="#">[ver contrato]</a>
-                                                    </div>
-                                                    <div class="col-md-auto">
-                                                        Descripción: Procesa pagos con tarjeta en tiempo real
+                                                        Fecha: 17/02/2025
                                                     </div>
                                                 </div>
                                                 <div>
                                                     <div class="col-md">
-                                                        Documentación:
-                                                        <a href="#">[Ver Documentación]</a>
+                                                        Descripción: Procesa pagos con tarjeta en tiempo real
                                                     </div>
+                                                </div>
+
+                                                <div class="col-lg-6">
+                                                    <a href="#" class="btn btn-primary">Ver detalles</a>
+                                                    <a href="#" class="btn btn-danger">Generar issue</a>
                                                 </div>
 
                                             </div>
@@ -964,10 +984,10 @@
     </form>
 </div>
 <!-- BEGIN GLOBAL MANDATORY SCRIPTS -->
-<script src="./dist/js/tabler.min.js?1757307617" defer></script>
+<script src="/tabler/dist/js/tabler.min.js?1757307617" defer></script>
 <!-- END GLOBAL MANDATORY SCRIPTS -->
 <!-- BEGIN DEMO SCRIPTS -->
-<script src="./preview/js/demo.min.js?1757307617" defer></script>
+<script src="/tabler/preview/js/demo.min.js?1757307617" defer></script>
 <!-- END DEMO SCRIPTS -->
 <!-- BEGIN PAGE SCRIPTS -->
 <script>

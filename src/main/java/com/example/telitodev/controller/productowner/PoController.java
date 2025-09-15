@@ -2,6 +2,7 @@ package com.example.telitodev.controller.productowner;
 
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.repository.UsuarioRepository;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/po")
+@PreAuthorize("hasAnyRole('PO', 'SADMIN')")
 public class PoController {
 
     final UsuarioRepository usuarioRepository;
@@ -24,76 +26,80 @@ public class PoController {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
 
-        return "productOwner/documentacion";
+        return "po/documentacion";
     }
 
     @GetMapping("/KPIs")
     public String showKPIsView(Model model, Authentication auth) {
-        return "productOwner/KPIs";
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        model.addAttribute("usuario", usuario);
+        return "po/KPIs";
     }
     @GetMapping("/bandejaSolicitud")
     public String showbandejaSolicitudesView(Model model, Authentication auth) {
-        return "productOwner/bandejaSolicitud";
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        model.addAttribute("usuario", usuario);
+        return "po/bandejaSolicitud";
     }
     @GetMapping("/versolicitud")
     public String showSolicitudesView(Model model, Authentication auth){
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        return "productOwner/verSolicitud";
+        return "po/verSolicitud";
     }
     @GetMapping("/backlog")
     public String showBacklogView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        return "productOwner/backlog";
+        return "po/backlog";
     }
     @GetMapping("/feedback")
     public String showFeedbackView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        return "productOwner/feedback";
+        return "po/feedback";
     }
     @GetMapping("/roadmap")
     public String showRoadmapView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        return "productOwner/roadmap";
+        return "po/roadmap";
     }
     @GetMapping("/roadmapGestion")
     public String showRoadmapGestionView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        return "productOwner/roadmapGestion";
+        return "po/roadmapGestion";
     }
     @GetMapping("/roadmapDetalle")
     public String showRoadmapDetalleView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        return "productOwner/roadmapDetalle";
+        return "po/roadmapDetalle";
     }
     @GetMapping("/feedbackDetalle")
     public String showfeedbackDetalleView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        return "productOwner/feedbackDetalle";
+        return "po/feedbackDetalle";
     }
     @GetMapping("/Dashboard")
     public String showDashboardView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        return "productOwner/Dashboard";
+        return "po/Dashboard";
     }
     @GetMapping("/verPerfil")
     public String showverPerfilView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        return "productOwner/verPerfil";
+        return "po/verPerfil";
     }
     @GetMapping("/verSolicitud")
     public String showverSolicitudView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        return "productOwner/verSolicitud";
+        return "po/verSolicitud";
     }
 
 }
