@@ -1,19 +1,20 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>TELITO DEVELOPER PORTAL | Mi Perfil</title>
-    <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
-    <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url("https://rsms.me/inter/inter.css");
@@ -379,6 +380,26 @@
 <div class="page">
 
     <div th:replace="desarrollador/header.html :: header"></div>
+
+    <!-- Para ROLE_SADMIN -->
+<!--    <div sec:authorize="hasRole('SADMIN')"-->
+<!--         th:replace="superadmin/header-sadmin.html :: header"></div>-->
+
+    <!-- Para ROLE_DEV -->
+    <div sec:authorize="hasRole('DEV')"
+         th:replace="desarrollador/header.html :: header"></div>
+
+<!--    &lt;!&ndash; Para ROLE_QA &ndash;&gt;-->
+<!--    <div sec:authorize="hasRole('QA')"-->
+<!--         th:replace="qa/header_qa.html :: header_qa"></div>-->
+
+    <!-- Para ROLE_PO -->
+<!--    <div sec:authorize="hasRole('PO')"-->
+<!--         th:replace="po/header_po.html :: header"></div>-->
+
+    <!-- Para roles que todavia no tienen fragmento -->
+    <div sec:authorize="!isAuthenticated() and !(hasAnyRole('SADMIN','PO','QA'))"
+         th:replace="desarrollador/header.html :: header"></div>
 
     <div class="content">
         <div class="profile-container">

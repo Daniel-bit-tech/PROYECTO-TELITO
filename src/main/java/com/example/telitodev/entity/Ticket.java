@@ -22,9 +22,9 @@ public class Ticket {
     private Timestamp fechaCreacion;
     
     @Column(name = "estado", nullable = false)
-    private Boolean estado;
+    private Boolean estado;     //en DB: 0 (false) es abierto, 1 (true) es cerrado
     
-    @Column(name = "fecha_final", nullable = false)
+    @Column(name = "fecha_final", nullable = true)
     private Timestamp fechaFinal;
     
     @ManyToOne(fetch = FetchType.LAZY)
