@@ -480,7 +480,10 @@
                 <div class="api-name" th:text="${cred.api.nombre}">Nombre API</div>
 
                 <div class="api-meta">
-                  <span th:text="${cred.api.versionesApi.get(0).getVersion()}">v1.X</span>
+                  <span th:if="${cred.api.versionesApi != null and !cred.api.versionesApi.isEmpty()}"
+                        th:text="${cred.api.versionesApi.get(0).getVersion()}">v1.X
+                  </span>
+                  <span th:unless="${cred.api.versionesApi != null and !cred.api.versionesApi.isEmpty()}">Sin versión</span>
                   <span>•</span>
                   <span>
           Credencial creada:
