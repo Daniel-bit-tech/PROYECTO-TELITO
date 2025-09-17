@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
     <meta charset="UTF-8">
@@ -66,7 +67,8 @@
 
         <div class="login__inputs">
             <div class="login__box">
-                <input type="email" name="email" placeholder="Correo institucional" required class="login__input">
+                <input type="email" name="email" placeholder="Correo institucional" required class="login__input"
+                       th:value="${#authorization.expression('isAuthenticated()') ? #authentication.name : ''}" >
                 <i class="ri-mail-fill"></i>
             </div>
         </div>

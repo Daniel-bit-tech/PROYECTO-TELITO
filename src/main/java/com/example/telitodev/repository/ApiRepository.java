@@ -7,9 +7,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ApiRepository extends JpaRepository<Api, Integer> {
+
+    Optional<Api> findById(Integer idApi);
 
     List<Api> findByDominio(String dominio);
 
