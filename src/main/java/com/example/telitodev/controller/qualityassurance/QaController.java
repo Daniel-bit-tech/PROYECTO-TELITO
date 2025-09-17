@@ -70,6 +70,27 @@ public class QaController {
         return "qa/reporteDetalle";
     }
     
+    @GetMapping("/perfil")
+    public String showPerfil(Model model, Authentication authentication) {
+        System.out.println("=== DEBUG PERFIL QA ===");
+        System.out.println("Authentication name: " + authentication.getName());
+        
+        // Obtener información del usuario autenticado
+        String correo = authentication.getName();
+        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        
+        if (usuario != null) {
+            System.out.println("Usuario encontrado: " + usuario.getNombre() + " " + usuario.getApellidoPaterno());
+            System.out.println("Rol: " + usuario.getRol().getNombreRol());
+            System.out.println("Fecha registro: " + usuario.getFechaRegistro());
+            model.addAttribute("usuario", usuario);
+        } else {
+            System.out.println("Usuario NO encontrado para correo: " + correo);
+        }
+        
+        System.out.println("Retornando vista: desarrollador/perfil (reutilizada para QA)");
+        return "desarrollador/perfil";
+    }
     
 
 }
