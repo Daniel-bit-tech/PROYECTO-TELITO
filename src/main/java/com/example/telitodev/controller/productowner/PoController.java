@@ -102,4 +102,10 @@ public class PoController {
         return "po/verSolicitud";
     }
 
+    @GetMapping("/catalogo")
+    public String showCatalogoView(Model model, Authentication auth) {
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        model.addAttribute("usuario", usuario);
+        return "po/catalogo";
+    }
 }
