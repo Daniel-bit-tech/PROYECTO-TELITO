@@ -9,6 +9,6 @@ import java.util.List;
 @Repository
 public interface CredencialApiRepository extends JpaRepository<CredencialApi, Integer> {
 
-    List<CredencialApi> findByUsuario_Dni(String dni);
+    List<CredencialApi> findByUsuario_DniOrderByFechaCreacionDesc(String dni);
     Integer countByUsuario_DniAndEstado(String dni, Boolean Estado);
 }
