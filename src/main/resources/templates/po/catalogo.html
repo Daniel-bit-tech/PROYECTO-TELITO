@@ -1,292 +1,549 @@
-<html lang="es" data-bs-theme="dark"><head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>TELITO DEVELOPER PORTAL | Sistema de Reservas Deportivas</title>
-    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet">
-    <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet">
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>TELITO DEVELOPER PORTAL | Catálogo de APIs</title>
+    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url("https://rsms.me/inter/inter.css");
-        .api-card:hover {
-            transform: translateY(-5px);
-            transition: transform 0.2s ease;
+
+
+        .catalog-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 1rem;
         }
-        .quick-action-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
+
+        .catalog-header {
+            padding: 2rem 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .catalog-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .catalog-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .search-filters {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
-        }
-        .chatbot-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        .chatbot-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: #206bc4;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-        .api-status-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-        .sport-icon {
-            background-color: #f8f9fa;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: var(--tblr-bg-surface-secondary);
             border-radius: 8px;
-            padding: 8px;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 3rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--tblr-secondary-color);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background-color: var(--tblr-bg-surface);
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            color: var(--tblr-body-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-btn.active {
+            background-color: var(--tblr-primary);
+            color: white;
+            border-color: var(--tblr-primary);
+        }
+
+        .catalog-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 1.5rem;
+        }
+
+        .filters-sidebar {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        .filter-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-section-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--tblr-border-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-tags {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-tag {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .filter-tag:hover {
+            background-color: var(--tblr-bg-surface-secondary);
+        }
+
+        .filter-tag input {
+            margin: 0;
+        }
+
+        .apis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .api-card {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100%;
+        }
+
+        .api-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .api-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .api-title {
+            font-weight: 600;
+            font-size: 1.125rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .api-description {
+            color: var(--tblr-secondary-color);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            flex: 1;
+        }
+
+        .api-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-production {
+            background-color: rgba(var(--tblr-success-rgb), 0.1);
+            color: var(--tblr-success);
+        }
+
+        .status-qa {
+            background-color: rgba(var(--tblr-warning-rgb), 0.1);
+            color: var(--tblr-warning);
+        }
+
+        .status-deprecated {
+            background-color: rgba(var(--tblr-secondary-rgb), 0.1);
+            color: var(--tblr-secondary);
+        }
+
+        .api-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: var(--tblr-secondary-color);
+        }
+
+        .api-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .api-tag {
+            padding: 0.25rem 0.5rem;
+            background-color: var(--tblr-bg-surface-secondary);
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--tblr-secondary-color);
+        }
+
+        .api-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: auto;
+        }
+
+        .btn-api {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background-color: var(--tblr-primary);
+            color: white;
+            border: none;
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--tblr-border-color);
+            color: var(--tblr-body-color);
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            gap: 0.5rem;
+        }
+
+        .pagination-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+            cursor: pointer;
+        }
+
+        .pagination-btn.active {
+            background-color: var(--tblr-primary);
+            color: white;
+            border-color: var(--tblr-primary);
+        }
+
+        @media (max-width: 1024px) {
+            .catalog-content {
+                grid-template-columns: 1fr;
+            }
+
+            .apis-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .search-filters {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .apis-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 
 <body>
-<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
+
     <div th:replace="po/header_po.html :: header"></div>
 
-    <!-- Main Content -->
-    <div class="page-wrapper">
-        <!-- BEGIN PAGE HEADER -->
-        <div class="page-header d-print-none" aria-label="Page header">
-            <div class="container-xl">
-                <div class="row g-2 align-items-center">
-                    <div class="col">
-                        <h2 class="page-title">Catalogo</h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- END PAGE HEADER -->
-        <!-- BEGIN PAGE BODY -->
-        <div class="page-body">
-            <div class="container-xl">
-                <div class="row row-cards">
-                    <div class="col-12">
-                        <div class="card">
+    <!-- Main -->
+    <div class="content">
+        <div class="catalog-container">
+            <main class="container-xl mt-4">
 
-                            <div class="card-body border-bottom py-3">
-                                <div class="d-flex">
-                                    <div class="text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
-                                        Mostrar
-                                    </font></font><div class="mx-2 d-inline-block">
-                                        <input type="text" class="form-control form-control-sm" value="8" size="3" aria-label="Recuento de facturas">
-                                    </div><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
-                                        entradas
-                                    </font></font></div>
-                                    <div class="ms-auto text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
-                                        Buscar:
-                                    </font></font><div class="ms-2 d-inline-block">
-                                        <input type="text" class="form-control form-control-sm" aria-label="Buscar factura">
-                                    </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-selectable card-table table-vcenter text-nowrap datatable">
-                                    <thead>
-                                    <tr>
-
-                                        <th class="w-1"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
-                                            No.
-                                        </font></font><!-- Download SVG icon from http://tabler.io/icons/icon/chevron-up -->
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-sm icon-thick icon-2">
-                                                <path d="M6 15l6 -6l6 6"></path>
-                                            </svg>
-                                        </th>
-                                        <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Nombre
-                                        </font></font></th>
-
-                                        <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Estado</font></font></th>
-
-                                        <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Casos de Uso</font></font></th>
-                                        <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Descripcion</font></font></th>
-                                        <th></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-
-                                        <td><span class="text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1</font></font></span></td>
-                                        <td><a href="invoice.html" class="text-reset" tabindex="-1"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Pagos</font></font></a></td>
-
-                                        <td><span class="badge bg-success me-1"></span><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">En desarrollo</font></font></td>
-
-                                        <td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Cobro de Productos</font></font></td>
-                                        <td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Como PO quiero que la API...</font></font></td>
-                                        <td class="text-end">
-                            <span class="dropdown">
-                              <button class="btn dropdown-toggle align-text-top show" data-bs-boundary="viewport" data-bs-toggle="dropdown" aria-expanded="true"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Acciones</font></font></button>
-                              <div class="dropdown-menu dropdown-menu-end show" style="position: absolute; inset: 0px 0px auto auto; margin: 0px; transform: translate(179px, 42px);" data-popper-placement="bottom-end">
-                                                    <a class="dropdown-item" href="documentacion"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver Documentacion</font></font></a>
-<a class="dropdown-item" href="KPIs"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Ver KPIs</font></font></a>
-
-                              </div>
-                            </span>
-                                        </td>
-                                    </tr>
-
-
-
-
-
-
-
-                                    </tbody>
-                                </table>
-                            </div><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
-                            ---------------
-                        </font></font><div class="card-footer">
-                            <div class="row g-2 justify-content-center justify-content-sm-between">
-                                <div class="col-auto d-flex align-items-center">
-                                    <p class="m-0 text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Mostrando </font></font><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1 a 8</font></font></strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;"> de </font></font><strong><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">16 entradas</font></font></strong></p>
-                                </div>
-                                <div class="col-auto">
-                                    <ul class="pagination m-0 ms-auto">
-                                        <li class="page-item disabled">
-                                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                                                <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-left -->
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
-                                                    <path d="M15 6l-6 6l6 6"></path>
-                                                </svg>
-                                            </a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1</font></font></a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">2</font></font></a>
-                                        </li>
-                                        <li class="page-item active">
-                                            <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">3</font></font></a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">4</font></font></a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">5</font></font></a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#">
-                                                <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-right -->
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
-                                                    <path d="M9 6l6 6l-6 6"></path>
-                                                </svg>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
+                <div class="catalog-header rounded-3 px-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="catalog-title">Catálogo de APIs</h1>
+                            <p class="catalog-subtitle">Explora y descubre todas las APIs disponibles para integrar en tus proyectos</p>
                         </div>
+                        <div class="col-md-4 text-md-end">
                         </div>
                     </div>
-
-
-
-
-
-
                 </div>
-            </div>
-        </div>
-        <!-- END PAGE BODY -->
-        <!--  BEGIN FOOTER  -->
-        <div id="footer-placeholder"></div>
-        <!--  END FOOTER  -->
-    </div>
 
+                <div class="search-filters">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" id="search" name="nombre" placeholder="Buscar APIs por nombre">
+                    </div>
 
-    <div class="chatbot-container">
-        <div class="chatbot-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasChatbot">
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-message-chatbot" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z"></path>
-                <path d="M9.5 9h.01"></path>
-                <path d="M14.5 9h.01"></path>
-                <path d="M9.5 13a3.5 3.5 0 0 0 5 0"></path>
-            </svg>
-        </div>
-    </div>
+                    <!--        <div class="filter-buttons">-->
+                    <!--          <button class="filter-btn active">-->
+                    <!--            <i class="fas fa-layer-group"></i> Todas-->
+                    <!--          </button>-->
+                    <!--          <button class="filter-btn">-->
+                    <!--            <i class="fas fa-check-circle"></i> Activas-->
+                    <!--          </button>-->
+                    <!--          <button class="filter-btn">-->
+                    <!--            <i class="fas fa-star"></i> Populares-->
+                    <!--          </button>-->
+                    <!--          <button class="filter-btn">-->
+                    <!--            <i class="fas fa-clock"></i> Recientes-->
+                    <!--          </button>-->
+                    <!--        </div>-->
+                </div>
 
-
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasChatbot">
-        <div class="offcanvas-header">
-            <h2 class="offcanvas-title">Asistente Virtual</h2>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <div class="chat-messages p-3">
-                <div class="chat-message chat-message-left">
-                    <div class="d-flex">
-                        <div class="flex-shrink-0">
-                            <span class="avatar avatar-sm" style="background-image: url(./tabler/static/avatars/000f.jpg)"></span>
-                        </div>
-                        <div class="flex-fill ms-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <p>¡Hola! Soy tu asistente para el sistema de reservas deportivas. ¿En qué puedo ayudarte hoy?</p>
+                <div class="catalog-content">
+                    <form method="get" action="/apis" id="filterForm">
+                        <input type="hidden" name="nombre" id="nombreHidden">
+                        <div class="filters-sidebar">
+                            <div class="filter-section">
+                                <h3 class="filter-section-title">
+                                    <i class="fas fa-signal"></i> Dominios
+                                </h3>
+                                <div class="filter-tags">
+                                    <!--              <label class="filter-tag">-->
+                                    <!--                <input type="checkbox" name="dominios" checked> Todos los Dominios-->
+                                    <!--              </label>-->
+                                    <label class="filter-tag">
+                                        <input type="checkbox" name="dominios" value="Seguridad"> Seguridad
+                                    </label>
+                                    <label class="filter-tag">
+                                        <input type="checkbox" name="dominios" value="Finanzas"> Finanzas
+                                    </label>
+                                    <label class="filter-tag">
+                                        <input type="checkbox" name="dominios" value="Logistica"> Logistica
+                                    </label>
                                 </div>
+                            </div>
+
+                            <div class="filter-section">
+                                <h3 class="filter-section-title">
+                                    <i class="fas fa-tag"></i> Tag
+                                </h3>
+                                <div class="filter-tags">
+                                    <!--              <label class="filter-tag">-->
+                                    <!--                <input type="checkbox" checked> Todas-->
+                                    <!--              </label>-->
+                                    <label class="filter-tag">
+                                        <input type="checkbox" name="tags" value="REST"> REST
+                                    </label>
+                                    <label class="filter-tag">
+                                        <input type="checkbox" name="tags" value="GraphQL"> GraphQL
+                                    </label>
+                                    <label class="filter-tag">
+                                        <input type="checkbox" name="tags" value="Webhook"> Webhooks
+                                    </label>
+                                    <label class="filter-tag">
+                                        <input type="checkbox" name="tags" value="Eventos"> Eventos
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-api btn-primary" style="width: 100%;">
+                                <i class="fas fa-filter"></i> Aplicar Filtros
+                            </button>
+                        </div>
+                    </form>
+
+
+                    <div class="apis-grid">
+                        <div class="api-card" th:each="api : ${apis}">
+                            <div class="api-header">
+                                <div>
+                                    <h3 class="api-title" th:text="${api.nombre}">Nombre API</h3>
+                                    <!-- Ejemplo: mostrar estado según dominio o tag -->
+                                    <span class="api-status status-production"
+                                          th:text="${api.dominio}">Producción</span>
+                                </div>
+                                <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #4299e1;"></i>
+                            </div>
+
+                            <p class="api-description" th:text="${api.descripcion}">
+                                Descripción de la API
+                            </p>
+
+                            <div class="api-meta">
+            <span class="meta-item">
+                <i class="fas fa-code-branch"></i>
+                <span th:text="${api.versionesApi != null and !api.versionesApi.isEmpty()? api.versionesApi.get(0).version : 'Sin versión'}"></span>
+            </span>
+                                <span class="meta-item">
+                <i class="fas fa-bolt"></i>
+                                    <!-- Ejemplo: uptime fijo o calculado -->
+                98% uptime
+            </span>
+                            </div>
+
+                            <div class="api-tags">
+
+                                <span class="api-tag" th:text="${api.tag}"></span>
+                                <!--              <span class="api-tag" th:each="t : ${#strings.arraySplit(api.tag, ',')}"-->
+                                <!--                    th:text="${t}"></span>-->
+                            </div>
+
+                            <div class="api-actions">
+                                <a th:href="@{'/po/documentacion/' + ${api.idApi} + '/docs'}" class="btn-api btn-primary">
+                                    <i class="fas fa-book"></i> Documentación
+                                </a>
+                                <a th:href="@{'/po/KPIs/' + ${api.idApi} + '/test'}" class="btn-api btn-outline">
+                                    <i class="fas fa-play"></i> KPIs
+                                </a>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="chat-input p-3 border-top">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Escribe tu pregunta...">
-                    <button class="btn btn-primary" type="button">Enviar</button>
-                </div>
-                <div class="mt-2 text-center">
-                    <small class="text-muted">Preguntas frecuentes:</small>
-                    <div class="mt-1">
-                        <a href="#" class="badge badge-outline text-reset">¿Cómo integrar pagos con imagen?</a>
-                        <a href="#" class="badge badge-outline text-reset">API de Reservas documentación</a>
-                        <a href="#" class="badge badge-outline text-reset">Problemas de autenticación</a>
-                    </div>
-                </div>
-            </div>
+
+                <!--        Falta Paginacion <div class="pagination">-->
+                <!--          <button class="pagination-btn">-->
+                <!--            <i class="fas fa-chevron-left"></i>-->
+                <!--          </button>-->
+                <!--          <button class="pagination-btn active">1</button>-->
+                <!--          <button class="pagination-btn">2</button>-->
+                <!--          <button class="pagination-btn">3</button>-->
+                <!--          <button class="pagination-btn">-->
+                <!--            <i class="fas fa-chevron-right"></i>-->
+                <!--          </button>-->
+                <!--        </div>-->
+            </main>
         </div>
     </div>
 
-    <footer class="footer footer-transparent d-print-none">
-        <div class="container-xl">
-            <div class="row text-center align-items-center flex-row-reverse">
-                <div class="col-lg-auto ms-lg-auto">
-                    <ul class="list-inline list-inline-dots mb-0">
-                        <li class="list-inline-item"><a href="#" class="link-secondary">Soporte</a></li>
-                        <li class="list-inline-item"><a href="#" class="link-secondary">Documentación</a></li>
-                    </ul>
-                </div>
-                <div class="col-12 col-lg-auto mt-3 mt-lg-0">
-                    <ul class="list-inline list-inline-dots mb-0">
-                        <li class="list-inline-item">
-                            Copyright © 2025
-                            <a href="." class="link-secondary">TELITO Sports Reservations</a>. Todos los derechos reservados.
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <div id="footer-placeholder"></div>
 </div>
+
+<script>
+
+    document.getElementById('filterForm').addEventListener('submit', function() {
+        document.getElementById('nombreHidden').value = document.getElementById('search').value;
+    });
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+
+            const filterType = this.textContent.trim();
+            console.log(`Filtrando por: ${filterType}`);
+        });
+    });
+
+
+    const searchInput = document.querySelector('.search-input');
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        console.log(`Buscando: ${searchTerm}`);
+
+
+    });
+
+
+    document.querySelectorAll('.filter-tag input').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+
+            const filterCategory = this.parentElement.textContent.trim();
+            const isChecked = this.checked;
+
+            console.log(`Filtro ${filterCategory} ${isChecked ? 'activado' : 'desactivado'}`);
+        });
+    });
+
+
+    document.querySelectorAll('.btn-api').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const apiCard = this.closest('.api-card');
+            const apiName = apiCard.querySelector('.api-title').textContent;
+
+            if (this.classList.contains('btn-primary')) {
+
+                console.log(`Abriendo documentación de: ${apiName}`);
+                alert(`Redirigiendo a la documentación de ${apiName}`);
+            } else {
+
+                console.log(`Abriendo sandbox de: ${apiName}`);
+                alert(`Abriendo sandbox para probar ${apiName}`);
+            }
+        });
+    });
+</script>
 
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
 <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
-<div class="tooltip bs-tooltip-auto fade show" role="tooltip" id="tooltip401309" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(983px, 54px, 0px);" data-popper-placement="bottom"><div class="tooltip-arrow" style="position: absolute; transform: translate3d(42.5px, 0px, 0px); left: 0px;"></div><div class="tooltip-inner">Modo claro</div></div></body></html>
+</body>
+</html>
