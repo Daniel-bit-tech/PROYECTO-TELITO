@@ -398,8 +398,8 @@
 <!--         th:replace="po/header_po.html :: header"></div>-->
 
     <!-- Para roles que todavia no tienen fragmento -->
-    <div sec:authorize="!isAuthenticated() and !(hasAnyRole('SADMIN','PO','QA'))"
-         th:replace="desarrollador/header.html :: header"></div>
+<!--    <div sec:authorize=" (hasAnyRole('SADMIN','PO','QA'))"-->
+<!--         th:replace="desarrollador/header.html :: header"></div>-->
 
     <div class="content">
         <div class="profile-container">
