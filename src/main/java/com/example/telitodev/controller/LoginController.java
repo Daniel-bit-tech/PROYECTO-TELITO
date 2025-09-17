@@ -53,7 +53,7 @@ public class LoginController {
 
         for (GrantedAuthority authority : authorities) {
             switch (authority.getAuthority()) {
-                case "ROLE_SADMIN":
+                case "ROLE_SUPERADMIN":
                     return "redirect:/admin/home";
                 case "ROLE_DEV":
                     return "redirect:/dev/home";

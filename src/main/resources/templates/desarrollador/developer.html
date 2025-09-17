@@ -409,7 +409,13 @@
           <h2 class="welcome-title">¡Hola otra vez, <span th:text="${usuario.nombre}">Juan</span>!</h2>
           <p class="welcome-text">Tienes <span th:text="${NcredActivas}">0</span> APIs con credenciales activas y <span th:text="${Nnotis}">0</span> notificaciones sin leer.</p>
           <div class="welcome-actions">
-            <button class="btn btn-primary">
+            <!-- Mostrar botón específico para admin -->
+            <button class="btn btn-primary" th:if="${usuario.rol != null and usuario.rol.nombreRol == 'SUPERADMIN'}"
+                    th:onclick="'location.href=\'/admin/usuarios\''">
+              <i class="fas fa-users"></i> Gestionar Usuarios
+            </button>
+            <!-- Mostrar botón normal para desarrolladores -->
+            <button class="btn btn-primary" th:unless="${usuario.rol != null and usuario.rol.nombreRol == 'SUPERADMIN'}">
               <i class="fas fa-rocket"></i> Crear nuevo proyecto
             </button>
             <a th:href="@{/apis}" class="btn btn-outline-light">

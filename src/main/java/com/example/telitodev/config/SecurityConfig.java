@@ -39,10 +39,10 @@ public class SecurityConfig {
                         .requestMatchers("/cat").permitAll()
 
                         // De rol
-                        .requestMatchers("/admin/**").hasRole("SADMIN")
-                        .requestMatchers("/dev/**").hasAnyRole("DEV", "SADMIN")
-                        .requestMatchers("/qa/**").hasAnyRole("QA", "SADMIN")
-                        .requestMatchers("/po/**").hasAnyRole("PO", "SADMIN")
+                        .requestMatchers("/admin/**").hasRole("SUPERADMIN")
+                        .requestMatchers("/dev/**").hasAnyRole("DEV", "SUPERADMIN")
+                        .requestMatchers("/qa/**").hasAnyRole("QA", "SUPERADMIN")
+                        .requestMatchers("/po/**").hasAnyRole("PO", "SUPERADMIN")
 
 
                         // Otras rutas
@@ -63,6 +63,10 @@ public class SecurityConfig {
                         .invalidateHttpSession(true)
                         .deleteCookies("JSESSIONID")
                         .permitAll()
+                )
+                .sessionManagement(session -> session
+                        .maximumSessions(-1) // Permitir sesiones ilimitadas
+                        .maxSessionsPreventsLogin(false) // No prevenir login si hay sesiones activas
                 )
                 .exceptionHandling(exception -> exception
                         .accessDeniedPage("/acceso-denegado")
@@ -97,7 +101,7 @@ public class SecurityConfig {
                     String role = authority.getAuthority();
 
                     switch (authority.getAuthority()) {
-                        case "ROLE_SADMIN":
+                        case "ROLE_SUPERADMIN":
                             return "/admin/home";
                         case "ROLE_DEV":
                             return "/dev/home";
