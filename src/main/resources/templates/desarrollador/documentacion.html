@@ -1,20 +1,20 @@
 <!doctype html>
-<html lang="es">
+<html lang="es ">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>TELITO DEVELOPER PORTAL | Documentación</title>
-    <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-icons.css?1757307620" rel="stylesheet" />
-    <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-icons.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
     <style>
         @import url("https://rsms.me/inter/inter.css");
 
@@ -148,7 +148,7 @@
 </head>
 
 <body>
-<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
 
     <div th:replace="desarrollador/header.html :: header"></div>
@@ -160,84 +160,37 @@
                 <h1 class="backstage-title">Documentación</h1>
                 <p class="backstage-subtitle">Todos los documentos disponibles</p>
 
-                <div class="search-bar">
-                    <input type="text" class="search-input" placeholder="Buscar documentación...">
-                </div>
+<!--                <div class="search-bar">-->
+<!--                    <input type="text" class="search-input" placeholder="Buscar documentación...">-->
+<!--                </div>-->
             </div>
 
 
             <div class="backstage-content">
 
                 <div>
-                    <table class="backstage-table">
+                    <table id="docsTable" class="backstage-table">
                         <thead>
                         <tr>
-                            <th>DOCUMENT</th>
-                            <th>OWNER</th>
-                            <th>KIND</th>
-                            <th>TYPE</th>
-                            <th>ACTIONS</th>
+<!--                            <th>#</th>-->
+                            <th>Tipo</th>
+                            <th>Contenido</th>
+                            <th>Fecha</th>
+                            <th>Ejemplos</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr>
+                        <tr th:each="doc : ${docs}">
+<!--                            <td>-->
+<!--                                <div class="doc-name" th:text="${doc}"></div>-->
+<!--                                <div class="doc-description" th:text="${doc.contenido}"></div>-->
+<!--                            </td>-->
+                            <td><span class="badge badge-component" th:text="${doc.tipo}"></span></td>
+                            <td><a th:href="@{/documentacion/{id}(id=${doc.idDocumentacion})}"
+                                   th:text="${doc.contenido}"></a></td>
+                            <td th:text="${#dates.format(doc.fechaCreacion, 'dd-MM-yyyy')}"></td>
                             <td>
-                                <div class="doc-name">Backstage</div>
-                                <div class="doc-description">Backstage is an open-source developer portal that puts the developer experience first.</div>
-                            </td>
-                            <td>at. crcf</td>
-                            <td><span class="badge badge-component">Component</span></td>
-                            <td>library</td>
-                            <td>
-                                <button class="action-button">✅</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="doc-name">Backstage-demo</div>
-                                <div class="doc-description">An example deployment of a Backstage application.</div>
-                            </td>
-                            <td>at. backstage/maintainers</td>
-                            <td><span class="badge badge-component">Component</span></td>
-                            <td>website</td>
-                            <td>
-                                <button class="action-button">✅</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="doc-name">API Reservas</div>
-                                <div class="doc-description">Documentación completa de la API de reservas deportivas.</div>
-                            </td>
-                            <td>at. telito/api-team</td>
-                            <td><span class="badge badge-component">API</span></td>
-                            <td>rest</td>
-                            <td>
-                                <button class="action-button">✅</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="doc-name">API Pagos</div>
-                                <div class="doc-description">Documentación para integración del sistema de pagos.</div>
-                            </td>
-                            <td>at. telito/payments</td>
-                            <td><span class="badge badge-component">API</span></td>
-                            <td>rest</td>
-                            <td>
-                                <button class="action-button">✅</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="doc-name">Portal Web</div>
-                                <div class="doc-description">Documentación técnica del portal web de TELITO.</div>
-                            </td>
-                            <td>at. telito/frontend</td>
-                            <td><span class="badge badge-website">Website</span></td>
-                            <td>react</td>
-                            <td>
-                                <button class="action-button">✅</button>
+                                <span th:each="ejemplo : ${doc.ejemplosCodigo}" class="badge" th:text="${ejemplo.lenguaje}"></span>
                             </td>
                         </tr>
                         </tbody>
@@ -246,45 +199,45 @@
 
 
                 <div class="filters-section">
-                    <h3 class="filters-title">RESIGNAL</h3>
+<!--                    <h3 class="filters-title">RESIGNAL</h3>-->
+<!--                    <div class="filter-group">-->
+<!--                        <div class="filter-item">-->
+<!--                            <input type="checkbox" id="owned">-->
+<!--                            <label for="owned">Owned</label>-->
+<!--                        </div>-->
+<!--                        <div class="filter-item">-->
+<!--                            <input type="checkbox" id="starred" checked>-->
+<!--                            <label for="starred">Starred</label>-->
+<!--                        </div>-->
+<!--                    </div>-->
+
+                    <h3 class="filters-title">Ordenar por:</h3>
                     <div class="filter-group">
                         <div class="filter-item">
-                            <input type="checkbox" id="owned">
-                            <label for="owned">Owned</label>
+                            <input type="radio" id="recent" name="backstage-filter" checked>
+                            <label for="recent">Más reciente primero</label>
                         </div>
                         <div class="filter-item">
-                            <input type="checkbox" id="starred" checked>
-                            <label for="starred">Starred</label>
+                            <input type="radio" id="old" name="backstage-filter">
+                            <label for="old">Más antiguo primero</label>
                         </div>
                     </div>
 
-                    <h3 class="filters-title">BACKSTAGE</h3>
-                    <div class="filter-group">
-                        <div class="filter-item">
-                            <input type="radio" id="all" name="backstage-filter" checked>
-                            <label for="all">All</label>
-                        </div>
-                        <div class="filter-item">
-                            <input type="radio" id="owner" name="backstage-filter">
-                            <label for="owner">Owner</label>
-                        </div>
-                    </div>
-
-                    <h3 class="filters-title">Top 3</h3>
-                    <div class="filter-group">
-                        <div class="filter-item">
-                            <input type="checkbox" id="api-docs" checked>
-                            <label for="api-docs">API Documentation</label>
-                        </div>
-                        <div class="filter-item">
-                            <input type="checkbox" id="tutorials">
-                            <label for="tutorials">Tutorials</label>
-                        </div>
-                        <div class="filter-item">
-                            <input type="checkbox" id="guides" checked>
-                            <label for="guides">Guides</label>
-                        </div>
-                    </div>
+<!--                    <h3 class="filters-title">Top 3</h3>-->
+<!--                    <div class="filter-group">-->
+<!--                        <div class="filter-item">-->
+<!--                            <input type="checkbox" id="api-docs" checked>-->
+<!--                            <label for="api-docs">API Documentation</label>-->
+<!--                        </div>-->
+<!--                        <div class="filter-item">-->
+<!--                            <input type="checkbox" id="tutorials">-->
+<!--                            <label for="tutorials">Tutorials</label>-->
+<!--                        </div>-->
+<!--                        <div class="filter-item">-->
+<!--                            <input type="checkbox" id="guides" checked>-->
+<!--                            <label for="guides">Guides</label>-->
+<!--                        </div>-->
+<!--                    </div>-->
                 </div>
             </div>
         </div>
@@ -312,7 +265,7 @@
                 <div class="chat-message chat-message-left">
                     <div class="d-flex">
                         <div class="flex-shrink-0">
-                            <span class="avatar avatar-sm" style="background-image: url(./tabler/static/avatars/000f.jpg)"></span>
+                            <span class="avatar avatar-xl" style="background-image: url(/tabler/static/og.png)"></span>
                         </div>
                         <div class="flex-fill ms-3">
                             <div class="card">
@@ -345,7 +298,28 @@
 
 </div>
 
-<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
-<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
+<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.querySelectorAll('input[name="backstage-filter"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const table = document.getElementById('docsTable').querySelector('tbody');
+            const rows = Array.from(table.querySelectorAll('tr'));
+
+            rows.sort((a, b) => {
+                const dateA = new Date(a.cells[2].innerText.trim());
+                const dateB = new Date(b.cells[2].innerText.trim());
+
+                if (this.id === 'recent') {
+                    return dateA - dateB; // Más reciente primero
+                } else {
+                    return dateB - dateA; // Más antiguo primero
+                }
+            });
+            rows.forEach(row => table.appendChild(row));
+        });
+    });
+</script>
 </body>
 </html>

@@ -28,10 +28,10 @@ public class LoginController {
                                 @RequestParam(value = "logout", required = false) String logout,
                                 Model model) {
         if (error != null) {
-            model.addAttribute("error", error);
+            model.addAttribute("error", "Credenciales inválidas");
         }
         if (logout != null) {
-            model.addAttribute("msg", "Sesion cerrada con exito");
+            model.addAttribute("logout", "Sesión cerrada con éxito");
         }
         return "sesion/login";
     }

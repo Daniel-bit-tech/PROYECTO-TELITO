@@ -26,7 +26,7 @@ public class Documentacion {
     @JoinColumn(name = "idAPI", nullable = false)
     private Api api;
     
-    @OneToMany(mappedBy = "documentacion", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "documentacion", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<EjemplosCodigo> ejemplosCodigo;
     
     // Constructores

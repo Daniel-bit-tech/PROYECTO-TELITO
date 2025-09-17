@@ -32,8 +32,8 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authz -> authz
                         // Públicas
-                        .requestMatchers("/", "/login/**", "/registro", "/apis", "/tabler/**").permitAll()
-                        .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**").permitAll()
+                        .requestMatchers("/", "/login/**", "/registro", "/apis", "/tabler/**", "/forgot-password", "/register").permitAll()
+                        .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**", "/static/**").permitAll()
                         .requestMatchers("/error", "/acceso-denegado").permitAll()
 
                         .requestMatchers("/cat").permitAll()
@@ -60,6 +60,8 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login?logout=true")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
                 .exceptionHandling(exception -> exception
@@ -93,26 +95,23 @@ public class SecurityConfig {
 
                 for (GrantedAuthority authority : authorities) {
                     String role = authority.getAuthority();
-                    System.out.println("Rol detectado: " + role);
 
                     switch (authority.getAuthority()) {
                         case "ROLE_SADMIN":
-                            System.out.println("ROLE_SADMIN");
                             return "/admin/home";
                         case "ROLE_DEV":
-                            System.out.println("ROLE_DEV");
                             return "/dev/home";
                         case "ROLE_QA":
-                            System.out.println("ROLE_QA");
-                            return "/qa/home";
+//                            return "/qa/home";
+                            return "/qa/catalogo";
                         case "ROLE_PO":
-                            System.out.println("ROLE_PO");
-                            return "/po/home";
+//                            return "/po/home";
+                            return "/po/Dashboard";
                         default:
-                            return "/home";
+                            return "/login";
                     }
                 }
-                return "/home";
+                return "/login";
             }
         };
     }
