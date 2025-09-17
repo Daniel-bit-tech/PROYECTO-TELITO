@@ -36,7 +36,7 @@ public class DeveloperController {
         Usuario usuario = usuarioRepository.findByCorreo(correo);
 
         Integer NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(),true);
-        List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_Dni(usuario.getDni());
+        List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
 
         List<Notificacion> notis = notificacionRepository.findByUsuario_Dni(usuario.getDni());
         Integer Nnotis = notificacionRepository.countByUsuario_DniAndLeido(usuario.getDni(),false);
