@@ -15,8 +15,11 @@ public class Documentacion {
     
     @Column(name = "tipo", length = 45)
     private String tipo;
+
+    @Column(name = "descripcion", columnDefinition = "TEXT")
+    private String descripcion;
     
-    @Column(name = "contenido", columnDefinition = "TEXT")
+    @Column(name = "contenido", columnDefinition = "JSON")
     private String contenido;
     
     @Column(name = "fecha_creacion")
@@ -55,7 +58,15 @@ public class Documentacion {
     public void setTipo(String tipo) {
         this.tipo = tipo;
     }
-    
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
     public String getContenido() {
         return contenido;
     }
