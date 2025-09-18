@@ -102,8 +102,7 @@ public class SecurityConfig {
                         case "ROLE_DEV":
                             return "/dev/home";
                         case "ROLE_QA":
-//                            return "/qa/home";
-                            return "/qa/catalogo";
+                            return "/qa/home";
                         case "ROLE_PO":
                             return "/po/home";
 

@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/qa")
 @PreAuthorize("hasAnyRole('QA', 'SADMIN')")
-public class CatalogoController {
+public class CatalogoqaController {
     final UsuarioRepository usuarioRepository;
-    public CatalogoController(UsuarioRepository usuarioRepository) {
+    public CatalogoqaController(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
