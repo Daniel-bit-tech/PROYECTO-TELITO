@@ -1,9 +1,11 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>Search for Jobs - Tabler - Premium and Open Source dashboard template with responsive and high quality UI.</title>
     <!-- BEGIN GLOBAL MANDATORY STYLES -->
     <link href="/tabler/dist/css/tabler.css?1757307617" rel="stylesheet" />
@@ -26,6 +28,9 @@
     <!-- END CUSTOM FONT -->
 </head>
 <body>
+<!-- Banner de impersonación -->
+<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+
 <!-- BEGIN GLOBAL THEME SCRIPT -->
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307617"></script>
 <!-- END GLOBAL THEME SCRIPT -->
