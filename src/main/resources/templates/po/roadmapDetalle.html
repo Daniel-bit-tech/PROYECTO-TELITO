@@ -71,6 +71,25 @@
                     <div class="col">
                         <h2 class="page-title">Detalles</h2>
                     </div>
+                    <div class="col-auto ms-auto d-print-none">
+                        <div class="btn-list">
+                  <span class="d-none d-sm-inline">
+
+                  </span>
+                            <a class="btn btn-green" href="/po/roadmap"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-pinterest -->
+
+                                Volver</a>
+                            <a href="#" class="btn btn-primary btn-6 d-sm-none btn-icon" data-bs-toggle="modal" data-bs-target="#modal-report" aria-label="Create new report">
+                                <!-- Download SVG icon from http://tabler.io/icons/icon/plus -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-2">
+                                    <path d="M12 5l0 14"></path>
+                                    <path d="M5 12l14 0"></path>
+                                </svg>
+                            </a>
+                        </div>
+                        <!-- BEGIN MODAL -->
+                        <!-- END MODAL -->
+                    </div>
                 </div>
             </div>
         </div>
@@ -261,9 +280,12 @@
                                                 <path d="M6 15l6 -6l6 6"></path>
                                             </svg>
                                         </th>
-                                        <th style="text-align: center"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Nombre
+                                        <th style="text-align: center"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Modificado por
                                         </font></font></th>
-                                        <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Fecha</font></font></th>
+                                        <th style="text-align: center"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">rol
+                                        </font></font></th>
+
+                                        <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Fecha de modficacion</font></font></th>
                                         <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Versión</font></font></th>
                                         <th><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Comentarios</font></font></th>
                                         <th><font style="vertical-align: inherit;"></font></th>
@@ -275,15 +297,17 @@
                                     <tr>
 
                                         <td><span class="text-secondary"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">1</font></font></span></td>
-                                        <td style="text-align: center"><a href="invoice.html" class="text-reset" tabindex="-1"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Lanzamiento Oficial</font></font></a></td>
+                                        <td style="text-align: center"><a href="invoice.html" class="text-reset" tabindex="-1"><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Juan</font></font></a></td>
+                                        <td>
+                                            <font style="vertical-align: inherit;"><font style="vertical-align: inherit;">Dev</font></font></td>
                                         <td>
                                             <font style="vertical-align: inherit;"><font style="vertical-align: inherit;">07/08/25</font></font></td>
                                         <td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">v1.0</font></font></td>
                                         <td><font style="vertical-align: inherit;"><font style="vertical-align: inherit;">introduccion y titulo avanzado</font></font></td>
                                         <td class="text-end">
                             <span class="dropdown">
-                              <button class="btn dropdown-toggle align-text-top" data-bs-boundary="viewport" data-bs-toggle="dropdown" aria-expanded="false">Actions</button>
-                              <div class="dropdown-menu dropdown-menu-end" style="">
+                              <button class="btn dropdown-toggle align-text-top show" data-bs-boundary="viewport" data-bs-toggle="dropdown" aria-expanded="true">Actions</button>
+                              <div class="dropdown-menu dropdown-menu-end show" style="position: absolute; inset: 0px 0px auto auto; margin: 0px; transform: translate(217px, 42px);" data-popper-placement="bottom-end">
                                 <a class="dropdown-item" href="#">Modificar</a>
 
                               </div>
