@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>TELITO DEVELOPER PORTAL | Mi Feedback</title>
+    <title>TELITO DEVELOPER PORTAL | Feedback</title>
     <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
@@ -270,19 +270,16 @@
 <body>
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
-
     <div th:replace="qa/header_qa.html :: header"></div>
-
     <div class="content">
         <div class="feedback-container">
             <div class="catalog-header rounded-3 px-4">
                 <div class="row align-items-center">
                     <div class="col-md-8">
-                        <h1 class="catalog-title">Mi Feedback</h1>
-                        <p class="catalog-subtitle">Revisa tus comentarios y sugerencias anteriores</p>
+                        <h1 class="catalog-title">Feedback</h1>
+                        <p class="catalog-subtitle">Revisa los comentarios y sugerencias de los desarrolladores</p>
                     </div>
                     <div class="col-md-4 text-md-end">
-                        <!-- Filtro selector de estado -->
                         <select class="form-select" id="feedback-status-filter">
                             <option value="">Filtrar por estado</option>
                             <option value="status-reviewed">Implementado</option>
@@ -291,108 +288,40 @@
                     </div>
                 </div>
             </div>
-
             <div class="feedback-list">
-
-                <div class="feedback-card">
+                <div th:if="${listaTickets != null and !listaTickets.isEmpty()}" th:each="ticket : ${listaTickets}" class="feedback-card" th:classappend="${ticket.estado ? 'status-reviewed' : 'status-pending'}">
                     <div class="feedback-header">
                         <div class="feedback-meta">
-                            <div class="feedback-author">Juan Pérez</div>
-                            <div class="feedback-date">15 de Agosto, 2023</div>
+                            <div class="feedback-author" th:text="${ticket.usuario?.nombre ?: 'Usuario no encontrado'}">Nombre del Desarrollador</div>
+                            <div class="feedback-date" th:text="${#dates.format(ticket.fechaCreacion, 'dd MMMM, yyyy')}">15 de Agosto, 2023</div>
                         </div>
-                        <div class="feedback-rating">
-                            <span class="feedback-star"><i class="fas fa-star"></i></span>
-                            <span class="feedback-star"><i class="fas fa-star"></i></span>
-                            <span class="feedback-star"><i class="fas fa-star"></i></span>
-                            <span class="feedback-star"><i class="fas fa-star"></i></span>
-                            <span class="feedback-star"><i class="far fa-star"></i></span>
-                        </div>
+
                     </div>
                     <div class="feedback-content">
-                        <div class="feedback-subject">Excelente documentación para la API de Pagos</div>
-                        <div class="feedback-message">
-                            La documentación de la API de Pagos es muy clara y los ejemplos de código son extremadamente útiles.
-                            Me gustaría ver más ejemplos en Python y una sección de troubleshooting para casos edge.
-                        </div>
+                        <div class="feedback-subject" th:text="${ticket.asunto}">Asunto del Ticket</div>
+                        <div class="feedback-message" th:text="${ticket.descripcion}">Descripción del feedback.</div>
                     </div>
                     <div class="feedback-footer">
                         <div class="feedback-api">
-                            <i class="fas fa-credit-card"></i> API de Pagos • Sugerencia de mejora
+                            <i class="fas fa-code-branch"></i> <span th:text="${ticket.api?.nombre ?: 'API no especificada'}">API de Pagos</span> • <span th:text="${ticket.tipoFeedback?.nombreTipo}">Tipo de feedback</span>
                         </div>
-                        <span class="feedback-status status-reviewed">Implementado</span>
+                        <span th:classappend="${ticket.estado ? 'status-reviewed' : 'status-pending'}" th:text="${ticket.estado ? 'Implementado' : 'En revisión'}" class="feedback-status">Estado</span>
                     </div>
-                    <button class="btn btn-primary" id="btn-1" disabled>Marcar como resuelto</button>
+                    <a th:href="@{'/qa/feedback/' + ${ticket.idTicket}}" class="btn btn-primary mt-3">Ver detalles</a>
                 </div>
-
-                <div class="feedback-card">
-                    <div class="feedback-header">
-                        <div class="feedback-meta">
-                            <div class="feedback-author">María García</div>
-                            <div class="feedback-date">12 de Agosto, 2023</div>
-                        </div>
-                        <div class="feedback-rating">
-                            <span class="feedback-star"><i class="fas fa-star"></i></span>
-                            <span class="feedback-star"><i class="fas fa-star"></i></span>
-                            <span class="feedback-star"><i class="fas fa-star"></i></span>
-                            <span class="feedback-star"><i class="far fa-star"></i></span>
-                            <span class="feedback-star"><i class="far fa-star"></i></span>
-                        </div>
+                <div th:if="${listaTickets == null or listaTickets.isEmpty()}" class="empty-state">
+                    <div class="empty-icon">
+                        <i class="far fa-comments"></i>
                     </div>
-                    <div class="feedback-content">
-                        <div class="feedback-subject">Problema con el endpoint de reembolsos</div>
-                        <div class="feedback-message">
-                            El endpoint de reembolsos devuelve un error 500 cuando se intenta procesar un reembolso parcial
-                            para transacciones mayores a 30 días. He probado con diferentes parámetros pero el error persiste.
-                        </div>
-                    </div>
-                    <div class="feedback-footer">
-                        <div class="feedback-api">
-                            <i class="fas fa-credit-card"></i> API de Pagos • Reporte de error
-                        </div>
-                        <span class="feedback-status status-pending">En revisión</span>
-                    </div>
-                    <button class="btn btn-primary" id="btn-2">Marcar como resuelto</button>
+                    <h3 class="empty-title">No hay feedback disponible</h3>
+                    <p class="empty-description">Aún no se han enviado comentarios. Anima a los desarrolladores a compartir sus ideas.</p>
                 </div>
-
             </div>
         </div>
     </div>
-
     <div id="footer-placeholder"></div>
 </div>
-
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
 <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
-
-<script>
-    // Filtro por estado
-    document.getElementById('feedback-status-filter').addEventListener('change', function() {
-        const filterValue = this.value;
-        const feedbackCards = document.querySelectorAll('.feedback-card');
-
-        feedbackCards.forEach(card => {
-            const status = card.querySelector('.feedback-status').classList;
-            if (filterValue === "" || status.contains(filterValue)) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    });
-
-    // Funcionalidad de marcar como resuelto
-    document.querySelectorAll('.btn-primary').forEach(button => {
-        button.addEventListener('click', function() {
-            const statusSpan = this.closest('.feedback-card').querySelector('.feedback-status');
-            if (statusSpan.classList.contains('status-pending')) {
-                statusSpan.classList.remove('status-pending');
-                statusSpan.classList.add('status-reviewed');
-                statusSpan.textContent = 'Implementado';
-                this.setAttribute('disabled', true); // Deshabilitar el botón
-            }
-        });
-    });
-</script>
-
 </body>
 </html>
