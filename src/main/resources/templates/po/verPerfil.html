@@ -393,7 +393,7 @@
                 <div class="profile-tab active" data-tab="overview">Resumen</div>
                 <div class="profile-tab" data-tab="personal">Información Personal</div>
                 <div class="profile-tab" data-tab="security">Seguridad</div>
-                <div class="profile-tab" data-tab="preferences">Preferencias</div>
+
             </div>
 
             <div class="profile-content">
@@ -585,7 +585,8 @@
                             <label class="form-label">Contraseña</label>
                             <div style="display: flex; gap: 1rem; align-items: center;">
                                 <div style="flex: 1;">••••••••••••</div>
-                                <a th:href="@{/forgot-password}" class="btn-outline">
+<!--                                <a th:href="@{/forgot-password}" class="btn-outline">-->
+                                <a th:href="@{/usuario/cambiar-password}" class="btn-outline">
                                     <i class="fas fa-edit"></i> Cambiar
                                 </a>
                             </div>

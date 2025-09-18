@@ -39,7 +39,7 @@ public class DocumentacionController {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
 
-        return "comun/docApi";
+        return "general/docDetalle";    //CAMBIAR
     }
 
 
