@@ -469,11 +469,7 @@
                             <label class="form-label">Seleccionar API</label>
                             <select class="form-select" id="api-select" required>
                                 <option value="">Selecciona una API</option>
-                                <option value="api-users">API de Usuarios</option>
-                                <option value="api-payments">API de Pagos</option>
-                                <option value="api-products">API de Productos</option>
-                                <option value="api-orders">API de Pedidos</option>
-                                <option value="api-notifications">API de Notificaciones</option>
+                                <!-- Las opciones se cargarán dinámicamente desde la base de datos -->
                             </select>
                         </div>
 
@@ -515,72 +511,10 @@
                         <h3 class="card-title"><i class="fas fa-key"></i> Mis API Keys</h3>
                     </div>
 
-                    <div class="keys-list">
-                        <div class="key-item">
-                            <div class="key-header">
-                                <div class="key-name">API de Usuarios - App Móvil</div>
-                                <span class="key-status status-active">Activa</span>
-                            </div>
-                            <div class="key-details">
-                                <div class="key-value">
-                                    <span class="key-label">API Key</span>
-                                    <div class="key-secret">
-                                        <span>ak_7x92hb4q81f63t9r05p6s2d</span>
-                                        <button class="key-btn copy" onclick="copyToClipboard('ak_7x92hb4q81f63t9r05p6s2d')">
-                                            <i class="fas fa-copy"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="key-value">
-                                    <span class="key-label">Client ID</span>
-                                    <div class="key-secret">
-                                        <span>client_7d82f93g16h</span>
-                                        <button class="key-btn copy" onclick="copyToClipboard('client_7d82f93g16h')">
-                                            <i class="fas fa-copy"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="key-details">
-                                <div class="key-value">
-                                    <span class="key-label">Creado</span>
-                                    <span>15 May 2023</span>
-                                </div>
-                                <div class="key-value">
-                                    <span class="key-label">Entorno</span>
-                                    <span>Producción</span>
-                                </div>
-                            </div>
-                            <div class="key-actions">
-                                <button class="key-btn">
-                                    <i class="fas fa-eye"></i> Ver Detalles
-                                </button>
-                                <button class="key-btn revoke">
-                                    <i class="fas fa-ban"></i> Revocar
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="key-item">
-                            <div class="key-header">
-                                <div class="key-name">API de Pagos - Sitio Web</div>
-                                <span class="key-status status-pending">Pendiente</span>
-                            </div>
-                            <div class="key-details">
-                                <div class="key-value">
-                                    <span class="key-label">Solicitud enviada</span>
-                                    <span>Hace 2 horas</span>
-                                </div>
-                                <div class="key-value">
-                                    <span class="key-label">Estado</span>
-                                    <span>En revisión automática</span>
-                                </div>
-                            </div>
-                            <div class="key-actions">
-                                <button class="key-btn">
-                                    <i class="fas fa-info-circle"></i> Ver Estado
-                                </button>
-                            </div>
+                    <div class="keys-list" id="keys-container">
+                        <!-- Las API Keys se cargarán dinámicamente -->
+                        <div class="loading-message" style="padding: 2rem; text-align: center; color: var(--tblr-secondary-color);">
+                            <i class="fas fa-spinner fa-spin"></i> Cargando credenciales...
                         </div>
                     </div>
                 </div>
@@ -669,68 +603,463 @@
     </div>
 </div>
 
-<script>
+<!-- Modal para errores -->
+<div class="modal" id="error-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">⚠️ Información</h3>
+            <button class="modal-close" onclick="closeErrorModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="error-message">Ha ocurrido un error.</p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeErrorModal()">Entendido</button>
+        </div>
+    </div>
+</div>
 
+<script>
+    // Cargar datos al iniciar la página
+    document.addEventListener('DOMContentLoaded', function() {
+        cargarApisDisponibles();
+        cargarMisCredenciales();
+    });
+
+    // Manejar el envío de solicitudes
     document.getElementById('api-key-form').addEventListener('submit', function(e) {
         e.preventDefault();
-
 
         const apiSelect = document.getElementById('api-select');
         const projectName = document.getElementById('project-name');
         const usageDescription = document.getElementById('usage-description');
+
+        console.log('=== DEBUG: Valores del formulario ===');
+        console.log('apiSelect.value:', apiSelect.value);
+        console.log('projectName.value:', projectName.value);
+        console.log('usageDescription.value:', usageDescription.value);
 
         if (!apiSelect.value || !projectName.value || !usageDescription.value) {
             alert('Por favor, complete todos los campos obligatorios.');
             return;
         }
 
+        // Preparar datos de la solicitud
+        const apiIdRaw = apiSelect.value;
+        const apiIdParsed = parseInt(apiIdRaw);
+        
+        const solicitudData = {
+            apiId: apiIdParsed,
+            nombreProyecto: projectName.value,
+            descripcionUso: usageDescription.value,
+            entorno: document.getElementById('environment-select').value,
+            callbackUrl: document.getElementById('callback-url').value || null
+        };
 
-        console.log('Solicitud enviada:', {
-            api: apiSelect.value,
-            project: projectName.value,
-            description: usageDescription.value,
-            environment: document.getElementById('environment-select').value,
-            callback: document.getElementById('callback-url').value
-        });
+        console.log('=== DEBUG: Datos a enviar ===');
+        console.log('apiIdRaw:', apiIdRaw, 'tipo:', typeof apiIdRaw);
+        console.log('apiIdParsed:', apiIdParsed, 'tipo:', typeof apiIdParsed);
+        console.log('isNaN(apiIdParsed):', isNaN(apiIdParsed));
+        console.log('solicitudData:', solicitudData);
+        
+        // Validar que apiId sea un número válido
+        if (isNaN(apiIdParsed)) {
+            alert('Error: ID de API no válido. Por favor selecciona una API.');
+            return;
+        }
 
-
-        document.getElementById('confirmation-modal').style.display = 'flex';
-
-
-        this.reset();
+        // Enviar solicitud
+        enviarSolicitudAcceso(solicitudData);
     });
 
+    // Función para cargar APIs disponibles
+    function cargarApisDisponibles() {
+        console.log('Cargando APIs disponibles...');
+        
+        // Usar el endpoint REST que sabemos que funciona
+        fetch('/api/onboarding/apis')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(apis => {
+                console.log('APIs cargadas correctamente:', apis);
+                mostrarApisDisponibles(apis);
+                actualizarSelectAPIs(apis);
+            })
+            .catch(error => {
+                console.error('Error al cargar APIs:', error);
+                mostrarError('Error al cargar las APIs disponibles');
+                
+                // Mostrar mensaje en el dropdown
+                const select = document.getElementById('api-select');
+                if (select) {
+                    select.innerHTML = '<option value="">Error al cargar APIs</option>';
+                }
+            });
+    }
+
+    // Función para mostrar APIs disponibles
+    function mostrarApisDisponibles(apis) {
+        const container = document.getElementById('apis-container');
+        
+        if (!container) {
+            console.warn('Elemento apis-container no encontrado');
+            return;
+        }
+        
+        if (!apis || apis.length === 0) {
+            container.innerHTML = '<li style="padding: 2rem; text-align: center; color: var(--tblr-secondary-color);">No hay APIs disponibles</li>';
+            return;
+        }
+
+        const iconos = {
+            'Seguridad': 'fas fa-shield-alt',
+            'Finanzas': 'fas fa-credit-card', 
+            'Logistica': 'fas fa-truck',
+            'Comunicación': 'fas fa-comments',
+            'Analítica': 'fas fa-chart-bar',
+            'Geografía': 'fas fa-map-marker-alt'
+        };
+
+        const colores = {
+            'Seguridad': 'rgba(66, 153, 225, 0.1); color: #4299e1',
+            'Finanzas': 'rgba(47, 179, 68, 0.1); color: #2fb344',
+            'Logistica': 'rgba(236, 72, 153, 0.1); color: #ec4899',
+            'Comunicación': 'rgba(245, 158, 11, 0.1); color: #f59e0b',
+            'Analítica': 'rgba(139, 69, 19, 0.1); color: #8b4513',
+            'Geografía': 'rgba(128, 0, 128, 0.1); color: #800080'
+        };
+
+        container.innerHTML = apis.map(api => `
+            <li class="api-item">
+                <div class="api-icon" style="background-color: ${colores[api.dominio] || 'rgba(128, 128, 128, 0.1); color: #808080'};">
+                    <i class="${iconos[api.dominio] || 'fas fa-cube'}"></i>
+                </div>
+                <div class="api-info">
+                    <div class="api-name">${api.nombre}</div>
+                    <div class="api-description">${api.descripcion}</div>
+                </div>
+                <button class="api-action" onclick="selectAPI(${api.idApi})">
+                    <i class="fas fa-key"></i> Solicitar Acceso
+                </button>
+            </li>
+        `).join('');
+    }
+
+    // Función para actualizar el select de APIs
+    function actualizarSelectAPIs(apis) {
+        const select = document.getElementById('api-select');
+        
+        if (!select) {
+            console.error('Elemento api-select no encontrado');
+            return;
+        }
+        
+        select.innerHTML = '<option value="">Selecciona una API</option>';
+        
+        if (!apis || apis.length === 0) {
+            const option = document.createElement('option');
+            option.value = "";
+            option.textContent = "No hay APIs disponibles";
+            option.disabled = true;
+            select.appendChild(option);
+            return;
+        }
+        
+        apis.forEach(api => {
+            const option = document.createElement('option');
+            option.value = api.idApi;
+            option.textContent = api.nombre;
+            select.appendChild(option);
+        });
+    }
+
+    // Función para cargar credenciales del usuario
+    function cargarMisCredenciales() {
+        fetch('/api/onboarding/mis-credenciales')
+            .then(response => response.json())
+            .then(credenciales => {
+                mostrarMisCredenciales(credenciales);
+            })
+            .catch(error => {
+                console.error('Error al cargar credenciales:', error);
+                mostrarError('Error al cargar las credenciales');
+            });
+    }
+
+    // Función para mostrar credenciales del usuario
+    function mostrarMisCredenciales(credenciales) {
+        const container = document.getElementById('keys-container');
+        
+        if (credenciales.length === 0) {
+            container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--tblr-secondary-color);">No tienes credenciales activas</div>';
+            return;
+        }
+
+        container.innerHTML = credenciales.map(credencial => {
+            const estadoClass = credencial.estado ? 'status-active' : 'status-revoked';
+            const estadoTexto = credencial.estadoTexto;
+            
+            return `
+                <div class="key-item">
+                    <div class="key-header">
+                        <div class="key-name">${credencial.nombreApi}</div>
+                        <span class="key-status ${estadoClass}">${estadoTexto}</span>
+                    </div>
+                    <div class="key-details">
+                        <div class="key-value">
+                            <span class="key-label">API Key</span>
+                            <div class="key-secret">
+                                <span>${credencial.apiKey}</span>
+                                <button class="key-btn copy" onclick="copyToClipboard('${credencial.apiKey}')">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="key-value">
+                            <span class="key-label">Creado</span>
+                            <span>${formatearFecha(credencial.fechaCreacion)}</span>
+                        </div>
+                    </div>
+                    ${credencial.estado ? `
+                    <div class="key-actions">
+                        <button class="key-btn revoke" onclick="revocarCredencial(${credencial.idCredencialApi})">
+                            <i class="fas fa-ban"></i> Revocar
+                        </button>
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+    }
+
+    // Función para enviar solicitud de acceso
+    function enviarSolicitudAcceso(solicitudData) {
+        const submitBtn = document.querySelector('.btn-submit');
+        const originalText = submitBtn.innerHTML;
+        
+        // Debug: mostrar datos que se envían
+        console.log('Enviando solicitud con datos:', solicitudData);
+        
+        // Deshabilitar botón y mostrar loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+        fetch('/api/onboarding/solicitudes', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(solicitudData)
+        })
+        .then(async response => {
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers);
+            
+            if (!response.ok) {
+                // Intentar leer el mensaje de error del servidor
+                try {
+                    const errorData = await response.json();
+                    console.log('Error data received:', errorData);
+                    const errorMessage = errorData.error || errorData.message || `HTTP error! status: ${response.status}`;
+                    throw new Error(errorMessage);
+                } catch (jsonError) {
+                    console.log('No se pudo leer JSON de error:', jsonError);
+                    // Si no se puede leer JSON, intentar leer como texto
+                    try {
+                        const errorText = await response.text();
+                        console.log('Error text received:', errorText);
+                        throw new Error(errorText || `HTTP error! status: ${response.status}`);
+                    } catch (textError) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                }
+            }
+            return response.json();
+        })
+        .then(data => {
+            // Verificar si es una respuesta de API ya activa (información)
+            if (data.type === 'INFO' && data.message) {
+                // Mostrar modal informativo en lugar de error
+                showInfoModal(data.message);
+                return;
+            }
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            // Mostrar modal de confirmación
+            document.getElementById('confirmation-modal').style.display = 'flex';
+            
+            // Limpiar formulario
+            document.getElementById('api-key-form').reset();
+            
+            // Recargar credenciales
+            setTimeout(() => {
+                cargarMisCredenciales();
+            }, 2000);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            // Mostrar modal de error en lugar de alert
+            showErrorModal(error.message);
+        })
+        .finally(() => {
+            // Restaurar botón
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        });
+    }
 
     function selectAPI(apiId) {
         document.getElementById('api-select').value = apiId;
-
-
         document.getElementById('api-key-form').scrollIntoView({
             behavior: 'smooth'
         });
     }
 
-
     function copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
-            alert('Copiado al portapapeles: ' + text);
+            // Mostrar notificación temporal
+            mostrarNotificacion('API Key copiada al portapapeles');
         }).catch(err => {
             console.error('Error al copiar: ', err);
+            alert('Error al copiar al portapapeles');
         });
     }
 
+    function revocarCredencial(credencialId) {
+        if (confirm('¿Estás seguro de que deseas revocar esta credencial? Esta acción no se puede deshacer.')) {
+            fetch(`/api/onboarding/credenciales/${credencialId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(error => {
+                        throw new Error(error.error || 'Error al revocar la credencial');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Mostrar mensaje de éxito
+                alert('✅ Credencial revocada exitosamente');
+                
+                // Recargar la lista de credenciales
+                cargarMisCredenciales();
+            })
+            .catch(error => {
+                console.error('Error al revocar credencial:', error);
+                alert('❌ Error: ' + error.message);
+            });
+        }
+    }
+
+    function formatearFecha(timestamp) {
+        const fecha = new Date(timestamp);
+        return fecha.toLocaleDateString('es-ES', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        });
+    }
+
+    function mostrarNotificacion(mensaje) {
+        // Crear elemento de notificación
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--tblr-success);
+            color: white;
+            padding: 1rem;
+            border-radius: 4px;
+            z-index: 10000;
+            animation: slideIn 0.3s ease-out;
+        `;
+        notification.textContent = mensaje;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    function mostrarError(mensaje) {
+        const container = document.getElementById('apis-container') || document.getElementById('keys-container');
+        if (container) {
+            container.innerHTML = `<div style="padding: 2rem; text-align: center; color: var(--tblr-danger);">${mensaje}</div>`;
+        }
+    }
 
     function closeModal() {
         document.getElementById('confirmation-modal').style.display = 'none';
     }
 
+    // Funciones para el modal de error
+    function showErrorModal(message) {
+        // Cambiar el icono y título para errores
+        document.querySelector('#error-modal .modal-title').innerHTML = '❌ Error';
+        document.querySelector('#error-modal .modal-content').style.borderLeft = '5px solid #dc3545';
+        document.getElementById('error-message').textContent = message;
+        document.getElementById('error-modal').style.display = 'flex';
+    }
 
+    function showInfoModal(message) {
+        // Cambiar el icono y título para información
+        document.querySelector('#error-modal .modal-title').innerHTML = '💡 Información';
+        document.querySelector('#error-modal .modal-content').style.borderLeft = '5px solid #007bff';
+        document.getElementById('error-message').textContent = message;
+        document.getElementById('error-modal').style.display = 'flex';
+    }
+
+    function closeErrorModal() {
+        document.getElementById('error-modal').style.display = 'none';
+    }
+
+    // Cerrar modal al hacer clic fuera
     window.addEventListener('click', function(e) {
         const modal = document.getElementById('confirmation-modal');
         if (e.target === modal) {
             closeModal();
         }
+        
+        const errorModal = document.getElementById('error-modal');
+        if (e.target === errorModal) {
+            closeErrorModal();
+        }
+        
+        const infoModal = document.getElementById('error-modal'); // Reutilizamos el mismo modal
+        if (e.target === infoModal) {
+            closeErrorModal();
+        }
     });
+
+    // CSS para animación
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    `;
+    document.head.appendChild(style);
 </script>
 
 <script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
