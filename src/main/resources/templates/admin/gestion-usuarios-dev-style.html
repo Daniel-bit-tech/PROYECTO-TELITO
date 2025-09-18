@@ -1,0 +1,1146 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <title>TELITO ADMIN | Gestión de Usuarios</title>
+  <link th:href="|/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-flags.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-socials.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-payments.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-vendors.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-marketing.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-themes.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/preview/css/demo.css?1757307620|" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url("https://rsms.me/inter/inter.css");
+
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .dashboard-header {
+      margin-top: 2rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+
+    .dashboard-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .dashboard-subtitle {
+      color: #6c757d;
+      margin-bottom: 1.5rem;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(120deg, #4361ee, #3a0ca3);
+      margin-top: 2rem;
+      color: white;
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .welcome-banner .welcome-title,
+    .welcome-banner .welcome-text {
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .welcome-content {
+      position: relative;
+      z-index: 2;
+      max-width: 600px;
+    }
+
+    .welcome-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .welcome-text {
+      margin-bottom: 1.5rem;
+      opacity: 0.9;
+    }
+
+    .welcome-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .welcome-banner::before {
+      content: "";
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      width: 200px;
+      height: 200px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+    }
+
+    .welcome-banner::after {
+      content: "";
+      position: absolute;
+      bottom: -30px;
+      right: 50px;
+      width: 150px;
+      height: 150px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .stat-content {
+      flex: 1;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      color: #6c757d;
+      font-size: 0.875rem;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-card {
+      background-color: var(--tblr-bg-surface);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 1.125rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .user-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .user-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid var(--tblr-border-color);
+      gap: 1rem;
+    }
+
+    .user-item:last-child {
+      border-bottom: none;
+    }
+
+    .user-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      font-size: 1rem;
+    }
+
+    .user-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.875rem;
+      color: var(--tblr-secondary-color);
+      flex-wrap: wrap;
+    }
+
+    .user-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .user-action {
+      padding: 0.5rem 1rem;
+      background-color: var(--tblr-primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .user-action:hover {
+      background-color: var(--tblr-primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .user-action.secondary {
+      background-color: var(--tblr-secondary);
+    }
+
+    .user-action.danger {
+      background-color: var(--tblr-danger);
+    }
+
+    /* Estilos para Toggle Switch Profesional */
+    .toggle-switch-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 80px;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .toggle-switch-container .form-switch {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0;
+    }
+
+    .toggle-switch-container .form-check-input {
+      margin: 0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-switch-container .form-check-input:checked {
+      background-color: var(--tblr-success);
+      border-color: var(--tblr-success);
+    }
+
+    .toggle-switch-container .form-check-input:not(:checked) {
+      background-color: var(--tblr-muted);
+      border-color: var(--tblr-muted);
+    }
+
+    .toggle-switch-container .form-check-label {
+      font-size: 0.7rem;
+      margin: 0;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .toggle-switch-container:hover .form-check-input {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 0.2rem rgba(var(--tblr-primary-rgb), 0.25);
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .status-activo {
+      background-color: rgba(var(--tblr-success-rgb), 0.1);
+      color: var(--tblr-success);
+    }
+
+    .status-inactivo {
+      background-color: rgba(var(--tblr-danger-rgb), 0.1);
+      color: var(--tblr-danger);
+    }
+
+    .role-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background-color: rgba(var(--tblr-primary-rgb), 0.1);
+      color: var(--tblr-primary);
+    }
+
+    .search-filters {
+      background-color: var(--tblr-bg-surface);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: 1fr 200px 200px auto;
+      gap: 1rem;
+      align-items: end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-label {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--tblr-body-color);
+    }
+
+    .form-control {
+      padding: 0.75rem;
+      border: 1px solid var(--tblr-border-color);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--tblr-primary);
+      box-shadow: 0 0 0 3px rgba(var(--tblr-primary-rgb), 0.1);
+      outline: none;
+    }
+
+    @media (max-width: 1024px) {
+      .filter-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .welcome-actions {
+        flex-direction: column;
+      }
+
+      .user-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+
+      .user-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
+
+      .user-meta {
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+<script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
+<div class="page">
+
+  <!-- Header simple para admin -->
+  <header class="navbar navbar-expand-md d-print-none" style="background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+    <div class="container-xl">
+      <div class="navbar-brand text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-shield-check me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+          <path d="M11.46 20.846a12 12 0 0 1 -7.96 -14.846a4 4 0 0 0 8.5 0a4 4 0 0 0 8.5 0a12 12 0 0 1 -.09 1.917" />
+          <path d="M15 19l2 2l4 -4" />
+        </svg>
+        <span class="fw-bold">TELITO ADMIN</span> | Gestión de Usuarios
+      </div>
+      <div class="navbar-nav flex-row order-md-last ms-auto">
+        <a href="/admin/dashboard" class="btn btn-outline-light me-2">
+          <i class="fas fa-arrow-left"></i> Volver al Dashboard
+        </a>
+        <form action="/logout" method="post" style="margin: 0;">
+          <button type="submit" class="btn btn-outline-light">
+            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+          </button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <div class="content">
+    <div class="dashboard-container">
+
+      <!-- Header con bienvenida -->
+      <div class="welcome-banner">
+        <div class="welcome-content">
+          <h2 class="welcome-title">Panel de Administración de Usuarios</h2>
+          <p class="welcome-text">Gestiona los usuarios del sistema TELITO. Puedes ver, editar, crear y administrar permisos.</p>
+          <div class="welcome-actions">
+            <button class="btn btn-light" data-action="create-user">
+              <i class="fas fa-user-plus"></i> Crear Usuario
+            </button>
+            <button class="btn btn-outline-light" data-action="export-users">
+              <i class="fas fa-download"></i> Exportar Datos
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estadísticas -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background-color: rgba(67, 97, 238, 0.1); color: #4361ee;">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" th:text="${totalUsuarios ?: 0}">0</div>
+            <div class="stat-label">Total Usuarios</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background-color: rgba(40, 167, 69, 0.1); color: #28a745;">
+            <i class="fas fa-user-check"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" th:text="${usuariosActivos ?: 0}">0</div>
+            <div class="stat-label">Usuarios Activos</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background-color: rgba(255, 193, 7, 0.1); color: #ffc107;">
+            <i class="fas fa-user-clock"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" th:text="${usuariosInactivos ?: 0}">0</div>
+            <div class="stat-label">Usuarios Inactivos</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background-color: rgba(23, 162, 184, 0.1); color: #17a2b8;">
+            <i class="fas fa-user-shield"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" th:text="${#lists.size(roles ?: {})}">0</div>
+            <div class="stat-label">Roles Disponibles</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros de búsqueda -->
+      <div class="search-filters">
+        <form method="get" th:action="@{/admin/gestion-usuarios}">
+          <div class="filter-row">
+            <div class="form-group">
+              <label class="form-label">Buscar usuario</label>
+              <input type="text" class="form-control" name="search" th:value="${param.search}" 
+                     placeholder="Nombre, email o apellido...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Estado</label>
+              <select class="form-control" name="estado">
+                <option value="">Todos</option>
+                <option value="true" th:selected="${param.estado == 'true'}">Activos</option>
+                <option value="false" th:selected="${param.estado == 'false'}">Inactivos</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Rol</label>
+              <select class="form-control" name="rol">
+                <option value="">Todos los roles</option>
+                <option th:each="rol : ${roles}" 
+                        th:value="${rol.idRol}" 
+                        th:text="${rol.nombreRol}"
+                        th:selected="${param.rol == rol.idRol.toString()}">Rol</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i> Buscar
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Lista de usuarios -->
+      <div class="dashboard-grid">
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <i class="fas fa-users"></i> Lista de Usuarios
+            </h3>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-primary" data-action="create-user">
+                <i class="fas fa-plus"></i> Nuevo Usuario
+              </button>
+            </div>
+          </div>
+
+          <ul class="user-list">
+            <li class="user-item" th:each="usuario : ${usuarios}">
+              <div class="user-avatar" 
+                   th:style="'background-image: url(https://ui-avatars.com/api/?name='+${usuario.nombre}+'+'+${usuario.apellidoPaterno}+'&background=4361ee&color=fff&size=50)'">
+              </div>
+
+              <div class="user-info">
+                <div class="user-name" th:text="${usuario.nombre + ' ' + usuario.apellidoPaterno + ' ' + usuario.apellidoMaterno}">
+                  Nombre del Usuario
+                </div>
+                <div class="user-meta">
+                  <span><i class="fas fa-envelope"></i> <span th:text="${usuario.correo}">email@ejemplo.com</span></span>
+                  <span><i class="fas fa-id-card"></i> DNI: <span th:text="${usuario.dni}">12345678</span></span>
+                  <span><i class="fas fa-calendar"></i> Registro: <span th:text="${usuario.fechaRegistro != null ? usuario.fechaRegistro.toString().substring(0,10) : 'N/A'}">01/01/2025</span></span>
+                  <span class="role-badge" th:text="${usuario.rol?.nombreRol ?: 'Sin rol'}">ROL</span>
+                  <span th:id="'status-badge-' + ${usuario.dni}"
+                        class="status-badge" 
+                        th:classappend="${usuario.estado ? 'status-activo' : 'status-inactivo'}"
+                        th:text="${usuario.estado ? 'ACTIVO' : 'INACTIVO'}">Estado</span>
+                </div>
+              </div>
+
+              <div class="user-actions">
+                <!-- Botón Ver (Ojito) -->
+                <button class="user-action view-btn" 
+                        th:data-user-dni="${usuario.dni}"
+                        data-action="view-user"
+                        title="Ver detalles del usuario"
+                        style="background-color: #17a2b8;">
+                  <i class="fas fa-eye"></i>
+                </button>
+                
+                <!-- Toggle Switch Profesional (Estilo Tabler) -->
+                <div class="toggle-switch-container" 
+                     th:data-user-dni="${usuario.dni}"
+                     th:data-current-state="${usuario.estado}"
+                     th:title="${usuario.estado ? 'Desactivar usuario' : 'Activar usuario'}">
+                  <label class="form-check form-switch form-switch-2 m-0">
+                    <input class="form-check-input user-status-switch" 
+                           type="checkbox" 
+                           th:checked="${usuario.estado}"
+                           th:data-user-dni="${usuario.dni}"
+                           th:data-current-state="${usuario.estado}" />
+                    <span class="form-check-label text-xs">
+                      <span th:id="'status-text-' + ${usuario.dni}" 
+                            th:class="${usuario.estado ? 'text-success fw-bold' : 'text-muted'}"
+                            th:text="${usuario.estado ? 'Activo' : 'Inactivo'}">Estado</span>
+                    </span>
+                  </label>
+                </div>
+                
+                <!-- Botón Eliminar (Rojo) -->
+                <button class="user-action delete-btn" 
+                        th:data-user-dni="${usuario.dni}"
+                        data-action="delete-user"
+                        title="Eliminar usuario"
+                        style="background-color: #dc3545;">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </div>
+            </li>
+          </ul>
+
+          <div th:if="${#lists.isEmpty(usuarios)}" class="text-center py-5">
+            <i class="fas fa-users fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No se encontraron usuarios</h5>
+            <p class="text-muted">Intenta ajustar los filtros de búsqueda o crear un nuevo usuario.</p>
+            <button class="btn btn-primary" data-action="create-user">
+              <i class="fas fa-user-plus"></i> Crear Primer Usuario
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para ver detalles del usuario -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header" style="background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%); color: white;">
+        <h5 class="modal-title" id="userDetailsModalLabel">
+          <i class="fas fa-user-circle me-2"></i>Detalles del Usuario
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <!-- Avatar y información básica -->
+          <div class="col-md-4 text-center">
+            <div id="userModalAvatar" class="mx-auto mb-3" style="width: 120px; height: 120px; border-radius: 20px; background-size: cover; background-position: center;"></div>
+            <h5 id="userModalName" class="fw-bold">Nombre del Usuario</h5>
+            <span id="userModalRole" class="badge bg-primary fs-6">Rol</span>
+            <div class="mt-2">
+              <span id="userModalStatus" class="badge fs-6">Estado</span>
+            </div>
+          </div>
+          
+          <!-- Información detallada -->
+          <div class="col-md-8">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label fw-bold text-muted">DNI</label>
+                <div id="userModalDni" class="border-bottom pb-2">-</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold text-muted">Correo Electrónico</label>
+                <div id="userModalEmail" class="border-bottom pb-2">-</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold text-muted">Nombre</label>
+                <div id="userModalFirstName" class="border-bottom pb-2">-</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold text-muted">Apellido Paterno</label>
+                <div id="userModalLastName" class="border-bottom pb-2">-</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold text-muted">Apellido Materno</label>
+                <div id="userModalMotherLastName" class="border-bottom pb-2">-</div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label fw-bold text-muted">Fecha de Registro</label>
+                <div id="userModalRegistrationDate" class="border-bottom pb-2">-</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label fw-bold text-muted">Descripción del Rol</label>
+                <div id="userModalRoleDescription" class="border-bottom pb-2">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Información adicional -->
+        <div class="row mt-4">
+          <div class="col-12">
+            <div class="alert alert-info">
+              <h6><i class="fas fa-info-circle me-2"></i>Información del Sistema</h6>
+              <small>
+                • <strong>DNI:</strong> Identificador único en el sistema<br>
+                • <strong>Estado:</strong> Determina si el usuario puede acceder al sistema<br>
+                • <strong>Rol:</strong> Define los permisos y funcionalidades disponibles
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times me-1"></i>Cerrar
+        </button>
+        <button type="button" class="btn btn-primary" id="editUserFromModal">
+          <i class="fas fa-edit me-1"></i>Editar Usuario
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620|"></script>
+<script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Obtener token CSRF
+  const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+  
+  console.log('CSRF Token:', csrfToken);
+  console.log('CSRF Header:', csrfHeader);
+
+  // Manejar todas las acciones de usuarios
+  document.addEventListener('click', function(e) {
+    const button = e.target.closest('[data-action]');
+    if (!button) return;
+    
+    const action = button.dataset.action;
+    const userDni = button.dataset.userDni;
+    
+    console.log('Button clicked:', { action, userDni, button });
+    
+    switch(action) {
+      case 'create-user':
+        handleCreateUser();
+        break;
+      case 'view-user':
+        handleViewUser(userDni);
+        break;
+      case 'toggle-user':
+        const currentState = button.dataset.currentState === 'true';
+        console.log(`Toggle user ${userDni}, current state: ${currentState}`);
+        handleToggleUserStatus(userDni, currentState);
+        break;
+      case 'delete-user':
+        handleDeleteUser(userDni);
+        break;
+      case 'export-users':
+        handleExportUsers();
+        break;
+    }
+  });
+
+  // Manejar toggle switches de estado de usuario
+  document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('user-status-switch')) {
+      const toggleInput = e.target;
+      const userDni = toggleInput.dataset.userDni;
+      const currentState = toggleInput.dataset.currentState === 'true';
+      const newState = toggleInput.checked;
+      
+      console.log(`Toggle switch changed for user ${userDni}:`, {
+        currentState,
+        newState,
+        checked: toggleInput.checked
+      });
+      
+      // Prevenir el cambio visual hasta que se confirme
+      toggleInput.disabled = true;
+      
+      // Llamar función de toggle
+      handleToggleUserStatus(userDni, currentState, toggleInput);
+    }
+  });
+
+  // Manejar editar desde modal
+  document.getElementById('editUserFromModal')?.addEventListener('click', function() {
+    const dni = this.dataset.userDni;
+    if (dni) {
+      handleEditUser(dni);
+    }
+  });
+
+function handleCreateUser() {
+  // Implementar creación de usuario
+  alert('Funcionalidad de crear usuario próximamente');
+}
+
+async function handleViewUser(userDni) {
+  try {
+    console.log(`Iniciando impersonación del usuario ${userDni}`);
+    
+    // Confirmar la impersonación
+    if (!confirm('🔄 ¿Iniciar sesión como este usuario?\n\n' +
+                '• Verás exactamente lo que ve este usuario\n' +
+                '• Podrás volver a tu sesión de SuperAdmin\n' +
+                '• Se mantendrá un botón "Volver a SuperAdmin" visible\n\n' +
+                '¿Continuar con la impersonación?')) {
+      return;
+    }
+    
+    // Hacer la petición de impersonación
+    const response = await fetch(`/admin/gestion-usuarios/impersonate/${userDni}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        [csrfHeader]: csrfToken
+      }
+    });
+    
+    console.log('Response status:', response.status);
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+    
+    const data = await response.json();
+    console.log('Respuesta de impersonación:', data);
+    
+    if (data.mensaje && data.redirectUrl) {
+      // Mostrar mensaje de éxito
+      alert(`✅ ${data.mensaje}\n\n` +
+            `👤 Usuario: ${data.usuarioImpersonado}\n` +
+            `🎭 Rol: ${data.rol}\n\n` +
+            `Serás redirigido a su vista...`);
+      
+      // Redirigir después de un breve delay
+      setTimeout(() => {
+        window.location.href = data.redirectUrl;
+      }, 1000);
+    } else {
+      throw new Error(data.message || 'No se pudo iniciar la impersonación');
+    }
+    
+  } catch (error) {
+    console.error('Error completo en impersonación:', error);
+    alert(`❌ Error al impersonar usuario: ${error.message}`);
+  }
+}
+
+function handleEditUser(userDni) {
+  // Cerrar modal si está abierto
+  const modal = bootstrap.Modal.getInstance(document.getElementById('userDetailsModal'));
+  if (modal) {
+    modal.hide();
+  }
+  
+  // Implementar edición
+  alert(`Funcionalidad de editar usuario ${userDni} próximamente`);
+}
+
+async function handleToggleUserStatus(userDni, currentState, toggleInput = null) {
+  const newState = !currentState;
+  const action = newState ? 'activar' : 'desactivar';
+  const confirmMessage = `¿Estás seguro de que quieres ${action} este usuario?`;
+  
+  if (!confirm(confirmMessage)) {
+    // Restaurar el estado original del toggle si se cancela
+    if (toggleInput) {
+      toggleInput.checked = currentState;
+      toggleInput.disabled = false;
+      
+      // Restaurar también el texto del estado
+      const statusTextElement = document.getElementById(`status-text-${userDni}`);
+      if (statusTextElement) {
+        if (currentState) {
+          statusTextElement.textContent = 'Activo';
+          statusTextElement.className = 'text-success fw-bold';
+        } else {
+          statusTextElement.textContent = 'Inactivo';
+          statusTextElement.className = 'text-muted';
+        }
+      }
+      
+      // Restaurar también el badge de estado
+      const statusBadgeElement = document.getElementById(`status-badge-${userDni}`);
+      if (statusBadgeElement) {
+        if (currentState) {
+          statusBadgeElement.textContent = 'ACTIVO';
+          statusBadgeElement.className = 'status-badge status-activo';
+        } else {
+          statusBadgeElement.textContent = 'INACTIVO';
+          statusBadgeElement.className = 'status-badge status-inactivo';
+        }
+      }
+    }
+    return;
+  }
+  
+  try {
+    console.log(`Cambiando estado de usuario ${userDni} de ${currentState} a ${newState}`);
+    
+    // Primero probemos con el endpoint de prueba
+    const testUrl = `/admin/gestion-usuarios/test-estado/${userDni}`;
+    const body = { estado: newState };
+    
+    console.log('URL de prueba:', testUrl);
+    console.log('Método:', 'PUT');
+    console.log('Body enviado:', JSON.stringify(body));
+    console.log('CSRF Header:', csrfHeader);
+    console.log('CSRF Token:', csrfToken);
+    
+    const testResponse = await fetch(testUrl, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        [csrfHeader]: csrfToken
+      },
+      body: JSON.stringify(body)
+    });
+    
+    console.log('Test Response status:', testResponse.status);
+    console.log('Test Response ok:', testResponse.ok);
+    
+    if (testResponse.ok) {
+      const testResult = await testResponse.json();
+      console.log('Test Success:', testResult);
+      
+      // Si el test funciona, intentemos con el endpoint real
+      const realUrl = `/admin/gestion-usuarios/${userDni}/estado`;
+      console.log('Intentando con URL real:', realUrl);
+      
+      const realResponse = await fetch(realUrl, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          [csrfHeader]: csrfToken
+        },
+        body: JSON.stringify(body)
+      });
+      
+      console.log('Real Response status:', realResponse.status);
+      console.log('Real Response ok:', realResponse.ok);
+      
+      if (!realResponse.ok) {
+        const errorText = await realResponse.text();
+        console.error('Real Error response body:', errorText);
+        throw new Error(`Error en endpoint real ${realResponse.status}: ${errorText}`);
+      }
+      
+      const result = await realResponse.json();
+      console.log('Real Success result:', result);
+      
+      // Mostrar mensaje de éxito elegante
+      showSuccessMessage(`Usuario ${action} correctamente`);
+      // El toggle ya refleja el nuevo estado, solo reactivarlo
+      if (toggleInput) {
+        toggleInput.disabled = false;
+        
+        // Actualizar el texto del estado dinámicamente
+        const statusTextElement = document.getElementById(`status-text-${userDni}`);
+        if (statusTextElement) {
+          if (newState) {
+            statusTextElement.textContent = 'Activo';
+            statusTextElement.className = 'text-success fw-bold';
+          } else {
+            statusTextElement.textContent = 'Inactivo';
+            statusTextElement.className = 'text-muted';
+          }
+        }
+        
+        // Actualizar también el badge de estado (al lado del rol)
+        const statusBadgeElement = document.getElementById(`status-badge-${userDni}`);
+        if (statusBadgeElement) {
+          if (newState) {
+            statusBadgeElement.textContent = 'ACTIVO';
+            statusBadgeElement.className = 'status-badge status-activo';
+          } else {
+            statusBadgeElement.textContent = 'INACTIVO';
+            statusBadgeElement.className = 'status-badge status-inactivo';
+          }
+        }
+        
+        // Actualizar el data-current-state para futuras operaciones
+        toggleInput.dataset.currentState = newState.toString();
+      }
+      
+    } else {
+      const testError = await testResponse.text();
+      console.error('Test Error:', testError);
+      throw new Error(`Error en test ${testResponse.status}: ${testError}`);
+    }
+    
+  } catch (error) {
+    console.error('Error completo:', error);
+    // Restaurar el estado original del toggle en caso de error
+    if (toggleInput) {
+      toggleInput.checked = currentState;
+      toggleInput.disabled = false;
+      
+      // Restaurar también el texto del estado
+      const statusTextElement = document.getElementById(`status-text-${userDni}`);
+      if (statusTextElement) {
+        if (currentState) {
+          statusTextElement.textContent = 'Activo';
+          statusTextElement.className = 'text-success fw-bold';
+        } else {
+          statusTextElement.textContent = 'Inactivo';
+          statusTextElement.className = 'text-muted';
+        }
+      }
+      
+      // Restaurar también el badge de estado
+      const statusBadgeElement = document.getElementById(`status-badge-${userDni}`);
+      if (statusBadgeElement) {
+        if (currentState) {
+          statusBadgeElement.textContent = 'ACTIVO';
+          statusBadgeElement.className = 'status-badge status-activo';
+        } else {
+          statusBadgeElement.textContent = 'INACTIVO';
+          statusBadgeElement.className = 'status-badge status-inactivo';
+        }
+      }
+    }
+    alert(`Error al ${action} el usuario: ${error.message}`);
+  }
+}
+
+// Función auxiliar para mostrar mensajes de éxito
+function showSuccessMessage(message) {
+  // Crear elemento de notificación temporal
+  const notification = document.createElement('div');
+  notification.className = 'alert alert-success alert-dismissible fade show position-fixed';
+  notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+  notification.innerHTML = `
+    <i class="fas fa-check-circle me-2"></i>
+    ${message}
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // Auto-remover después de 3 segundos
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.remove();
+    }
+  }, 3000);
+}
+
+async function handleDeleteUser(userDni) {
+  const confirmMessage = `⚠️ ATENCIÓN ⚠️\n\n¿Estás completamente seguro de que quieres ELIMINAR este usuario?\n\nDNI: ${userDni}\n\nEsta acción NO se puede deshacer.\n\nEscribe "ELIMINAR" para confirmar:`;
+  
+  const confirmation = prompt(confirmMessage);
+  if (confirmation !== 'ELIMINAR') {
+    return;
+  }
+  
+  try {
+    console.log(`Eliminando usuario ${userDni}`);
+    
+    const response = await fetch(`/admin/gestion-usuarios/${userDni}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        [csrfHeader]: csrfToken
+      }
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Error response:', errorText);
+      throw new Error(`Error ${response.status}: ${errorText}`);
+    }
+    
+    const result = await response.json();
+    console.log('Delete result:', result);
+    
+    // Mostrar mensaje según la respuesta
+    alert(result.mensaje || 'Usuario eliminado correctamente');
+    
+    // Recargar la página
+    window.location.reload();
+    
+  } catch (error) {
+    console.error('Error completo:', error);
+    alert(`Error al eliminar el usuario: ${error.message}`);
+  }
+}
+
+function handleExportUsers() {
+  // Implementar exportación
+  alert('Funcionalidad de exportar usuarios próximamente');
+}
+
+// Mejorar la experiencia de búsqueda
+const searchInput = document.querySelector('input[name="search"]');
+if (searchInput) {
+  let searchTimeout;
+  searchInput.addEventListener('input', function() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      if (this.value.length >= 3 || this.value.length === 0) {
+        this.closest('form').submit();
+      }
+    }, 500);
+  });
+}
+
+// Agregar estilos adicionales para los botones
+const style = document.createElement('style');
+style.textContent = `
+  .user-action {
+    transition: all 0.3s ease;
+    border: none;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    font-size: 0.875rem;
+  }
+  
+  .user-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  
+  .view-btn:hover {
+    background-color: #138496 !important;
+  }
+  
+  .toggle-btn:hover {
+    opacity: 0.8;
+  }
+  
+  .delete-btn:hover {
+    background-color: #c82333 !important;
+  }
+  
+  .modal-body .border-bottom {
+    border-color: #e9ecef !important;
+  }
+`;
+document.head.appendChild(style);
+
+console.log('Gestión de usuarios con funcionalidades CRUD cargada');
+});
+</script>
+</body>
+</html>
