@@ -18,7 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import com.example.telitodev.repository.UsuarioRepository;
 
 
-@Controller
+@Controller("productOwnerQaDevController")
 @RequestMapping("/qa-dev")
 @PreAuthorize("hasAnyRole('QA', 'DEV')")
 public class QaDevController {
