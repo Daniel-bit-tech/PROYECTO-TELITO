@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import jakarta.servlet.http.HttpSession;
 
 import java.util.List;
 
@@ -31,7 +32,7 @@ public class DeveloperController {
 
 
     @GetMapping("/home")
-    public String showDeveloperView(Model model, Authentication auth) {
+    public String showDeveloperView(Model model, Authentication auth, HttpSession session) {
         String correo = auth.getName();
         Usuario usuario = usuarioRepository.findByCorreo(correo);
 
@@ -46,8 +47,17 @@ public class DeveloperController {
         model.addAttribute("credenciales", credenciales);
         model.addAttribute("Nnotis", Nnotis);
         model.addAttribute("notificaciones", notis);
-
-
+        
+        // Agregar información de impersonación al modelo
+        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
+        if (isImpersonating != null && isImpersonating) {
+            model.addAttribute("isImpersonating", true);
+            model.addAttribute("impersonatedUserDni", session.getAttribute("IMPERSONATED_USER_DNI"));
+            model.addAttribute("originalAdminUsername", session.getAttribute("ORIGINAL_ADMIN_USERNAME"));
+            System.out.println("🎭 DEV - Modo impersonación detectado para DNI: " + session.getAttribute("IMPERSONATED_USER_DNI"));
+        } else {
+            model.addAttribute("isImpersonating", false);
+        }
 
         return "desarrollador/developer";
     }

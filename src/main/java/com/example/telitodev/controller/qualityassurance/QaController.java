@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/qa")
@@ -21,9 +22,21 @@ public class QaController {
 
 
     @GetMapping("/catalogo")        //reutilizar vista apis.html de dev?
-    public String showCatalogo (Model model, Authentication auth) {
+    public String showCatalogo (Model model, Authentication auth, HttpSession session) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
+        
+        // Agregar información de impersonación al modelo
+        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
+        if (isImpersonating != null && isImpersonating) {
+            model.addAttribute("isImpersonating", true);
+            model.addAttribute("impersonatedUserDni", session.getAttribute("IMPERSONATED_USER_DNI"));
+            model.addAttribute("originalAdminUsername", session.getAttribute("ORIGINAL_ADMIN_USERNAME"));
+            System.out.println("🎭 QA - Modo impersonación detectado para DNI: " + session.getAttribute("IMPERSONATED_USER_DNI"));
+        } else {
+            model.addAttribute("isImpersonating", false);
+        }
+        
         return "qa/catalogo";
     }
     @GetMapping("/apiDetalle")      //@GetMapping("apis/{id}")      @PathVariable Integer id
