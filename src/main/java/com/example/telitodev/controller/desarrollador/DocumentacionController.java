@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.Optional;
+
 @Controller
 @RequestMapping("/documentacion")
 public class DocumentacionController {
@@ -29,13 +31,15 @@ public class DocumentacionController {
     public String showLoginForm(@PathVariable Integer idDoc, Model model, Authentication auth) {
 
 
-        Documentacion doc = documentacionRepository.getReferenceById(idDoc);
+        Optional<Documentacion> doc = documentacionRepository.findById(idDoc);
+        model.addAttribute("doc", doc.orElse(null));
 
+//        System.out.println(doc.get().getContenido());
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
 
-        return "desarrollador/documentacion";
+        return "comun/docApi";
     }
 
 
