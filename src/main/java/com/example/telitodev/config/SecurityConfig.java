@@ -39,10 +39,10 @@ public class SecurityConfig {
                         .requestMatchers("/cat").permitAll()
 
                         // De rol
-                        .requestMatchers("/admin/**").hasRole("SADMIN")
-                        .requestMatchers("/dev/**").hasAnyRole("DEV", "SADMIN")
-                        .requestMatchers("/qa/**").hasAnyRole("QA", "SADMIN")
-                        .requestMatchers("/po/**").hasAnyRole("PO", "SADMIN")
+                        .requestMatchers("/admin/**").hasRole("SUPERADMIN") // <-- CORREGIR AQUÍ
+                        .requestMatchers("/dev/**").hasAnyRole("DEV", "SUPERADMIN") // <-- Y AQUÍ
+                        .requestMatchers("/qa/**").hasAnyRole("QA", "SUPERADMIN") // <-- Y AQUÍ
+                        .requestMatchers("/po/**").hasAnyRole("PO", "SUPERADMIN") // <-- Y AQUÍ
                         .requestMatchers("/qa-dev/**").hasAnyRole("QA", "DEV")
 
                         // Otras rutas
@@ -97,7 +97,7 @@ public class SecurityConfig {
                     String role = authority.getAuthority();
 
                     switch (authority.getAuthority()) {
-                        case "ROLE_SADMIN":
+                        case "ROLE_SUPERADMIN":
                             return "/admin/home";
                         case "ROLE_DEV":
                             return "/dev/home";
