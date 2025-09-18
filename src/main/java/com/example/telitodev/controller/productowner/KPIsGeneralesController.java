@@ -12,30 +12,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/po")
 @PreAuthorize("hasAnyRole('PO', 'SADMIN')")
-public class RoadmapController {
+public class KPIsGeneralesController {
 
     final UsuarioRepository usuarioRepository;
-    public RoadmapController(UsuarioRepository usuarioRepository) {
+    public KPIsGeneralesController(UsuarioRepository usuarioRepository) {
         this.usuarioRepository = usuarioRepository;
     }
 
-    @GetMapping("/roadmap")
-    public String showRoadmapView(Model model, Authentication auth) {
+    @GetMapping("/Dashboard")
+    public String showDashboardView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        return "po/roadmap";
-    }
-    @GetMapping("/roadmapGestion")
-    public String showRoadmapGestionView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/roadmapGestion";
-    }
-    @GetMapping("/roadmapDetalle")
-    public String showRoadmapDetalleView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/roadmapDetalle";
+        return "po/Dashboard";
     }
 
 }

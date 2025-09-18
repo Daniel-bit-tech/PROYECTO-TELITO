@@ -14,6 +14,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @PreAuthorize("hasAnyRole('PO', 'SADMIN')")
 public class BacklogController {
 
+    final UsuarioRepository usuarioRepository;
+    public BacklogController(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
 
+    @GetMapping("/backlog")
+    public String showBacklogView(Model model, Authentication auth) {
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        model.addAttribute("usuario", usuario);
+        return "po/backlog";
+    }
 
 }

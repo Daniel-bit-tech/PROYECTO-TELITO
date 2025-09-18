@@ -557,45 +557,9 @@
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
-                        <i class="fas fa-bolt"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-value">12,458</div>
-                        <div class="stat-label">Requests hoy</div>
-                    </div>
-                </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon" style="background-color: rgba(var(--tblr-success-rgb), 0.1); color: var(--tblr-success);">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-value">99.7%</div>
-                        <div class="stat-label">Tasa de éxito</div>
-                    </div>
-                </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon" style="background-color: rgba(var(--tblr-warning-rgb), 0.1); color: var(--tblr-warning);">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-value">142 ms</div>
-                        <div class="stat-label">Latencia promedio</div>
-                    </div>
-                </div>
 
-                <div class="stat-card">
-                    <div class="stat-icon" style="background-color: rgba(var(--tblr-danger-rgb), 0.1); color: var(--tblr-danger);">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <div class="stat-content">
-                        <div class="stat-value">23</div>
-                        <div class="stat-label">Errores en 24h</div>
-                    </div>
-                </div>
             </div>
 
             <div class="dashboard-grid">
@@ -608,7 +572,29 @@
                     </div>
 
                     <ul class="api-list">
+                        <li class="api-item">
+                            <div class="api-icon" style="background-color: rgba(66, 153, 225, 0.1); color: #4299e1;">
+                                <i class="fas fa-cube"></i>
+                            </div>
 
+                            <div class="api-info">
+                                <div class="api-name">API Geolocalización</div>
+
+                                <div class="api-meta">
+                                    <span>v1.0</span>
+
+                                    <span>•</span>
+                                    <span>
+                                      Credencial creada:
+                                        <span>11/05/2025</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <button class="api-action" onclick="location.href='/po/documentacion'">
+                                Ver Documentación
+                            </button>
+                        </li>
                     </ul>
 
                     <div class="quick-actions-grid">
@@ -650,8 +636,43 @@
                         <!--            </div>-->
                     </div>
 
-                    <ul class="notification-list">
+                    <ul class="notification-list"><li class="notification-item">
+                        <div class="notification-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
+                            <i class="fas fa-envelope"></i>
+                        </div>
 
+                        <div class="notification-content">
+                            <div class="notification-title">Expiración de credencial</div>
+                            <div class="notification-description"> El acceso a la API usuarios ha finalizado por parte del Dev Miguel</div>
+                        </div>
+
+                        <div class="notification-time">15 may 10:30</div>
+                    </li>
+                        <li class="notification-item">
+                            <div class="notification-icon" style="background-color: rgba(var(--tblr-success-rgb), 0.1); color: var(--tblr-success);">
+                                <i class="fas fa-envelope-open"></i>
+                            </div>
+
+                            <div class="notification-content">
+                                <div class="notification-title">Alerta de seguridad</div>
+                                <div class="notification-description">El Dev Miguel ha detectado un uso inusual del API Pagos en las ultimas 24 horas.</div>
+                            </div>
+
+                            <div class="notification-time">04 jun 18:45</div>
+                        </li>
+
+                        <li class="notification-item">
+                            <div class="notification-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+
+                            <div class="notification-content">
+                                <div class="notification-title">Actualización API Usuarios</div>
+                                <div class="notification-description"> El API Usuarios ha sido actualizada a la versión v2.0.</div>
+                            </div>
+
+                            <div class="notification-time">05 jun 09:15</div>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -671,8 +692,8 @@
                                 <i class="fas fa-code"></i>
                             </div>
                             <div class="activity-content">
-                                <div class="activity-title">Implementaste webhooks de pagos</div>
-                                <div class="activity-description">Configuraste webhooks para recibir notificaciones de cambios de estado en pagos</div>
+                                <div class="activity-title">Realizaste un requerimientos</div>
+                                <div class="activity-description"> Levantaste un requerimiento para mejorar de la API Usuarios</div>
                                 <div class="activity-time">Hace 2 horas</div>
                             </div>
                         </li>
@@ -682,8 +703,8 @@
                                 <i class="fas fa-check"></i>
                             </div>
                             <div class="activity-content">
-                                <div class="activity-title">Solicitud de API Key aprobada</div>
-                                <div class="activity-description">Tu solicitud para la API de Analytics fue aprobada automáticamente</div>
+                                <div class="activity-title">Aprobaste una petición de solicitud</div>
+                                <div class="activity-description">Has aprobado la petición de credenciales (API key) de la API usuarios</div>
                                 <div class="activity-time">Hace 1 día</div>
                             </div>
                         </li>
@@ -693,8 +714,8 @@
                                 <i class="fas fa-exclamation"></i>
                             </div>
                             <div class="activity-content">
-                                <div class="activity-title">Alerta de rate limit</div>
-                                <div class="activity-description">Tu aplicación se acercó al 80% de tu límite de requests diarios</div>
+                                <div class="activity-title">Actualizaste la tabla de backlog</div>
+                                <div class="activity-description">Marcaste como solucionado el requerimiento de la API Usuarios</div>
                                 <div class="activity-time">Hace 2 días</div>
                             </div>
                         </li>
