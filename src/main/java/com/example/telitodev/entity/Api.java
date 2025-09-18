@@ -71,7 +71,7 @@ public class Api {
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<VersionApi> versionesApi;
     
-    // Constructores
+
     public Api() {}
     
     public Api(String nombre, String descripcion, Timestamp fechaCreacion, 
