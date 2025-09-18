@@ -43,10 +43,10 @@ public class SecurityConfig {
                         .requestMatchers("/dev/**").hasAnyRole("DEV", "SADMIN")
                         .requestMatchers("/qa/**").hasAnyRole("QA", "SADMIN")
                         .requestMatchers("/po/**").hasAnyRole("PO", "SADMIN")
-
+                        .requestMatchers("/qa-dev/**").hasAnyRole("QA", "DEV")
 
                         // Otras rutas
-                        .anyRequest().authenticated() // Requiere autenticación pero cualquier rol
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
@@ -105,8 +105,8 @@ public class SecurityConfig {
 //                            return "/qa/home";
                             return "/qa/catalogo";
                         case "ROLE_PO":
-//                            return "/po/home";
-                            return "/po/Dashboard";
+                            return "/po/home";
+
                         default:
                             return "/login";
                     }
@@ -120,5 +120,9 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(8);
     }
+
+
+
+
 
 }

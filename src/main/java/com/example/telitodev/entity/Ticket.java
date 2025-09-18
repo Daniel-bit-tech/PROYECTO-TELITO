@@ -1,14 +1,18 @@
 package com.example.telitodev.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+
 import java.sql.Timestamp;
 import java.util.List;
+
 
 @Entity
 @Table(name = "ticket")
 public class Ticket {
-    
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idTicket")
     private Integer idTicket;
     
@@ -17,14 +21,18 @@ public class Ticket {
     
     @Column(name = "descripcion", nullable = false, columnDefinition = "TEXT")
     private String descripcion;
-    
+
     @Column(name = "fecha_creacion", nullable = false)
+    @CreationTimestamp
     private Timestamp fechaCreacion;
     
     @Column(name = "estado", nullable = false)
-    private Boolean estado;     //en DB: 0 (false) es abierto, 1 (true) es cerrado
-    
-    @Column(name = "fecha_final", nullable = true)
+    private Boolean estado;
+
+
+
+
+    @Column(name = "fecha_final")
     private Timestamp fechaFinal;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -38,7 +46,7 @@ public class Ticket {
     @OneToMany(mappedBy = "ticket", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Chatbot> chatbots;
     
-    // Constructores
+
     public Ticket() {}
     
     public Ticket(Integer idTicket, String asunto, String descripcion, 
@@ -54,7 +62,7 @@ public class Ticket {
         this.api = api;
     }
     
-    // Getters y Setters
+
     public Integer getIdTicket() {
         return idTicket;
     }
@@ -78,7 +86,7 @@ public class Ticket {
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
-    
+
     public Timestamp getFechaCreacion() {
         return fechaCreacion;
     }
@@ -122,7 +130,9 @@ public class Ticket {
     public List<Chatbot> getChatbots() {
         return chatbots;
     }
-    
+
+
+
     public void setChatbots(List<Chatbot> chatbots) {
         this.chatbots = chatbots;
     }

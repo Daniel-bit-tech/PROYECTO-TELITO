@@ -335,159 +335,62 @@
             <div id="give-feedback" class="feedback-tab-content">
                 <div class="feedback-form-container">
                     <h3 class="feedback-form-title">Comparte tu experiencia</h3>
-                    <form id="feedback-form">
+                    <form th:action="@{/feedback/guardar}" th:object="${ticket}" method="post">
+                        <input type="hidden" th:field="*{usuario}">
+
                         <div class="form-group">
                             <label class="form-label">Seleccionar API o recurso</label>
-                            <select class="form-select" id="feedback-api" required>
+                            <select class="form-select" th:field="*{api}" required>
                                 <option value="">Selecciona una API o recurso</option>
-                                <option value="api-users">API de Usuarios</option>
-                                <option value="api-payments">API de Pagos</option>
-                                <option value="api-products">API de Productos</option>
-                                <option value="api-notifications">API de Notificaciones</option>
-                                <option value="api-analytics">API de Analytics</option>
-                                <option value="portal">Portal de Desarrolladores</option>
-                                <option value="documentation">Documentación</option>
-                                <option value="other">Otro</option>
+                                <option th:each="api : ${apis}" th:value="${api.idApi}" th:text="${api.nombre}"></option>
                             </select>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Asunto</label>
-                            <input type="text" class="form-control" id="feedback-subject" placeholder="Resumen de tu feedback" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Tipo de feedback</label>
-                            <select class="form-select" id="feedback-type" required>
-                                <option value="">Selecciona un tipo</option>
-                                <option value="suggestion">Sugerencia de mejora</option>
-                                <option value="bug">Reporte de error</option>
-                                <option value="documentation">Problema con documentación</option>
-                                <option value="compliment">Elogio</option>
-                                <option value="question">Pregunta</option>
-                            </select>
-                        </div>
-
-                        <div class="rating-container">
-                            <div class="rating-title">Calificación</div>
-                            <div class="rating-stars">
-                                <span class="rating-star" data-value="1"><i class="far fa-star"></i></span>
-                                <span class="rating-star" data-value="2"><i class="far fa-star"></i></span>
-                                <span class="rating-star" data-value="3"><i class="far fa-star"></i></span>
-                                <span class="rating-star" data-value="4"><i class="far fa-star"></i></span>
-                                <span class="rating-star" data-value="5"><i class="far fa-star"></i></span>
-                            </div>
-                            <input type="hidden" id="feedback-rating" value="0">
+                            <input type="text" class="form-control" th:field="*{asunto}" placeholder="Resumen de tu feedback" required>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Mensaje</label>
-                            <textarea class="form-control form-textarea" id="feedback-message" placeholder="Describe tu experiencia, sugerencia o problema en detalle..." required></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-check">
-                                <input type="checkbox" id="feedback-contact">
-                                <span class="form-check-label">Pueden contactarme para seguir hablando de este feedback</span>
-                            </label>
+                            <textarea class="form-control form-textarea" th:field="*{descripcion}" placeholder="Describe tu experiencia, sugerencia o problema en detalle..." required></textarea>
                         </div>
 
                         <button type="submit" class="btn-primary">
                             <i class="fas fa-paper-plane"></i> Enviar Feedback
                         </button>
                     </form>
+
                 </div>
             </div>
 
             <div id="my-feedback" class="feedback-tab-content" style="display: none;">
                 <div class="feedback-list">
-
-                    <div class="feedback-card">
-                        <div class="feedback-header">
-                            <div class="feedback-meta">
-                                <div class="feedback-author">Juan Pérez</div>
-                                <div class="feedback-date">15 de Agosto, 2023</div>
-                            </div>
-                            <div class="feedback-rating">
-                                <span class="feedback-star"><i class="fas fa-star"></i></span>
-                                <span class="feedback-star"><i class="fas fa-star"></i></span>
-                                <span class="feedback-star"><i class="fas fa-star"></i></span>
-                                <span class="feedback-star"><i class="fas fa-star"></i></span>
-                                <span class="feedback-star"><i class="far fa-star"></i></span>
-                            </div>
-                        </div>
-                        <div class="feedback-content">
-                            <div class="feedback-subject">Excelente documentación para la API de Pagos</div>
-                            <div class="feedback-message">
-                                La documentación de la API de Pagos es muy clara y los ejemplos de código son extremadamente útiles.
-                                Me gustaría ver más ejemplos en Python y una sección de troubleshooting para casos edge.
-                            </div>
-                        </div>
-                        <div class="feedback-footer">
-                            <div class="feedback-api">
-                                <i class="fas fa-credit-card"></i> API de Pagos • Sugerencia de mejora
-                            </div>
-                            <span class="feedback-status status-reviewed">Revisado</span>
-                        </div>
+                    <div th:if="${#lists.isEmpty(misTickets)}" class="empty-state">
+                        <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                        <h4 class="empty-title">Aún no has enviado feedback</h4>
+                        <p class="empty-description">Tus tickets de soporte aparecerán aquí una vez que los envíes.</p>
+                        <a href="#" class="btn-primary switch-tab" data-tab="give-feedback">
+                            <i class="fas fa-comment"></i> Dejar mi primer feedback
+                        </a>
                     </div>
 
-
-                    <div class="feedback-card">
+                    <div th:each="ticket : ${misTickets}" class="feedback-card">
                         <div class="feedback-header">
                             <div class="feedback-meta">
-                                <div class="feedback-author">María García</div>
-                                <div class="feedback-date">12 de Agosto, 2023</div>
-                            </div>
-                            <div class="feedback-rating">
-                                <span class="feedback-star"><i class="fas fa-star"></i></span>
-                                <span class="feedback-star"><i class="fas fa-star"></i></span>
-                                <span class="feedback-star"><i class="fas fa-star"></i></span>
-                                <span class="feedback-star"><i class="far fa-star"></i></span>
-                                <span class="feedback-star"><i class="far fa-star"></i></span>
+                                <div class="feedback-author" th:text="${ticket.usuario.nombre}"></div>
+                                <div class="feedback-date" th:text="${#dates.format(ticket.fechaCreacion, 'dd/MM/yyyy')}"></div>
                             </div>
                         </div>
                         <div class="feedback-content">
-                            <div class="feedback-subject">Problema con el endpoint de reembolsos</div>
-                            <div class="feedback-message">
-                                El endpoint de reembolsos devuelve un error 500 cuando se intenta procesar un reembolso parcial
-                                para transacciones mayores a 30 días. He probado con diferentes parámetros pero el error persiste.
-                            </div>
+                            <div class="feedback-subject" th:text="${ticket.asunto}"></div>
+                            <div class="feedback-message" th:text="${ticket.descripcion}"></div>
                         </div>
                         <div class="feedback-footer">
                             <div class="feedback-api">
-                                <i class="fas fa-credit-card"></i> API de Pagos • Reporte de error
+                                <i class="fas fa-cube"></i> <span th:text="${ticket.api.nombre}"></span>
                             </div>
-                            <span class="feedback-status status-pending">En revisión</span>
-                        </div>
-                    </div>
-
-
-                    <div class="feedback-card">
-                        <div class="feedback-header">
-                            <div class="feedback-meta">
-                                <div class="feedback-author">Carlos Rodríguez</div>
-                                <div class="feedback-date">5 de Agosto, 2023</div>
-                            </div>
-                            <div class="feedback-rating">
-                                <span class="feedback-star"><i class="fas fa-star"></i></span>
-                                <span class="feedback-star"><i class="fas fa-star"></i></span>
-                                <span class="feedback-star"><i class="fas fa-star"></i></span>
-                                <span class="feedback-star"><i class="fas fa-star"></i></span>
-                                <span class="feedback-star"><i class="fas fa-star"></i></span>
-                            </div>
-                        </div>
-                        <div class="feedback-content">
-                            <div class="feedback-subject">Me encanta el nuevo playground</div>
-                            <div class="feedback-message">
-                                El nuevo playground para probar APIs es increíble. Ahorra mucho tiempo en desarrollo y testing.
-                                Sería genial si pudieran añadir la posibilidad de guardar las configuraciones de prueba.
-                            </div>
-                        </div>
-                        <div class="feedback-footer">
-                            <div class="feedback-api">
-                                <i class="fas fa-laptop-code"></i> Portal de Desarrolladores • Elogio
-                            </div>
-                            <span class="feedback-status status-closed">Implementado</span>
+                            <span class="feedback-status" th:classappend="${ticket.estado ? 'status-reviewed' : 'status-pending'}" th:text="${ticket.estado ? 'Resuelto' : 'Pendiente'}"></span>
                         </div>
                     </div>
                 </div>
