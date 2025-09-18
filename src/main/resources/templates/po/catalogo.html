@@ -422,26 +422,63 @@
                     </form>
 
 
-                    <div class="apis-grid">
-                        <div class="api-card" th:each="api : ${apis}">
+                    <div class="apis-grid"><div class="api-card">
+                        <div class="api-header">
+                            <div>
+                                <h3 class="api-title">API Inventario</h3>
+                                <!-- Ejemplo: mostrar estado según dominio o tag -->
+                                <span class="api-status status-production">Logistica</span>
+                            </div>
+                            <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #4299e1;"></i>
+                        </div>
+
+                        <p class="api-description">Gestión de productos y stock en almacenes.</p>
+
+                        <div class="api-meta">
+            <span class="meta-item">
+                <i class="fas fa-code-branch"></i>
+                <span>v1.0</span>
+            </span>
+                            <span class="meta-item">
+                <i class="fas fa-bolt"></i>
+                                <!-- Ejemplo: uptime fijo o calculado -->
+                98% uptime
+            </span>
+                        </div>
+
+                        <div class="api-tags">
+
+                            <span class="api-tag">GraphQL</span>
+                            <!--              <span class="api-tag" th:each="t : ${#strings.arraySplit(api.tag, ',')}"-->
+                            <!--                    th:text="${t}"></span>-->
+                        </div>
+
+                        <div class="api-actions">
+                            <a href="/po/documentacion" class="btn-api btn-primary">
+                                <i class="fas fa-book"></i> Documentación
+                            </a>
+                            <a class="btn-api btn-outline" href="/po/KPIs">
+                                <i class="fas fa-play"></i> KPIs
+                            </a>
+                        </div>
+                    </div>
+
+                        <div class="api-card">
                             <div class="api-header">
                                 <div>
-                                    <h3 class="api-title" th:text="${api.nombre}">Nombre API</h3>
+                                    <h3 class="api-title">API Pagos</h3>
                                     <!-- Ejemplo: mostrar estado según dominio o tag -->
-                                    <span class="api-status status-production"
-                                          th:text="${api.dominio}">Producción</span>
+                                    <span class="api-status status-production">Finanzas</span>
                                 </div>
                                 <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #4299e1;"></i>
                             </div>
 
-                            <p class="api-description" th:text="${api.descripcion}">
-                                Descripción de la API
-                            </p>
+                            <p class="api-description">Procesamiento de pagos y facturación.</p>
 
                             <div class="api-meta">
             <span class="meta-item">
                 <i class="fas fa-code-branch"></i>
-                <span th:text="${api.versionesApi != null and !api.versionesApi.isEmpty()? api.versionesApi.get(0).version : 'Sin versión'}"></span>
+                <span>v2.0</span>
             </span>
                                 <span class="meta-item">
                 <i class="fas fa-bolt"></i>
@@ -452,16 +489,56 @@
 
                             <div class="api-tags">
 
-                                <span class="api-tag" th:text="${api.tag}"></span>
+                                <span class="api-tag">eventos</span>
                                 <!--              <span class="api-tag" th:each="t : ${#strings.arraySplit(api.tag, ',')}"-->
                                 <!--                    th:text="${t}"></span>-->
                             </div>
 
                             <div class="api-actions">
-                                <a th:href="@{'/po/documentacion/' + ${api.idApi} + '/docs'}" class="btn-api btn-primary">
+                                <a href="/po/documentacion" class="btn-api btn-primary">
                                     <i class="fas fa-book"></i> Documentación
                                 </a>
-                                <a th:href="@{'/po/KPIs/' + ${api.idApi} + '/test'}" class="btn-api btn-outline">
+                                <a class="btn-api btn-outline" href="/po/KPIs">
+                                    <i class="fas fa-play"></i> KPIs
+                                </a>
+                            </div>
+                        </div>
+                        <div class="api-card">
+                            <div class="api-header">
+                                <div>
+                                    <h3 class="api-title">API Usuarios</h3>
+                                    <!-- Ejemplo: mostrar estado según dominio o tag -->
+                                    <span class="api-status status-production">Seguridad</span>
+                                </div>
+                                <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #4299e1;"></i>
+                            </div>
+
+                            <p class="api-description">Permite la gestión de usuarios (registro, login, perfiles).</p>
+
+                            <div class="api-meta">
+            <span class="meta-item">
+                <i class="fas fa-code-branch"></i>
+                <span>v1.0</span>
+            </span>
+                                <span class="meta-item">
+                <i class="fas fa-bolt"></i>
+                                    <!-- Ejemplo: uptime fijo o calculado -->
+                98% uptime
+            </span>
+                            </div>
+
+                            <div class="api-tags">
+
+                                <span class="api-tag">REST</span>
+                                <!--              <span class="api-tag" th:each="t : ${#strings.arraySplit(api.tag, ',')}"-->
+                                <!--                    th:text="${t}"></span>-->
+                            </div>
+
+                            <div class="api-actions">
+                                <a href="/po/documentacion" class="btn-api btn-primary">
+                                    <i class="fas fa-book"></i> Documentación
+                                </a>
+                                <a class="btn-api btn-outline" href="/po/KPIs">
                                     <i class="fas fa-play"></i> KPIs
                                 </a>
                             </div>

@@ -19,95 +19,11 @@ public class PoController {
         this.usuarioRepository = usuarioRepository;
     }
 
-
-    @GetMapping("/documentacion")
-    public String showDocumentacionView(Model model, Authentication auth) {
-
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-
-        return "po/documentacion";
-    }
-
-    @GetMapping("/KPIs")
-    public String showKPIsView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/KPIs";
-    }
-    @GetMapping("/bandejaSolicitud")
-    public String showbandejaSolicitudesView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/bandejaSolicitud";
-    }
-    @GetMapping("/versolicitud")
-    public String showSolicitudesView(Model model, Authentication auth){
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/verSolicitud";
-    }
-    @GetMapping("/backlog")
-    public String showBacklogView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/backlog";
-    }
-    @GetMapping("/feedback")
-    public String showFeedbackView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/feedback";
-    }
-    @GetMapping("/roadmap")
-    public String showRoadmapView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/roadmap";
-    }
-    @GetMapping("/roadmapGestion")
-    public String showRoadmapGestionView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/roadmapGestion";
-    }
-    @GetMapping("/roadmapDetalle")
-    public String showRoadmapDetalleView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/roadmapDetalle";
-    }
-    @GetMapping("/feedbackDetalle")
-    public String showfeedbackDetalleView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/feedbackDetalle";
-    }
-    @GetMapping("/Dashboard")
-    public String showDashboardView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/Dashboard";
-    }
     @GetMapping("/verPerfil")
     public String showverPerfilView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
         return "po/verPerfil";
-    }
-    @GetMapping("/verSolicitud")
-    public String showverSolicitudView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/verSolicitud";
-    }
-
-
-    @GetMapping("/catalogo")
-    public String showCatalogoView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/catalogo";
     }
 
     @GetMapping("/home")
@@ -116,7 +32,6 @@ public class PoController {
         model.addAttribute("usuario", usuario);
         return "po/home";
     }
-
 
 
 }
