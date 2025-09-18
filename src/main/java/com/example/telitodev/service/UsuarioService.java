@@ -16,4 +16,18 @@ public class UsuarioService {
     public List<Usuario> obtenerTodosUsuarios() {
         return usuarioRepository.findAll();
     }
+
+
+
+
+
+    public Usuario findByCorreo(String correo) {
+        return usuarioRepository.findByCorreo(correo);
+    }
+
+
+    public Usuario save(Usuario usuario) {
+        return usuarioRepository.save(usuario);
+    }
+
 }
