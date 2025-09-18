@@ -21,15 +21,12 @@ public class AdminController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    @GetMapping("/home")
-    public String showAdminHome(Model model, Authentication authentication) {
-        return "redirect:/dev/home";
-    }
 
-    @GetMapping("/usuarios")
+
+    @GetMapping("/home")
     public String showUsuarios() {
         // Redirigir al nuevo sistema de gestión de usuarios
-        return "redirect:/admin/gestion-usuarios";
+        return "admin/gestion-usuarios-dev-style";
     }
     
     @GetMapping("/perfil")
