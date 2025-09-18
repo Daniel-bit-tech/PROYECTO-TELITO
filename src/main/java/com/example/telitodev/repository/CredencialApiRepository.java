@@ -11,4 +11,5 @@ public interface CredencialApiRepository extends JpaRepository<CredencialApi, In
 
     List<CredencialApi> findByUsuario_DniOrderByFechaCreacionDesc(String dni);
     Integer countByUsuario_DniAndEstado(String dni, Boolean Estado);
+    List<CredencialApi> findByUsuario_Dni(String dni);
 }
