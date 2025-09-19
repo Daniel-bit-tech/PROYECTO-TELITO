@@ -18,10 +18,13 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
     List<Api> findByTag(String tag);
 
+    List<Api> findByNombreContainingIgnoreCase(String nombre);
+
+    // El método de filtros múltiples que tenías
     @Query(value = "SELECT a.* FROM api a " +
-                    "WHERE (:search IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :search, '%')))" +
-                    "AND (:dominios IS NULL OR FIND_IN_SET(a.dominio, :dominios)) " +
-                    "AND (:tags IS NULL OR FIND_IN_SET(a.tag, :tags))", nativeQuery = true)
+            "WHERE (:search IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :search, '%')))" +
+            "AND (:dominios IS NULL OR FIND_IN_SET(a.dominio, :dominios)) " +
+            "AND (:tags IS NULL OR FIND_IN_SET(a.tag, :tags))", nativeQuery = true)
     List<Api> findByFilters(@Param("search") String search,
                             @Param("dominios") String dominios,
                             @Param("tags") String tags);

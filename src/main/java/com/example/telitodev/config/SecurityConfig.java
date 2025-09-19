@@ -38,15 +38,18 @@ public class SecurityConfig {
 
                         .requestMatchers("/cat").permitAll()
 
-                        // De rol
-                        .requestMatchers("/admin/**").hasRole("SUPERADMIN")
-                        .requestMatchers("/dev/**").hasAnyRole("DEV", "SUPERADMIN")
-                        .requestMatchers("/qa/**").hasAnyRole("QA", "SUPERADMIN")
-                        .requestMatchers("/po/**").hasAnyRole("PO", "SUPERADMIN")
+                        // API endpoints - requieren autenticación pero sin CSRF
+                        .requestMatchers("/api/onboarding/**").authenticated()
 
+                        // De rol
+                        .requestMatchers("/admin/**").hasRole("SUPERUPERADMIN") // <-- CORREGIR AQUÍ
+                        .requestMatchers("/dev/**").hasAnyRole("DEV", "SUPERUPERADMIN") // <-- Y AQUÍ
+                        .requestMatchers("/qa/**").hasAnyRole("QA", "SUPERUPERADMIN") // <-- Y AQUÍ
+                        .requestMatchers("/po/**").hasAnyRole("PO", "SUPERUPERADMIN") // <-- Y AQUÍ
+                        .requestMatchers("/qa-dev/**").hasAnyRole("QA", "DEV")
 
                         // Otras rutas
-                        .anyRequest().authenticated() // Requiere autenticación pero cualquier rol
+                        .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
                         .loginPage("/login")
@@ -70,6 +73,9 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(exception -> exception
                         .accessDeniedPage("/acceso-denegado")
+                )
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/**") // Deshabilitar CSRF para endpoints API
                 );
 
         return http.build();
@@ -106,11 +112,10 @@ public class SecurityConfig {
                         case "ROLE_DEV":
                             return "/dev/home";
                         case "ROLE_QA":
-//                            return "/qa/home";
-                            return "/qa/catalogo";
+                            return "/qa/home";
                         case "ROLE_PO":
-//                            return "/po/home";
-                            return "/po/Dashboard";
+                            return "/po/home";
+
                         default:
                             return "/login";
                     }
@@ -124,5 +129,9 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(8);
     }
+
+
+
+
 
 }
