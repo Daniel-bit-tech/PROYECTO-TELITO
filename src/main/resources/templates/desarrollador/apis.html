@@ -349,7 +349,7 @@
       <div class="search-filters">
         <div class="search-box">
           <i class="fas fa-search search-icon"></i>
-          <input type="text" class="search-input" id="search" name="nombre" placeholder="Buscar APIs por nombre">
+          <input type="text" class="search-input" id="search" name="nombre" placeholder="Buscar APIs por nombre" th:value="${nombre != null ? nombre : ''}">
         </div>
 
 <!--        <div class="filter-buttons">-->
@@ -381,13 +381,16 @@
 <!--                <input type="checkbox" name="dominios" checked> Todos los Dominios-->
 <!--              </label>-->
               <label class="filter-tag">
-                <input type="checkbox" name="dominios" value="Seguridad"> Seguridad
+                <input type="checkbox" name="dominios" value="Seguridad"
+                       th:checked="${dominios != null and dominios.contains('Seguridad')}"> Seguridad
               </label>
               <label class="filter-tag">
-                <input type="checkbox" name="dominios" value="Finanzas"> Finanzas
+                <input type="checkbox" name="dominios" value="Finanzas"
+                       th:checked="${dominios != null and dominios.contains('Finanzas')}"> Finanzas
               </label>
               <label class="filter-tag">
-                <input type="checkbox" name="dominios" value="Logistica"> Logistica
+                <input type="checkbox" name="dominios" value="Logistica"
+                       th:checked="${dominios != null and dominios.contains('Logistica')}"> Logística
               </label>
             </div>
           </div>
@@ -401,16 +404,20 @@
 <!--                <input type="checkbox" checked> Todas-->
 <!--              </label>-->
               <label class="filter-tag">
-                <input type="checkbox" name="tags" value="REST"> REST
+                <input type="checkbox" name="tags" value="REST"
+                       th:checked="${tags != null and tags.contains('REST')}"> REST
               </label>
               <label class="filter-tag">
-                <input type="checkbox" name="tags" value="GraphQL"> GraphQL
+                <input type="checkbox" name="tags" value="GraphQL"
+                       th:checked="${tags != null and tags.contains('GraphQL')}"> GraphQL
               </label>
               <label class="filter-tag">
-                <input type="checkbox" name="tags" value="Webhook"> Webhooks
+                <input type="checkbox" name="tags" value="WebSocket"
+                       th:checked="${tags != null and tags.contains('WebSocket')}"> WebSocket
               </label>
               <label class="filter-tag">
-                <input type="checkbox" name="tags" value="Eventos"> Eventos
+                <input type="checkbox" name="tags" value="Eventos"
+                       th:checked="${tags != null and tags.contains('Eventos')}"> Eventos
               </label>
             </div>
           </div>

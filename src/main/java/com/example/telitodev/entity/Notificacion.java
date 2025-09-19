@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 public class Notificacion {
     
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idNotificacion")
     private Integer idNotificacion;
     

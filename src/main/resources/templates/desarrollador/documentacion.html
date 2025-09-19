@@ -187,7 +187,7 @@
 <!--                            </td>-->
                             <td><span class="badge badge-component" th:text="${doc.tipo}"></span></td>
                             <td><a th:href="@{/documentacion/{id}(id=${doc.idDocumentacion})}"
-                                   th:text="${doc.contenido}"></a></td>
+                                   th:text="${doc.descripcion}"></a></td>
                             <td th:text="${#dates.format(doc.fechaCreacion, 'dd-MM-yyyy')}"></td>
                             <td>
                                 <span th:each="ejemplo : ${doc.ejemplosCodigo}" class="badge" th:text="${ejemplo.lenguaje}"></span>

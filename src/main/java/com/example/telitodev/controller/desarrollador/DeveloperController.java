@@ -2,10 +2,9 @@ package com.example.telitodev.controller.desarrollador;
 
 import com.example.telitodev.entity.CredencialApi;
 import com.example.telitodev.entity.Notificacion;
+import com.example.telitodev.entity.Ticket;
 import com.example.telitodev.entity.Usuario;
-import com.example.telitodev.repository.CredencialApiRepository;
-import com.example.telitodev.repository.NotificacionRepository;
-import com.example.telitodev.repository.UsuarioRepository;
+import com.example.telitodev.repository.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -24,10 +23,12 @@ public class DeveloperController {
     final UsuarioRepository usuarioRepository;
     final CredencialApiRepository credencialApiRepository;
     final NotificacionRepository notificacionRepository;
-    public DeveloperController(UsuarioRepository usuarioRepository, CredencialApiRepository credencialApiRepository, NotificacionRepository notificacionRepository) {
+    final TicketRepository ticketRepository;
+    public DeveloperController(UsuarioRepository usuarioRepository, CredencialApiRepository credencialApiRepository, NotificacionRepository notificacionRepository, TicketRepository ticketRepository) {
         this.usuarioRepository = usuarioRepository;
         this.credencialApiRepository = credencialApiRepository;
         this.notificacionRepository = notificacionRepository;
+        this.ticketRepository = ticketRepository;
     }
 
 
@@ -42,11 +43,14 @@ public class DeveloperController {
         List<Notificacion> notis = notificacionRepository.findByUsuario_Dni(usuario.getDni());
         Integer Nnotis = notificacionRepository.countByUsuario_DniAndLeido(usuario.getDni(),false);
 
+        List<Ticket> tickets = ticketRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
+
         model.addAttribute("usuario", usuario);
         model.addAttribute("NcredActivas", NCredenciales);
         model.addAttribute("credenciales", credenciales);
         model.addAttribute("Nnotis", Nnotis);
         model.addAttribute("notificaciones", notis);
+        model.addAttribute("tickets", tickets);
         
         // Agregar información de impersonación al modelo
         Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
