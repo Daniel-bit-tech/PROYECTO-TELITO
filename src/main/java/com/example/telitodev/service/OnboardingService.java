@@ -42,7 +42,8 @@ public class OnboardingService {
     public SolicitudAccesoResponse crearSolicitudAcceso(String dniUsuario, SolicitudAccesoRequest request) {
         // Validar que el usuario existe
         Usuario usuario = usuarioRepository.findByDni(dniUsuario)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+//                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"))
+                ;
 
         // Validar que el usuario tenga rol DEV
         if (usuario.getRol().getIdRol() != 2) {
@@ -64,6 +65,10 @@ public class OnboardingService {
         // Verificar si ya tiene acceso a esta API
         List<CredencialApi> credencialesExistentes = credencialApiRepository
                 .findByUsuario_DniAndApi_IdApiAndEstado(dniUsuario, request.getApiId(), true);
+
+        for (CredencialApi credencial : credencialesExistentes) {
+            System.out.println(credencial.getIdCredencialApi());
+        }
         
         if (!credencialesExistentes.isEmpty()) {
             // En lugar de lanzar una excepción, crear una excepción personalizada
@@ -272,7 +277,7 @@ public class OnboardingService {
                 api.getNombre(),
                 api.getDescripcion(),
                 api.getDominio(),
-                api.getTag(),
+                api.getTag(), // Este campo 'tag' se mapea a 'tipoApi' en ApiResponse
                 api.getEndpointUrl()
         );
     }

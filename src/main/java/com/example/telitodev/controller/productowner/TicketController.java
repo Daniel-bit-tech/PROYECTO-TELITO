@@ -1,4 +1,4 @@
-package com.example.telitodev.controller; // O el paquete que hayas elegido
+package com.example.telitodev.controller.productowner; // O el paquete que hayas elegido
 
 import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.Ticket;
