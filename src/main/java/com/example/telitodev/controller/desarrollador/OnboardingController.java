@@ -5,12 +5,16 @@ import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.service.OnboardingService;
 import com.example.telitodev.dto.ApiResponse;
 import com.example.telitodev.dto.CredencialApiResponse;
+import com.example.telitodev.dto.SolicitudAccesoRequest;
+import com.example.telitodev.dto.SolicitudAccesoResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.ResponseEntity;
 
@@ -153,6 +157,38 @@ public class OnboardingController {
             return ResponseEntity.status(400).body("{\"error\":\"" + e.getMessage() + "\"}");
         } catch (Exception e) {
             System.err.println("Error interno al revocar credencial: " + e.getMessage());
+            return ResponseEntity.status(500).body("{\"error\":\"Error interno del servidor\"}");
+        }
+    }
+
+    /**
+     * Endpoint REST para crear una nueva solicitud de acceso (consumido por JavaScript)
+     */
+    @PostMapping("/api/onboarding/solicitudes")
+    @ResponseBody
+    public ResponseEntity<?> crearSolicitudAcceso(@RequestBody SolicitudAccesoRequest solicitudRequest, Authentication auth) {
+        try {
+            Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+            
+            if (usuario == null) {
+                return ResponseEntity.status(401).body("{\"error\":\"Usuario no encontrado\"}");
+            }
+
+            // Validar que el usuario tenga rol DEV
+            if (usuario.getRol().getIdRol() != 2) {
+                return ResponseEntity.status(403).body("{\"error\":\"No tienes permisos para solicitar acceso a APIs\"}");
+            }
+
+            // Crear la solicitud usando el servicio
+            SolicitudAccesoResponse response = onboardingService.crearSolicitudAcceso(usuario.getDni(), solicitudRequest);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (RuntimeException e) {
+            System.err.println("Error al crear solicitud de acceso: " + e.getMessage());
+            return ResponseEntity.status(400).body("{\"error\":\"" + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            System.err.println("Error interno al crear solicitud: " + e.getMessage());
             return ResponseEntity.status(500).body("{\"error\":\"Error interno del servidor\"}");
         }
     }
