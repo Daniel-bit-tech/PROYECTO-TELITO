@@ -38,6 +38,9 @@ public class SecurityConfig {
 
                         .requestMatchers("/cat").permitAll()
 
+                        // API endpoints - requieren autenticación pero sin CSRF
+                        .requestMatchers("/api/onboarding/**").authenticated()
+
                         // De rol
                         .requestMatchers("/admin/**").hasRole("SUPERADMIN") // <-- CORREGIR AQUÍ
                         .requestMatchers("/dev/**").hasAnyRole("DEV", "SUPERADMIN") // <-- Y AQUÍ
@@ -66,6 +69,9 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(exception -> exception
                         .accessDeniedPage("/acceso-denegado")
+                )
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/**") // Deshabilitar CSRF para endpoints API
                 );
 
         return http.build();
