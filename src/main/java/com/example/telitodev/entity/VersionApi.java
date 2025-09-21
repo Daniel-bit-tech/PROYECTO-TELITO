@@ -2,6 +2,7 @@ package com.example.telitodev.entity;
 
 import jakarta.persistence.*;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Table(name = "versionapi")
@@ -23,6 +24,11 @@ public class VersionApi {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idAPI", nullable = false)
     private Api api;
+
+
+    //Relaciones
+    @OneToOne(mappedBy = "versionApi", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Documentacion documentacion;
     
     // Constructores
     public VersionApi() {}

@@ -24,30 +24,31 @@ public class ApiController {
     final DocumentacionRepository documentacionRepository;
     final VersionApiRepository versionApiRepository;
     final EjemplosCodigoRepository ejemplosCodigoRepository;
+    final DominioRepository dominioRepository;
+    final TagRepository tagRepository;
 
-    public ApiController(ApiRepository apiRepository, UsuarioRepository usuarioRepository, VersionApiRepository versionApiRepository, DocumentacionRepository documentacionRepository, VersionApiRepository versionApiRepository1, EjemplosCodigoRepository ejemplosCodigoRepository) {
+    public ApiController(ApiRepository apiRepository, UsuarioRepository usuarioRepository, VersionApiRepository versionApiRepository, DocumentacionRepository documentacionRepository, VersionApiRepository versionApiRepository1, EjemplosCodigoRepository ejemplosCodigoRepository, DominioRepository dominioRepository, TagRepository tagRepository) {
         this.apiRepository = apiRepository;
         this.usuarioRepository = usuarioRepository;
         this.documentacionRepository = documentacionRepository;
         this.versionApiRepository = versionApiRepository1;
         this.ejemplosCodigoRepository = ejemplosCodigoRepository;
+        this.dominioRepository = dominioRepository;
+        this.tagRepository = tagRepository;
     }
 
     @GetMapping()
-    public String catalogo(@RequestParam(value = "dominios",required = false) List<String> selDominios,
-                           @RequestParam(value = "tags", required = false) List<String> selTags,
+    public String catalogo(@RequestParam(value = "dominios",required = false) List<Integer> selDominios,
+                           @RequestParam(value = "tags", required = false) List<Integer> selTags,
                            @RequestParam(value = "nombre", required = false) String nombre,
                             Model model, Authentication auth) {
-        String dominios = selDominios == null ? null : String.join(",", selDominios);
-        String tags = selTags == null ? null : String.join(",", selTags);
+        String dominios = selDominios == null ? null : selDominios.toString();
+        String tags = selTags == null ? null : selTags.toString();
+        System.out.println("Doms: "+dominios + " \nTags: " + tags);
 
-        System.out.println("dominios: " + dominios);
-        System.out.println("tags: " + tags);
-
-        List<Api> apis = apiRepository.findByFilters(nombre, dominios, tags);
+        List<Api> apis = apiRepository.findByFilters(nombre, selDominios, selTags);
         for (Api api : apis) {
             System.out.println("api " + api.getNombre());
-
         }
 
         if (auth != null && auth.isAuthenticated()) {
@@ -56,9 +57,12 @@ public class ApiController {
             model.addAttribute("usuario", usuario);
         }
 
+        model.addAttribute("listaDominios", dominioRepository.findAll());
+        model.addAttribute("listaTags", tagRepository.findAll());
+
         model.addAttribute("apis", apis);
-        model.addAttribute("tags", selTags);
-        model.addAttribute("dominios", selDominios);
+        model.addAttribute("selTags", selTags);
+        model.addAttribute("selDominios", selDominios);
         model.addAttribute("nombre", nombre);
 
         return "desarrollador/apis";

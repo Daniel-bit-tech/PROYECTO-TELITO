@@ -17,7 +17,31 @@ public class Dominio {
     @Column(name = "nombre", length = 20)
     private String nombre;
 
-    @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    //Relaciones
+    @OneToMany(mappedBy = "dominio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Api> apisDominio;
 
+    //Get y Set
+
+
+    public Integer getIdDominio() {
+        return idDominio;
+    }
+    public void setIdDominio(Integer idDominio) {
+        this.idDominio = idDominio;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public List<Api> getApisDominio() {
+        return apisDominio;
+    }
+    public void setApisDominio(List<Api> apisDominio) {
+        this.apisDominio = apisDominio;
+    }
 }

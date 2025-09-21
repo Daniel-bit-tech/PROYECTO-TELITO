@@ -116,6 +116,8 @@
 
     .filter-section {
       margin-bottom: 1.5rem;
+      max-height: 350px;
+      overflow-y: scroll;
     }
 
     .filter-section-title {
@@ -372,53 +374,33 @@
         <form method="get" action="/apis" id="filterForm">
             <input type="hidden" name="nombre" id="nombreHidden">
         <div class="filters-sidebar">
-          <div class="filter-section">
-            <h3 class="filter-section-title">
-              <i class="fas fa-signal"></i> Dominios
-            </h3>
-            <div class="filter-tags">
-<!--              <label class="filter-tag">-->
-<!--                <input type="checkbox" name="dominios" checked> Todos los Dominios-->
-<!--              </label>-->
-              <label class="filter-tag">
-                <input type="checkbox" name="dominios" value="Seguridad"
-                       th:checked="${dominios != null and dominios.contains('Seguridad')}"> Seguridad
-              </label>
-              <label class="filter-tag">
-                <input type="checkbox" name="dominios" value="Finanzas"
-                       th:checked="${dominios != null and dominios.contains('Finanzas')}"> Finanzas
-              </label>
-              <label class="filter-tag">
-                <input type="checkbox" name="dominios" value="Logistica"
-                       th:checked="${dominios != null and dominios.contains('Logistica')}"> Logística
-              </label>
+            <div class="filter-section">
+                <h3 class="filter-section-title">
+                    <i class="fas fa-signal"></i> Dominios
+                </h3>
+                <div class="filter-tags">
+                    <label class="filter-tag" th:each="dom : ${listaDominios}">
+                        <input type="checkbox"
+                               name="dominios"
+                               th:value="${dom.idDominio}"
+                               th:checked="${selDominios != null and selDominios.contains(dom.idDominio)}">
+                        <span th:text="${dom.nombre}">Nombre dominio</span>
+                    </label>
+                </div>
             </div>
-          </div>
 
           <div class="filter-section">
             <h3 class="filter-section-title">
               <i class="fas fa-tag"></i> Tag
             </h3>
             <div class="filter-tags">
-<!--              <label class="filter-tag">-->
-<!--                <input type="checkbox" checked> Todas-->
-<!--              </label>-->
-              <label class="filter-tag">
-                <input type="checkbox" name="tags" value="REST"
-                       th:checked="${tags != null and tags.contains('REST')}"> REST
-              </label>
-              <label class="filter-tag">
-                <input type="checkbox" name="tags" value="GraphQL"
-                       th:checked="${tags != null and tags.contains('GraphQL')}"> GraphQL
-              </label>
-              <label class="filter-tag">
-                <input type="checkbox" name="tags" value="WebSocket"
-                       th:checked="${tags != null and tags.contains('WebSocket')}"> WebSocket
-              </label>
-              <label class="filter-tag">
-                <input type="checkbox" name="tags" value="Eventos"
-                       th:checked="${tags != null and tags.contains('Eventos')}"> Eventos
-              </label>
+                <label class="filter-tag" th:each="tag : ${listaTags}">
+                    <input type="checkbox"
+                           name="tags"
+                           th:value="${tag.idTag}"
+                           th:checked="${selTags != null and selTags.contains(tag.idTag)}">
+                    <span th:text="${tag.nombre}">Nombre Tag</span>
+                </label>
             </div>
           </div>
 
@@ -436,7 +418,7 @@
                 <h3 class="api-title" th:text="${api.nombre}">Nombre API</h3>
                 <!-- Ejemplo: mostrar estado según dominio o tag -->
                 <span class="api-status status-production"
-                      th:text="${api.dominio}">Producción</span>
+                      th:text="${api.dominio.nombre}">Producción</span>
               </div>
               <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #4299e1;"></i>
             </div>
@@ -459,7 +441,7 @@
 
             <div class="api-tags">
 
-              <span class="api-tag" th:text="${api.tag}"></span>
+              <span class="api-tag" th:text="${api.tag.nombre}"></span>
 <!--              <span class="api-tag" th:each="t : ${#strings.arraySplit(api.tag, ',')}"-->
 <!--                    th:text="${t}"></span>-->
             </div>

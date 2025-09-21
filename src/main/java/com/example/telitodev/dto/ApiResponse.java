@@ -1,18 +1,21 @@
 package com.example.telitodev.dto;
 
+import com.example.telitodev.entity.Dominio;
+import com.example.telitodev.entity.Tag;
+
 public class ApiResponse {
     
     private Integer idApi;
     private String nombre;
     private String descripcion;
-    private String dominio;
-    private String tipoApi;
+    private Dominio dominio;
+    private Tag tipoApi;     // tag es tipoApi?
     private String endpointUrl;
     
     // Constructores
     public ApiResponse() {}
     
-    public ApiResponse(Integer idApi, String nombre, String descripcion, String dominio, String tipoApi, String endpointUrl) {
+    public ApiResponse(Integer idApi, String nombre, String descripcion, Dominio dominio, Tag tipoApi, String endpointUrl) {
         this.idApi = idApi;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -46,19 +49,19 @@ public class ApiResponse {
         this.descripcion = descripcion;
     }
     
-    public String getDominio() {
+    public Dominio getDominio() {
         return dominio;
     }
     
-    public void setDominio(String dominio) {
+    public void setDominio(Dominio dominio) {
         this.dominio = dominio;
     }
     
-    public String getTipoApi() {
+    public Tag getTipoApi() {
         return tipoApi;
     }
     
-    public void setTipoApi(String tipoApi) {
+    public void setTipoApi(Tag tipoApi) {
         this.tipoApi = tipoApi;
     }
     
