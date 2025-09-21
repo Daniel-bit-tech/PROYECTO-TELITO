@@ -21,13 +21,19 @@ public class Api {
     
     @Column(name = "fecha_creacion")
     private Timestamp fechaCreacion;
-    
-    @Column(name = "dominio", length = 50)
-    private String dominio;
-    
-    @Column(name = "tag", length = 45)
-    private String tag;
-    
+
+//    @Column(name = "dominio", length = 50)
+//    private String dominio;
+    @ManyToOne
+    @JoinColumn(name = "idDominio", nullable = false)
+    private Dominio dominio;
+
+//    @Column(name = "tag", length = 45)
+//    private String tag;
+    @ManyToOne
+    @JoinColumn(name = "idTag", nullable = false)
+    private Tag tag;
+
     @Column(name = "endpointURL", nullable = false, length = 45)
     private String endpointUrl;
     
@@ -75,7 +81,7 @@ public class Api {
     public Api() {}
     
     public Api(String nombre, String descripcion, Timestamp fechaCreacion, 
-               String dominio, String tag, String endpointUrl) {
+               Dominio dominio, Tag tag, String endpointUrl) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.fechaCreacion = fechaCreacion;
@@ -117,19 +123,19 @@ public class Api {
         this.fechaCreacion = fechaCreacion;
     }
     
-    public String getDominio() {
+    public Dominio getDominio() {
         return dominio;
     }
     
-    public void setDominio(String dominio) {
+    public void setDominio(Dominio dominio) {
         this.dominio = dominio;
     }
     
-    public String getTag() {
+    public Tag getTag() {
         return tag;
     }
     
-    public void setTag(String tag) {
+    public void setTag(Tag tag) {
         this.tag = tag;
     }
     
