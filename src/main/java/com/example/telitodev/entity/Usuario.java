@@ -42,10 +42,6 @@ public class Usuario {
     @JoinColumn(name = "idOrganizacion")
     private Organizacion organizacion;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "idProyecto")
-    private Proyecto proyecto;
-    
     // Relaciones con otras entidades
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Sesion> sesiones;
@@ -77,8 +73,8 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<AuditLog> auditLogs;
 
-    @OneToOne(mappedBy = "usuario",cascade = CascadeType.ALL)
-    private Usuario usuario;
+    @OneToOne(mappedBy = "usuarioLider",cascade = CascadeType.ALL)
+    private Proyecto proyectoAsignado;
     
     // Constructores
     public Usuario() {}
@@ -177,14 +173,6 @@ public class Usuario {
         this.organizacion = organizacion;
     }
 
-    public Proyecto getProyecto() {
-        return proyecto;
-    }
-
-    public void setProyecto(Proyecto proyecto) {
-        this.proyecto = proyecto;
-    }
-
     public List<Sesion> getSesiones() {
         return sesiones;
     }
@@ -263,13 +251,5 @@ public class Usuario {
     
     public void setAuditLogs(List<AuditLog> auditLogs) {
         this.auditLogs = auditLogs;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
     }
 }
