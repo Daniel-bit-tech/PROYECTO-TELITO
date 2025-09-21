@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+<!-- Fragment: Banner de impersonación -->
+<div th:fragment="impersonation-banner">
+    <!-- Banner que aparece cuando isImpersonating es true -->
+    <div th:if="${isImpersonating}" class="impersonation-banner">
+        <div class="container-fluid">
+            <div class="row align-items-center py-2">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-secret text-warning me-2"></i>
+                        <span class="fw-bold text-white">
+                            🎭 MODO IMPERSONACIÓN ACTIVA
+                        </span>
+                        <span class="text-light ms-2">
+                            - Viendo como: 
+                            <strong th:text="${impersonatedUserDni ?: 'Usuario'}">DNI</strong>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button id="stopImpersonationBtn" 
+                            class="btn btn-warning btn-sm fw-bold">
+                        <i class="fas fa-sign-out-alt me-1"></i>
+                        Volver a SuperAdmin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estilos CSS -->
+    <style th:if="${isImpersonating}">
+    .impersonation-banner {
+        background: linear-gradient(135deg, #d63384 0%, #dc3545 100%);
+        border-bottom: 3px solid #ffc107;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        animation: pulse-border 2s infinite;
+    }
+
+    .impersonation-banner .text-white {
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .impersonation-banner .btn-warning {
+        background: #ffc107;
+        border: 2px solid #fff;
+        color: #212529;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .impersonation-banner .btn-warning:hover {
+        background: #ffcd39;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    @keyframes pulse-border {
+        0% { border-bottom-color: #ffc107; }
+        50% { border-bottom-color: #fff; }
+        100% { border-bottom-color: #ffc107; }
+    }
+
+    /* Ajuste para que el contenido no se superponga */
+    body {
+        padding-top: 60px !important;
+    }
+    </style>
+    
+    <!-- JavaScript solo si hay impersonación -->
+    <script th:if="${isImpersonating}">
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🎭 Banner de impersonación cargado');
+        
+        // Configurar botón de detener impersonación
+        const stopBtn = document.getElementById('stopImpersonationBtn');
+        if (stopBtn) {
+            stopBtn.addEventListener('click', function() {
+                if (confirm('¿Estás seguro de que quieres volver a tu sesión de SuperAdmin?')) {
+                    stopImpersonation();
+                }
+            });
+        }
+        
+        function stopImpersonation() {
+            console.log('🚪 Deteniendo impersonación...');
+            
+            // Obtener tokens CSRF
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+            
+            if (!csrfToken || !csrfHeader) {
+                alert('❌ Error: Tokens de seguridad no encontrados');
+                return;
+            }
+            
+            fetch('/admin/gestion-usuarios/stop-impersonation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeader]: csrfToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('✅ Impersonación detenida:', data);
+                alert('✅ ' + data.mensaje);
+                
+                // Redirigir a gestión de usuarios
+                window.location.href = data.redirectUrl || '/admin/gestion-usuarios';
+            })
+            .catch(error => {
+                console.error('❌ Error al detener impersonación:', error);
+                alert('❌ Error al volver a SuperAdmin: ' + error.message);
+            });
+        }
+    });
+    </script>
+</div>
+
+</body>
+</html>
