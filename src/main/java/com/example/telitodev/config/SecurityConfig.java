@@ -38,11 +38,14 @@ public class SecurityConfig {
 
                         .requestMatchers("/cat").permitAll()
 
+                        // API endpoints - requieren autenticación pero sin CSRF
+                        .requestMatchers("/api/onboarding/**").authenticated()
+
                         // De rol
-                        .requestMatchers("/admin/**").hasRole("SADMIN")
-                        .requestMatchers("/dev/**").hasAnyRole("DEV", "SADMIN")
-                        .requestMatchers("/qa/**").hasAnyRole("QA", "SADMIN")
-                        .requestMatchers("/po/**").hasAnyRole("PO", "SADMIN")
+                        .requestMatchers("/admin/**").hasRole("SUPERADMIN") // <-- CORREGIR AQUÍ
+                        .requestMatchers("/dev/**").hasAnyRole("DEV", "SUPERADMIN") // <-- Y AQUÍ
+                        .requestMatchers("/qa/**").hasAnyRole("QA", "SUPERADMIN") // <-- Y AQUÍ
+                        .requestMatchers("/po/**").hasAnyRole("PO", "SUPERADMIN") // <-- Y AQUÍ
                         .requestMatchers("/qa-dev/**").hasAnyRole("QA", "DEV")
 
                         // Otras rutas
@@ -66,6 +69,9 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(exception -> exception
                         .accessDeniedPage("/acceso-denegado")
+                )
+                .csrf(csrf -> csrf
+                        .ignoringRequestMatchers("/api/**") // Deshabilitar CSRF para endpoints API
                 );
 
         return http.build();
@@ -97,7 +103,7 @@ public class SecurityConfig {
                     String role = authority.getAuthority();
 
                     switch (authority.getAuthority()) {
-                        case "ROLE_SADMIN":
+                        case "ROLE_SUPERADMIN":
                             return "/admin/home";
                         case "ROLE_DEV":
                             return "/dev/home";
