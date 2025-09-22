@@ -27,6 +27,9 @@ public class Usuario {
     
     @Column(name = "contrasena", nullable = false, length = 256)
     private String contrasena;
+
+    @Column(name = "alias", nullable = false)
+    private String alias;
     
     @Column(name = "fecha_registro", nullable = false)
     private Timestamp fechaRegistro;
@@ -140,7 +143,23 @@ public class Usuario {
     public void setContrasena(String contrasena) {
         this.contrasena = contrasena;
     }
-    
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
+
+    public Proyecto getProyectoAsignado() {
+        return proyectoAsignado;
+    }
+
+    public void setProyectoAsignado(Proyecto proyectoAsignado) {
+        this.proyectoAsignado = proyectoAsignado;
+    }
+
     public Timestamp getFechaRegistro() {
         return fechaRegistro;
     }
