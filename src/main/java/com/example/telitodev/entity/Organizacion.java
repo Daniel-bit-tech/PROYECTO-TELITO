@@ -23,10 +23,55 @@ public class Organizacion {
     @Column(name = "descripcion", length = 100)
     private String descripcion;
 
+    //Relaciones
     @OneToMany(mappedBy = "organizacion",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Usuario> usuarios;
 
     @OneToMany(mappedBy = "organizacion",fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Proyecto> proyectos;
 
+    //Get y Set
+
+
+    public Integer getIdOrganizacion() {
+        return idOrganizacion;
+    }
+    public void setIdOrganizacion(Integer idOrganizacion) {
+        this.idOrganizacion = idOrganizacion;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public Date getFechaCreacion() {
+        return fechaCreacion;
+    }
+    public void setFechaCreacion(Date fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public List<Usuario> getUsuarios() {
+        return usuarios;
+    }
+    public void setUsuarios(List<Usuario> usuarios) {
+        this.usuarios = usuarios;
+    }
+
+    public List<Proyecto> getProyectos() {
+        return proyectos;
+    }
+    public void setProyectos(List<Proyecto> proyectos) {
+        this.proyectos = proyectos;
+    }
 }
