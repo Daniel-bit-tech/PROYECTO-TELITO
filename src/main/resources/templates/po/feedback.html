@@ -1,17 +1,19 @@
-<html lang="es" data-bs-theme="dark"><head>
+<html lang="es" data-bs-theme="dark" xmlns:th="http://www.thymeleaf.org">
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>TELITO DEVELOPER PORTAL | Sistema de Reservas Deportivas</title>
-    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet">
-    <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet">
+    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css" rel="stylesheet">
+    <link href="/tabler/dist/css/tabler.css" rel="stylesheet">
+    <link href="/tabler/dist/css/tabler-flags.css" rel="stylesheet">
+    <link href="/tabler/dist/css/tabler-socials.css" rel="stylesheet">
+    <link href="/tabler/dist/css/tabler-payments.css" rel="stylesheet">
+    <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet">
+    <link href="/tabler/dist/css/tabler-marketing.css" rel="stylesheet">
+    <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet">
+    <link href="/tabler/preview/css/demo.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url("https://rsms.me/inter/inter.css");
         .api-card:hover {
@@ -58,13 +60,11 @@
 </head>
 
 <body>
-<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<script src="/tabler/dist/js/tabler-theme.min.js"></script>
 <div class="page">
     <div th:replace="po/header_po.html :: header"></div>
 
-    <!-- Main Content -->
     <div class="page-wrapper">
-        <!-- BEGIN PAGE HEADER -->
         <div class="page-header d-print-none" aria-label="Page header">
             <div class="container-xl">
                 <div class="row g-2 align-items-center">
@@ -74,38 +74,32 @@
                 </div>
             </div>
         </div>
-        <!-- END PAGE HEADER -->
-        <!-- BEGIN PAGE BODY -->
+
         <div class="page-body">
             <div class="container-xl">
                 <div class="row row-cards">
 
-                    <div th:if="${#lists.isEmpty(listaTickets)}" class="col-12 text-center text-secondary py-5">
-                        <p>No hay tickets de feedback para mostrar.</p>
+                    <div th:if="${#lists.isEmpty(listaFeedback)}" class="col-12 text-center text-secondary py-5">
+                        <p>No hay feedback para mostrar.</p>
                     </div>
 
-                    <div th:each="ticket : ${listaTickets}" class="col-md-6 col-lg-3">
+                    <div th:each="feedback : ${listaFeedback}" class="col-md-6 col-lg-3">
                         <div class="card">
                             <div class="card-body">
-                                <h3 class="card-title" th:text="${ticket.asunto}">Asunto del Ticket</h3>
+                                <h3 class="card-title" th:text="${feedback.api.nombre}">API o Recurso</h3>
                                 <h3 class="card-title mt-4">Usuario</h3>
-                                <p class="card-subtitle" th:text="${ticket.usuario.nombre}"></p>
-                                <h3 class="card-title mt-4">Descripción</h3>
-                                <p class="card-subtitle" th:text="${ticket.descripcion}"></p>
-                                <h3 class="card-title mt-4">Estado</h3>
+                                <p class="card-subtitle" th:text="${feedback.usuario.nombre}"></p>
+                                <h3 class="card-title mt-4">Comentario</h3>
+                                <p class="card-subtitle" th:text="${feedback.comentario}"></p>
+                                <h3 class="card-title mt-4">Calificación</h3>
                                 <p class="card-subtitle">
-                    <span th:text="${ticket.estado ? 'Resuelto' : 'Pendiente'}"
-                          th:classappend="${ticket.estado ? 'text-success' : 'text-warning'}"></span>
+                                    <span th:each="i : ${#numbers.sequence(1, feedback.calificacion)}" class="text-warning"><i class="fas fa-star"></i></span>
+                                    <span th:each="i : ${#numbers.sequence(feedback.calificacion + 1, 5)}" class="text-muted"><i class="far fa-star"></i></span>
                                 </p>
                             </div>
                             <div class="card-footer">
                                 <div class="d-flex">
-                                    <form th:if="${!ticket.estado}" th:action="@{/po/tickets/resolver/{id}(id=${ticket.idTicket})}" method="post">
-                                        <button type="submit" class="btn btn-link">Resolver</button>
-                                    </form>
-                                    <span th:if="${ticket.estado}" class="btn btn-link disabled">Cerrado</span>
-
-                                    <a th:href="@{/po/feedbackDetalle/{id}(id=${ticket.idTicket})}" class="btn btn-primary ms-auto">
+                                    <a th:href="@{/po/feedbackDetalle/{id}(id=${feedback.idFeedback})}" class="btn btn-primary ms-auto">
                                         Ver Detalles
                                     </a>
                                 </div>
@@ -113,15 +107,14 @@
                         </div>
                     </div>
                 </div>
-
+            </div>
         </div>
-
     </div>
-
 
     <div id="footer-placeholder"></div>
 </div>
 
-<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
-<script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
-<div class="tooltip bs-tooltip-auto fade show" role="tooltip" id="tooltip401309" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(983px, 54px, 0px);" data-popper-placement="bottom"><div class="tooltip-arrow" style="position: absolute; transform: translate3d(42.5px, 0px, 0px); left: 0px;"></div><div class="tooltip-inner">Modo claro</div></div></body></html>
+<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/tabler/dist/js/tabler.min.js"></script>
+</body>
+</html>

@@ -1,20 +1,16 @@
 package com.example.telitodev.controller.qualityassurance;
 
-import com.example.telitodev.entity.CredencialApi;
-import com.example.telitodev.entity.Notificacion;
-import com.example.telitodev.entity.Ticket;
-import com.example.telitodev.entity.Usuario;
-import com.example.telitodev.repository.CredencialApiRepository;
-import com.example.telitodev.repository.NotificacionRepository;
-import com.example.telitodev.repository.TicketRepository;
-import com.example.telitodev.repository.UsuarioRepository;
+import com.example.telitodev.entity.*;
+import com.example.telitodev.repository.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable; // 👈 Importamos PathVariable
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,11 +24,20 @@ public class QaController {
     final NotificacionRepository notificacionRepository;
     final TicketRepository ticketRepository;
 
-    public QaController(UsuarioRepository usuarioRepository, CredencialApiRepository credencialApiRepository, NotificacionRepository notificacionRepository, TicketRepository ticketRepository) {
+    final FeedbackRepository feedbackRepository;
+    private final ApiRepository apiRepository;
+
+
+
+    public QaController(UsuarioRepository usuarioRepository, CredencialApiRepository credencialApiRepository, NotificacionRepository notificacionRepository, TicketRepository ticketRepository,ReporteRepository reporteRepository,ApiRepository apiRepository, FeedbackRepository feedbackRepository) {
         this.usuarioRepository = usuarioRepository;
         this.credencialApiRepository = credencialApiRepository;
         this.notificacionRepository = notificacionRepository;
         this.ticketRepository = ticketRepository;
+
+        this.feedbackRepository = feedbackRepository;
+        this.apiRepository = apiRepository;
+
     }
 
     @GetMapping("/home")
@@ -69,19 +74,22 @@ public class QaController {
     public String showFeedbackView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        List<Ticket> listaTickets = ticketRepository.findAll();
-        model.addAttribute("listaTickets", listaTickets);
+        List<Feedback> listaFeedback = feedbackRepository.findAll();
+        model.addAttribute("listaFeedback", listaFeedback);
+
         return "qa/feedback";
     }
 
-    @GetMapping("/feedback/{id}") // 👈 Recibimos el ID como una variable de ruta
-    public String showfeedbackDetalleView(@PathVariable("id") int id, Model model, Authentication auth) {
+
+    @GetMapping("/feedbackDetalle/{id}")
+    public String showFeedbackDetalleView(Model model, @PathVariable("id") int idFeedback, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
 
-        Optional<Ticket> optTicket = ticketRepository.findByIdWithDetails(id);
-        if (optTicket.isPresent()) {
-            model.addAttribute("ticket", optTicket.get());
+        Optional<Feedback> feedbackOptional = feedbackRepository.findById(idFeedback);
+
+        if (feedbackOptional.isPresent()) {
+            model.addAttribute("feedback", feedbackOptional.get());
             return "qa/feedbackDetalle";
         } else {
             return "redirect:/qa/feedback";
