@@ -61,6 +61,8 @@ public class Ticket {
         this.usuario = usuario;
         this.api = api;
     }
+
+    
     
 
     public Integer getIdTicket() {
