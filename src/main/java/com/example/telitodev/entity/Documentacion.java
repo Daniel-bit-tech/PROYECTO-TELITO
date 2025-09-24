@@ -29,7 +29,7 @@ public class Documentacion {
     @JoinColumn(name = "idAPI", nullable = false)
     private Api api;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idVersion", nullable = false)
     private VersionApi versionApi;
     

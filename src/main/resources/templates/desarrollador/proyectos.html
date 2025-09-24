@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <title>TELITO DEVELOPER PORTAL | Gestión de Proyectos</title>
-  <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
-  <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
-  <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+  <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+  <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+  <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+  <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+  <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+  <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+  <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+  <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+  <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     @import url("https://rsms.me/inter/inter.css");
@@ -475,7 +475,7 @@
 </head>
 
 <body>
-<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
 
   <div th:replace="desarrollador/header.html :: header"></div>
@@ -576,70 +576,16 @@
 
           <!-- Acciones -->
           <div class="project-actions">
-            <button class="project-btn btn-primary">
-              <i class="fas fa-edit"></i> Editar
-            </button>
-            <button class="project-btn btn-outline">
+            <a class="btn btn-info" th:href="@{'/proyectos/' + ${proyecto.idProyecto}}">
+              <i class="fas fa-info-circle"></i> Ver Detalles
+            </a>
+            <a class="btn btn-outline btn-light" th:href="@{'/proyectos/' + ${proyecto.idProyecto}+'/config'}">
               <i class="fas fa-cog"></i> Configurar
-            </button>
+            </a>
           </div>
 
         </div>
-
-
-        <!-- Proyecto 1 -->
-<!--        <div class="project-card">-->
-<!--          <div class="project-header">-->
-<!--            <div>-->
-<!--              <h3 class="project-title">E-commerce Mobile App</h3>-->
-<!--              <span class="project-status status-active">Activo</span>-->
-<!--            </div>-->
-<!--            <i class="fas fa-shopping-cart" style="font-size: 1.5rem; color: #4299e1;"></i>-->
-<!--          </div>-->
-<!--          <p class="project-description">-->
-<!--            Aplicación móvil de comercio electrónico con procesamiento de pagos y gestión de inventario.-->
-<!--          </p>-->
-<!--          <div class="project-meta">-->
-<!--                        <span class="meta-item">-->
-<!--                            <i class="fas fa-calendar"></i> Creado: 15/05/2023-->
-<!--                        </span>-->
-<!--            <span class="meta-item">-->
-<!--                            <i class="fas fa-code-branch"></i> v1.2.4-->
-<!--                        </span>-->
-<!--          </div>-->
-<!--          <div class="project-apis">-->
-<!--            <div class="apis-title">APIs asociadas:</div>-->
-<!--            <div class="apis-list">-->
-<!--                            <span class="api-tag">-->
-<!--                                <i class="fas fa-credit-card"></i> Pagos-->
-<!--                            </span>-->
-<!--              <span class="api-tag">-->
-<!--                                <i class="fas fa-box"></i> Productos-->
-<!--                            </span>-->
-<!--              <span class="api-tag">-->
-<!--                                <i class="fas fa-user-circle"></i> Usuarios-->
-<!--                            </span>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--          <div class="project-environments">-->
-<!--            <div class="environments-title">Entornos configurados:</div>-->
-<!--            <div class="environments-list">-->
-<!--              <span class="environment-badge env-producción">Producción</span>-->
-<!--              <span class="environment-badge env-qa">Staging</span>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--          <div class="project-actions">-->
-<!--            <button class="project-btn btn-primary">-->
-<!--              <i class="fas fa-edit"></i> Editar-->
-<!--            </button>-->
-<!--            <button class="project-btn btn-outline">-->
-<!--              <i class="fas fa-cog"></i> Configurar-->
-<!--            </button>-->
-<!--          </div>-->
-<!--        </div>-->
       </div>
-
-
     </div>
   </div>
 

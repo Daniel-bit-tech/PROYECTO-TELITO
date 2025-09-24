@@ -1,5 +1,6 @@
 package com.example.telitodev.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
@@ -22,13 +23,15 @@ public class VersionApi {
     private Timestamp fechaPublicacion;
     
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     @JoinColumn(name = "idAPI", nullable = false)
     private Api api;
 
 
     //Relaciones
-    @OneToOne(mappedBy = "versionApi", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private Documentacion documentacion;
+    @OneToMany(mappedBy = "versionApi", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnore
+    private List<Documentacion> documentaciones;
     
     // Constructores
     public VersionApi() {}
