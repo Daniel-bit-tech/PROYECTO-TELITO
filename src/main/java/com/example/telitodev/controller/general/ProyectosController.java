@@ -149,55 +149,22 @@ public class ProyectosController {
     public String agregarApisProy(@Valid @ModelAttribute("nuevaAsociacion") ProyectoHasApi nuevaAsociacion,
                                   Model model, Authentication auth, @PathVariable Integer id) {
 
-//        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-//
-//        if (usuario.getOrganizacion().equals(proyecto.getOrganizacion()) && proyecto.getUsuarioLider().equals(usuario)) {
-//
-//                List<ProyectoHasApi> apisProyecto = proyHasApiRepository.findByProyecto_IdProyecto(proyecto.getIdProyecto());
-//
-//                for (ProyectoHasApi newApi : newApis) {
-//                    for (ProyectoHasApi apiProy : apisProyecto) {
-//                        if (!apiProy.equals(newApi)) {
-//                            ProyectoHasApi newApiProy = new ProyectoHasApi(proyecto,newApi.getApi(),new Date(System.currentTimeMillis()),newApi.getApi().getNombre(),new VersionApi(), new Entorno());
-//                            proyHasApiRepository.save(newApiProy);
-//                        }
-//                    }
-//                }
-//
-//        } else {
-//            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto");
-//        }
-//
-//        model.addAttribute("usuario", usuario);
-//        return "redirect:/proyectos/" + id;
-
-
-        // 1. Verificar que el proyecto existe
         Proyecto proyecto = proyectoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no encontrado"));
 
-        // 2. Verificar permisos (solo PO de la misma organización)
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         if (!usuario.getOrganizacion().equals(proyecto.getOrganizacion())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para modificar este proyecto");
         }
 
-        // 3. Validar errores de binding
-//        if (result.hasErrors()) {
-//            // Si hay errores, redirigir de nuevo al detalle con mensaje
-//            return "redirect:/proyectos/{id}/detalle?error=validacion";
-//        }
 
-        // 4. Completar la asociación
         nuevaAsociacion.setProyecto(proyecto); // asignar el proyecto
         if (nuevaAsociacion.getFechaAsociacion() == null) {
             nuevaAsociacion.setFechaAsociacion(new Date(System.currentTimeMillis())); // fecha por defecto si no se envía
         }
 
-        // 5. Guardar
         proyHasApiRepository.save(nuevaAsociacion);
 
-        // 6. Redirigir al detalle del proyecto
         return "redirect:/proyectos/{id}?success=apiAgregada";
     }
 
