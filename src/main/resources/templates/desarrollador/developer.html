@@ -409,9 +409,12 @@
           <h2 class="welcome-title">¡Hola otra vez, <span th:text="${usuario.nombre}">Juan</span>!</h2>
           <p class="welcome-text">Tienes <span th:text="${NcredActivas}">0</span> APIs con credenciales activas y <span th:text="${Nnotis}">0</span> notificaciones sin leer.</p>
           <div class="welcome-actions">
-            <button class="btn btn-primary">
-              <i class="fas fa-rocket"></i> Crear nuevo proyecto
-            </button>
+            <form th:action="@{/proyectos}" method="get">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-rocket"></i> Ver tus proyectos
+              </button>
+            </form>
+
             <a th:href="@{/apis}" class="btn btn-outline-light">
               <i class="fas fa-search"></i> Explorar APIs
             </a>
@@ -425,7 +428,7 @@
             <i class="fas fa-bolt"></i>
           </div>
           <div class="stat-content">
-            <div class="stat-value">12,458</div>
+            <div class="stat-value" th:text="${requestsToday}">12,458</div>
             <div class="stat-label">Requests hoy</div>
           </div>
         </div>
@@ -435,7 +438,7 @@
             <i class="fas fa-check-circle"></i>
           </div>
           <div class="stat-content">
-            <div class="stat-value">99.7%</div>
+            <div class="stat-value" th:text="${successRate} + '%'">99.7%</div>
             <div class="stat-label">Tasa de éxito</div>
           </div>
         </div>
@@ -445,7 +448,7 @@
             <i class="fas fa-clock"></i>
           </div>
           <div class="stat-content">
-            <div class="stat-value">142 ms</div>
+            <div class="stat-value" th:text="${avgLatency} + ' ms'">142 ms</div>
             <div class="stat-label">Latencia promedio</div>
           </div>
         </div>
@@ -455,7 +458,7 @@
             <i class="fas fa-exclamation-triangle"></i>
           </div>
           <div class="stat-content">
-            <div class="stat-value">23</div>
+            <div class="stat-value" th:text="${errors24h}">23</div>
             <div class="stat-label">Errores en 24h</div>
           </div>
         </div>
