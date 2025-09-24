@@ -12,7 +12,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.text.DecimalFormat;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/dev")
@@ -23,11 +25,14 @@ public class DeveloperController {
     final CredencialApiRepository credencialApiRepository;
     final NotificacionRepository notificacionRepository;
     final TicketRepository ticketRepository;
-    public DeveloperController(UsuarioRepository usuarioRepository, CredencialApiRepository credencialApiRepository, NotificacionRepository notificacionRepository, TicketRepository ticketRepository) {
+    final LogapiRepository logapiRepository;
+
+    public DeveloperController(UsuarioRepository usuarioRepository, CredencialApiRepository credencialApiRepository, NotificacionRepository notificacionRepository, TicketRepository ticketRepository, LogapiRepository logapiRepository) {
         this.usuarioRepository = usuarioRepository;
         this.credencialApiRepository = credencialApiRepository;
         this.notificacionRepository = notificacionRepository;
         this.ticketRepository = ticketRepository;
+        this.logapiRepository = logapiRepository;
     }
 
 
@@ -43,6 +48,20 @@ public class DeveloperController {
         Integer Nnotis = notificacionRepository.countByUsuario_DniAndLeido(usuario.getDni(),false);
 
         List<Ticket> tickets = ticketRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
+
+        long requestsToday = logapiRepository.countRequestsToday();
+        long errors24h = logapiRepository.countErrorsLast24Hours();
+        Optional<Double> successRateOpt = logapiRepository.calculateSuccessRateLast24Hours();
+        Optional<Double> avgLatencyOpt = logapiRepository.findAverageLatencyLast24Hours();
+
+        DecimalFormat df = new DecimalFormat("#.##");
+        String formattedSuccessRate = successRateOpt.map(rate -> df.format(rate)).orElse("100");
+        String formattedAvgLatency = avgLatencyOpt.map(latency -> df.format(latency)).orElse("0");
+
+        model.addAttribute("requestsToday", requestsToday);
+        model.addAttribute("successRate", formattedSuccessRate);
+        model.addAttribute("avgLatency", formattedAvgLatency);
+        model.addAttribute("errors24h", errors24h);
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("NcredActivas", NCredenciales);
