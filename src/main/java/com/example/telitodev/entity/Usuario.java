@@ -9,7 +9,7 @@ import java.util.List;
 public class Usuario {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     @Column(name = "dni", length = 8)
     private String dni;
     
