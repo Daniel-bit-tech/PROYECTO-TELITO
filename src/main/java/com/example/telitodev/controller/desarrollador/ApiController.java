@@ -4,6 +4,7 @@ package com.example.telitodev.controller.desarrollador;
 import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.Documentacion;
 import com.example.telitodev.entity.Usuario;
+import com.example.telitodev.entity.VersionApi;
 import com.example.telitodev.repository.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -104,9 +105,19 @@ public class ApiController {
 
         }
 
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        model.addAttribute("usuario", usuario);
+
         return "desarrollador/sandbox";
     }
 
 
+    // Endpoint de Versiones de Api específica
+    @GetMapping("/{id}/versiones")
+    @ResponseBody
+    public List<VersionApi> obtenerVersiones(@PathVariable Integer id) {
+        return versionApiRepository.findByApi_IdApi(id);
+//        return versionApiRepository.findAll();
+    }
 
 }

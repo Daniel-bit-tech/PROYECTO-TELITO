@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title th:text="${proyecto.idProyecto == null} ? 'Nuevo Proyecto' : 'Editar Proyecto'">Formulario Proyecto</title>
+  <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
+  <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
+  <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+  <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+<body>
+<script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+  <header th:replace="admin/header :: header"
+          sec:authorize="hasRole('SUPERADMIN')"></header>
+  <header th:replace="po/header_po :: header"
+          sec:authorize="hasRole('PO')"></header>
+
+  <div class="page-wrapper">
+    <div class="page-body">
+      <div class="container-xl">
+        <div class="row justify-content-center">
+          <div class="col-md-8">
+            <form th:action="@{/proyectos/guardar}" th:object="${proyecto}" method="post" class="card">
+              <div class="card-header">
+                <h3 class="card-title" th:text="${proyecto.idProyecto == null} ? 'Crear Proyecto' : 'Editar Proyecto'">Crear Proyecto</h3>
+              </div>
+              <div class="card-body">
+
+                <!-- Nombre -->
+                <div class="mb-3">
+                  <label class="form-label">Nombre</label>
+                  <input type="text" th:field="*{nombre}" class="form-control" placeholder="Ej. Sistema de Inventario" required th:readonly="${proyecto.idProyecto != null}"/>
+                  <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
+                </div>
+
+                <!-- Descripción -->
+                <div class="mb-3">
+                  <label class="form-label">Descripción</label>
+                  <textarea th:field="*{descripcion}" class="form-control" rows="3" placeholder="Breve descripción del proyecto"></textarea>
+                  <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"></div>
+                </div>
+
+                <!-- Fechas -->
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Fecha Inicio</label>
+                    <input type="date" th:field="*{fechaInicio}" class="form-control" required th:readonly="${proyecto.idProyecto != null}"/>
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fechaInicio')}" th:errors="*{fechaInicio}"></div>
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Fecha Fin</label>
+                    <input type="date" th:field="*{fechaFin}" class="form-control"/>
+                  </div>
+                </div>
+
+                <!-- Repositorio -->
+                <div class="mb-3">
+                  <label class="form-label">Repositorio</label>
+                  <input type="url" th:field="*{repositorio}" class="form-control" placeholder="https://github.com/mi-proyecto"/>
+                </div>
+
+                <!-- Público -->
+                <div class="mb-3 form-check form-switch">
+                  <input class="form-check-input" type="checkbox" th:field="*{publico}"/>
+                  <label class="form-check-label">Proyecto Público</label>
+                </div>
+
+                <!-- Activo -->
+                <div class="mb-3 form-check form-switch">
+                  <input class="form-check-input" type="checkbox" th:field="*{activo}"/>
+                  <label class="form-check-label">Proyecto Activo</label>
+                </div>
+
+              </div>
+              <div class="card-footer text-end">
+                <a th:href="@{/proyectos}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/tabler/dist/js/tabler.min.js"></script>
+</body>
+</html>

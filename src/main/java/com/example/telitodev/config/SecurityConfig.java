@@ -67,9 +67,9 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
-                .exceptionHandling(exception -> exception
-                        .accessDeniedPage("/acceso-denegado")
-                )
+//                .exceptionHandling(exception -> exception
+//                        .accessDeniedPage("/acceso-denegado")
+//                )
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/**") // Deshabilitar CSRF para endpoints API
                 );

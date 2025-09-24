@@ -1,6 +1,7 @@
 package com.example.telitodev.repository;
 
 import com.example.telitodev.entity.Api;
+import com.example.telitodev.entity.Proyecto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -30,17 +31,12 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
     List<Api> findByFilters(@Param("search") String search,
                             @Param("idDominios") List<Integer> idDominios,
                             @Param("idTags") List<Integer> idTags);
-//                            @Param("idDominios") String idDominios,
-//                            @Param("idTags") String idTags);
 
 
-//    // El método de filtros múltiples que tenías
-//    @Query(value = "SELECT a.* FROM api a " +
-//            "WHERE (:search IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :search, '%')))" +
-//            "AND (:dominios IS NULL OR FIND_IN_SET(a.idDominio, :dominios)) " +
-//            "AND (:tags IS NULL OR FIND_IN_SET(a.idTag, :tags))", nativeQuery = true)
-//    List<Api> findByFilters(@Param("search") String search,
-//                            @Param("dominios") String dominios,
-//                            @Param("tags") String tags);
+
+    @Query(value = "SELECT a.* FROM api a " +
+            "LEFT JOIN proyecto_has_api pha ON a.idAPI = pha.idAPI AND pha.idProyecto = :idProy " +
+            "WHERE pha.idAPI IS NULL", nativeQuery = true)
+    List<Api> findApisNotAssociatedWithProyecto(@Param("idProy") Integer idProyecto);
 
 }

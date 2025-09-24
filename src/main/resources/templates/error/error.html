@@ -1,28 +1,20 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Error - Aplicación</title>
+    <title th:text="'Error ' + ${status} + ' - ' + ${titulo}">Error - Aplicación</title>
     <style>
         :root {
             --primary: #206bc4;
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
         }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             font-family: var(--font-sans);
             background-color: #f8f9fa;
             color: #1f2d3d;
             line-height: 1.5;
-            padding: 0;
-            margin: 0;
             border-top: 4px solid var(--primary);
             min-height: 100vh;
             display: flex;
@@ -30,38 +22,32 @@
             align-items: center;
             justify-content: center;
         }
-
         .error-container {
             max-width: 600px;
             width: 100%;
             padding: 2rem;
             text-align: center;
         }
-
         .error-icon {
             font-size: 4rem;
             margin-bottom: 1.5rem;
             color: #8795a8;
         }
-
         .error-code {
             font-size: 4rem;
             font-weight: 700;
             color: var(--primary);
             margin-bottom: 0.5rem;
         }
-
         .error-title {
             font-size: 1.5rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
         }
-
         .error-description {
             color: #6e7687;
             margin-bottom: 2rem;
         }
-
         .btn {
             display: inline-flex;
             align-items: center;
@@ -74,89 +60,41 @@
             font-weight: 500;
             transition: background-color 0.2s;
         }
-
-        .btn:hover {
-            background-color: #1a5aa2;
-        }
-
-        .btn-icon {
-            margin-right: 0.5rem;
-        }
-
+        .btn:hover { background-color: #1a5aa2; }
+        .btn-icon { margin-right: 0.5rem; }
         @media (max-width: 768px) {
-            .error-container {
-                padding: 1rem;
-            }
-
-            .error-code {
-                font-size: 3rem;
-            }
+            .error-container { padding: 1rem; }
+            .error-code { font-size: 3rem; }
         }
     </style>
 </head>
 <body>
-<div class="error-container">
-    <div class="error-icon" id="error-icon">⚠️</div>
-    <h1 class="error-code" id="error-code">404</h1>
-    <h2 class="error-title" id="error-title">Página no encontrada</h2>
-    <p class="error-description" id="error-description">
+<div class="error-container" role="alert">
+    <!-- Icono dinámico según código -->
+    <div class="error-icon" th:text="${status == 400 ? '❌'
+                                : (status == 403 ? '🚫'
+                                : (status == 404 ? '🔍'
+                                : (status == 500 ? '⚙️' : '⚠️')))}">⚠️</div>
+
+    <!-- Código de error -->
+    <h1 class="error-code" th:text="${status}">404</h1>
+
+    <!-- Título y descripción -->
+    <h2 class="error-title" th:text="${titulo}">Página no encontrada</h2>
+    <p class="error-description" th:text="${mensaje}">
         Lo sentimos, la página que buscas no existe o ha sido movida.
     </p>
+
+    <!-- Botón de volver -->
     <a th:href="@{/home}" class="btn">
-        <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+             viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
         </svg>
         Volver al inicio
     </a>
 </div>
-
-<script>
-    // Obtener el código de error de la URL o usar 404 por defecto
-    const urlParams = new URLSearchParams(window.location.search);
-    const errorCode = urlParams.get('code') || '404';
-
-    // Elementos del DOM que se actualizarán
-    const errorIcon = document.getElementById('error-icon');
-    const errorCodeElement = document.getElementById('error-code');
-    const errorTitle = document.getElementById('error-title');
-    const errorDescription = document.getElementById('error-description');
-
-    // Configuración para cada tipo de error
-    const errorConfig = {
-        '400': {
-            icon: '❌',
-            title: 'Solicitud incorrecta',
-            description: 'La solicitud enviada no es válida o está mal formada.'
-        },
-        '403': {
-            icon: '🚫',
-            title: 'Acceso denegado',
-            description: 'No tienes permisos para acceder a este recurso.'
-        },
-        '404': {
-            icon: '🔍',
-            title: 'Página no encontrada',
-            description: 'Lo sentimos, la página que buscas no existe o ha sido movida.'
-        },
-        '500': {
-            icon: '⚙️',
-            title: 'Error del servidor',
-            description: 'Algo salió mal en nuestro servidor. Por favor, intenta nuevamente más tarde.'
-        }
-    };
-
-    // Obtener configuración para el código de error o usar 404 por defecto
-    const config = errorConfig[errorCode] || errorConfig['404'];
-
-    // Actualizar el contenido de la página
-    errorIcon.textContent = config.icon;
-    errorCodeElement.textContent = errorCode;
-    errorTitle.textContent = config.title;
-    errorDescription.textContent = config.description;
-
-    // También actualizar el título de la página
-    document.title = `Error ${errorCode} - ${config.title}`;
-</script>
 </body>
 </html>

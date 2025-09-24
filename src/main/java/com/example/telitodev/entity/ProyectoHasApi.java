@@ -9,7 +9,7 @@ import java.sql.Date;
 public class ProyectoHasApi {
 
     @EmbeddedId
-    private ProyectoHasApiId proyectoHasApiId;
+    private ProyectoHasApiId proyectoHasApiId = new ProyectoHasApiId();
 
     @MapsId("idProyecto")
     @ManyToOne(fetch = FetchType.EAGER)
@@ -34,6 +34,18 @@ public class ProyectoHasApi {
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idEntorno")
     private Entorno entorno;
+
+
+    public ProyectoHasApi() {}
+
+    public ProyectoHasApi(Proyecto proyecto, Api api, Date fechaAsociacion, String proposito, VersionApi version, Entorno entorno) {
+        this.proyecto = proyecto;
+        this.api = api;
+        this.fechaAsociacion = fechaAsociacion;
+        this.proposito = proposito;
+        this.version = version;
+        this.entorno = entorno;
+    }
 
 
     //Get y Set
