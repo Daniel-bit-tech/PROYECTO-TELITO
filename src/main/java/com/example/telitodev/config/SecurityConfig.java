@@ -72,13 +72,9 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
-                .sessionManagement(session -> session
-                        .maximumSessions(-1) // Permitir sesiones ilimitadas
-                        .maxSessionsPreventsLogin(false) // No prevenir login si hay sesiones activas
-                )
-                .exceptionHandling(exception -> exception
-                        .accessDeniedPage("/acceso-denegado")
-                )
+//                .exceptionHandling(exception -> exception
+//                        .accessDeniedPage("/acceso-denegado")
+//                )
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/**") // Deshabilitar CSRF para endpoints API
                 )

@@ -28,6 +28,10 @@ public class Documentacion {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idAPI", nullable = false)
     private Api api;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idVersion", nullable = false)
+    private VersionApi versionApi;
     
     @OneToMany(mappedBy = "documentacion", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<EjemplosCodigo> ejemplosCodigo;

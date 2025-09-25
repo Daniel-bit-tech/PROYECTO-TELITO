@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -352,7 +352,6 @@
 
     <div th:replace="desarrollador/header.html :: header"></div>
 
-    <!-- Main  -->
     <div class="content">
         <div class="metrics-container">
             <div class="metrics-header">
@@ -389,7 +388,7 @@
                     <div class="metric-header">
                         <h3 class="metric-title"><i class="fas fa-bolt"></i> Total de Requests</h3>
                     </div>
-                    <div class="metric-value">245,831</div>
+                    <div class="metric-value" th:text="${totalRequests}">245,831</div>
                     <div class="metric-change change-positive">
                         <i class="fas fa-arrow-up"></i> 12.5% vs período anterior
                     </div>
@@ -399,7 +398,7 @@
                     <div class="metric-header">
                         <h3 class="metric-title"><i class="fas fa-clock"></i> Latencia Promedio</h3>
                     </div>
-                    <div class="metric-value">142 ms</div>
+                    <div class="metric-value" th:text="${avgLatency} + ' ms'">142 ms</div>
                     <div class="metric-change change-negative">
                         <i class="fas fa-arrow-up"></i> 5.2% vs período anterior
                     </div>
@@ -409,7 +408,7 @@
                     <div class="metric-header">
                         <h3 class="metric-title"><i class="fas fa-check-circle"></i> Tasa de Éxito</h3>
                     </div>
-                    <div class="metric-value">99.2%</div>
+                    <div class="metric-value" th:text="${successRate} + '%'">99.2%</div>
                     <div class="metric-change change-positive">
                         <i class="fas fa-arrow-up"></i> 0.8% vs período anterior
                     </div>
@@ -419,7 +418,7 @@
                     <div class="metric-header">
                         <h3 class="metric-title"><i class="fas fa-exclamation-triangle"></i> Tasa de Error</h3>
                     </div>
-                    <div class="metric-value">0.8%</div>
+                    <div class="metric-value" th:text="${errorRate} + '%'">0.8%</div>
                     <div class="metric-change change-negative">
                         <i class="fas fa-arrow-up"></i> 0.2% vs período anterior
                     </div>
@@ -466,39 +465,16 @@
                         <h3 class="alerts-title">Alertas Recientes</h3>
                         <button class="btn btn-sm btn-outline-primary">Ver todas</button>
                     </div>
-
-                    <div class="alert-list">
-                        <div class="alert-item">
-                            <div class="alert-icon alert-icon-error">
-                                <i class="fas fa-exclamation-circle"></i>
+                    <div class="alert-list" th:if="${alerts}">
+                        <div class="alert-item" th:each="alert : ${alerts}">
+                            <div class="alert-icon" th:classappend="${alert.severity == 'ERROR'} ? 'alert-icon-error' : (${alert.severity == 'WARNING'} ? 'alert-icon-warning' : 'alert-icon-info')">
+                                <i class="fas" th:classappend="${alert.severity == 'ERROR'} ? 'fa-exclamation-circle' : (${alert.severity == 'WARNING'} ? 'fa-clock' : 'fa-info-circle')"></i>
                             </div>
                             <div class="alert-content">
-                                <div class="alert-title">Aumento de errores 5xx en API de Pagos</div>
-                                <div class="alert-description">Tasa de error aumentó del 0.5% al 3.2% en los últimos 30 minutos</div>
+                                <div class="alert-title" th:text="${alert.title}"></div>
+                                <div class="alert-description" th:text="${alert.description}"></div>
                             </div>
-                            <div class="alert-time">Hace 15 min</div>
-                        </div>
-
-                        <div class="alert-item">
-                            <div class="alert-icon alert-icon-warning">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div class="alert-content">
-                                <div class="alert-title">Aumento de latencia en API de Usuarios</div>
-                                <div class="alert-description">Latencia p95 aumentó de 200ms a 450ms</div>
-                            </div>
-                            <div class="alert-time">Hace 2 h</div>
-                        </div>
-
-                        <div class="alert-item">
-                            <div class="alert-icon alert-icon-info">
-                                <i class="fas fa-info-circle"></i>
-                            </div>
-                            <div class="alert-content">
-                                <div class="alert-title">Patrón de tráfico inusual</div>
-                                <div class="alert-description">Aumento del 40% en requests a API de Productos</div>
-                            </div>
-                            <div class="alert-time">Ayer, 16:32</div>
+                            <div class="alert-time" th:text="${alert.timestamp}"></div>
                         </div>
                     </div>
                 </div>
@@ -521,45 +497,20 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>API de Usuarios</td>
-                        <td><span class="status-indicator status-active"></span> Activo</td>
-                        <td>84,291</td>
-                        <td>156 ms</td>
-                        <td><span class="badge badge-success">0.2%</span></td>
-                        <td><i class="fas fa-arrow-up text-success"></i></td>
-                    </tr>
-                    <tr>
-                        <td>API de Pagos</td>
-                        <td><span class="status-indicator status-active"></span> Activo</td>
-                        <td>62,457</td>
-                        <td>210 ms</td>
-                        <td><span class="badge badge-warning">1.8%</span></td>
-                        <td><i class="fas fa-arrow-up text-danger"></i></td>
-                    </tr>
-                    <tr>
-                        <td>API de Productos</td>
-                        <td><span class="status-indicator status-active"></span> Activo</td>
-                        <td>45,123</td>
-                        <td>98 ms</td>
-                        <td><span class="badge badge-success">0.4%</span></td>
-                        <td><i class="fas fa-arrow-down text-success"></i></td>
-                    </tr>
-                    <tr>
-                        <td>API de Pedidos</td>
-                        <td><span class="status-indicator status-warning"></span> Inestable</td>
-                        <td>38,547</td>
-                        <td>312 ms</td>
-                        <td><span class="badge badge-danger">3.2%</span></td>
-                        <td><i class="fas fa-arrow-up text-danger"></i></td>
-                    </tr>
-                    <tr>
-                        <td>API de Catálogo</td>
-                        <td><span class="status-indicator status-active"></span> Activo</td>
-                        <td>15,413</td>
-                        <td>124 ms</td>
-                        <td><span class="badge badge-success">0.1%</span></td>
-                        <td><i class="fas fa-minus text-secondary"></i></td>
+                    <tr th:each="api : ${apiPerformanceList}">
+                        <td th:text="${api.endpoint}"></td>
+                        <td>
+                            <span class="status-indicator" th:classappend="${api.status == 'Activo'} ? 'status-active' : (${api.status == 'Inestable'} ? 'status-warning' : 'status-error')"></span>
+                            <span th:text="${api.status}"></span>
+                        </td>
+                        <td th:text="${api.totalRequests}"></td>
+                        <td th:text="${api.latency}"></td>
+                        <td>
+                            <span class="badge" th:classappend="${api.errorRate < 1} ? 'badge-success' : (${api.errorRate < 5} ? 'badge-warning' : 'badge-danger')" th:text="${api.errorRate} + '%'"></span>
+                        </td>
+                        <td>
+                            <i class="fas" th:classappend="${api.trend == 'up'} ? 'fa-arrow-up text-danger' : (${api.trend == 'down'} ? 'fa-arrow-down text-success' : 'fa-minus text-secondary')"></i>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -571,130 +522,91 @@
 </div>
 
 <script>
-
     document.addEventListener('DOMContentLoaded', function() {
+        // Datos del backend inyectados por Thymeleaf
+        const requestsPerHourData = [[${requestsPerHour}]];
+        const statusCountsData = [[${statusCounts}]];
+        const latencyByEndpointData = [[${latencyByEndpoint}]];
 
-        const requestsCtx = document.getElementById('requestsChart').getContext('2d');
-        const requestsChart = new Chart(requestsCtx, {
-            type: 'line',
-            data: {
-                labels: ['00:00', '02:00', '04:00', '06:00', '08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00'],
-                datasets: [{
-                    label: 'Requests',
-                    data: [1200, 900, 800, 1100, 2300, 2800, 3200, 3000, 2800, 2500, 2100, 1800],
-                    borderColor: '#206bc4',
-                    backgroundColor: 'rgba(32, 107, 196, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+        // 1. Gráfico de Consumo de API (Requests por hora)
+        if (requestsPerHourData && requestsPerHourData.length > 0) {
+            const requestsCtx = document.getElementById('requestsChart').getContext('2d');
+            new Chart(requestsCtx, {
+                type: 'line',
+                data: {
+                    labels: requestsPerHourData.map(item => item.hora),
+                    datasets: [{
+                        label: 'Requests',
+                        data: requestsPerHourData.map(item => item.count),
+                        borderColor: '#206bc4',
+                        backgroundColor: 'rgba(32, 107, 196, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            drawBorder: false
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { drawBorder: false } },
+                        x: { grid: { display: false } }
                     }
                 }
-            }
-        });
+            });
+        }
 
-
-        const statusCodesCtx = document.getElementById('statusCodesChart').getContext('2d');
-        const statusCodesChart = new Chart(statusCodesCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['2xx (Éxito)', '3xx (Redirección)', '4xx (Cliente)', '5xx (Servidor)'],
-                datasets: [{
-                    data: [245831, 12452, 1832, 654],
-                    backgroundColor: [
-                        '#2fb344',
-                        '#ff922b',
-                        '#f76808',
-                        '#e03131'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }
-        });
-
-
-        const latencyCtx = document.getElementById('latencyChart').getContext('2d');
-        const latencyChart = new Chart(latencyCtx, {
-            type: 'bar',
-            data: {
-                labels: ['/users', '/users/{id}', '/products', '/products/search', '/orders', '/payments'],
-                datasets: [{
-                    label: 'Latencia p95 (ms)',
-                    data: [142, 98, 124, 156, 210, 185],
-                    backgroundColor: '#4299e1'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+        // 2. Gráfico de Distribución de Status Codes
+        if (statusCountsData && statusCountsData.length > 0) {
+            const statusLabels = statusCountsData.map(item => item.statusCode);
+            const statusData = statusCountsData.map(item => item.count);
+            const backgroundColors = statusLabels.map(label => {
+                if (label.startsWith('2')) return '#2fb344';
+                if (label.startsWith('4')) return '#f76808';
+                if (label.startsWith('5')) return '#e03131';
+                return '#ff922b';
+            });
+            const statusCodesCtx = document.getElementById('statusCodesChart').getContext('2d');
+            new Chart(statusCodesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: statusLabels,
+                    datasets: [{
+                        data: statusData,
+                        backgroundColor: backgroundColors
+                    }]
                 },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            drawBorder: false
-                        }
-                    },
-                    x: {
-                        grid: {
-                            display: false
-                        }
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+        }
+
+        // 3. Gráfico de Latencia por Endpoint
+        if (latencyByEndpointData && latencyByEndpointData.length > 0) {
+            const latencyCtx = document.getElementById('latencyChart').getContext('2d');
+            new Chart(latencyCtx, {
+                type: 'bar',
+                data: {
+                    labels: latencyByEndpointData.map(item => item.endpoint),
+                    datasets: [{
+                        label: 'Latencia Promedio (ms)',
+                        data: latencyByEndpointData.map(item => item.latency),
+                        backgroundColor: '#4299e1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { drawBorder: false } },
+                        x: { grid: { display: false } }
                     }
                 }
-            }
-        });
-
-
-        document.getElementById('api-select').addEventListener('change', updateCharts);
-        document.getElementById('environment-select').addEventListener('change', updateCharts);
-        document.getElementById('start-date').addEventListener('change', updateCharts);
-        document.getElementById('end-date').addEventListener('change', updateCharts);
-
-        function updateCharts() {
-
-            const api = document.getElementById('api-select').value;
-            const environment = document.getElementById('environment-select').value;
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-
-
-            console.log('Actualizando gráficos con filtros:', {api, environment, startDate, endDate});
-
-
-            setTimeout(() => {
-                alert(`Gráficos actualizados con los filtros seleccionados: API=${api}, Entorno=${environment}, Fechas=${startDate} a ${endDate}`);
-            }, 500);
+            });
         }
     });
 </script>

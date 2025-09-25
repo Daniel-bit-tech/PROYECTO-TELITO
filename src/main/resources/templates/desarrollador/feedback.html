@@ -7,20 +7,18 @@
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>TELITO DEVELOPER PORTAL | Feedback</title>
-    <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
-    <link href="tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
-    <link href="tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+    <link href="tabler/dist/libs/jsvectormap/dist/jsvectormap.css" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler.css" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-flags.css" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-socials.css" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-payments.css" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-vendors.css" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-marketing.css" rel="stylesheet" />
+    <link href="tabler/dist/css/tabler-themes.css" rel="stylesheet" />
+    <link href="tabler/preview/css/demo.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url("https://rsms.me/inter/inter.css");
-
-
 
         .catalog-header {
             padding: 2rem 0 1rem;
@@ -308,9 +306,6 @@
 </head>
 
 <body>
-<!-- Banner de impersonación -->
-<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
-
 <script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
 
@@ -340,62 +335,64 @@
             <div id="give-feedback" class="feedback-tab-content">
                 <div class="feedback-form-container">
                     <h3 class="feedback-form-title">Comparte tu experiencia</h3>
-                    <form th:action="@{/feedback/guardar}" th:object="${ticket}" method="post">
-                        <input type="hidden" th:field="*{usuario}">
+                    <form th:action="@{/feedback/guardar}" method="post">
 
                         <div class="form-group">
-                            <label class="form-label">Seleccionar API o recurso</label>
-                            <select class="form-select" th:field="*{api}" required>
+                            <label class="form-label">API o recurso</label>
+                            <select class="form-select" name="apiId" required>
                                 <option value="">Selecciona una API o recurso</option>
                                 <option th:each="api : ${apis}" th:value="${api.idApi}" th:text="${api.nombre}"></option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Asunto</label>
-                            <input type="text" class="form-control" th:field="*{asunto}" placeholder="Resumen de tu feedback" required>
+                            <label class="form-label">Comentario</label>
+                            <textarea class="form-control form-textarea" name="comentario" placeholder="Describe tu experiencia, sugerencia o problema en detalle..." required></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Mensaje</label>
-                            <textarea class="form-control form-textarea" th:field="*{descripcion}" placeholder="Describe tu experiencia, sugerencia o problema en detalle..." required></textarea>
+                            <label class="form-label">Calificación</label>
+                            <select class="form-select" name="calificacion" required>
+                                <option value="">Selecciona una calificación</option>
+                                <option th:each="i : ${#numbers.sequence(1, 5)}" th:value="${i}" th:text="${i}"></option>
+                            </select>
                         </div>
 
                         <button type="submit" class="btn-primary">
                             <i class="fas fa-paper-plane"></i> Enviar Feedback
                         </button>
                     </form>
-
                 </div>
             </div>
 
             <div id="my-feedback" class="feedback-tab-content" style="display: none;">
                 <div class="feedback-list">
-                    <div th:if="${#lists.isEmpty(misTickets)}" class="empty-state">
+                    <div th:if="${#lists.isEmpty(misFeedback)}" class="empty-state">
                         <div class="empty-icon"><i class="fas fa-inbox"></i></div>
                         <h4 class="empty-title">Aún no has enviado feedback</h4>
-                        <p class="empty-description">Tus tickets de soporte aparecerán aquí una vez que los envíes.</p>
+                        <p class="empty-description">Tus comentarios aparecerán aquí una vez que los envíes.</p>
                         <a href="#" class="btn-primary switch-tab" data-tab="give-feedback">
                             <i class="fas fa-comment"></i> Dejar mi primer feedback
                         </a>
                     </div>
 
-                    <div th:each="ticket : ${misTickets}" class="feedback-card">
+                    <div th:each="feedback : ${misFeedback}" class="feedback-card">
                         <div class="feedback-header">
                             <div class="feedback-meta">
-                                <div class="feedback-author" th:text="${ticket.usuario.nombre}"></div>
-                                <div class="feedback-date" th:text="${#dates.format(ticket.fechaCreacion, 'dd/MM/yyyy')}"></div>
+                                <div class="feedback-date" th:text="${#dates.format(feedback.fechaCreacion, 'dd/MM/yyyy')}"></div>
                             </div>
                         </div>
                         <div class="feedback-content">
-                            <div class="feedback-subject" th:text="${ticket.asunto}"></div>
-                            <div class="feedback-message" th:text="${ticket.descripcion}"></div>
+                            <div class="feedback-message" th:text="${feedback.comentario}"></div>
                         </div>
                         <div class="feedback-footer">
                             <div class="feedback-api">
-                                <i class="fas fa-cube"></i> <span th:text="${ticket.api.nombre}"></span>
+                                <i class="fas fa-cube"></i> <span th:text="${feedback.api.nombre}"></span>
+                                <span class="feedback-api">
+                                    <i class="fas fa-star" th:each="i : ${#numbers.sequence(1, feedback.calificacion)}"></i>
+                                    <i class="far fa-star" th:each="i : ${#numbers.sequence(feedback.calificacion + 1, 5)}"></i>
+                                </span>
                             </div>
-                            <span class="feedback-status" th:classappend="${ticket.estado ? 'status-reviewed' : 'status-pending'}" th:text="${ticket.estado ? 'Resuelto' : 'Pendiente'}"></span>
                         </div>
                     </div>
                 </div>
@@ -405,7 +402,6 @@
                 <div class="feedback-form-container">
                     <h3 class="feedback-form-title">Roadmap y Mejoras Planificadas</h3>
                     <p>Basado en el feedback de nuestra comunidad, estas son las mejoras que estamos implementando:</p>
-
                     <div class="form-group">
                         <h4>Próximos Lanzamientos (Q3 2023)</h4>
                         <ul>
@@ -414,7 +410,6 @@
                             <li>Mejoras en la documentación con más ejemplos prácticos</li>
                         </ul>
                     </div>
-
                     <div class="form-group">
                         <h4>En Desarrollo</h4>
                         <ul>
@@ -423,7 +418,6 @@
                             <li>Funcionalidad de "guardar configuración" en el playground</li>
                         </ul>
                     </div>
-
                     <div class="form-group">
                         <h4>En Planeación</h4>
                         <ul>
@@ -432,85 +426,26 @@
                             <li>Portal traducido a 5 idiomas adicionales</li>
                         </ul>
                     </div>
-
                     <p>¿Tienes ideas adicionales? <a href="#" class="switch-tab" data-tab="give-feedback">Comparte tu feedback</a> con nosotros.</p>
                 </div>
             </div>
         </div>
     </div>
-
     <div id="footer-placeholder"></div>
 </div>
 
-<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
-<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
-
+<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="tabler/dist/js/tabler.min.js"></script>
 <script>
-
     document.querySelectorAll('.feedback-tab').forEach(tab => {
         tab.addEventListener('click', function() {
-
             document.querySelectorAll('.feedback-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.feedback-tab-content').forEach(c => c.style.display = 'none');
-
-
             this.classList.add('active');
             const tabId = this.getAttribute('data-tab');
             document.getElementById(tabId).style.display = 'block';
         });
     });
-
-
-    document.querySelectorAll('.rating-star').forEach(star => {
-        star.addEventListener('click', function() {
-            const value = parseInt(this.getAttribute('data-value'));
-            document.getElementById('feedback-rating').value = value;
-
-
-            document.querySelectorAll('.rating-star').forEach(s => {
-                const starValue = parseInt(s.getAttribute('data-value'));
-                if (starValue <= value) {
-                    s.innerHTML = '<i class="fas fa-star"></i>';
-                    s.classList.add('active');
-                } else {
-                    s.innerHTML = '<i class="far fa-star"></i>';
-                    s.classList.remove('active');
-                }
-            });
-        });
-    });
-
-
-    document.getElementById('feedback-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const rating = document.getElementById('feedback-rating').value;
-        if (rating === '0') {
-            alert('Por favor, proporciona una calificación con las estrellas');
-            return;
-        }
-
-
-        console.log('Feedback enviado:', {
-            api: document.getElementById('feedback-api').value,
-            subject: document.getElementById('feedback-subject').value,
-            type: document.getElementById('feedback-type').value,
-            rating: rating,
-            message: document.getElementById('feedback-message').value,
-            contact: document.getElementById('feedback-contact').checked
-        });
-
-        alert('¡Gracias por tu feedback! Tu comentario ha sido enviado al equipo de Telito.');
-        this.reset();
-
-
-        document.querySelectorAll('.rating-star').forEach(s => {
-            s.innerHTML = '<i class="far fa-star"></i>';
-            s.classList.remove('active');
-        });
-        document.getElementById('feedback-rating').value = '0';
-    });
-
 
     document.querySelectorAll('.switch-tab').forEach(link => {
         link.addEventListener('click', function(e) {
@@ -518,11 +453,12 @@
             const tabId = this.getAttribute('data-tab');
             document.querySelectorAll('.feedback-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.feedback-tab-content').forEach(c => c.style.display = 'none');
-
             document.querySelector(`.feedback-tab[data-tab="${tabId}"]`).classList.add('active');
             document.getElementById(tabId).style.display = 'block';
         });
     });
+
+    // Removí el JavaScript innecesario que no se conectaba a los elementos del formulario
 </script>
 </body>
 </html>

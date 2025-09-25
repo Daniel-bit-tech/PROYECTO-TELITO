@@ -14,8 +14,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Integer> {
 
     List<Ticket> findByUsuario_DniOrderByFechaCreacionDesc(String usuarioDni);
 
-    @Query("SELECT t FROM Ticket t JOIN FETCH t.usuario u JOIN FETCH t.api a WHERE t.idTicket = ?1")
-    Optional<Ticket> findByIdWithDetails(int id);
 
 
 
