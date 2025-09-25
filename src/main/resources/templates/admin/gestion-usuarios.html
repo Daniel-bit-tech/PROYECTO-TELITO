@@ -457,6 +457,38 @@
 
                     if (response.ok) {
                         alert(`Usuario ${accion}do exitosamente`);
+                        
+                        // Obtener información del usuario para la actividad
+                        const responseData = await response.json();
+                        const nombreUsuario = responseData.nombreUsuario || 'Usuario';
+                        
+                        // Agregar actividad al dashboard
+                        const accionActividad = nuevoEstado ? 'ACTIVAR_USUARIO' : 'BANEAR_USUARIO';
+                        const descripcionActividad = `${nuevoEstado ? 'Activó' : 'Baneó'} al usuario ${nombreUsuario} (DNI: ${dni})`;
+                        
+                        // Agregar a localStorage para el dashboard
+                        let actividades = JSON.parse(localStorage.getItem('actividadesRecientes') || '[]');
+                        const nuevaActividad = {
+                            accion: accionActividad,
+                            descripcion: descripcionActividad,
+                            tiempo: 'Ahora',
+                            icono: nuevoEstado ? 'fa-user-check' : 'fa-user-slash',
+                            color: nuevoEstado ? 'success' : 'danger'
+                        };
+                        
+                        actividades.unshift(nuevaActividad);
+                        if (actividades.length > 10) actividades = actividades.slice(0, 10);
+                        localStorage.setItem('actividadesRecientes', JSON.stringify(actividades));
+                        
+                        // Notificar a otros tabs (como el dashboard) sobre el cambio
+                        localStorage.setItem('admin-user-updated', JSON.stringify({
+                            action: 'estado-changed',
+                            dni: dni,
+                            newStatus: nuevoEstado,
+                            nombreUsuario: nombreUsuario,
+                            timestamp: Date.now()
+                        }));
+                        
                         window.location.reload();
                     } else {
                         const error = await response.text();

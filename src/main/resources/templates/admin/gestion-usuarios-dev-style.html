@@ -1720,6 +1720,15 @@ async function handleToggleUserStatus(userDni, currentState, toggleInput = null)
       
       // Mostrar mensaje de éxito elegante
       showSuccessMessage(`Usuario ${action} correctamente`);
+      
+      // Notificar a otros tabs (como el dashboard) sobre el cambio
+      localStorage.setItem('admin-user-updated', JSON.stringify({
+        action: 'estado-changed',
+        dni: userDni,
+        newStatus: newState,
+        timestamp: Date.now()
+      }));
+      
       // El toggle ya refleja el nuevo estado, solo reactivarlo
       if (toggleInput) {
         toggleInput.disabled = false;
@@ -2089,6 +2098,13 @@ async function saveUserChanges() {
     editModal.hide();
     
     alert('✅ Usuario actualizado exitosamente');
+    
+    // Notificar a otros tabs (como el dashboard) sobre el cambio
+    localStorage.setItem('admin-user-updated', JSON.stringify({
+      action: 'user-updated',
+      timestamp: Date.now()
+    }));
+    
     setTimeout(() => {
       window.location.reload();
     }, 1000);
