@@ -1,22 +1,19 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>TELITO DEVELOPER PORTAL | Feedback</title>
-    <!-- CSRF tokens for impersonation -->
-    <meta name="_csrf" th:content="${_csrf.token}">
-    <meta name="_csrf_header" th:content="${_csrf.headerName}">
-    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler.css" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-flags.css" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-socials.css" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-payments.css" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-marketing.css" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet" />
-    <link href="/tabler/preview/css/demo.css" rel="stylesheet" />
+    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url("https://rsms.me/inter/inter.css");
@@ -271,10 +268,7 @@
 </head>
 
 <body>
-<!-- Banner de impersonación -->
-<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
-
-<script src="/tabler/dist/js/tabler-theme.min.js"></script>
+<script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
     <div th:replace="qa/header_qa.html :: header"></div>
     <div class="content">
@@ -285,34 +279,37 @@
                         <h1 class="catalog-title">Feedback</h1>
                         <p class="catalog-subtitle">Revisa los comentarios y sugerencias de los desarrolladores</p>
                     </div>
-
+                    <div class="col-md-4 text-md-end">
+                        <select class="form-select" id="feedback-status-filter">
+                            <option value="">Filtrar por estado</option>
+                            <option value="status-reviewed">Implementado</option>
+                            <option value="status-pending">En Revisión</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="feedback-list">
-                <div th:if="${!listaFeedback.isEmpty()}" th:each="feedback : ${listaFeedback}" class="feedback-card">
+                <div th:if="${listaTickets != null and !listaTickets.isEmpty()}" th:each="ticket : ${listaTickets}" class="feedback-card" th:classappend="${ticket.estado ? 'status-reviewed' : 'status-pending'}">
                     <div class="feedback-header">
                         <div class="feedback-meta">
-                            <div class="feedback-author" th:text="${feedback.usuario?.nombre ?: 'Usuario no encontrado'}">Nombre del Desarrollador</div>
-                            <div class="feedback-date" th:text="${#dates.format(feedback.fechaCreacion, 'dd MMMM, yyyy')}">15 de Agosto, 2023</div>
+                            <div class="feedback-author" th:text="${ticket.usuario?.nombre ?: 'Usuario no encontrado'}">Nombre del Desarrollador</div>
+                            <div class="feedback-date" th:text="${#dates.format(ticket.fechaCreacion, 'dd MMMM, yyyy')}">15 de Agosto, 2023</div>
                         </div>
-                        <div class="feedback-rating">
-                            <span th:each="i : ${#numbers.sequence(1, feedback.calificacion)}" class="feedback-star"><i class="fas fa-star"></i></span>
-                            <span th:each="i : ${#numbers.sequence(feedback.calificacion + 1, 5)}" class="feedback-star"><i class="far fa-star"></i></span>
-                        </div>
+
                     </div>
                     <div class="feedback-content">
-                        <div class="feedback-subject" th:text="${feedback.api.nombre}">Asunto del Ticket</div>
-                        <div class="feedback-message" th:text="${feedback.comentario}">Descripción del feedback.</div>
+                        <div class="feedback-subject" th:text="${ticket.asunto}">Asunto del Ticket</div>
+                        <div class="feedback-message" th:text="${ticket.descripcion}">Descripción del feedback.</div>
                     </div>
                     <div class="feedback-footer">
                         <div class="feedback-api">
-                            <i class="fas fa-code-branch"></i> <span th:text="${feedback.api?.nombre ?: 'API no especificada'}">API de Pagos</span>
+                            <i class="fas fa-code-branch"></i> <span th:text="${ticket.api?.nombre ?: 'API no especificada'}">API de Pagos</span> • <span th:text="${ticket.tipoFeedback?.nombreTipo}">Tipo de feedback</span>
                         </div>
-                        <span th:text="'Calificación: ' + ${feedback.calificacion} + '/5'">Calificación: 3/5</span>
+                        <span th:classappend="${ticket.estado ? 'status-reviewed' : 'status-pending'}" th:text="${ticket.estado ? 'Implementado' : 'En revisión'}" class="feedback-status">Estado</span>
                     </div>
-                    <a th:href="@{'/qa/feedbackDetalle/' + ${feedback.idFeedback}}" class="btn btn-primary mt-3">Ver detalles</a>
+                    <a th:href="@{'/qa/feedback/' + ${ticket.idTicket}}" class="btn btn-primary mt-3">Ver detalles</a>
                 </div>
-                <div th:if="${listaFeedback == null or listaFeedback.isEmpty()}" class="empty-state">
+                <div th:if="${listaTickets == null or listaTickets.isEmpty()}" class="empty-state">
                     <div class="empty-icon">
                         <i class="far fa-comments"></i>
                     </div>
@@ -324,7 +321,7 @@
     </div>
     <div id="footer-placeholder"></div>
 </div>
-<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/tabler/dist/js/tabler.min.js"></script>
+<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
 </body>
 </html>

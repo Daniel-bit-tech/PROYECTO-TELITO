@@ -13,11 +13,10 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/qa")
-@PreAuthorize("hasAnyRole('QA', 'SUPERADMIN')")
+@PreAuthorize("hasAnyRole('QA', 'SADMIN')")
 public class QaController {
 
     final UsuarioRepository usuarioRepository;
@@ -42,10 +41,9 @@ public class QaController {
     }
 
     @GetMapping("/home")
-    public String showQaView(Model model, Authentication auth, HttpSession session) {
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
-        
+    public String showQaView(Model model, Authentication auth) {
+        String correo = auth.getName();
+        Usuario usuario = usuarioRepository.findByCorreo(correo);
         Integer NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(),true);
         List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_Dni(usuario.getDni());
         List<Notificacion> notis = notificacionRepository.findByUsuario_Dni(usuario.getDni());
@@ -59,37 +57,22 @@ public class QaController {
     }
 
     @GetMapping("/perfilQa")
-    public String showPerfil (Model model, Authentication auth, HttpSession session) {
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+    public String showPerfil (Model model, Authentication auth) {
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        
-        // Agregar información de impersonación al modelo
-        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
-        if (isImpersonating != null && isImpersonating) {
-            model.addAttribute("isImpersonating", true);
-            model.addAttribute("impersonatedUserDni", session.getAttribute("IMPERSONATED_USER_DNI"));
-            model.addAttribute("originalAdminUsername", session.getAttribute("ORIGINAL_ADMIN_USERNAME"));
-            System.out.println("🎭 QA - Modo impersonación detectado para DNI: " + session.getAttribute("IMPERSONATED_USER_DNI"));
-        } else {
-            model.addAttribute("isImpersonating", false);
-        }
-        
         return "qa/perfilQa";
     }
 
     @GetMapping("/apiDetalle")
-    public String showRoadmapView(Model model, Authentication auth, HttpSession session) {
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+    public String showRoadmapView(Model model, Authentication auth) {
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
         return "qa/apiDetalle";
     }
 
     @GetMapping("/feedback")
-    public String showFeedbackView(Model model, Authentication auth, HttpSession session) {
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+    public String showFeedbackView(Model model, Authentication auth) {
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
         List<Feedback> listaFeedback = feedbackRepository.findAll();
         model.addAttribute("listaFeedback", listaFeedback);
@@ -99,9 +82,8 @@ public class QaController {
 
 
     @GetMapping("/feedbackDetalle/{id}")
-    public String showFeedbackDetalleView(Model model, @PathVariable("id") int idFeedback, Authentication auth, HttpSession session) {
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+    public String showFeedbackDetalleView(Model model, @PathVariable("id") int idFeedback, Authentication auth) {
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
 
         Optional<Feedback> feedbackOptional = feedbackRepository.findById(idFeedback);
@@ -115,51 +97,26 @@ public class QaController {
     }
 
     @GetMapping("/soporte")
-    public String showSoporte(Model model, Authentication auth, HttpSession session) {
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+    public String showSoporte(Model model, Authentication auth) {
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
         return "qa/soporte";
     }
 
+    /*
     @GetMapping("/issueRealizar")
-    public String madeIssue(Model model, Authentication auth, HttpSession session){
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+    public String madeIssue(Model model, Authentication auth){
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
         return "qa/issueRealizar";
     }
+    */
+
 
     @GetMapping("/reporteRealizar")
-    public String madeReport(Model model, Authentication auth, HttpSession session){
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+    public String madeReport(Model model, Authentication auth){
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
         return "qa/reporteRealizar";
-    }
-
-    /**
-     * Método helper para obtener el usuario correcto durante impersonación
-     */
-    private Usuario obtenerUsuarioActual(Authentication auth, HttpSession session) {
-        // Verificar si hay impersonación activa
-        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
-        
-        if (isImpersonating != null && isImpersonating) {
-            // Durante impersonación, obtener usuario por DNI del usuario impersonado
-            String impersonatedUserDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
-            if (impersonatedUserDni != null) {
-                Usuario impersonatedUser = usuarioRepository.findByDni(impersonatedUserDni);
-                if (impersonatedUser != null) {
-                    System.out.println("🎭 QA - Usando datos del usuario impersonado: " + impersonatedUser.getNombre());
-                    return impersonatedUser;
-                }
-            }
-        }
-        
-        // Sin impersonación, usar el usuario autenticado normal
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        System.out.println("👤 QA - Usando datos del usuario autenticado: " + usuario.getNombre());
-        return usuario;
     }
 }

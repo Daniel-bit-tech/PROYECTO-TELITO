@@ -42,7 +42,7 @@
                 <div class="row g-2 align-items-center">
 
                     <div class="col" >
-                        <h2>API 1</h2>
+                        <h2 th:text="'Issue para el reporte #' + ${reporte.idReporte}"></h2>
                     </div>
 
                 </div>
@@ -60,50 +60,32 @@
                                             <h3 class="card-title">Crear nuevo issue</h3>
                                         </div>
                                         <div class="card-body">
-                                            <form>
+                                            <form method="POST" th:action="@{/qa/crearIssue}">
                                                 <div class="space-y">
+                                                    <!-- Campo oculto para el ID del reporte -->
+                                                    <input type="hidden" name="idReporte" th:value="${reporte.idReporte}" />
 
                                                     <div>
                                                         <label class="form-label"> Estado </label>
-                                                        <input type="text" value="Fallido" class="form-control" />
+                                                        <input type="text" name="estado" value="Fallido" class="form-control" />
                                                     </div>
                                                     <div>
                                                         <label class="form-label"> Descripción </label>
-                                                        <textarea placeholder="Ingresa una descripcion" rows="6" class="form-control"></textarea>
+                                                        <textarea name="descripcion" placeholder="Ingresa una descripcion" rows="6" class="form-control"></textarea>
                                                     </div>
                                                     <div>
-                                                        <label class="form-label">Evidencia</label>
-                                                        <input
-                                                                type="file"
-                                                                name="adjuntos"
-                                                                id="adjuntos"
-                                                                class="form-control"
-                                                                multiple
-                                                                accept=".pdf,.doc,.docx,.xls,.xlsx,image/*" />
-                                                        <div class="form-hint">.</div>
-                                                        <ul id="preview" class="small mt-2 list-unstyled"></ul>
+                                                        <p>Se adjuntarán las evidencias subidas del reporte</p>
                                                     </div>
                                                     <div>
-                                                        <a href="1-catalogo.html" class="btn btn-primary btn-4 w-100">
-                                                            Generar reporte
-                                                            <!-- Download SVG icon from http://tabler.io/icons/icon/arrow-right -->
-                                                            <svg
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    width="24"
-                                                                    height="24"
-                                                                    viewBox="0 0 24 24"
-                                                                    fill="none"
-                                                                    stroke="currentColor"
-                                                                    stroke-width="2"
-                                                                    stroke-linecap="round"
-                                                                    stroke-linejoin="round"
-                                                                    class="icon icon-end icon-2"
-                                                            >
+                                                        <button type="submit" class="btn btn-primary btn-4 w-100">
+                                                            Generar issue
+                                                            <!-- Icono para el botón -->
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-end icon-2">
                                                                 <path d="M5 12l14 0" />
                                                                 <path d="M13 18l6 -6" />
                                                                 <path d="M13 6l6 6" />
                                                             </svg>
-                                                        </a>
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </form>
@@ -119,24 +101,7 @@
 
             <!-- END PAGE BODY -->
             <!--  BEGIN FOOTER  -->
-            <footer class="footer footer-transparent d-print-none">
-                <div class="container-xl">
-                    <div class="row text-center align-items-center flex-row-reverse">
 
-                        <div class="col-12 col-lg-auto mt-3 mt-lg-0">
-                            <ul class="list-inline list-inline-dots mb-0">
-                                <li class="list-inline-item">
-                                    Copyright &copy; 2025
-                                    <a href="." class="link-secondary">Tabler</a>. All rights reserved.
-                                </li>
-                                <li class="list-inline-item">
-                                    <a href="./changelog.html" class="link-secondary" rel="noopener"> v1.4.0 </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </footer>
             <!--  END FOOTER  -->
         </div>
     </div>

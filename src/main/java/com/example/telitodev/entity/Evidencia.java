@@ -1,3 +1,4 @@
+
 package com.example.telitodev.entity;
 
 import jakarta.persistence.*;
@@ -5,79 +6,75 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "evidencia")
 public class Evidencia {
-    
-    @EmbeddedId
-    private EvidenciaId id;
-    
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // Se auto-generará el idEvidencia
+    @Column(name = "idEvidencia")
+    private int idEvidencia;
+
     @Column(name = "nombre", nullable = false, length = 200)
     private String nombre;
 
     @Lob
     @Column(name = "evidencia", nullable = false)
     private byte[] evidencia;
-    
+
     @Lob
     @Column(name = "descripción", length = 200)
     private String descripcion;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumns({
-        @JoinColumn(name = "idIssue", referencedColumnName = "idIssue", nullable = false),
-        @JoinColumn(name = "idReporte", referencedColumnName = "idReporte", nullable = false)
-    })
-    private Issue issue;
-    
+    @JoinColumn(name = "idReporte", referencedColumnName = "idReporte", nullable = false)
+    private Reporte reporte;
+
+
     // Constructores
     public Evidencia() {}
-    
-    public Evidencia(String nombre, byte[] evidencia, String descripcion, Issue issue) {
+
+    public Evidencia(String nombre, byte[] evidencia, String descripcion, Reporte reporte) {
         this.nombre = nombre;
         this.evidencia = evidencia;
         this.descripcion = descripcion;
-        this.issue = issue;
-        if (issue != null && issue.getId() != null) {
-            this.id = new EvidenciaId(null, issue.getId().getIdIssue(), issue.getId().getIdReporte());
-        }
+        this.reporte = reporte;
     }
-    
-    // Getters y Setters
-    public EvidenciaId getId() {
-        return id;
+
+    public int getIdEvidencia() {
+        return idEvidencia;
     }
-    
-    public void setId(EvidenciaId id) {
-        this.id = id;
+
+    public void setIdEvidencia(int idEvidencia) {
+        this.idEvidencia = idEvidencia;
     }
-    
+
     public String getNombre() {
         return nombre;
     }
-    
+
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-    
+
     public byte[] getEvidencia() {
         return evidencia;
     }
-    
+
     public void setEvidencia(byte[] evidencia) {
         this.evidencia = evidencia;
     }
-    
+
     public String getDescripcion() {
         return descripcion;
     }
-    
+
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
     }
-    
-    public Issue getIssue() {
-        return issue;
+
+    public Reporte getReporte() {
+        return reporte;
     }
-    
-    public void setIssue(Issue issue) {
-        this.issue = issue;
+
+    public void setReporte(Reporte reporte) {
+        this.reporte = reporte;
     }
 }
