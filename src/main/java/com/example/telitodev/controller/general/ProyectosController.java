@@ -87,6 +87,8 @@ public class ProyectosController {
         proyecto.setUsuarioLider(usuario);
         proyecto.setOrganizacion(usuario.getOrganizacion());
         proyecto.setFechaInicio(new Date(System.currentTimeMillis()));
+        proyecto.setPublico(true);
+        proyecto.setActivo(true);
         model.addAttribute("proyecto", proyecto);
         model.addAttribute("usuario", usuario);
 //        return "proyectos/formEditar";
