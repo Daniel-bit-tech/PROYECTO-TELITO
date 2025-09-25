@@ -66,6 +66,9 @@ public class AdminUsuarioController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private com.example.telitodev.service.AuditoriaService auditoriaService;
 
     /**
      * Página principal de gestión de usuarios con filtros y paginación
@@ -331,6 +334,15 @@ public class AdminUsuarioController {
                 return "redirect:/admin/gestion-usuarios/editar/" + dni;
             }
 
+            // Capturar estados anteriores para auditoría
+            boolean estadoAnterior = usuario.getEstado() != null ? usuario.getEstado() : false;
+            boolean cambioEstado = estadoAnterior != estado;
+            
+            Integer rolAnteriorId = usuario.getRol() != null ? usuario.getRol().getIdRol() : null;
+            boolean cambioRol = !idRol.equals(rolAnteriorId);
+            String rolAnteriorNombre = usuario.getRol() != null ? usuario.getRol().getNombreRol() : "Sin rol";
+            String rolNuevoNombre = rolOpt.get().getNombreRol();
+            
             // Actualizar datos del usuario
             usuario.setNombre(nombre.trim());
             usuario.setApellidoPaterno(apellidoPaterno.trim());
@@ -346,9 +358,41 @@ public class AdminUsuarioController {
             if (cambiarContrasena) {
                 mensaje += " (incluyendo nueva contraseña)";
                 System.out.println("✅ Usuario actualizado con nueva contraseña para DNI: " + dni);
+                // Registrar auditoría - cambio de contraseña
+                auditoriaService.registrarActividad(
+                    com.example.telitodev.service.AuditoriaService.CAMBIAR_PASSWORD,
+                    "Se cambió la contraseña del usuario " + usuario.getNombre() + " " + usuario.getApellidoPaterno(),
+                    usuario.getDni()
+                );
             } else {
                 System.out.println("✅ Usuario actualizado sin cambio de contraseña para DNI: " + dni);
             }
+            
+            // Registrar auditorías específicas según los tipos de cambios
+            if (cambioEstado) {
+                String accionEstado = estado ? com.example.telitodev.service.AuditoriaService.ACTIVAR_USUARIO 
+                                            : com.example.telitodev.service.AuditoriaService.BANEAR_USUARIO;
+                String descripcionEstado = (estado ? "Activó" : "Baneó") + 
+                    " al usuario " + usuario.getNombre() + " " + usuario.getApellidoPaterno() + " (" + usuario.getCorreo() + ")";
+                auditoriaService.registrarActividad(accionEstado, descripcionEstado, usuario.getDni());
+            }
+            
+            if (cambioRol) {
+                String descripcionRol = "Cambió el rol del usuario " + usuario.getNombre() + " " + usuario.getApellidoPaterno() + 
+                    " de '" + rolAnteriorNombre + "' a '" + rolNuevoNombre + "'";
+                auditoriaService.registrarActividad(
+                    com.example.telitodev.service.AuditoriaService.CAMBIAR_ROL, 
+                    descripcionRol, 
+                    usuario.getDni()
+                );
+            }
+            
+            // Registrar auditoría general de edición para otros cambios
+            auditoriaService.registrarActividad(
+                com.example.telitodev.service.AuditoriaService.EDITAR_USUARIO,
+                "Se editó la información del usuario " + usuario.getNombre() + " " + usuario.getApellidoPaterno() + " (" + usuario.getCorreo() + ")",
+                usuario.getDni()
+            );
             
             redirectAttributes.addFlashAttribute("success", mensaje);
             return "redirect:/admin/gestion-usuarios";
@@ -470,6 +514,15 @@ public class AdminUsuarioController {
             }
 
             Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
+            
+            // Registrar auditoría - creación de usuario
+            auditoriaService.registrarActividad(
+                com.example.telitodev.service.AuditoriaService.CREAR_USUARIO,
+                "Se creó el usuario " + usuarioGuardado.getNombre() + " " + usuarioGuardado.getApellidoPaterno() + 
+                " con rol " + usuarioGuardado.getRol().getNombreRol() + " (" + usuarioGuardado.getCorreo() + ")",
+                usuarioGuardado.getDni()
+            );
+            
             return ResponseEntity.ok(usuarioGuardado);
 
         } catch (Exception e) {
@@ -516,8 +569,19 @@ public class AdminUsuarioController {
                     usuario.setCorreo(nuevoCorreo);
                 }
             }
+            boolean cambioEstado = false;
+            boolean estadoAnterior = false;
+            boolean estadoNuevo = false;
+            
             if (datos.containsKey("estado")) {
-                usuario.setEstado((Boolean) datos.get("estado"));
+                estadoAnterior = usuario.getEstado() != null ? usuario.getEstado() : false;
+                estadoNuevo = (Boolean) datos.get("estado");
+                
+                if (estadoAnterior != estadoNuevo) {
+                    cambioEstado = true;
+                }
+                
+                usuario.setEstado(estadoNuevo);
             }
             if (datos.containsKey("contrasena") && !((String) datos.get("contrasena")).isEmpty()) {
                 usuario.setContrasena(passwordEncoder.encode((String) datos.get("contrasena")));
@@ -533,6 +597,23 @@ public class AdminUsuarioController {
             }
 
             Usuario usuarioActualizado = usuarioRepository.save(usuario);
+            
+            // Registrar auditorías específicas según los tipos de cambios
+            if (cambioEstado) {
+                String accionEstado = estadoNuevo ? com.example.telitodev.service.AuditoriaService.ACTIVAR_USUARIO 
+                                                : com.example.telitodev.service.AuditoriaService.BANEAR_USUARIO;
+                String descripcionEstado = (estadoNuevo ? "Activó" : "Baneó") + 
+                    " al usuario " + usuario.getNombre() + " " + usuario.getApellidoPaterno() + " (" + usuario.getCorreo() + ")";
+                auditoriaService.registrarActividad(accionEstado, descripcionEstado, usuario.getDni());
+            }
+            
+            // Registrar auditoría general de edición
+            auditoriaService.registrarActividad(
+                com.example.telitodev.service.AuditoriaService.EDITAR_USUARIO,
+                "Se editó información del usuario " + usuario.getNombre() + " " + usuario.getApellidoPaterno() + " (" + usuario.getCorreo() + ")",
+                usuario.getDni()
+            );
+            
             return ResponseEntity.ok(usuarioActualizado);
 
         } catch (Exception e) {
@@ -591,6 +672,25 @@ public class AdminUsuarioController {
             usuario.setEstado(nuevoEstado);
             usuarioRepository.save(usuario);
             
+            // Registrar auditoría del cambio de estado
+            String accionAuditoria = nuevoEstado ? com.example.telitodev.service.AuditoriaService.ACTIVAR_USUARIO 
+                                                 : com.example.telitodev.service.AuditoriaService.BANEAR_USUARIO;
+            String descripcionAuditoria = (nuevoEstado ? "Activó" : "Baneó") + 
+                " al usuario " + usuario.getNombre() + " " + usuario.getApellidoPaterno() + " (" + usuario.getCorreo() + ")";
+            
+            System.out.println("🔍 REGISTRANDO AUDITORÍA:");
+            System.out.println("   Acción: " + accionAuditoria);
+            System.out.println("   Descripción: " + descripcionAuditoria);
+            System.out.println("   DNI: " + usuario.getDni());
+            
+            try {
+                auditoriaService.registrarActividad(accionAuditoria, descripcionAuditoria, usuario.getDni());
+                System.out.println("✅ AUDITORÍA REGISTRADA EXITOSAMENTE");
+            } catch (Exception e) {
+                System.err.println("❌ ERROR AL REGISTRAR AUDITORÍA: " + e.getMessage());
+                e.printStackTrace();
+            }
+            
             String accion = nuevoEstado ? "activado" : "desactivado";
             String mensaje = nuevoEstado ? "Usuario activado correctamente" : 
                            "Usuario desactivado correctamente. Se han cerrado todas sus sesiones activas.";
@@ -600,7 +700,8 @@ public class AdminUsuarioController {
             return ResponseEntity.ok(Map.of(
                 "mensaje", mensaje,
                 "nuevoEstado", nuevoEstado,
-                "accion", accion
+                "accion", accion,
+                "nombreUsuario", usuario.getNombre() + " " + usuario.getApellidoPaterno()
             ));
 
         } catch (Exception e) {
@@ -632,6 +733,14 @@ public class AdminUsuarioController {
             // Eliminar el usuario definitivamente de la base de datos
             String nombreUsuario = usuario.getNombre();
             String correoUsuario = usuario.getCorreo();
+            String nombreCompleto = usuario.getNombre() + " " + usuario.getApellidoPaterno();
+            
+            // Registrar auditoría antes de eliminar (ya que después no existirá el usuario)
+            auditoriaService.registrarActividad(
+                com.example.telitodev.service.AuditoriaService.ELIMINAR_USUARIO,
+                "Eliminó permanentemente al usuario " + nombreCompleto + " (" + correoUsuario + ")",
+                dni
+            );
             
             usuarioRepository.delete(usuario);
             

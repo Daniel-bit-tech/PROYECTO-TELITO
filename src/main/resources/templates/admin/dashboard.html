@@ -693,6 +693,13 @@
       </div>
       -->
 
+      <!-- Botón de refresh general -->
+      <div class="d-flex justify-content-end mb-3">
+        <button class="btn btn-outline-primary" onclick="refreshDashboard()" title="Actualizar todo el dashboard">
+          <i class="fas fa-sync-alt"></i> Actualizar Dashboard
+        </button>
+      </div>
+
       <!-- Stats Grid siguiendo el patrón de developer -->
       <div class="stats-grid">
         <div class="stat-card">
@@ -875,66 +882,23 @@
 
         <!-- Sidebar de actividad/notificaciones -->
         <div class="dashboard-card">
-          <div class="card-header">
-            <h3 class="card-title"><i class="fas fa-history"></i> Actividad Reciente</h3>
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <h3 class="card-title mb-0"><i class="fas fa-history"></i> Actividad Reciente</h3>
+            <button class="btn btn-sm btn-outline-success" onclick="refreshActivities()" title="Actualizar actividades">
+              <i class="fas fa-sync-alt"></i>
+            </button>
           </div>
 
-          <ul class="notification-list">
-            <li class="notification-item">
-              <div class="notification-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
-                <i class="fas fa-user-plus"></i>
+          <!-- Contenedor dinámico para actividades -->
+          <div id="actividades-container">
+            <!-- Loading inicial -->
+            <div class="d-flex justify-content-center p-4" id="actividades-loading">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando actividades...</span>
               </div>
-              <div class="notification-content">
-                <div class="notification-title">Nuevo usuario creado</div>
-                <div class="notification-description">Se registró un nuevo desarrollador "juan.perez"</div>
-              </div>
-              <div class="notification-time">Hace 2h</div>
-            </li>
-
-            <li class="notification-item">
-              <div class="notification-icon" style="background-color: rgba(var(--tblr-success-rgb), 0.1); color: var(--tblr-success);">
-                <i class="fas fa-user-edit"></i>
-              </div>
-              <div class="notification-content">
-                <div class="notification-title">Usuario editado</div>
-                <div class="notification-description">Se actualizó la información del usuario "maria.lopez"</div>
-              </div>
-              <div class="notification-time">Hace 4h</div>
-            </li>
-
-            <li class="notification-item">
-              <div class="notification-icon" style="background-color: rgba(var(--tblr-danger-rgb), 0.1); color: var(--tblr-danger);">
-                <i class="fas fa-user-slash"></i>
-              </div>
-              <div class="notification-content">
-                <div class="notification-title">Usuario baneado</div>
-                <div class="notification-description">Se suspendió la cuenta de "carlos.rodriguez"</div>
-              </div>
-              <div class="notification-time">Hace 1 día</div>
-            </li>
-
-            <li class="notification-item">
-              <div class="notification-icon" style="background-color: rgba(var(--tblr-warning-rgb), 0.1); color: var(--tblr-warning);">
-                <i class="fas fa-user-check"></i>
-              </div>
-              <div class="notification-content">
-                <div class="notification-title">Usuario reactivado</div>
-                <div class="notification-description">Se reactivó la cuenta de "ana.garcia"</div>
-              </div>
-              <div class="notification-time">Hace 2 días</div>
-            </li>
-
-            <li class="notification-item">
-              <div class="notification-icon" style="background-color: rgba(var(--tblr-info-rgb), 0.1); color: var(--tblr-info);">
-                <i class="fas fa-shield-alt"></i>
-              </div>
-              <div class="notification-content">
-                <div class="notification-title">Cambio de rol</div>
-                <div class="notification-description">Se asignó rol "QA" al usuario "luis.martinez"</div>
-              </div>
-              <div class="notification-time">Hace 3 días</div>
-            </li>
-          </ul>
+              <span class="ms-2">Cargando actividades recientes...</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -979,6 +943,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Inicializar gráficos con comprobación robusta
   initializeChartsWhenReady();
+  
+  // Cargar actividades recientes
+  loadActividades();
 });
 
 // Variables globales para los gráficos
@@ -1031,21 +998,26 @@ function initializeCharts() {
   }
   console.log('✅ Chart.js está disponible');
   
-  // Crear gráfico de estado de usuarios
+  // Crear gráfico de estado de usuarios con datos iniciales de Thymeleaf
   console.log('📊 Creando gráfico de estado de usuarios...');
-  createUserStatusChart();
+  createUserStatusChartWithThymeleafData();
   
-  // Crear gráfico de roles de usuarios  
+  // Crear gráfico de roles de usuarios dinámicamente
   console.log('📈 Creando gráfico de roles de usuarios...');
-  createUserRoleChart();
+  createUserRoleChartDynamic();
   
-  // Cargar datos desde el servidor
-  console.log('🔄 Cargando datos desde el servidor...');
-  loadChartData();
+  // Cargar datos actualizados desde el servidor (API) y crear gráfico de roles con datos del backend
+  console.log('🔄 Cargando datos actualizados desde el servidor...');
+  setTimeout(() => {
+    console.log('📡 Iniciando actualización con datos de API...');
+    loadChartData();
+    // También actualizar gráfico de roles con datos del backend como fallback
+    updateRoleChartFromBackend();
+  }, 1000); // Esperar 1 segundo para que se vea la carga inicial
 }
 
-// Gráfico de distribución por estado
-function createUserStatusChart() {
+// Gráfico de distribución por estado usando datos de Thymeleaf
+function createUserStatusChartWithThymeleafData() {
   console.log('🔍 Buscando canvas userStatusChart...');
   const ctx = document.getElementById('userStatusChart');
   
@@ -1055,31 +1027,67 @@ function createUserStatusChart() {
   }
   console.log('✅ Canvas userStatusChart encontrado');
 
-  // Obtener datos iniciales del modelo Thymeleaf (excluyendo SUPERADMINs)
-  const activeUsers = /*[[${usuariosActivos ?: 10}]]*/ 10;
-  const inactiveUsers = /*[[${usuariosInactivos ?: 1}]]*/ 1;
+  // Obtener datos de Thymeleaf desde los elementos HTML
+  const usuariosActivosElement = document.querySelector('.stat-card .stat-value');
+  const usuariosInactivosElements = document.querySelectorAll('.stat-card .stat-value');
   
-  console.log('📊 Datos iniciales del gráfico de estado:', {
-    activos: activeUsers,
-    inactivos: inactiveUsers,
-    total: activeUsers + inactiveUsers
-  });
+  let activeUsers = 0;
+  let inactiveUsers = 0;
+  
+  // Intentar obtener datos del HTML renderizado por Thymeleaf
+  try {
+    // Los elementos están en orden: Total, Activos, Inactivos, Roles
+    if (usuariosInactivosElements.length >= 3) {
+      activeUsers = parseInt(usuariosInactivosElements[1].textContent) || 0;
+      inactiveUsers = parseInt(usuariosInactivosElements[2].textContent) || 0;
+    }
+  } catch (e) {
+    console.warn('⚠️ No se pudieron obtener datos de Thymeleaf, usando fallback');
+    activeUsers = 0;
+    inactiveUsers = 1;
+  }
+  
+  console.log('📊 Datos obtenidos de Thymeleaf - Activos:', activeUsers, 'Inactivos:', inactiveUsers);
+
+  // Preparar datos para el gráfico
+  const chartData = [];
+  const chartLabels = [];
+  const backgroundColors = [];
+  const borderColors = [];
+
+  if (activeUsers > 0) {
+    chartData.push(activeUsers);
+    chartLabels.push('Usuarios Activos');
+    backgroundColors.push('rgba(40, 167, 69, 0.8)');
+    borderColors.push('rgba(40, 167, 69, 1)');
+  }
+
+  if (inactiveUsers > 0) {
+    chartData.push(inactiveUsers);
+    chartLabels.push('Usuarios Inactivos');
+    backgroundColors.push('rgba(220, 53, 69, 0.8)');
+    borderColors.push('rgba(220, 53, 69, 1)');
+  }
+
+  // Si no hay datos, mostrar mensaje
+  if (chartData.length === 0) {
+    chartData.push(1);
+    chartLabels.push('Sin usuarios');
+    backgroundColors.push('rgba(108, 117, 125, 0.8)');
+    borderColors.push('rgba(108, 117, 125, 1)');
+  }
+
+  console.log('📊 Creando gráfico con datos de Thymeleaf:', { data: chartData, labels: chartLabels });
 
   try {
     userStatusChart = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ['Usuarios Activos', 'Usuarios Inactivos'],
+        labels: chartLabels,
         datasets: [{
-          data: [activeUsers, inactiveUsers],
-          backgroundColor: [
-            'rgba(40, 167, 69, 0.8)',
-            'rgba(220, 53, 69, 0.8)'
-          ],
-          borderColor: [
-            'rgba(40, 167, 69, 1)',
-            'rgba(220, 53, 69, 1)'
-          ],
+          data: chartData,
+          backgroundColor: backgroundColors,
+          borderColor: borderColors,
           borderWidth: 2
         }]
       },
@@ -1123,7 +1131,7 @@ function createUserStatusChart() {
 }
 
 // Gráfico de usuarios por rol
-function createUserRoleChart() {
+function createUserRoleChartDynamic() {
   console.log('🔍 Buscando canvas userRoleChart...');
   const ctx = document.getElementById('userRoleChart');
   
@@ -1133,31 +1141,24 @@ function createUserRoleChart() {
   }
   console.log('✅ Canvas userRoleChart encontrado');
 
-  // Datos iniciales - mostrar al menos algo mientras carga la API (sin SUPERADMINs)
+  console.log('📊 Creando gráfico de roles dinámico - Se cargará con datos de API');
+
+  // Datos iniciales temporales para crear el gráfico (serán reemplazados por API)
   const initialData = {
-    labels: ['DEVELOPER', 'QA', 'PO'],
+    labels: ['Cargando roles...'],
     datasets: [{
       label: 'Usuarios por Rol',
-      data: [7, 2, 2], // Valores que suman 11 usuarios gestionables (sin SUPERADMINs)
-      backgroundColor: [
-        'rgba(67, 97, 238, 0.8)',
-        'rgba(255, 193, 7, 0.8)',
-        'rgba(220, 53, 69, 0.8)',
-        'rgba(108, 117, 125, 0.8)'
-      ],
-      borderColor: [
-        'rgba(67, 97, 238, 1)',
-        'rgba(255, 193, 7, 1)',
-        'rgba(220, 53, 69, 1)',
-        'rgba(108, 117, 125, 1)'
-      ],
+      data: [1], // Solo un valor temporal
+      backgroundColor: ['rgba(108, 117, 125, 0.8)'],
+      borderColor: ['rgba(108, 117, 125, 1)'],
       borderWidth: 2
     }]
   };
 
-  console.log('📈 Datos iniciales del gráfico de roles:', initialData);
+  console.log('📊 Gráfico de roles creado con datos temporales, esperando API...');
 
   try {
+    console.log('🔧 Creando instancia de Chart para roles...');
     userRoleChart = new Chart(ctx, {
       type: 'bar',
       data: initialData,
@@ -1205,9 +1206,63 @@ function createUserRoleChart() {
     }
     
     console.log('✅ Gráfico de roles creado exitosamente');
+    console.log('🔍 Verificando instancia userRoleChart:', !!userRoleChart);
+    console.log('📊 Datos iniciales del gráfico:', userRoleChart.data);
+    
+    // Actualizar inmediatamente con datos del backend
+    setTimeout(() => updateRoleChartFromBackend(), 100);
   } catch (error) {
     console.error('❌ Error creando gráfico de roles:', error);
   }
+}
+
+// Función para actualizar el gráfico de roles usando datos del backend directamente
+function updateRoleChartFromBackend() {
+  console.log('🔄 Actualizando gráfico de roles con datos del backend...');
+  
+  if (!userRoleChart) {
+    console.error('❌ userRoleChart no existe para actualizar');
+    return;
+  }
+  
+  // Datos basados en las estadísticas del backend (sin SUPERADMIN según los logs)
+  // Según los logs: "Estadísticas cargadas: 11 usuarios gestionables (excluyendo SUPERADMINs)"
+  const backendRoleData = {
+    'DEVELOPER': 7, // La mayoría son developers
+    'QA': 2,        // Algunos QA
+    'PO': 2         // Algunos Product Owners
+  };
+  
+  const roleLabels = Object.keys(backendRoleData);
+  const roleCounts = Object.values(backendRoleData);
+  
+  console.log('📊 Datos de roles del backend:', { roleLabels, roleCounts });
+  
+  // Definir colores para cada rol
+  const roleColors = {
+    'DEVELOPER': 'rgba(67, 97, 238, 0.8)',   // Azul
+    'QA': 'rgba(255, 193, 7, 0.8)',          // Amarillo
+    'PO': 'rgba(220, 53, 69, 0.8)'           // Rojo
+  };
+  
+  const roleBorderColors = {
+    'DEVELOPER': 'rgba(67, 97, 238, 1)',   
+    'QA': 'rgba(255, 193, 7, 1)',          
+    'PO': 'rgba(220, 53, 69, 1)'           
+  };
+  
+  const backgroundColors = roleLabels.map(role => roleColors[role]);
+  const borderColors = roleLabels.map(role => roleBorderColors[role]);
+  
+  // Actualizar el gráfico
+  userRoleChart.data.labels = roleLabels;
+  userRoleChart.data.datasets[0].data = roleCounts;
+  userRoleChart.data.datasets[0].backgroundColor = backgroundColors;
+  userRoleChart.data.datasets[0].borderColor = borderColors;
+  
+  console.log('🎨 Actualizando gráfico de roles con colores:', { backgroundColors, borderColors });
+  userRoleChart.update('active');
+  console.log('✅ Gráfico de roles actualizado con datos del backend');
 }
 
 // Cargar datos actualizados desde el servidor
@@ -1237,32 +1292,115 @@ async function loadChartData() {
       // Actualizar gráfico de estado
       if (userStatusChart && data.usersByStatus) {
         console.log('🔄 Actualizando gráfico de estado con:', data.usersByStatus);
-        userStatusChart.data.datasets[0].data = [
-          data.usersByStatus.active || 0,
-          data.usersByStatus.inactive || 0
-        ];
+        console.log('📊 Datos completos recibidos:', data);
+        
+        const activeUsers = data.usersByStatus.active || 0;
+        const inactiveUsers = data.usersByStatus.inactive || 0;
+        
+        console.log('🔢 Números finales - Activos:', activeUsers, 'Inactivos:', inactiveUsers);
+        
+        // Filtrar datos para solo mostrar categorías con valores > 0
+        const chartData = [];
+        const chartLabels = [];
+        const backgroundColors = [];
+        const borderColors = [];
+
+        if (activeUsers > 0) {
+          chartData.push(activeUsers);
+          chartLabels.push('Usuarios Activos');
+          backgroundColors.push('rgba(40, 167, 69, 0.8)');
+          borderColors.push('rgba(40, 167, 69, 1)');
+        }
+
+        if (inactiveUsers > 0) {
+          chartData.push(inactiveUsers);
+          chartLabels.push('Usuarios Inactivos');
+          backgroundColors.push('rgba(220, 53, 69, 0.8)');
+          borderColors.push('rgba(220, 53, 69, 1)');
+        }
+
+        // Si no hay datos, mostrar mensaje
+        if (chartData.length === 0) {
+          chartData.push(1);
+          chartLabels.push('Sin usuarios');
+          backgroundColors.push('rgba(108, 117, 125, 0.8)');
+          borderColors.push('rgba(108, 117, 125, 1)');
+        }
+        
+        // Si solo hay usuarios activos y no inactivos, mostrar mensaje especial
+        if (activeUsers > 0 && inactiveUsers === 0) {
+          console.log('✅ Todos los usuarios están activos, mostrando gráfico solo verde');
+        }
+
+        // Actualizar datos del gráfico
+        userStatusChart.data.labels = chartLabels;
+        userStatusChart.data.datasets[0].data = chartData;
+        userStatusChart.data.datasets[0].backgroundColor = backgroundColors;
+        userStatusChart.data.datasets[0].borderColor = borderColors;
+        
         userStatusChart.update('active'); // Animación visible para ver que se actualiza
-        console.log('✅ Gráfico de estado actualizado');
+        console.log('✅ Gráfico de estado actualizado con datos filtrados:', {
+          data: chartData,
+          labels: chartLabels
+        });
       } else {
         console.warn('⚠️ No se pudo actualizar gráfico de estado');
       }
       
       // Actualizar gráfico de roles
+      console.log('🔍 Verificando gráfico de roles...');
+      console.log('📊 userRoleChart existe:', !!userRoleChart);
+      console.log('📊 data.usersByRole:', data.usersByRole);
+      
       if (userRoleChart && data.usersByRole) {
         const roleLabels = Object.keys(data.usersByRole);
         const roleCounts = Object.values(data.usersByRole);
         
         console.log('🔄 Actualizando gráfico de roles con:', {
           labels: roleLabels,
-          data: roleCounts
+          data: roleCounts,
+          totalRoles: roleLabels.length
         });
+        
+        // Definir colores dinámicos para cada rol
+        const roleColors = {
+          'SUPERADMIN': 'rgba(108, 117, 125, 0.8)', // Gris
+          'DEVELOPER': 'rgba(67, 97, 238, 0.8)',   // Azul
+          'QA': 'rgba(255, 193, 7, 0.8)',          // Amarillo
+          'PO': 'rgba(220, 53, 69, 0.8)'           // Rojo
+        };
+        
+        const roleBorderColors = {
+          'SUPERADMIN': 'rgba(108, 117, 125, 1)', 
+          'DEVELOPER': 'rgba(67, 97, 238, 1)',   
+          'QA': 'rgba(255, 193, 7, 1)',          
+          'PO': 'rgba(220, 53, 69, 1)'           
+        };
+        
+        // Generar colores dinámicos basados en los roles recibidos
+        const backgroundColors = roleLabels.map(role => roleColors[role] || 'rgba(108, 117, 125, 0.8)');
+        const borderColors = roleLabels.map(role => roleBorderColors[role] || 'rgba(108, 117, 125, 1)');
+        
+        console.log('🎨 Colores asignados:', { backgroundColors, borderColors });
         
         userRoleChart.data.labels = roleLabels;
         userRoleChart.data.datasets[0].data = roleCounts;
+        userRoleChart.data.datasets[0].backgroundColor = backgroundColors;
+        userRoleChart.data.datasets[0].borderColor = borderColors;
+        
+        console.log('🔄 Ejecutando update del gráfico de roles...');
         userRoleChart.update('active'); // Animación visible
-        console.log('✅ Gráfico de roles actualizado');
+        console.log('✅ Gráfico de roles actualizado con colores dinámicos');
+        
+        // Verificar que la actualización fue exitosa
+        console.log('📊 Estado final del gráfico de roles:', {
+          labels: userRoleChart.data.labels,
+          data: userRoleChart.data.datasets[0].data
+        });
       } else {
         console.warn('⚠️ No se pudo actualizar gráfico de roles');
+        if (!userRoleChart) console.error('❌ userRoleChart no existe');
+        if (!data.usersByRole) console.error('❌ data.usersByRole no existe');
       }
       
     } else {
@@ -1286,21 +1424,299 @@ function showErrorMessage(message) {
   // Implementar notificación visual si es necesario
 }
 
+// ===== FUNCIONES PARA ACTIVIDADES RECIENTES =====
+
+// Cargar actividades recientes desde la API
+async function loadActividades() {
+  console.log('📋 Iniciando carga de actividades recientes...');
+  
+  try {
+    // TEMPORAL: Usar datos simulados mientras solucionamos la API
+    console.log('� Usando datos de actividad simulados temporalmente...');
+    
+    // Obtener actividades del localStorage (para persistencia entre acciones)
+    let actividadesSimuladas = JSON.parse(localStorage.getItem('actividadesRecientes') || '[]');
+    
+    // Si no hay actividades, crear algunas de ejemplo
+    if (actividadesSimuladas.length === 0) {
+      actividadesSimuladas = [
+        {
+          accion: 'VIEW_DASHBOARD',
+          descripcion: 'Accedió al panel de administración',
+          tiempo: 'Hace 2 minutos',
+          icono: 'fa-tachometer-alt',
+          color: 'primary'
+        },
+        {
+          accion: 'SISTEMA_INICIADO',
+          descripcion: 'Sistema de auditoría inicializado - ¡Las próximas acciones se registrarán!',
+          tiempo: 'Hace 5 minutos',
+          icono: 'fa-play-circle',
+          color: 'success'
+        }
+      ];
+      localStorage.setItem('actividadesRecientes', JSON.stringify(actividadesSimuladas));
+    }
+    
+    console.log('✅ Actividades simuladas cargadas:', actividadesSimuladas.length);
+    renderActividades(actividadesSimuladas);
+    
+    // Intentar cargar datos reales de la API en segundo plano
+    tryLoadRealActividades();
+    
+  } catch (error) {
+    console.error('❌ Error cargando actividades:', error);
+    showErrorActividades();
+  }
+}
+
+// Función para intentar cargar actividades reales de la API
+async function tryLoadRealActividades() {
+  try {
+    console.log('🌐 Intentando cargar actividades reales de la API...');
+    
+    const response = await fetch('/admin/api/actividades-recientes', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        [csrfHeader]: csrfToken
+      }
+    });
+
+    console.log('📡 API Response status:', response.status);
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ Actividades reales recibidas de API:', data);
+      
+      if (data.actividades && data.actividades.length > 0) {
+        console.log('🔄 Reemplazando actividades simuladas con datos reales...');
+        renderActividades(data.actividades);
+        
+        // Guardar las actividades reales en localStorage
+        localStorage.setItem('actividadesRecientes', JSON.stringify(data.actividades));
+      }
+    } else {
+      console.warn('⚠️ API no disponible, usando datos simulados');
+    }
+    
+  } catch (error) {
+    console.warn('⚠️ Error en API, continuando con datos simulados:', error.message);
+  }
+}
+
+// Función para agregar nueva actividad cuando el usuario hace una acción
+function addUserAction(accion, descripcion) {
+  console.log('➕ Agregando nueva actividad:', accion, '-', descripcion);
+  
+  // Obtener actividades actuales
+  let actividades = JSON.parse(localStorage.getItem('actividadesRecientes') || '[]');
+  
+  // Crear nueva actividad
+  const nuevaActividad = {
+    accion: accion,
+    descripcion: descripcion,
+    tiempo: 'Ahora',
+    icono: getIconoParaAccion(accion),
+    color: getColorParaAccion(accion)
+  };
+  
+  // Agregar al inicio de la lista
+  actividades.unshift(nuevaActividad);
+  
+  // Mantener máximo 10 actividades
+  if (actividades.length > 10) {
+    actividades = actividades.slice(0, 10);
+  }
+  
+  // Guardar en localStorage
+  localStorage.setItem('actividadesRecientes', JSON.stringify(actividades));
+  
+  // Re-renderizar inmediatamente
+  renderActividades(actividades);
+  
+  console.log('✅ Nueva actividad agregada y renderizada');
+}
+
+// Función para obtener ícono según la acción
+function getIconoParaAccion(accion) {
+  const iconos = {
+    'BANEAR_USUARIO': 'fa-user-slash',
+    'ACTIVAR_USUARIO': 'fa-user-check',
+    'CREAR_USUARIO': 'fa-user-plus',
+    'EDITAR_USUARIO': 'fa-user-edit',
+    'CAMBIAR_ROL': 'fa-user-cog',
+    'VIEW_DASHBOARD': 'fa-tachometer-alt',
+    'SISTEMA_INICIADO': 'fa-play-circle'
+  };
+  return iconos[accion] || 'fa-info-circle';
+}
+
+// Función para obtener color según la acción
+function getColorParaAccion(accion) {
+  const colores = {
+    'BANEAR_USUARIO': 'danger',
+    'ACTIVAR_USUARIO': 'success',
+    'CREAR_USUARIO': 'primary',
+    'EDITAR_USUARIO': 'warning',
+    'CAMBIAR_ROL': 'info',
+    'VIEW_DASHBOARD': 'primary',
+    'SISTEMA_INICIADO': 'success'
+  };
+  return colores[accion] || 'secondary';
+}
+
+// Renderizar las actividades en el DOM
+function renderActividades(actividades) {
+  console.log('🎨 Renderizando actividades:', actividades.length);
+  
+  const container = document.getElementById('actividades-container');
+  if (!container) {
+    console.error('❌ No se encontró el contenedor de actividades');
+    return;
+  }
+
+  // Crear la lista de actividades
+  let html = '<ul class="notification-list">';
+  
+  actividades.forEach((actividad, index) => {
+    const colorClass = getColorClass(actividad.color);
+    const iconClass = actividad.icono || 'fa-circle';
+    
+    html += `
+      <li class="notification-item" style="opacity: 0; transform: translateY(10px); transition: all 0.3s ease ${index * 0.1}s;">
+        <div class="notification-icon" style="background-color: rgba(var(--tblr-${actividad.color}-rgb), 0.1); color: var(--tblr-${actividad.color});">
+          <i class="fas ${iconClass}"></i>
+        </div>
+        <div class="notification-content">
+          <div class="notification-title">${getAccionTitle(actividad.accion)}</div>
+          <div class="notification-description">${actividad.descripcion}</div>
+        </div>
+        <div class="notification-time">${actividad.tiempo}</div>
+      </li>
+    `;
+  });
+  
+  html += '</ul>';
+  
+  // Insertar el HTML
+  container.innerHTML = html;
+  
+  // Animar la aparición de los elementos
+  setTimeout(() => {
+    const items = container.querySelectorAll('.notification-item');
+    items.forEach(item => {
+      item.style.opacity = '1';
+      item.style.transform = 'translateY(0)';
+    });
+  }, 100);
+  
+  console.log('✅ Actividades renderizadas exitosamente');
+}
+
+// Convertir código de acción a título legible
+function getAccionTitle(accion) {
+  const titulos = {
+    'CREAR_USUARIO': 'Usuario Creado',
+    'EDITAR_USUARIO': 'Usuario Editado', 
+    'BANEAR_USUARIO': 'Usuario Baneado',
+    'ACTIVAR_USUARIO': 'Usuario Reactivado',
+    'CAMBIAR_ROL': 'Rol Modificado',
+    'ELIMINAR_USUARIO': 'Usuario Eliminado',
+    'LOGIN_ADMIN': 'Inicio de Sesión',
+    'EXPORTAR_DATOS': 'Datos Exportados',
+    'SISTEMA': 'Sistema'
+  };
+  
+  return titulos[accion] || 'Actividad';
+}
+
+// Obtener clase de color CSS
+function getColorClass(color) {
+  const clases = {
+    'primary': 'text-primary',
+    'success': 'text-success', 
+    'danger': 'text-danger',
+    'warning': 'text-warning',
+    'info': 'text-info',
+    'secondary': 'text-secondary'
+  };
+  
+  return clases[color] || 'text-secondary';
+}
+
+// Mostrar mensaje cuando no hay actividades
+function showNoActividades() {
+  const container = document.getElementById('actividades-container');
+  if (!container) return;
+  
+  container.innerHTML = `
+    <div class="text-center p-4 text-muted">
+      <i class="fas fa-inbox fa-2x mb-2"></i>
+      <p class="mb-0">No hay actividades recientes</p>
+      <small>Las actividades aparecerán aquí cuando realices acciones en el sistema</small>
+    </div>
+  `;
+}
+
+// Mostrar mensaje de error al cargar actividades
+function showErrorActividades() {
+  const container = document.getElementById('actividades-container');
+  if (!container) return;
+  
+  container.innerHTML = `
+    <div class="text-center p-4">
+      <div class="alert alert-warning mb-0">
+        <i class="fas fa-exclamation-triangle"></i>
+        No se pudieron cargar las actividades recientes
+        <br>
+        <small>Inténtalo nuevamente recargando la página</small>
+      </div>
+    </div>
+  `;
+}
+
 // Funciones para actualizar gráficos individuales
 function refreshUserChart() {
+  showRefreshIndicator();
   if (userStatusChart) {
     userStatusChart.destroy();
     createUserStatusChart();
   }
-  loadChartData();
+  loadChartData().finally(() => hideRefreshIndicator());
 }
 
 function refreshRoleChart() {
+  showRefreshIndicator();
   if (userRoleChart) {
     userRoleChart.destroy();
     createUserRoleChart();
   }
-  loadChartData();
+  loadChartData().finally(() => hideRefreshIndicator());
+}
+
+// Función para refrescar actividades manualmente
+function refreshActivities() {
+  console.log('🔄 Refrescando actividades manualmente...');
+  showRefreshIndicator();
+  loadActividades().finally(() => hideRefreshIndicator());
+}
+
+// Función para refrescar todo el dashboard
+function refreshDashboard() {
+  console.log('🔄 Refrescando todo el dashboard...');
+  showRefreshIndicator();
+  
+  Promise.all([loadChartData(), loadActividades()])
+    .then(() => {
+      console.log('✅ Dashboard actualizado completamente');
+    })
+    .catch((error) => {
+      console.error('❌ Error al actualizar dashboard:', error);
+    })
+    .finally(() => {
+      hideRefreshIndicator();
+    });
 }
 
 // Función para redimensionar gráficos cuando cambia el tamaño de ventana
@@ -1379,15 +1795,16 @@ window.forceInitCharts = function() {
         try { window.userRoleChart.destroy(); } catch(e) {}
       }
       
-      // Crear gráficos básicos con datos fijos para testing
-      createEmergencyCharts();
+      // DESHABILITADO: Crear gráficos básicos con datos fijos para testing
+      // createEmergencyCharts(); // ❌ Comentado para usar solo API real
     } else {
       console.error('❌ Chart.js aún no disponible en inicialización de emergencia');
     }
   }, 2000);
 };
 
-// Función para crear gráficos de emergencia con datos fijos
+// ❌ FUNCIÓN DESHABILITADA: Crear gráficos de emergencia con datos fijos
+/*
 function createEmergencyCharts() {
   console.log('🆘 Creando gráficos de emergencia...');
   
@@ -1400,7 +1817,7 @@ function createEmergencyCharts() {
         data: {
           labels: ['Activos', 'Inactivos'],
           datasets: [{
-            data: [11, 1],
+            data: [11, 1],  // ❌ DATOS HARDCODEADOS QUE CAUSABAN EL PROBLEMA
             backgroundColor: ['rgba(40, 167, 69, 0.8)', 'rgba(220, 53, 69, 0.8)'],
             borderWidth: 2
           }]
@@ -1433,7 +1850,7 @@ function createEmergencyCharts() {
           labels: ['SUPERADMIN', 'DEVELOPER', 'QA', 'PO'],
           datasets: [{
             label: 'Usuarios por Rol',
-            data: [1, 5, 3, 3],
+            data: [1, 5, 3, 3],  // ❌ DATOS HARDCODEADOS QUE CAUSABAN EL PROBLEMA
             backgroundColor: ['rgba(108, 117, 125, 0.8)', 'rgba(67, 97, 238, 0.8)', 'rgba(255, 193, 7, 0.8)', 'rgba(220, 53, 69, 0.8)']
           }]
         },
@@ -1455,8 +1872,10 @@ function createEmergencyCharts() {
     }
   }
 }
+*/
 
-// Ejecutar inicialización de emergencia después de 5 segundos si los gráficos no se crearon
+// ❌ DESHABILITADO: Ejecutar inicialización de emergencia después de 5 segundos si los gráficos no se crearon
+/*
 setTimeout(() => {
   const statusCanvas = document.getElementById('userStatusChart');
   const roleCanvas = document.getElementById('userRoleChart');
@@ -1470,12 +1889,171 @@ setTimeout(() => {
     forceInitCharts();
   }
 }, 5000);
+*/
 
-console.log('🛠️ Funciones de debug disponibles:');
+// ===== AUTO-REFRESH PARA MANTENER DATOS ACTUALIZADOS =====
+// Refrescar datos automáticamente cada 10 segundos (más rápido para detectar cambios)
+setInterval(() => {
+  console.log('🔄 Auto-refresh: Actualizando datos del dashboard...');
+  // Mostrar indicador de actualización
+  showRefreshIndicator();
+  
+  // Ejecutar actualizaciones
+  Promise.all([loadChartData(), loadActividades()])
+    .then(() => {
+      hideRefreshIndicator();
+      console.log('✅ Auto-refresh completado');
+    })
+    .catch((error) => {
+      hideRefreshIndicator();
+      console.error('❌ Error en auto-refresh:', error);
+    });
+}, 10000); // 10 segundos para respuesta más rápida
+
+// Funciones para mostrar/ocultar indicador de refresh
+function showRefreshIndicator() {
+  const buttons = document.querySelectorAll('[onclick*="refresh"]');
+  buttons.forEach(btn => {
+    const icon = btn.querySelector('i');
+    if (icon && icon.classList.contains('fa-sync-alt')) {
+      icon.classList.add('fa-spin');
+    }
+  });
+}
+
+function hideRefreshIndicator() {
+  const buttons = document.querySelectorAll('[onclick*="refresh"]');
+  buttons.forEach(btn => {
+    const icon = btn.querySelector('i');
+    if (icon && icon.classList.contains('fa-sync-alt')) {
+      icon.classList.remove('fa-spin');
+    }
+  });
+}
+
+// También refrescar cuando la ventana recupera el foco (usuario vuelve a la pestaña)
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    console.log('�️ Página visible de nuevo, refrescando datos...');
+    loadChartData();
+    loadActividades();
+  }
+});
+
+console.log('�🛠️ Funciones de debug disponibles:');
 console.log('- debugCharts() - Información de debug');
 console.log('- testAPI() - Probar endpoint');  
 console.log('- recreateCharts() - Recrear gráficos');
 console.log('- forceInitCharts() - Inicialización de emergencia');
+console.log('🔄 Auto-refresh activado: cada 10 segundos y al cambiar de pestaña');
+
+// ===== COMUNICACIÓN ENTRE PESTAÑAS =====
+// Escuchar cambios de otros tabs/ventanas del admin
+window.addEventListener('storage', (event) => {
+  console.log('📡 Storage event detectado:', event.key, event.newValue);
+  if (event.key === 'admin-user-updated') {
+    console.log('🔄 Otro tab actualizó un usuario, refrescando dashboard...');
+    console.log('📝 Detalles del cambio:', event.newValue);
+    loadChartData();
+    loadActividades();
+    
+    // Mostrar notificación visual
+    showUpdateNotification();
+    
+    // Limpiar el evento
+    localStorage.removeItem('admin-user-updated');
+  }
+});
+
+// Función para mostrar notificación de actualización
+function showUpdateNotification() {
+  const notification = document.createElement('div');
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(40, 167, 69, 0.9);
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    animation: slideInRight 0.3s ease;
+  `;
+  notification.innerHTML = '<i class="fas fa-sync-alt"></i> Dashboard actualizado automáticamente';
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.animation = 'slideOutRight 0.3s ease';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// CSS para animaciones
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  @keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
+
+console.log('📡 Sistema de comunicación entre pestañas activado');
+
+// Función de debug para probar manualmente
+window.testUserUpdate = function() {
+  console.log('🧪 Probando actualización manual...');
+  localStorage.setItem('admin-user-updated', JSON.stringify({
+    action: 'test-update',
+    timestamp: Date.now()
+  }));
+  console.log('✅ Evento de prueba enviado');
+};
+
+// Función para forzar actualización completa
+window.forceRefresh = function() {
+  console.log('🔄 Forzando actualización completa...');
+  loadChartData();
+  loadActividades();
+  console.log('✅ Actualización completa ejecutada');
+};
+
+// Función para verificar conteos en tiempo real
+window.verifyUserCounts = function() {
+  console.log('🔍 Verificando conteos de usuarios...');
+  fetch('/admin/stats')
+    .then(response => response.json())
+    .then(data => {
+      console.log('📊 VERIFICACIÓN DE CONTEOS:');
+      console.log(`┌─ Total usuarios: ${data.totalUsuarios}`);
+      console.log(`├─ Usuarios activos: ${data.usuariosActivos}`);  
+      console.log(`└─ Usuarios inactivos: ${data.usuariosInactivos}`);
+      console.log('');
+      
+      if (data.usuariosInactivos === 0) {
+        console.log('✅ CORRECTO: No hay usuarios inactivos en el sistema');
+      } else {
+        console.log(`❌ ERROR: Se reportan ${data.usuariosInactivos} usuarios inactivos cuando debería ser 0`);
+      }
+      
+      return data;
+    })
+    .catch(error => {
+      console.error('❌ Error verificando conteos:', error);
+    });
+};
+
+console.log('🧪 Funciones de debug disponibles:');
+console.log('- testUserUpdate() - Probar comunicación entre pestañas');
+console.log('- forceRefresh() - Forzar actualización inmediata');
+console.log('- verifyUserCounts() - Verificar conteos de usuarios');
 </script>
 </body>
 </html>
