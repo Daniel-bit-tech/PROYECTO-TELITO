@@ -40,12 +40,22 @@ public class ProyectosController {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
         List<Proyecto> listaProyectos = null;
-        if (filtro != null && filtro.equals("activos")) {
-            listaProyectos = proyectoRepository.findByActivoAndOrganizacion_Usuarios_Dni(true, usuario.getDni());
-        } else if (filtro != null && filtro.equals("ocultos")) {
-            listaProyectos = proyectoRepository.findByPublicoAndOrganizacion_Usuarios_Dni(false, usuario.getDni());
+        if (usuario.getRol().getNombreRol().equals("SUPERADMIN")) {
+            if (filtro != null && filtro.equals("activos")) {
+                listaProyectos = proyectoRepository.findByActivo(true);
+            } else if (filtro != null && filtro.equals("ocultos")) {
+                listaProyectos = proyectoRepository.findByPublico(false);
+            } else {
+                listaProyectos = proyectoRepository.findAll();
+            }
         } else {
-            listaProyectos = proyectoRepository.findByOrganizacion_Usuarios_Dni(usuario.getDni());
+            if (filtro != null && filtro.equals("activos")) {
+                listaProyectos = proyectoRepository.findByActivoAndOrganizacion_Usuarios_Dni(true, usuario.getDni());
+            } else if (filtro != null && filtro.equals("ocultos")) {
+                listaProyectos = proyectoRepository.findByPublicoAndOrganizacion_Usuarios_Dni(false, usuario.getDni());
+            } else {
+                listaProyectos = proyectoRepository.findByOrganizacion_Usuarios_Dni(usuario.getDni());
+            }
         }
 
         model.addAttribute("listaProyectos", listaProyectos);
@@ -66,7 +76,8 @@ public class ProyectosController {
 
         if (proyecto.getPublico() ||
                 usuario.getRol().getNombreRol().equals("SUPERADMIN") ||
-                (usuario.getRol().getNombreRol().equals("PO") && proyecto.getOrganizacion().equals(usuario.getOrganizacion()))) {
+//                (usuario.getRol().getNombreRol().equals("PO") && proyecto.getOrganizacion().equals(usuario.getOrganizacion()))) {
+                (proyecto.getOrganizacion().equals(usuario.getOrganizacion()))) {
             model.addAttribute("proyecto", proyecto);
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes ver los detalles de este proyecto");

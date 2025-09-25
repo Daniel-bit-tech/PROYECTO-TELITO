@@ -34,8 +34,8 @@
 
     <header th:replace="desarrollador/header :: header"
             sec:authorize="hasRole('DEV')"></header>
-<!--    <header th:replace="admin/header :: header"-->
-<!--            sec:authorize="hasRole('SUPERADMIN')"></header>-->
+    <header th:replace="admin/header :: header"
+            sec:authorize="hasRole('SUPERADMIN')"></header>
     <header th:replace="po/header_po :: header"
             sec:authorize="hasRole('PO')"></header>
     <header th:replace="qa/header_qa :: header"
@@ -107,7 +107,9 @@
                             <div class="card-header">
                                 <h3 class="card-title">Información del Proyecto</h3>
                                 <div class="card-actions">
-                                    <a class="btn btn-primary btn-3" th:href="@{'/proyectos/' + ${proyecto.idProyecto}+'/config'}">
+                                    <a sec:authorize="hasRole('PO')"
+                                       th:if="${usuario.organizacion.idOrganizacion == proyecto.organizacion.idOrganizacion}"
+                                            class="btn btn-primary btn-3" th:href="@{'/proyectos/' + ${proyecto.idProyecto}+'/config'}">
                                         <i class="icon fas fa-cog"></i> Configurar
                                     </a>
                                 </div>
@@ -153,7 +155,9 @@
                             <div class="card-header">
                                 <h3 class="card-title">APIs Asociadas</h3>
                                 <div class="card-actions">
-                                    <button class="btn btn-outline btn-primary" id="add-apis" onclick="abrirModalAgregarApi()">
+                                    <button sec:authorize="hasRole('PO')"
+                                            th:if="${usuario.organizacion.idOrganizacion == proyecto.organizacion.idOrganizacion}"
+                                            class="btn btn-outline btn-primary" id="add-apis" onclick="abrirModalAgregarApi()">
                                         <i class="icon fas fa-plus"></i> Agregar
                                     </button>
                                 </div>
