@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Search for Jobs - Tabler - Premium and Open Source dashboard template with responsive and high quality UI.</title>
+    <title>Detalle del reporte</title>
     <!-- BEGIN GLOBAL MANDATORY STYLES -->
     <link href="/tabler/dist/css/tabler.css?1757307617" rel="stylesheet" />
     <!-- END GLOBAL MANDATORY STYLES -->
@@ -42,12 +42,12 @@
                 <div class="row g-2 align-items-center">
 
                     <div class="col" >
-                        <h2>Reporte de API 1</h2>
+                        <h2 th:text="${reporte.api.nombre}"></h2>
                     </div>
                     <!-- Page title actions -->
 
                     <div class="col-md-auto">
-                        <a href="#" class="btn btn-danger">Generar issue</a>
+                        <a th:href="@{/qa/issueRealizar(idReporte=${reporte.idReporte})}" class="btn btn-danger">Generar issue</a>
                     </div>
                 </div>
             </div>
@@ -63,7 +63,7 @@
                             <div class="datagrid">
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Dominio/Tags</div>
-                                    <div class="datagrid-content">Clientes/REST</div>
+                                    <div class="datagrid-content"><span th:text="${reporte.api.dominio.nombre}"></span>/<span th:text="${reporte.api.tag.nombre}"></span></div>
                                 </div>
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Versión</div>
@@ -71,11 +71,12 @@
                                 </div>
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Estado</div>
-                                    <div class="datagrid-content"><span style="color:red">FALLIDO</span></div>
+                                    <div class="datagrid-content"><span th:text="${reporte.estado}"
+                                                                        th:classappend="${reporte.estado == 'Aprobado' ? 'text-success' : (reporte.estado == 'Fallido' ? 'text-danger' : '')}" style="text-transform: uppercase;"></span></div>
                                 </div>
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Fecha</div>
-                                    <div class="datagrid-content">12/09/2026</div>
+                                    <div class="datagrid-content"><span th:text="${#dates.format(reporte.fechaCreacion, 'dd-MM-yyyy')}"></span></div>
                                 </div>
 
 
@@ -83,7 +84,7 @@
                             <br>
                             <div class="datagrid-item">
                                 <div class="datagrid-title">Descripción</div>
-                                <div class="datagrid-content">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</div>
+                                <div class="datagrid-content"><span th:text="${reporte.descripcion}"></span></div>
                             </div>
                         </div>
                     </div>
@@ -91,75 +92,16 @@
                 <br>
                 <div class="container-xl">
                     <div class="card">
-                        <div class="card-body p-0">
-                            <div id="table-default" class="table-responsive">
-                                <table class="table">
-                                    <thead>
-                                    <tr>
-                                        <th><button class="table-sort" data-sort="sort-name">#</button></th>
-                                        <th><button class="table-sort" data-sort="sort-city">Endpoint</button></th>
-                                        <th><button class="table-sort" data-sort="sort-type">Descripción</button></th>
-                                        <th><button class="table-sort" data-sort="sort-score">Response</button></th>
-                                        <th><button class="table-sort" data-sort="sort-date">Observación</button></th>
-                                        <th><button class="table-sort" data-sort="sort-quantity">Evidencia</button></th>
-                                    </tr>
-                                    </thead>
-                                    <tbody class="table-tbody">
-                                    <tr>
-                                        <td class="sort-name">1</td>
-                                        <td class="sort-city">POST clients/auth</td>
-                                        <td class="sort-type">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Esse sit eos voluptate architecto aperiam voluptatum ipsa repudiandae placeat neque odit enim tempore, praesentium quia in quidem? Nam ad voluptas eos.</td>
-                                        <td class="sort-score">404</td>
-                                        <td class="sort-date">Correcto</td>
-                                        <td class="sort-quantity"><a href="#">Ver evidencia</a></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="sort-name">2</td>
-                                        <td class="sort-city">POST clients/auth</td>
-                                        <td class="sort-type">Errorrem ipsum dolor sit, amet consectetur adipisicin</td>
-                                        <td class="sort-score">404</td>
-                                        <td class="sort-date">Correcto</td>
-                                        <td class="sort-quantity"><a href="#">Ver evidencia</a></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="sort-name">3</td>
-                                        <td class="sort-city">POST clients/auth</td>
-                                        <td class="sort-type">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Esse sit eos voluptate architecto aperiam voluptatum ipsa repudiandae placeat neque odit enim tempore, praesentium quia in quidem? Nam ad voluptas eos.</td>
-                                        <td class="sort-score">404</td>
-                                        <td class="sort-date" >Correcto</td>
-                                        <td class="sort-quantity"><a href="#">Ver evidencia</a></td>
-                                    </tr>
-                                    <tr>
-                                        <td class="sort-name">4</td>
-                                        <td class="sort-city">POST clients/auth</td>
-                                        <td class="sort-type">Lorem ipsum dolor sit, amet consectetur adipisicing elit. Esse sit eos voluptate architecto aperiam voluptatum ipsa repudiandae placeat neque odit enim tempore, praesentium quia in quidem? Nam ad voluptas eos.</td>
-                                        <td class="sort-score">404</td>
-                                        <td class="sort-date" >Correcto</td>
-                                        <td class="sort-quantity"><a href="#">Ver evidencia</a></td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                        <div class="card-header">
+                            <h3 class="card-title">Evidencias adjuntas</h3>
+                        </div>
+
+                        <div class="card-body">
+
                         </div>
                     </div>
-                    <script>
-                        document.addEventListener("DOMContentLoaded", function () {
-                            const list = new List("table-default", {
-                                sortClass: "table-sort",
-                                listClass: "table-tbody",
-                                valueNames: [
-                                    "sort-name",
-                                    "sort-type",
-                                    "sort-city",
-                                    "sort-score",
-                                    "sort-date",
-                                    "sort-quantity",
-                                ],
-                            });
-                        });
-                    </script>
-                </div>
 
+                </div>
             </div>
             <!-- END PAGE BODY -->
             <!--  BEGIN FOOTER  -->

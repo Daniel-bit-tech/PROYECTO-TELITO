@@ -14,10 +14,11 @@ import org.springframework.web.bind.annotation.RequestParam; // Importa @Request
 
 import java.util.Optional;
 import java.util.List;
+import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/po")
-@PreAuthorize("hasAnyRole('PO', 'SADMIN')")
+@PreAuthorize("hasAnyRole('PO', 'SUPERADMIN')")
 public class CatalogoController {
 
     final UsuarioRepository usuarioRepository;
@@ -32,7 +33,7 @@ public class CatalogoController {
 
     @GetMapping("/catalogo")
     public String showCatalogoView(@RequestParam(value = "nombre", required = false) String nombre,
-                                   Model model, Authentication auth) {
+                                   Model model, Authentication auth, HttpSession session) {
 
         List<Api> apis;
 
@@ -47,14 +48,15 @@ public class CatalogoController {
         model.addAttribute("apis", apis);
         model.addAttribute("nombre", nombre); // Esto es importante para mantener el valor en el buscador
 
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        // Obtener el usuario correcto considerando impersonación
+        Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
 
         return "po/catalogo";
     }
 
     @GetMapping("/documentacion")
-    public String showDocumentacionView(@RequestParam("id") Integer idApi, Model model, Authentication auth) {
+    public String showDocumentacionView(@RequestParam("id") Integer idApi, Model model, Authentication auth, HttpSession session) {
 
         Optional<Api> apiOptional = apiService.getApiById(idApi);
 
@@ -66,9 +68,35 @@ public class CatalogoController {
             return "redirect:/po/catalogo";
         }
 
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        // Obtener el usuario correcto considerando impersonación
+        Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
 
         return "po/documentacion";
+    }
+    
+    /**
+     * Método helper para obtener el usuario correcto durante impersonación
+     */
+    private Usuario obtenerUsuarioActual(Authentication auth, HttpSession session) {
+        // Verificar si hay impersonación activa
+        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
+        
+        if (isImpersonating != null && isImpersonating) {
+            // Durante impersonación, obtener usuario por DNI del usuario impersonado
+            String impersonatedUserDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
+            if (impersonatedUserDni != null) {
+                Usuario impersonatedUser = usuarioRepository.findByDni(impersonatedUserDni);
+                if (impersonatedUser != null) {
+                    System.out.println("🎭 Catalogo - Usando datos del usuario impersonado: " + impersonatedUser.getNombre());
+                    return impersonatedUser;
+                }
+            }
+        }
+        
+        // Sin impersonación, usar el usuario autenticado normal
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        System.out.println("👤 Catalogo - Usando datos del usuario autenticado: " + usuario.getNombre());
+        return usuario;
     }
 }

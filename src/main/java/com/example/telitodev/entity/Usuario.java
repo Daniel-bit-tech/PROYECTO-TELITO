@@ -27,10 +27,10 @@ public class Usuario {
     
     @Column(name = "contrasena", nullable = false, length = 256)
     private String contrasena;
-
-    @Column(name = "alias", nullable = false)
-    private String alias;
     
+    @Column(name = "alias", nullable = false, length = 50)
+    private String alias;
+
     @Column(name = "fecha_registro", nullable = false)
     private Timestamp fechaRegistro;
     

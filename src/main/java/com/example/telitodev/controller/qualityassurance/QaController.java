@@ -96,13 +96,6 @@ public class QaController {
         }
     }
 
-    @GetMapping("/reporteDetalle")
-    public String showReporteDetalleView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "qa/reporteDetalle";
-    }
-
     @GetMapping("/soporte")
     public String showSoporte(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
@@ -110,12 +103,15 @@ public class QaController {
         return "qa/soporte";
     }
 
+    /*
     @GetMapping("/issueRealizar")
     public String madeIssue(Model model, Authentication auth){
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
         return "qa/issueRealizar";
     }
+    */
+
 
     @GetMapping("/reporteRealizar")
     public String madeReport(Model model, Authentication auth){

@@ -6,6 +6,7 @@ import com.example.telitodev.entity.Documentacion;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.entity.VersionApi;
 import com.example.telitodev.repository.*;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -42,7 +43,7 @@ public class ApiController {
     public String catalogo(@RequestParam(value = "dominios",required = false) List<Integer> selDominios,
                            @RequestParam(value = "tags", required = false) List<Integer> selTags,
                            @RequestParam(value = "nombre", required = false) String nombre,
-                            Model model, Authentication auth) {
+                            Model model, Authentication auth, HttpSession session) {
         String dominios = selDominios == null ? null : selDominios.toString();
         String tags = selTags == null ? null : selTags.toString();
         System.out.println("Doms: "+dominios + " \nTags: " + tags);
@@ -53,8 +54,8 @@ public class ApiController {
         }
 
         if (auth != null && auth.isAuthenticated()) {
-            String correo = auth.getName();
-            Usuario usuario = usuarioRepository.findByCorreo(correo);
+            // Obtener el usuario correcto considerando impersonación
+            Usuario usuario = obtenerUsuarioActual(auth, session);
             model.addAttribute("usuario", usuario);
         }
 
@@ -70,11 +71,11 @@ public class ApiController {
     }
 
     @GetMapping("/{id}/docs")
-//    @PreAuthorize("hasAnyRole('DEV','SADMIN','QA','PO')")
+//    @PreAuthorize("hasAnyRole('DEV','SUPERADMIN','QA','PO')")
     @PreAuthorize("isAuthenticated()")
     public String detalleApi(@PathVariable Integer id,
                              @RequestParam(value = "fecha",required = false) String fecha,
-                             Model model, Authentication auth) {
+                             Model model, Authentication auth, HttpSession session) {
 
         System.out.println("\n\n\n DOCS \n");
 
@@ -85,12 +86,10 @@ public class ApiController {
             model.addAttribute("docs", docs);
         }
 
-
-        String correo = auth.getName();
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        // Obtener el usuario correcto considerando impersonación
+        Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
         model.addAttribute("fecha", fecha);
-
 
         return "desarrollador/documentacion";
     }
@@ -98,20 +97,43 @@ public class ApiController {
 
     @GetMapping("/{id}/test")
     @PreAuthorize("isAuthenticated()")
-    public String testApi(@PathVariable Integer id, Model model, Authentication auth) {
+    public String testApi(@PathVariable Integer id, Model model, Authentication auth, HttpSession session) {
         Optional<Api> api = apiRepository.findById(id);
         if (api.isPresent()) {
             model.addAttribute("api", api.get());
-
         }
 
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        // Obtener el usuario correcto considerando impersonación
+        Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
 
         return "desarrollador/sandbox";
     }
 
-
+    /**
+     * Método helper para obtener el usuario correcto durante impersonación
+     */
+    private Usuario obtenerUsuarioActual(Authentication auth, HttpSession session) {
+        // Verificar si hay impersonación activa
+        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
+        
+        if (isImpersonating != null && isImpersonating) {
+            // Durante impersonación, obtener usuario por DNI del usuario impersonado
+            String impersonatedUserDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
+            if (impersonatedUserDni != null) {
+                Usuario impersonatedUser = usuarioRepository.findByDni(impersonatedUserDni);
+                if (impersonatedUser != null) {
+                    System.out.println("🎭 API DEV - Usando datos del usuario impersonado: " + impersonatedUser.getNombre());
+                    return impersonatedUser;
+                }
+            }
+        }
+        
+        // Sin impersonación, usar el usuario autenticado normal
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        System.out.println("👤 API DEV - Usando datos del usuario autenticado: " + usuario.getNombre());
+        return usuario;
+    }
     // Endpoint de Versiones de Api específica
     @GetMapping("/{id}/versiones")
     @ResponseBody

@@ -475,7 +475,10 @@
 </head>
 
 <body>
-<script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<!-- Banner de impersonación -->
+<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+
+<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
 
     <header th:replace="desarrollador/header :: header"
