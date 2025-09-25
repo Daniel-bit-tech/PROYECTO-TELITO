@@ -1,13 +1,11 @@
 package com.example.telitodev.repository;
 
-import com.example.telitodev.entity.VersionApi;
+import com.example.telitodev.entity.Feedback;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-
 import java.util.List;
 
 @Repository
-public interface VersionApiRepository extends JpaRepository<VersionApi, Integer> {
-
-    List<VersionApi> findByApi_IdApi(Integer id);
+public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
+    List<Feedback> findByUsuario_Dni(String dni);
 }
