@@ -259,10 +259,14 @@
 
                 <div class="nav-item dropdown" sec:authorize="isAuthenticated()">
                     <a href="#" class="nav-link d-flex lh-1 p-0 dropdown-toggle" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario">
-                        <span class="avatar avatar-sm user-avatar" th:style="'background-image: url(https://ui-avatars.com/api/?name='+${usuario.nombre}+'+'+${usuario.apellidoPaterno}+'&background=4361ee&color=fff)'"> </span>
+                        <!-- Mostrar avatar del usuario impersonado si aplica, sino del usuario actual -->
+                        <span class="avatar avatar-sm user-avatar" 
+                              th:style="'background-image: url(https://ui-avatars.com/api/?name='+${isImpersonating ? impersonatedUserName : usuario.nombre}+'+&background=4361ee&color=fff)'"> </span>
                         <div class="d-none d-xl-block ps-2 text-white">
-                            <div th:text="${usuario.nombre}">Luis Torres</div>
-                            <div class="mt-1 small opacity-75" th:text="${usuario.rol.descripcion}">Quality Assurance</div>
+                            <!-- Mostrar nombre del usuario impersonado si aplica, sino del usuario actual -->
+                            <div th:text="${isImpersonating ? impersonatedUserName : usuario.nombre}">Luis Torres</div>
+                            <div class="mt-1 small opacity-75" 
+                                 th:text="${isImpersonating ? impersonatedUserRole : usuario.rol.descripcion}">Quality Assurance</div>
                         </div>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">

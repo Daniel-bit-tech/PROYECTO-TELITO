@@ -1,0 +1,1483 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="w    @media (max-width: 767.98px) {
+      .navbar-collapse {
+        background: #6c757d !important;
+        background-image: none !important;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-top: 0.5rem;
+      }
+
+      .nav-link {
+        margin: 0.25rem 0;
+      }
+    }width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <title>TELITO ADMIN | Dashboard</title>
+  <link th:href="|/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-flags.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-socials.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-payments.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-vendors.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-marketing.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-themes.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/preview/css/demo.css?1757307620|" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js con múltiples CDNs como respaldo -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+  <script>
+    // Fallback CDN si el principal falla
+    if (typeof Chart === 'undefined') {
+      console.warn('⚠️ CDN principal de Chart.js falló, intentando CDN alternativo...');
+      const script = document.createElement('script');
+      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js';
+      script.onload = () => console.log('✅ Chart.js cargado desde CDN alternativo');
+      script.onerror = () => console.error('❌ Error cargando Chart.js desde ambos CDNs');
+      document.head.appendChild(script);
+    } else {
+      console.log('✅ Chart.js cargado correctamente desde CDN principal');
+    }
+  </script>
+  <style>
+    @import url("https://rsms.me/inter/inter.css");
+
+    /* Estilos del header adaptados del developer */
+    .navbar-brand {
+      font-weight: 800;
+      font-size: 1.4rem;
+      color: white !important;
+      transition: all 0.3s ease;
+    }
+
+    .navbar-brand:hover {
+      color: rgba(255, 255, 255, 0.8) !important;
+      transform: translateY(-1px);
+    }
+
+    .navbar-brand svg {
+      transition: all 0.3s ease;
+    }
+
+    .navbar-brand:hover svg {
+      transform: rotate(15deg);
+    }
+
+    .nav-link {
+      color: rgba(255, 255, 255, 0.85) !important;
+      font-weight: 500;
+      padding: 0.75rem 1rem !important;
+      border-radius: 8px;
+      margin: 0 0.1rem;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .nav-link:hover {
+      color: white !important;
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 0;
+      height: 2px;
+      background: white;
+      transition: all 0.3s ease;
+      transform: translateX(-50%);
+    }
+
+    .nav-link:hover::after {
+      width: 70%;
+    }
+
+    .nav-link.active {
+      color: white !important;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .nav-link.active::after {
+      width: 70%;
+    }
+
+    .nav-link-icon {
+      margin-right: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover .nav-link-icon {
+      transform: scale(1.1);
+    }
+
+    .user-avatar {
+      transition: all 0.3s ease;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .user-avatar:hover {
+      border-color: white;
+      transform: scale(1.05);
+    }
+
+    .dropdown-menu {
+      border: none;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      padding: 0.5rem;
+    }
+
+    .dropdown-item {
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .dropdown-item:hover {
+      background-color: #f8f9fa;
+    }
+
+    .theme-switcher:hover {
+      background: rgba(255, 255, 255, 0.2) !important;
+      transform: rotate(15deg);
+    }
+
+    .navbar-toggler {
+      border: none;
+      color: white !important;
+    }
+
+    /* Estilos para sub-navbar */
+    .navbar-expand-md .nav-link:hover,
+    .navbar-expand-md .nav-link.active {
+      color: rgba(67, 97, 238, 0.05) !important;
+      background: rgba(67, 97, 238, 0.05);
+    }
+
+    .navbar-expand-md .nav-link::after {
+      background: rgba(67, 97, 238, 0.05);
+    }
+
+    @media (max-width: 767.98px) {
+      .navbar-collapse {
+        background: rgba(67, 97, 238, 0.05);
+        padding: 1rem;
+        border-radius: 10px;
+        margin-top: 0.5rem;
+      }
+
+      .nav-link {
+        margin: 0.25rem 0;
+      }
+    }
+
+    /* Estilos originales del dashboard */
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .dashboard-header {
+      margin-top: 2rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+
+    .dashboard-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .dashboard-subtitle {
+      color: var(--tblr-secondary-color);
+      margin-bottom: 1.5rem;
+    }
+
+    .welcome-banner {
+      background: linear-gradient(120deg, var(--tblr-primary), var(--tblr-primary-dark));
+      margin-top: 2rem;
+      color: white;
+      border-radius: 8px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .welcome-banner .welcome-title,
+    .welcome-banner .welcome-text {
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Override for light mode */
+    [data-bs-theme="light"] .welcome-banner .welcome-title,
+    [data-bs-theme="light"] .welcome-banner .welcome-text {
+      color: #333 !important;
+      text-shadow: none !important;
+    }
+
+    .welcome-content {
+      position: relative;
+      z-index: 2;
+      max-width: 600px;
+    }
+
+    .welcome-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .welcome-text {
+      margin-bottom: 1.5rem;
+      opacity: 0.9;
+    }
+
+    .welcome-actions {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .welcome-banner::before {
+      content: "";
+      position: absolute;
+      top: -20px;
+      right: -20px;
+      width: 200px;
+      height: 200px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+    }
+
+    .welcome-banner::after {
+      content: "";
+      position: absolute;
+      bottom: -30px;
+      right: 50px;
+      width: 150px;
+      height: 150px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 50%;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background-color: var(--tblr-bg-surface);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .stat-content {
+      flex: 1;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      color: var(--tblr-secondary-color);
+      font-size: 0.875rem;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-card {
+      background-color: var(--tblr-bg-surface);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 1.125rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .api-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .api-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid var(--tblr-border-color);
+      gap: 1rem;
+    }
+
+    .api-item:last-child {
+      border-bottom: none;
+    }
+
+    .api-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .api-info {
+      flex: 1;
+    }
+
+    .api-name {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .api-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.875rem;
+      color: var(--tblr-secondary-color);
+    }
+
+    .api-action {
+      padding: 0.5rem 1rem;
+      background-color: var(--tblr-primary);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+
+    .activity-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 1rem;
+      border-bottom: 1px solid var(--tblr-border-color);
+      gap: 1rem;
+    }
+
+    .activity-item:last-child {
+      border-bottom: none;
+    }
+
+    .activity-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .activity-content {
+      flex: 1;
+      color: var(--tblr-body-color);
+    }
+
+    .activity-title {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .activity-description {
+      font-size: 0.875rem;
+      color: var(--tblr-secondary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .activity-time {
+      font-size: 0.75rem;
+      color: var(--tblr-secondary-color);
+    }
+
+    .quick-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .quick-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1.5rem 1rem;
+      background-color: var(--tblr-bg-surface-secondary);
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .quick-action:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .action-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+      color: var(--tblr-primary);
+    }
+
+    .action-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .notification-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .notification-item {
+      display: flex;
+      align-items: flex-start;
+      padding: 1rem;
+      border-bottom: 1px solid var(--tblr-border-color);
+      gap: 1rem;
+    }
+
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+
+    .notification-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .notification-content {
+      flex: 1;
+    }
+
+    .notification-title {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .notification-description {
+      font-size: 0.875rem;
+      color: var(--tblr-secondary-color);
+    }
+
+    .notification-time {
+      font-size: 0.75rem;
+      color: var(--tblr-secondary-color);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .welcome-actions {
+        flex-direction: column;
+      }
+
+      .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    /* Light mode text color fixes for welcome banner */
+    [data-bs-theme="light"] .welcome-banner .welcome-title,
+    [data-bs-theme="light"] .welcome-banner .welcome-text,
+    [data-bs-theme="light"] .welcome-title,
+    [data-bs-theme="light"] .welcome-text,
+    html[data-bs-theme="light"] .welcome-banner .welcome-title,
+    html[data-bs-theme="light"] .welcome-banner .welcome-text,
+    html[data-bs-theme="light"] .welcome-title,
+    html[data-bs-theme="light"] .welcome-text,
+    body[data-bs-theme="light"] .welcome-banner .welcome-title,
+    body[data-bs-theme="light"] .welcome-banner .welcome-text,
+    body[data-bs-theme="light"] .welcome-title,
+    body[data-bs-theme="light"] .welcome-text {
+      color: #333 !important;
+      font-weight: 500 !important;
+    }
+
+    /* Estilos específicos para los contenedores de gráficos */
+    .chart-container {
+      position: relative;
+      height: 300px !important;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .chart-container canvas {
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    /* Mensaje de carga para gráficos */
+    .chart-loading {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: var(--tblr-secondary-color);
+    }
+
+    /* Clase para debugging - bordes visibles */
+    .debug-charts .chart-container {
+      border: 2px dashed #ff6b6b;
+      background-color: rgba(255, 107, 107, 0.1);
+    }
+
+    .debug-charts .dashboard-card {
+      border: 2px solid #4ecdc4;
+    }
+
+    /* Estilos para gráficos */
+    .chart-container {
+      padding: 1rem;
+      border-radius: 8px;
+      background-color: var(--tblr-bg-surface);
+    }
+
+    .chart-container canvas {
+      border-radius: 6px;
+    }
+
+    /* Grid de gráficos responsivo */
+    .dashboard-grid.charts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-grid.charts-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Animaciones para gráficos */
+    .dashboard-card .chart-container {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s ease forwards;
+    }
+
+    .dashboard-card:nth-child(1) .chart-container {
+      animation-delay: 0.2s;
+    }
+
+    .dashboard-card:nth-child(2) .chart-container {
+      animation-delay: 0.4s;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body>
+<!-- Banner de impersonación -->
+<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+
+<script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
+<div class="page">
+
+  <div th:replace="admin/header.html :: header"></div>
+
+  <!-- Main -->
+  <div class="content">
+    <div class="dashboard-container">
+
+      <!-- Welcome Banner siguiendo el estilo de developer -->
+      <!-- 
+      <div class="welcome-banner">
+        <div class="welcome-content">
+          <h2 class="welcome-title">¡Hola, <span th:text="${usuario.nombre ?: 'SuperAdmin'}">SuperAdmin</span>!</h2>
+          <p class="welcome-text">Tienes <span th:text="${totalUsuarios ?: 0}">0</span> usuarios en el sistema y <span th:text="${usuariosActivos ?: 0}">0</span> usuarios activos.</p>
+          <div class="welcome-actions">
+            <a href="/admin/gestion-usuarios" class="btn btn-light">
+              <i class="fas fa-users"></i> Gestionar Usuarios
+            </a>
+            <a href="/admin/reportes" class="btn btn-outline-light">
+              <i class="fas fa-chart-line"></i> Ver Reportes
+            </a>
+          </div>
+        </div>
+      </div>
+      -->
+
+      <!-- Stats Grid siguiendo el patrón de developer -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" th:text="${totalUsuarios ?: 0}">0</div>
+            <div class="stat-label">Usuarios Gestionables</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background-color: rgba(var(--tblr-success-rgb), 0.1); color: var(--tblr-success);">
+            <i class="fas fa-user-check"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" th:text="${usuariosActivos ?: 0}">0</div>
+            <div class="stat-label">Usuarios Activos</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background-color: rgba(var(--tblr-warning-rgb), 0.1); color: var(--tblr-warning);">
+            <i class="fas fa-user-times"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value" th:text="${usuariosInactivos ?: 0}">0</div>
+            <div class="stat-label">Usuarios Inactivos</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon" style="background-color: rgba(var(--tblr-danger-rgb), 0.1); color: var(--tblr-danger);">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">4</div>
+            <div class="stat-label">Roles del Sistema</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gráficos del Dashboard -->
+      <div class="dashboard-grid charts-grid">
+        <!-- Gráfico de usuarios por estado -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-chart-pie"></i> Distribución de Usuarios</h3>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-outline-primary" onclick="refreshUserChart()">
+                <i class="fas fa-sync"></i> Actualizar
+              </button>
+            </div>
+          </div>
+          <div class="chart-container" style="position: relative; height: 300px;">
+            <canvas id="userStatusChart"></canvas>
+            <div class="chart-loading" id="statusChartLoading">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando gráfico...</span>
+              </div>
+              <p class="mt-2 mb-0">Cargando distribución de usuarios...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gráfico de usuarios por rol -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-chart-bar"></i> Usuarios por Rol</h3>
+            <div class="card-actions">
+              <button class="btn btn-sm btn-outline-secondary" onclick="refreshRoleChart()">
+                <i class="fas fa-sync"></i> Actualizar
+              </button>
+            </div>
+          </div>
+          <div class="chart-container" style="position: relative; height: 300px;">
+            <canvas id="userRoleChart"></canvas>
+            <div class="chart-loading" id="roleChartLoading">
+              <div class="spinner-border text-secondary" role="status">
+                <span class="visually-hidden">Cargando gráfico...</span>
+              </div>
+              <p class="mt-2 mb-0">Cargando usuarios por rol...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Grid siguiendo el patrón 2fr 1fr -->
+      <div class="dashboard-grid">
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-cogs"></i> Acciones de Administración</h3>
+          </div>
+
+          <ul class="api-list">
+            <li class="api-item">
+              <div class="api-icon" style="background-color: rgba(67, 97, 238, 0.1); color: #4361ee;">
+                <i class="fas fa-users-cog"></i>
+              </div>
+              <div class="api-info">
+                <div class="api-name">Gestión de Usuarios</div>
+                <div class="api-meta">
+                  <span>Administrar • Ver • Editar • Eliminar</span>
+                  <span>•</span>
+                  <span>Sistema completo de CRUD</span>
+                </div>
+              </div>
+              <button class="api-action" onclick="location.href='/admin/gestion-usuarios'">
+                Administrar
+              </button>
+            </li>
+
+            <li class="api-item">
+              <div class="api-icon" style="background-color: rgba(40, 167, 69, 0.1); color: #28a745;">
+                <i class="fas fa-chart-bar"></i>
+              </div>
+              <div class="api-info">
+                <div class="api-name">Reportes del Sistema</div>
+                <div class="api-meta">
+                  <span>Estadísticas • Métricas • Análisis</span>
+                  <span>•</span>
+                  <span>Datos en tiempo real</span>
+                </div>
+              </div>
+              <button class="api-action" onclick="location.href='/admin/reportes'">
+                Ver Reportes
+              </button>
+            </li>
+
+            <li class="api-item">
+              <div class="api-icon" style="background-color: rgba(255, 193, 7, 0.1); color: #ffc107;">
+                <i class="fas fa-cogs"></i>
+              </div>
+              <div class="api-info">
+                <div class="api-name">Configuración del Sistema</div>
+                <div class="api-meta">
+                  <span>Parámetros • Seguridad • Ajustes</span>
+                  <span>•</span>
+                  <span>Configuración avanzada</span>
+                </div>
+              </div>
+              <button class="api-action" onclick="location.href='/admin/configuracion'">
+                Configurar
+              </button>
+            </li>
+          </ul>
+
+          <!-- Quick Actions Grid siguiendo el patrón de developer -->
+          <div class="quick-actions-grid">
+            <a href="/admin/gestion-usuarios" class="quick-action">
+              <div class="action-icon">
+                <i class="fas fa-user-plus"></i>
+              </div>
+              <div class="action-label">Nuevo Usuario</div>
+            </a>
+
+            <a href="/admin/reportes" class="quick-action">
+              <div class="action-icon">
+                <i class="fas fa-download"></i>
+              </div>
+              <div class="action-label">Exportar Datos</div>
+            </a>
+
+            <a href="/admin/configuracion" class="quick-action">
+              <div class="action-icon">
+                <i class="fas fa-shield-check"></i>
+              </div>
+              <div class="action-label">Seguridad</div>
+            </a>
+
+            <a href="/admin/perfil" class="quick-action">
+              <div class="action-icon">
+                <i class="fas fa-user-shield"></i>
+              </div>
+              <div class="action-label">Mi Perfil</div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Sidebar de actividad/notificaciones -->
+        <div class="dashboard-card">
+          <div class="card-header">
+            <h3 class="card-title"><i class="fas fa-history"></i> Actividad Reciente</h3>
+          </div>
+
+          <ul class="notification-list">
+            <li class="notification-item">
+              <div class="notification-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
+                <i class="fas fa-user-plus"></i>
+              </div>
+              <div class="notification-content">
+                <div class="notification-title">Nuevo usuario creado</div>
+                <div class="notification-description">Se registró un nuevo desarrollador "juan.perez"</div>
+              </div>
+              <div class="notification-time">Hace 2h</div>
+            </li>
+
+            <li class="notification-item">
+              <div class="notification-icon" style="background-color: rgba(var(--tblr-success-rgb), 0.1); color: var(--tblr-success);">
+                <i class="fas fa-user-edit"></i>
+              </div>
+              <div class="notification-content">
+                <div class="notification-title">Usuario editado</div>
+                <div class="notification-description">Se actualizó la información del usuario "maria.lopez"</div>
+              </div>
+              <div class="notification-time">Hace 4h</div>
+            </li>
+
+            <li class="notification-item">
+              <div class="notification-icon" style="background-color: rgba(var(--tblr-danger-rgb), 0.1); color: var(--tblr-danger);">
+                <i class="fas fa-user-slash"></i>
+              </div>
+              <div class="notification-content">
+                <div class="notification-title">Usuario baneado</div>
+                <div class="notification-description">Se suspendió la cuenta de "carlos.rodriguez"</div>
+              </div>
+              <div class="notification-time">Hace 1 día</div>
+            </li>
+
+            <li class="notification-item">
+              <div class="notification-icon" style="background-color: rgba(var(--tblr-warning-rgb), 0.1); color: var(--tblr-warning);">
+                <i class="fas fa-user-check"></i>
+              </div>
+              <div class="notification-content">
+                <div class="notification-title">Usuario reactivado</div>
+                <div class="notification-description">Se reactivó la cuenta de "ana.garcia"</div>
+              </div>
+              <div class="notification-time">Hace 2 días</div>
+            </li>
+
+            <li class="notification-item">
+              <div class="notification-icon" style="background-color: rgba(var(--tblr-info-rgb), 0.1); color: var(--tblr-info);">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <div class="notification-content">
+                <div class="notification-title">Cambio de rol</div>
+                <div class="notification-description">Se asignó rol "QA" al usuario "luis.martinez"</div>
+              </div>
+              <div class="notification-time">Hace 3 días</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620|"></script>
+<script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('Dashboard SuperAdmin cargado - estilo developer aplicado');
+  
+  // Obtener CSRF token
+  const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+  const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+  
+  // Agregar animaciones que en developer
+  const cards = document.querySelectorAll('.stat-card, .quick-action');
+  cards.forEach((card, index) => {
+    card.style.opacity = '0';
+    card.style.transform = 'translateY(20px)';
+    
+    setTimeout(() => {
+      card.style.transition = 'all 0.5s ease';
+      card.style.opacity = '1';
+      card.style.transform = 'translateY(0)';
+    }, index * 100);
+  });
+
+  // Funcionalidad de botones similar a developer
+  document.querySelectorAll('.api-action').forEach(button => {
+    button.addEventListener('click', function() {
+      const action = this.textContent;
+      const apiItem = this.closest('.api-item');
+      const apiName = apiItem ? apiItem.querySelector('.api-name').textContent : 'Recurso';
+      
+      console.log(`Acción: ${action} en ${apiName}`);
+    });
+  });
+
+  // Inicializar gráficos con comprobación robusta
+  initializeChartsWhenReady();
+});
+
+// Variables globales para los gráficos
+let userStatusChart = null;
+let userRoleChart = null;
+
+// Función para verificar si Chart.js está disponible y reintentar si es necesario
+function initializeChartsWhenReady() {
+  console.log('🔍 Verificando disponibilidad de Chart.js...');
+  
+  // Función para reintentar la carga
+  function attemptInitialization(retries = 0) {
+    if (typeof Chart !== 'undefined') {
+      console.log('✅ Chart.js está disponible, inicializando gráficos...');
+      initializeCharts();
+    } else if (retries < 10) {
+      console.log(`⏳ Chart.js no disponible aún, reintentando... (intento ${retries + 1}/10)`);
+      setTimeout(() => attemptInitialization(retries + 1), 500);
+    } else {
+      console.error('❌ Chart.js no se pudo cargar después de 10 intentos');
+      showFallbackMessage();
+    }
+  }
+  
+  attemptInitialization();
+}
+
+// Función para mostrar mensaje de fallback si Chart.js no carga
+function showFallbackMessage() {
+  const statusContainer = document.querySelector('.chart-container:first-child .loading-spinner');
+  const roleContainer = document.querySelector('.chart-container:last-child .loading-spinner');
+  
+  if (statusContainer) {
+    statusContainer.innerHTML = '<div class="alert alert-warning">⚠️ No se pudo cargar Chart.js. Por favor, recarga la página.</div>';
+  }
+  if (roleContainer) {
+    roleContainer.innerHTML = '<div class="alert alert-warning">⚠️ No se pudo cargar Chart.js. Por favor, recarga la página.</div>';
+  }
+}
+
+// Función para inicializar todos los gráficos
+function initializeCharts() {
+  console.log('🎯 Inicializando gráficos del dashboard...');
+  
+  // Verificar que Chart.js esté disponible
+  if (typeof Chart === 'undefined') {
+    console.error('❌ Chart.js no está cargado!');
+    showFallbackMessage();
+    return;
+  }
+  console.log('✅ Chart.js está disponible');
+  
+  // Crear gráfico de estado de usuarios
+  console.log('📊 Creando gráfico de estado de usuarios...');
+  createUserStatusChart();
+  
+  // Crear gráfico de roles de usuarios  
+  console.log('📈 Creando gráfico de roles de usuarios...');
+  createUserRoleChart();
+  
+  // Cargar datos desde el servidor
+  console.log('🔄 Cargando datos desde el servidor...');
+  loadChartData();
+}
+
+// Gráfico de distribución por estado
+function createUserStatusChart() {
+  console.log('🔍 Buscando canvas userStatusChart...');
+  const ctx = document.getElementById('userStatusChart');
+  
+  if (!ctx) {
+    console.error('❌ No se encontró el canvas userStatusChart');
+    return;
+  }
+  console.log('✅ Canvas userStatusChart encontrado');
+
+  // Obtener datos iniciales del modelo Thymeleaf (excluyendo SUPERADMINs)
+  const activeUsers = /*[[${usuariosActivos ?: 10}]]*/ 10;
+  const inactiveUsers = /*[[${usuariosInactivos ?: 1}]]*/ 1;
+  
+  console.log('📊 Datos iniciales del gráfico de estado:', {
+    activos: activeUsers,
+    inactivos: inactiveUsers,
+    total: activeUsers + inactiveUsers
+  });
+
+  try {
+    userStatusChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Usuarios Activos', 'Usuarios Inactivos'],
+        datasets: [{
+          data: [activeUsers, inactiveUsers],
+          backgroundColor: [
+            'rgba(40, 167, 69, 0.8)',
+            'rgba(220, 53, 69, 0.8)'
+          ],
+          borderColor: [
+            'rgba(40, 167, 69, 1)',
+            'rgba(220, 53, 69, 1)'
+          ],
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 20,
+              usePointStyle: true,
+              font: {
+                size: 12
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const percentage = total > 0 ? ((context.parsed * 100) / total).toFixed(1) : 0;
+                return `${context.label}: ${context.parsed} (${percentage}%)`;
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    // Ocultar indicador de carga
+    const loadingElement = document.getElementById('statusChartLoading');
+    if (loadingElement) {
+      loadingElement.style.display = 'none';
+    }
+    
+    console.log('✅ Gráfico de estado creado exitosamente');
+  } catch (error) {
+    console.error('❌ Error creando gráfico de estado:', error);
+  }
+}
+
+// Gráfico de usuarios por rol
+function createUserRoleChart() {
+  console.log('🔍 Buscando canvas userRoleChart...');
+  const ctx = document.getElementById('userRoleChart');
+  
+  if (!ctx) {
+    console.error('❌ No se encontró el canvas userRoleChart');
+    return;
+  }
+  console.log('✅ Canvas userRoleChart encontrado');
+
+  // Datos iniciales - mostrar al menos algo mientras carga la API (sin SUPERADMINs)
+  const initialData = {
+    labels: ['DEVELOPER', 'QA', 'PO'],
+    datasets: [{
+      label: 'Usuarios por Rol',
+      data: [7, 2, 2], // Valores que suman 11 usuarios gestionables (sin SUPERADMINs)
+      backgroundColor: [
+        'rgba(67, 97, 238, 0.8)',
+        'rgba(255, 193, 7, 0.8)',
+        'rgba(220, 53, 69, 0.8)',
+        'rgba(108, 117, 125, 0.8)'
+      ],
+      borderColor: [
+        'rgba(67, 97, 238, 1)',
+        'rgba(255, 193, 7, 1)',
+        'rgba(220, 53, 69, 1)',
+        'rgba(108, 117, 125, 1)'
+      ],
+      borderWidth: 2
+    }]
+  };
+
+  console.log('📈 Datos iniciales del gráfico de roles:', initialData);
+
+  try {
+    userRoleChart = new Chart(ctx, {
+      type: 'bar',
+      data: initialData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.label}: ${context.parsed.y} usuarios`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1,
+              callback: function(value) {
+                if (Number.isInteger(value)) {
+                  return value;
+                }
+              }
+            }
+          },
+          x: {
+            ticks: {
+              maxRotation: 45,
+              minRotation: 0
+            }
+          }
+        }
+      }
+    });
+    
+    // Ocultar indicador de carga
+    const loadingElement = document.getElementById('roleChartLoading');
+    if (loadingElement) {
+      loadingElement.style.display = 'none';
+    }
+    
+    console.log('✅ Gráfico de roles creado exitosamente');
+  } catch (error) {
+    console.error('❌ Error creando gráfico de roles:', error);
+  }
+}
+
+// Cargar datos actualizados desde el servidor
+async function loadChartData() {
+  console.log('🌐 Iniciando carga de datos desde el servidor...');
+  
+  try {
+    console.log('📡 Haciendo petición a /admin/api/dashboard-stats');
+    console.log('🔑 CSRF Token:', csrfToken);
+    console.log('🔑 CSRF Header:', csrfHeader);
+    
+    const response = await fetch('/admin/api/dashboard-stats', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        [csrfHeader]: csrfToken
+      }
+    });
+
+    console.log('📥 Response status:', response.status);
+    console.log('📥 Response ok:', response.ok);
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ Datos de gráficos recibidos:', data);
+      
+      // Actualizar gráfico de estado
+      if (userStatusChart && data.usersByStatus) {
+        console.log('🔄 Actualizando gráfico de estado con:', data.usersByStatus);
+        userStatusChart.data.datasets[0].data = [
+          data.usersByStatus.active || 0,
+          data.usersByStatus.inactive || 0
+        ];
+        userStatusChart.update('active'); // Animación visible para ver que se actualiza
+        console.log('✅ Gráfico de estado actualizado');
+      } else {
+        console.warn('⚠️ No se pudo actualizar gráfico de estado');
+      }
+      
+      // Actualizar gráfico de roles
+      if (userRoleChart && data.usersByRole) {
+        const roleLabels = Object.keys(data.usersByRole);
+        const roleCounts = Object.values(data.usersByRole);
+        
+        console.log('🔄 Actualizando gráfico de roles con:', {
+          labels: roleLabels,
+          data: roleCounts
+        });
+        
+        userRoleChart.data.labels = roleLabels;
+        userRoleChart.data.datasets[0].data = roleCounts;
+        userRoleChart.update('active'); // Animación visible
+        console.log('✅ Gráfico de roles actualizado');
+      } else {
+        console.warn('⚠️ No se pudo actualizar gráfico de roles');
+      }
+      
+    } else {
+      const errorText = await response.text();
+      console.error('❌ Error en respuesta del servidor:', errorText);
+      console.warn('⚠️ Usando datos iniciales - API no disponible');
+    }
+    
+  } catch (error) {
+    console.error('❌ Error completo cargando datos de gráficos:', error);
+    console.log('⚠️ Usando datos iniciales - Error de conexión');
+    
+    // Mostrar mensaje de error al usuario
+    showErrorMessage('No se pudieron cargar los datos actualizados de los gráficos');
+  }
+}
+
+// Función para mostrar mensajes de error
+function showErrorMessage(message) {
+  console.log('📢 Mostrando mensaje de error:', message);
+  // Implementar notificación visual si es necesario
+}
+
+// Funciones para actualizar gráficos individuales
+function refreshUserChart() {
+  if (userStatusChart) {
+    userStatusChart.destroy();
+    createUserStatusChart();
+  }
+  loadChartData();
+}
+
+function refreshRoleChart() {
+  if (userRoleChart) {
+    userRoleChart.destroy();
+    createUserRoleChart();
+  }
+  loadChartData();
+}
+
+// Función para redimensionar gráficos cuando cambia el tamaño de ventana
+window.addEventListener('resize', function() {
+  if (userStatusChart) userStatusChart.resize();
+  if (userRoleChart) userRoleChart.resize();
+});
+
+// ===== FUNCIONES DE DEBUGGING =====
+window.debugCharts = function() {
+  console.log('🔍 === DEBUG DE GRÁFICOS ===');
+  console.log('Chart.js disponible:', typeof Chart !== 'undefined');
+  console.log('userStatusChart existe:', !!userStatusChart);
+  console.log('userRoleChart existe:', !!userRoleChart);
+  
+  const statusCanvas = document.getElementById('userStatusChart');
+  const roleCanvas = document.getElementById('userRoleChart');
+  
+  console.log('Canvas userStatusChart encontrado:', !!statusCanvas);
+  console.log('Canvas userRoleChart encontrado:', !!roleCanvas);
+  
+  if (statusCanvas) {
+    console.log('Dimensiones statusCanvas:', statusCanvas.width, 'x', statusCanvas.height);
+  }
+  if (roleCanvas) {
+    console.log('Dimensiones roleCanvas:', roleCanvas.width, 'x', roleCanvas.height);
+  }
+  
+  // Activar bordes de debug
+  document.body.classList.add('debug-charts');
+  console.log('🎨 Bordes de debug activados');
+};
+
+window.testAPI = async function() {
+  console.log('🧪 === TEST DE API ===');
+  try {
+    const response = await fetch('/admin/api/dashboard-stats');
+    console.log('Status:', response.status);
+    const data = await response.json();
+    console.log('Data:', data);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+};
+
+window.recreateCharts = function() {
+  console.log('🔄 === RECREAR GRÁFICOS ===');
+  
+  if (userStatusChart) {
+    userStatusChart.destroy();
+    userStatusChart = null;
+  }
+  if (userRoleChart) {
+    userRoleChart.destroy();
+    userRoleChart = null;
+  }
+  
+  initializeCharts();
+};
+
+// === INICIALIZACIÓN DE EMERGENCIA ===
+// Función para forzar inicialización si algo falla
+window.forceInitCharts = function() {
+  console.log('🚨 === INICIALIZACIÓN DE EMERGENCIA ===');
+  
+  // Esperar un poco más y reintentar
+  setTimeout(() => {
+    if (typeof Chart !== 'undefined') {
+      console.log('✅ Chart.js encontrado en inicialización de emergencia');
+      
+      // Destruir gráficos existentes si existen
+      if (window.userStatusChart) {
+        try { window.userStatusChart.destroy(); } catch(e) {}
+      }
+      if (window.userRoleChart) {
+        try { window.userRoleChart.destroy(); } catch(e) {}
+      }
+      
+      // Crear gráficos básicos con datos fijos para testing
+      createEmergencyCharts();
+    } else {
+      console.error('❌ Chart.js aún no disponible en inicialización de emergencia');
+    }
+  }, 2000);
+};
+
+// Función para crear gráficos de emergencia con datos fijos
+function createEmergencyCharts() {
+  console.log('🆘 Creando gráficos de emergencia...');
+  
+  // Gráfico de estado de emergencia
+  const statusCtx = document.getElementById('userStatusChart');
+  if (statusCtx) {
+    try {
+      window.userStatusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Activos', 'Inactivos'],
+          datasets: [{
+            data: [11, 1],
+            backgroundColor: ['rgba(40, 167, 69, 0.8)', 'rgba(220, 53, 69, 0.8)'],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+      console.log('✅ Gráfico de estado de emergencia creado');
+      
+      // Ocultar loading
+      const loadingStatus = document.getElementById('statusChartLoading');
+      if (loadingStatus) loadingStatus.style.display = 'none';
+    } catch (e) {
+      console.error('❌ Error en gráfico de estado de emergencia:', e);
+    }
+  }
+  
+  // Gráfico de roles de emergencia  
+  const roleCtx = document.getElementById('userRoleChart');
+  if (roleCtx) {
+    try {
+      window.userRoleChart = new Chart(roleCtx, {
+        type: 'bar',
+        data: {
+          labels: ['SUPERADMIN', 'DEVELOPER', 'QA', 'PO'],
+          datasets: [{
+            label: 'Usuarios por Rol',
+            data: [1, 5, 3, 3],
+            backgroundColor: ['rgba(108, 117, 125, 0.8)', 'rgba(67, 97, 238, 0.8)', 'rgba(255, 193, 7, 0.8)', 'rgba(220, 53, 69, 0.8)']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true }
+          }
+        }
+      });
+      console.log('✅ Gráfico de roles de emergencia creado');
+      
+      // Ocultar loading
+      const loadingRole = document.getElementById('roleChartLoading');
+      if (loadingRole) loadingRole.style.display = 'none';
+    } catch (e) {
+      console.error('❌ Error en gráfico de roles de emergencia:', e);
+    }
+  }
+}
+
+// Ejecutar inicialización de emergencia después de 5 segundos si los gráficos no se crearon
+setTimeout(() => {
+  const statusCanvas = document.getElementById('userStatusChart');
+  const roleCanvas = document.getElementById('userRoleChart');
+  
+  if (statusCanvas && !window.userStatusChart) {
+    console.warn('⚠️ Gráfico de estado no se creó, ejecutando emergencia...');
+    forceInitCharts();
+  }
+  if (roleCanvas && !window.userRoleChart) {
+    console.warn('⚠️ Gráfico de roles no se creó, ejecutando emergencia...');
+    forceInitCharts();
+  }
+}, 5000);
+
+console.log('🛠️ Funciones de debug disponibles:');
+console.log('- debugCharts() - Información de debug');
+console.log('- testAPI() - Probar endpoint');  
+console.log('- recreateCharts() - Recrear gráficos');
+console.log('- forceInitCharts() - Inicialización de emergencia');
+</script>
+</body>
+</html>
+
+

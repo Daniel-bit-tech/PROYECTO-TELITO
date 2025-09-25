@@ -23,17 +23,23 @@ public class ImpersonationInterceptor implements HandlerInterceptor {
                 Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
                 String originalAdmin = (String) session.getAttribute("ORIGINAL_ADMIN_USERNAME");
                 String impersonatedUserDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
+                String impersonatedUserName = (String) session.getAttribute("IMPERSONATED_USER_NAME");
+                String impersonatedUserRole = (String) session.getAttribute("IMPERSONATED_USER_ROLE");
                 
                 // Agregar al modelo para que Thymeleaf pueda acceder
                 modelAndView.addObject("isImpersonating", isImpersonating != null && isImpersonating);
                 modelAndView.addObject("originalAdminUsername", originalAdmin);
                 modelAndView.addObject("impersonatedUserDni", impersonatedUserDni);
+                modelAndView.addObject("impersonatedUserName", impersonatedUserName);
+                modelAndView.addObject("impersonatedUserRole", impersonatedUserRole);
                 
                 System.out.println("=== IMPERSONATION INTERCEPTOR ===");
                 System.out.println("URL: " + request.getRequestURI());
                 System.out.println("Is Impersonating: " + isImpersonating);
                 System.out.println("Original Admin: " + originalAdmin);
                 System.out.println("Impersonated DNI: " + impersonatedUserDni);
+                System.out.println("Impersonated Name: " + impersonatedUserName);
+                System.out.println("Impersonated Role: " + impersonatedUserRole);
             }
         }
     }

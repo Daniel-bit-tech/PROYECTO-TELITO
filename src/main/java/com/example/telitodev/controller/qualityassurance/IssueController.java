@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/qa")
-@PreAuthorize("hasAnyRole('QA', 'SADMIN')")
+@PreAuthorize("hasAnyRole('QA', 'SUPERADMIN')")
 public class IssueController {
     final UsuarioRepository usuarioRepository;
     public IssueController(UsuarioRepository usuarioRepository) {

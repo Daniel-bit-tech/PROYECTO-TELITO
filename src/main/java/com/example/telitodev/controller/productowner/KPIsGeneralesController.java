@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/po")
-@PreAuthorize("hasAnyRole('PO', 'SADMIN')")
+@PreAuthorize("hasAnyRole('PO', 'SUPERADMIN')")
 public class KPIsGeneralesController {
 
     final UsuarioRepository usuarioRepository;
@@ -19,11 +19,7 @@ public class KPIsGeneralesController {
         this.usuarioRepository = usuarioRepository;
     }
 
-    @GetMapping("/Dashboard")
-    public String showDashboardView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-        return "po/Dashboard";
-    }
+    // Dashboard method removed to avoid conflict with PoController
+    // The main dashboard is handled by PoController.showDashboardView()
 
 }
