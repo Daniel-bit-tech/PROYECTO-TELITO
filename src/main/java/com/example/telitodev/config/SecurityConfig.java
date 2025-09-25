@@ -1,5 +1,6 @@
 package com.example.telitodev.config;
 import com.example.telitodev.service.UsuarioDetailService;
+import com.example.telitodev.filter.UsuarioActivoFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 
@@ -26,6 +28,9 @@ public class SecurityConfig {
 
     @Autowired
     private UsuarioDetailService usuarioDetailService;
+    
+    @Autowired
+    private UsuarioActivoFilter usuarioActivoFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -42,10 +47,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/onboarding/**").authenticated()
 
                         // De rol
-                        .requestMatchers("/admin/**").hasRole("SUPERADMIN") // <-- CORREGIR AQUÍ
-                        .requestMatchers("/dev/**").hasAnyRole("DEV", "SUPERADMIN") // <-- Y AQUÍ
-                        .requestMatchers("/qa/**").hasAnyRole("QA", "SUPERADMIN") // <-- Y AQUÍ
-                        .requestMatchers("/po/**").hasAnyRole("PO", "SUPERADMIN") // <-- Y AQUÍ
+                        .requestMatchers("/admin/**").hasRole("SUPERADMIN")
+                        .requestMatchers("/dev/**").hasAnyRole("DEV", "SUPERADMIN")
+                        .requestMatchers("/qa/**").hasAnyRole("QA", "SUPERADMIN")
+                        .requestMatchers("/po/**").hasAnyRole("PO", "SUPERADMIN")
                         .requestMatchers("/qa-dev/**").hasAnyRole("QA", "DEV")
 
                         // Otras rutas
@@ -72,7 +77,9 @@ public class SecurityConfig {
 //                )
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/**") // Deshabilitar CSRF para endpoints API
-                );
+                )
+                // Agregar filtro personalizado para verificar usuarios activos en tiempo real
+                .addFilterBefore(usuarioActivoFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -97,25 +104,36 @@ public class SecurityConfig {
         return new SimpleUrlAuthenticationSuccessHandler() {
             @Override
             protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+                System.out.println("=== AuthenticationSuccessHandler ejecutado ===");
+                System.out.println("Usuario: " + authentication.getName());
+                
                 Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+                System.out.println("Autoridades encontradas: " + authorities);
 
                 for (GrantedAuthority authority : authorities) {
                     String role = authority.getAuthority();
+                    System.out.println("Procesando rol: " + role);
 
                     switch (authority.getAuthority()) {
                         case "ROLE_SUPERADMIN":
+                            System.out.println("Redirigiendo SUPERADMIN a /admin/home");
                             return "/admin/home";
                         case "ROLE_DEV":
+                            System.out.println("Redirigiendo DEV a /dev/home");
                             return "/dev/home";
                         case "ROLE_QA":
+                            System.out.println("Redirigiendo QA a /qa/home");
                             return "/qa/home";
                         case "ROLE_PO":
+                            System.out.println("Redirigiendo PO a /po/home");
                             return "/po/home";
 
                         default:
-                            return "/login";
+                            System.out.println("Rol no reconocido: " + role);
+                            break;
                     }
                 }
+                System.out.println("Ningún rol válido encontrado, redirigiendo a /login");
                 return "/login";
             }
         };

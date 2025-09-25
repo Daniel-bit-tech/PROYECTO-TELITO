@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <title>TELITO ADMIN | Editar Usuario</title>
+  <link th:href="|/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-flags.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-socials.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-payments.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-vendors.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-marketing.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-themes.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/preview/css/demo.css?1757307620|" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url("https://rsms.me/inter/inter.css");
+
+    /* TEMA OSCURO PERSONALIZADO */
+    :root {
+      --tblr-dark: #1e293b;
+      --tblr-darker: #0f172a;
+      --tblr-primary: #3b82f6;
+      --tblr-success: #10b981;
+      --tblr-danger: #ef4444;
+      --tblr-warning: #f59e0b;
+      --tblr-info: #06b6d4;
+      --tblr-light: #f1f5f9;
+      --tblr-muted: #64748b;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    .page-wrapper {
+      background: transparent;
+    }
+
+    .container-xl {
+      max-width: 1200px;
+    }
+
+    .page-header {
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      color: #3b82f6;
+      font-weight: 700;
+      font-size: 1.75rem;
+    }
+
+    .text-muted {
+      color: #94a3b8 !important;
+    }
+
+    /* CARDS Y FORMULARIOS */
+    .card {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-header {
+      background: rgba(59, 130, 246, 0.1);
+      border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .card-title {
+      color: #3b82f6;
+      font-weight: 600;
+    }
+
+    .form-label {
+      color: #f1f5f9;
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .form-label.required::after {
+      content: "*";
+      color: #ef4444;
+      margin-left: 0.25rem;
+      font-weight: bold;
+    }
+
+    .form-label i {
+      margin-right: 0.5rem;
+      color: #3b82f6;
+      width: 16px;
+    }
+
+    .form-control, .form-select {
+      background: rgba(15, 23, 42, 0.8);
+      border: 2px solid rgba(59, 130, 246, 0.3);
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 0.875rem 1rem;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+      background: rgba(15, 23, 42, 0.95);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+      color: #f1f5f9;
+    }
+
+    .form-control::placeholder {
+      color: #64748b;
+    }
+
+    .readonly-field {
+      background: rgba(100, 116, 139, 0.2) !important;
+      border-color: rgba(100, 116, 139, 0.4) !important;
+      color: #94a3b8 !important;
+      cursor: not-allowed;
+    }
+
+    /* BOTONES */
+    .btn-primary {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border: none;
+      padding: 0.875rem 2rem;
+      border-radius: 10px;
+      font-weight: 600;
+      color: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+    }
+
+    .btn-secondary {
+      background: rgba(100, 116, 139, 0.8);
+      border: 2px solid rgba(100, 116, 139, 0.6);
+      padding: 0.875rem 2rem;
+      border-radius: 10px;
+      font-weight: 500;
+      color: #e2e8f0;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(100, 116, 139, 1);
+      border-color: rgba(100, 116, 139, 0.8);
+      color: #f1f5f9;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+
+    /* ALERTAS */
+    .alert {
+      border-radius: 12px;
+      border: none;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .alert-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .alert-success {
+      background: rgba(16, 185, 129, 0.15);
+      color: #6ee7b7;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    /* BADGES Y INFORMACIÓN */
+    .info-badge {
+      background: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge {
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    .bg-success {
+      background: rgba(16, 185, 129, 0.9) !important;
+      color: white !important;
+    }
+
+    .bg-danger {
+      background: rgba(239, 68, 68, 0.9) !important;
+      color: white !important;
+    }
+
+    /* TARJETA DE INFORMACIÓN */
+    .card-sm .card-body {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 8px;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .info-section {
+      background: rgba(15, 23, 42, 0.4);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      margin-bottom: 1.5rem;
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .info-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .info-item strong {
+      color: #3b82f6;
+      min-width: 120px;
+      font-weight: 600;
+    }
+
+    /* ANIMACIONES */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card {
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    /* SCROLLBAR PERSONALIZADA */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.5);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(59, 130, 246, 0.6);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(59, 130, 246, 0.8);
+    }
+
+    /* RESPONSIVO */
+    @media (max-width: 768px) {
+      .container-xl {
+        padding: 0 1rem;
+      }
+      
+      .card {
+        margin: 0 0.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <!-- Header -->
+    <div th:replace="admin/header :: header"></div>
+
+    <!-- Contenido principal -->
+    <div class="page-wrapper">
+      <div class="page-header d-print-none">
+        <div class="container-xl">
+          <div class="row g-2 align-items-center">
+            <div class="col">
+              <h2 class="page-title">
+                <i class="fas fa-user-edit me-2"></i>
+                Editar Usuario
+              </h2>
+              <div class="text-muted mt-1">
+                <i class="fas fa-info-circle me-1"></i>
+                Modifica los datos del usuario seleccionado
+              </div>
+            </div>
+            <div class="col-auto">
+              <a th:href="@{/admin/gestion-usuarios}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-2"></i>
+                Volver a Gestión
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page-body">
+        <div class="container-xl">
+          <!-- Mostrar errores -->
+          <div th:if="${error}" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span th:text="${error}"></span>
+          </div>
+
+          <!-- Mostrar éxito -->
+          <div th:if="${success}" class="alert alert-success" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <span th:text="${success}"></span>
+          </div>
+
+          <div class="row justify-content-center">
+            <div class="col-xl-10">
+              <div class="card">
+                <div class="card-header">
+                  <h3 class="card-title">
+                    <i class="fas fa-user-edit me-2"></i>
+                    Información Completa del Usuario
+                  </h3>
+                  <div class="card-subtitle">
+                    Complete todos los campos requeridos para actualizar la información del usuario
+                  </div>
+                </div>
+                <div class="card-body">
+                  <form th:action="@{/admin/gestion-usuarios/actualizar}" method="post">
+                    <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    
+                    <!-- INFORMACIÓN BÁSICA -->
+                    <h4 class="mb-3" style="color: #3b82f6; border-bottom: 2px solid rgba(59, 130, 246, 0.3); padding-bottom: 0.5rem;">
+                      <i class="fas fa-id-card me-2"></i>Información Básica
+                    </h4>
+                    
+                    <div class="row">
+                      <!-- DNI (solo lectura) -->
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label">
+                            <i class="fas fa-id-card"></i>
+                            DNI (Documento de Identidad)
+                          </label>
+                          <input type="text" name="dni" class="form-control readonly-field" 
+                                 th:value="${usuario.dni}" readonly>
+                          <small class="text-muted">
+                            <i class="fas fa-lock me-1"></i>
+                            El DNI no se puede modificar por seguridad
+                          </small>
+                        </div>
+                      </div>
+                      
+                      <!-- Fecha de Registro -->
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label">
+                            <i class="fas fa-calendar-plus"></i>
+                            Fecha de Registro
+                          </label>
+                          <input type="text" class="form-control readonly-field" 
+                                 th:value="${#temporals.format(usuario.fechaRegistro, 'dd/MM/yyyy HH:mm')}" readonly>
+                          <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Fecha y hora de creación de la cuenta
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- DATOS PERSONALES -->
+                    <h4 class="mb-3 mt-4" style="color: #3b82f6; border-bottom: 2px solid rgba(59, 130, 246, 0.3); padding-bottom: 0.5rem;">
+                      <i class="fas fa-user me-2"></i>Datos Personales
+                    </h4>
+                    
+                    <div class="row">
+                      <!-- Nombre -->
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label required">
+                            <i class="fas fa-user"></i>
+                            Nombre
+                          </label>
+                          <input type="text" name="nombre" class="form-control" 
+                                 th:value="${usuario.nombre}" required
+                                 placeholder="Ingrese el nombre del usuario">
+                        </div>
+                      </div>
+                      
+                      <!-- Apellido Paterno -->
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label required">
+                            <i class="fas fa-user"></i>
+                            Apellido Paterno
+                          </label>
+                          <input type="text" name="apellidoPaterno" class="form-control" 
+                                 th:value="${usuario.apellidoPaterno}" required
+                                 placeholder="Ingrese el apellido paterno">
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="row">
+                      <!-- Apellido Materno -->
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label">
+                            <i class="fas fa-user"></i>
+                            Apellido Materno
+                          </label>
+                          <input type="text" name="apellidoMaterno" class="form-control" 
+                                 th:value="${usuario.apellidoMaterno}"
+                                 placeholder="Ingrese el apellido materno (opcional)">
+                        </div>
+                      </div>
+                      
+                      <!-- Correo Electrónico -->
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label required">
+                            <i class="fas fa-envelope"></i>
+                            Correo Electrónico
+                          </label>
+                          <input type="email" name="correo" class="form-control" 
+                                 th:value="${usuario.correo}" required
+                                 placeholder="usuario@ejemplo.com">
+                          <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            El correo debe ser único en el sistema
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- CONFIGURACIÓN DE CUENTA -->
+                    <h4 class="mb-3 mt-4" style="color: #3b82f6; border-bottom: 2px solid rgba(59, 130, 246, 0.3); padding-bottom: 0.5rem;">
+                      <i class="fas fa-cogs me-2"></i>Configuración de Cuenta
+                    </h4>
+                    
+                    <div class="row">
+                      <!-- Rol -->
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label required">
+                            <i class="fas fa-user-tag"></i>
+                            Rol del Usuario
+                          </label>
+                          <select name="idRol" class="form-select" required>
+                            <option value="">Seleccionar rol...</option>
+                            <option th:each="rol : ${roles}" 
+                                    th:value="${rol.idRol}" 
+                                    th:text="${rol.nombreRol + ' - ' + rol.descripcion}"
+                                    th:selected="${rol.idRol == usuario.rol.idRol}">
+                            </option>
+                          </select>
+                          <small class="text-muted">
+                            <i class="fas fa-shield-alt me-1"></i>
+                            Define los permisos y accesos del usuario
+                          </small>
+                        </div>
+                      </div>
+                      
+                      <!-- Estado -->
+                      <div class="col-md-6">
+                        <div class="mb-3">
+                          <label class="form-label required">
+                            <i class="fas fa-toggle-on"></i>
+                            Estado de la Cuenta
+                          </label>
+                          <select name="estado" class="form-select" required>
+                            <option th:value="true" th:text="'✅ Activo - Usuario puede acceder al sistema'" 
+                                    th:selected="${usuario.estado}"></option>
+                            <option th:value="false" th:text="'❌ Inactivo - Usuario bloqueado temporalmente'" 
+                                    th:selected="${!usuario.estado}"></option>
+                          </select>
+                          <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Los usuarios inactivos no pueden iniciar sesión
+                          </small>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- CAMBIO DE CONTRASEÑA (OPCIONAL) -->
+                    <h4 class="mb-3 mt-4" style="color: #f59e0b; border-bottom: 2px solid rgba(245, 158, 11, 0.3); padding-bottom: 0.5rem;">
+                      <i class="fas fa-key me-2"></i>Cambio de Contraseña (Opcional)
+                    </h4>
+                    
+                    <div class="info-section">
+                      <div class="row">
+                        <div class="col-md-12">
+                          <div class="alert" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Nota importante:</strong> Si desea cambiar la contraseña del usuario, 
+                            complete los campos siguientes. De lo contrario, deje los campos vacíos para mantener la contraseña actual.
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div class="row">
+                        <!-- Nueva Contraseña -->
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <label class="form-label">
+                              <i class="fas fa-lock"></i>
+                              Nueva Contraseña
+                            </label>
+                            <input type="password" name="nuevaContrasena" class="form-control" 
+                                   placeholder="Ingrese nueva contraseña (mínimo 8 caracteres)">
+                            <small class="text-muted">
+                              <i class="fas fa-info-circle me-1"></i>
+                              Deje vacío para mantener la contraseña actual
+                            </small>
+                          </div>
+                        </div>
+                        
+                        <!-- Confirmar Contraseña -->
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <label class="form-label">
+                              <i class="fas fa-lock"></i>
+                              Confirmar Nueva Contraseña
+                            </label>
+                            <input type="password" name="confirmarContrasena" class="form-control" 
+                                   placeholder="Confirme la nueva contraseña">
+                            <small class="text-muted">
+                              <i class="fas fa-shield-alt me-1"></i>
+                              Debe coincidir con la nueva contraseña
+                            </small>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- INFORMACIÓN ACTUAL DEL USUARIO -->
+                    <h4 class="mb-3 mt-4" style="color: #06b6d4; border-bottom: 2px solid rgba(6, 182, 212, 0.3); padding-bottom: 0.5rem;">
+                      <i class="fas fa-info-circle me-2"></i>Información Actual
+                    </h4>
+                    
+                    <div class="info-section">
+                      <div class="row">
+                        <div class="col-md-4">
+                          <div class="info-item">
+                            <strong><i class="fas fa-user-tag me-1"></i>Rol Actual:</strong>
+                            <span class="info-badge ms-2" th:text="${usuario.rol.nombreRol}"></span>
+                          </div>
+                          <div class="info-item">
+                            <strong><i class="fas fa-envelope me-1"></i>Email:</strong>
+                            <span class="text-muted ms-2" th:text="${usuario.correo}"></span>
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="info-item">
+                            <strong><i class="fas fa-toggle-on me-1"></i>Estado:</strong>
+                            <span class="badge ms-2" 
+                                  th:classappend="${usuario.estado} ? 'bg-success' : 'bg-danger'"
+                                  th:text="${usuario.estado} ? 'Activo' : 'Inactivo'"></span>
+                          </div>
+                          <div class="info-item">
+                            <strong><i class="fas fa-user me-1"></i>Nombre Completo:</strong>
+                            <span class="text-muted ms-2" th:text="${usuario.nombre + ' ' + usuario.apellidoPaterno + ' ' + (usuario.apellidoMaterno ?: '')}"></span>
+                          </div>
+                        </div>
+                        <div class="col-md-4">
+                          <div class="info-item">
+                            <strong><i class="fas fa-calendar me-1"></i>Registrado:</strong>
+                            <span class="text-muted ms-2">
+                              <span th:if="${usuario.fechaRegistro}" 
+                                    th:text="${#temporals.format(usuario.fechaRegistro, 'dd/MM/yyyy')}"></span>
+                            </span>
+                          </div>
+                          <div class="info-item">
+                            <strong><i class="fas fa-clock me-1"></i>Último acceso:</strong>
+                            <span class="text-muted ms-2">
+                              <span th:if="${usuario.fechaUltimoAcceso}" 
+                                    th:text="${#temporals.format(usuario.fechaUltimoAcceso, 'dd/MM/yyyy HH:mm')}"></span>
+                              <span th:unless="${usuario.fechaUltimoAcceso}">Sin acceso registrado</span>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- BOTONES DE ACCIÓN -->
+                    <div class="d-flex justify-content-between align-items-center mt-5 pt-4" style="border-top: 1px solid rgba(59, 130, 246, 0.3);">
+                      <a th:href="@{/admin/gestion-usuarios}" class="btn btn-secondary">
+                        <i class="fas fa-times me-2"></i>
+                        Cancelar Cambios
+                      </a>
+                      <div>
+                        <button type="reset" class="btn btn-secondary me-3" style="background: rgba(239, 68, 68, 0.8); border-color: rgba(239, 68, 68, 0.6);">
+                          <i class="fas fa-undo me-2"></i>
+                          Restablecer
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                          <i class="fas fa-save me-2"></i>
+                          Guardar Cambios
+                        </button>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script th:src="|/tabler/dist/libs/apexcharts/dist/apexcharts.min.js?1757307620|"></script>
+  <script th:src="|/tabler/dist/libs/jsvectormap/dist/js/jsvectormap.min.js?1757307620|"></script>
+  <script th:src="|/tabler/dist/libs/jsvectormap/dist/maps/world.js?1757307620|"></script>
+  <script th:src="|/tabler/dist/libs/jsvectormap/dist/maps/world-merc.js?1757307620|"></script>
+  <script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
+  <script th:src="|/tabler/preview/js/demo.js?1757307620|"></script>
+
+  <script>
+    // VALIDACIONES Y FUNCIONALIDAD AVANZADA
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('form');
+      const nuevaContrasenaInput = document.querySelector('input[name="nuevaContrasena"]');
+      const confirmarContrasenaInput = document.querySelector('input[name="confirmarContrasena"]');
+      
+      // Validación en tiempo real de contraseñas
+      function validarContrasenas() {
+        const nuevaContrasena = nuevaContrasenaInput.value;
+        const confirmarContrasena = confirmarContrasenaInput.value;
+        
+        // Limpiar estilos previos
+        nuevaContrasenaInput.classList.remove('is-valid', 'is-invalid');
+        confirmarContrasenaInput.classList.remove('is-valid', 'is-invalid');
+        
+        if (nuevaContrasena) {
+          if (nuevaContrasena.length >= 8) {
+            nuevaContrasenaInput.classList.add('is-valid');
+          } else {
+            nuevaContrasenaInput.classList.add('is-invalid');
+          }
+          
+          if (confirmarContrasena) {
+            if (nuevaContrasena === confirmarContrasena) {
+              confirmarContrasenaInput.classList.add('is-valid');
+            } else {
+              confirmarContrasenaInput.classList.add('is-invalid');
+            }
+          }
+        }
+      }
+      
+      // Event listeners para validación en tiempo real
+      nuevaContrasenaInput.addEventListener('input', validarContrasenas);
+      confirmarContrasenaInput.addEventListener('input', validarContrasenas);
+      
+      // Mostrar/ocultar contraseñas
+      const toggleButtons = document.querySelectorAll('.toggle-password');
+      toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const targetInput = document.querySelector(this.dataset.target);
+          const icon = this.querySelector('i');
+          
+          if (targetInput.type === 'password') {
+            targetInput.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+          } else {
+            targetInput.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+          }
+        });
+      });
+      
+      // Validación del formulario antes de enviar
+      form.addEventListener('submit', function(e) {
+        const nombre = document.querySelector('input[name="nombre"]').value.trim();
+        const apellidoPaterno = document.querySelector('input[name="apellidoPaterno"]').value.trim();
+        const correo = document.querySelector('input[name="correo"]').value.trim();
+        const rol = document.querySelector('select[name="idRol"]').value;
+        const nuevaContrasena = nuevaContrasenaInput.value;
+        const confirmarContrasena = confirmarContrasenaInput.value;
+        
+        // Validar campos obligatorios
+        if (!nombre || !apellidoPaterno || !correo || !rol) {
+          e.preventDefault();
+          showNotification('error', 'Por favor, complete todos los campos obligatorios');
+          return false;
+        }
+        
+        // Validar formato de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(correo)) {
+          e.preventDefault();
+          showNotification('error', 'Por favor, ingrese un correo electrónico válido');
+          return false;
+        }
+        
+        // Validar contraseñas si se proporcionan
+        if (nuevaContrasena) {
+          if (nuevaContrasena.length < 8) {
+            e.preventDefault();
+            showNotification('error', 'La nueva contraseña debe tener al menos 8 caracteres');
+            return false;
+          }
+          
+          if (nuevaContrasena !== confirmarContrasena) {
+            e.preventDefault();
+            showNotification('error', 'Las contraseñas no coinciden');
+            return false;
+          }
+        }
+        
+        // Confirmar actualización
+        if (!confirm('¿Está seguro de que desea actualizar la información de este usuario?')) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Mostrar indicador de carga
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+        submitButton.disabled = true;
+        
+        return true;
+      });
+      
+      // Función para mostrar notificaciones
+      function showNotification(type, message) {
+        const alertClass = type === 'error' ? 'alert-danger' : 'alert-success';
+        const icon = type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle';
+        
+        const notification = document.createElement('div');
+        notification.className = `alert ${alertClass}`;
+        notification.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 9999;
+          min-width: 300px;
+          animation: slideInRight 0.3s ease-out;
+        `;
+        notification.innerHTML = `
+          <i class="fas ${icon} me-2"></i>
+          ${message}
+        `;
+        
+        document.body.appendChild(notification);
+        
+        setTimeout(() => {
+          notification.style.animation = 'slideOutRight 0.3s ease-in';
+          setTimeout(() => {
+            document.body.removeChild(notification);
+          }, 300);
+        }, 5000);
+      }
+      
+      // Animaciones CSS
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+          from { transform: translateX(0); opacity: 1; }
+          to { transform: translateX(100%); opacity: 0; }
+        }
+        .is-valid {
+          border-color: #10b981 !important;
+          box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25) !important;
+        }
+        .is-invalid {
+          border-color: #ef4444 !important;
+          box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.25) !important;
+        }
+      `;
+      document.head.appendChild(style);
+      
+      // Auto-guardar borrador (localStorage)
+      const inputs = form.querySelectorAll('input:not([readonly]), select');
+      inputs.forEach(input => {
+        // Cargar datos guardados
+        const savedValue = localStorage.getItem(`edit-user-${input.name}`);
+        if (savedValue && input.type !== 'password') {
+          input.value = savedValue;
+        }
+        
+        // Guardar cambios
+        input.addEventListener('input', function() {
+          if (this.type !== 'password') {
+            localStorage.setItem(`edit-user-${this.name}`, this.value);
+          }
+        });
+      });
+      
+      // Limpiar localStorage al enviar formulario exitosamente
+      form.addEventListener('submit', function() {
+        inputs.forEach(input => {
+          localStorage.removeItem(`edit-user-${input.name}`);
+        });
+      });
+    });
+  </script>
+</body>
+</html>

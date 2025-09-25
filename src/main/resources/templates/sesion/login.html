@@ -73,14 +73,28 @@
    <h1 class="login__title"><i class="ri-terminal-box-fill"></i> Telito</h1>
       <h2 class="login__subtitle">Developer Portal</h2>
 
+      <!-- Mensaje de error -->
       <div th:if="${error!=null && !error.isEmpty()}" class="login__error">
          <i class="ri-error-warning-fill"></i>
          <span th:text="${error}">Credenciales inválidas</span>
       </div>
 
+      <!-- Mensaje de logout exitoso -->
       <div th:if="${logout!=null && !logout.isEmpty()}" class="login__success">
          <i class="ri-check-fill"></i>
-         <span >Has cerrado sesión correctamente</span>
+         <span>Has cerrado sesión correctamente</span>
+      </div>
+
+      <!-- Mensaje de registro exitoso -->
+      <div th:if="${success!=null && !success.isEmpty()}" class="login__success">
+         <i class="ri-check-fill"></i>
+         <span th:text="${success}">Mensaje de éxito</span>
+      </div>
+
+      <!-- Mensaje de advertencia -->
+      <div th:if="${warning!=null && !warning.isEmpty()}" class="login__warning">
+         <i class="ri-alert-fill"></i>
+         <span th:text="${warning}">Mensaje de advertencia</span>
       </div>
 
       <div class="login__inputs">

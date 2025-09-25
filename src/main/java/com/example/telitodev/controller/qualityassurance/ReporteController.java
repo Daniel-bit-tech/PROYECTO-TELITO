@@ -44,4 +44,22 @@ public class ReporteController {
 
         return "qa/reportes";
     }
+
+    @GetMapping("/reporteDetalle")
+    public String showReporteDetalleView(Model model, Authentication auth,
+                                         @RequestParam("idReporte") Integer idReporte) {
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        model.addAttribute("usuario", usuario);
+
+        Reporte reporte = reporteRepository.findById(idReporte).orElse(null);
+
+        if (reporte == null) {
+            return "redirect:/qa/reportes?error=Reporte no encontrado";
+        }
+
+        // Agregar el reporte al modelo
+        model.addAttribute("reporte", reporte);
+
+        return "qa/reporteDetalle";
+    }
 }

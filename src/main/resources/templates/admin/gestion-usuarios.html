@@ -4,102 +4,230 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios - TELITO Admin</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- CSRF tokens for AJAX requests -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .custom-navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-bottom: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .navbar-brand a {
+            color: white !important;
+            text-decoration: none;
+        }
+        .navbar-nav .nav-link {
+            color: white !important;
+        }
+        .user-avatar {
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+    </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
-        <div class="container">
-            <a class="navbar-brand text-white fw-bold" href="/admin/home">
-                <i class="fas fa-code me-2"></i>
-                TELITO | Developer Portal
-            </a>
-            <div class="d-flex">
-                <span class="text-white me-3">
-                    <i class="fas fa-user-shield me-1"></i>
-                    Administrador
-                </span>
-                <a href="/logout" class="btn btn-outline-light btn-sm">
-                    <i class="fas fa-sign-out-alt me-1"></i>Cerrar Sesión
-                </a>
-            </div>
-        </div>
-    </nav>
+    <!-- Banner de impersonación -->
+    <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
 
-    <div class="container py-4">
-        <!-- Estadísticas -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h3 class="text-primary" th:text="${totalUsuarios}">0</h3>
-                        <p class="text-muted mb-0">Total Usuarios</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h3 class="text-success" th:text="${usuariosActivos}">0</h3>
-                        <p class="text-muted mb-0">Usuarios Activos</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="card text-center">
-                    <div class="card-body">
-                        <h3 class="text-danger" th:text="${usuariosInactivos}">0</h3>
-                        <p class="text-muted mb-0">Usuarios Inactivos</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="page">
+        <!-- Navbar estilo Tabler -->
+        <header class="navbar navbar-expand-md d-print-none custom-navbar">
+            <div class="container-xl">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-        <!-- Panel Principal -->
-        <div class="card">
-            <div class="card-header" style="background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%); color: white;">
-                <h4 class="mb-0">
-                    <i class="fas fa-users me-2"></i>
-                    Lista de Usuarios Registrados
-                </h4>
-            </div>
-            <div class="card-body">
-                <!-- Búsqueda y Filtros -->
-                <div class="row mb-3">
-                    <div class="col-md-8">
-                        <form id="searchForm" method="get" action="/admin/gestion-usuarios">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <input type="text" class="form-control" 
-                                           name="search" th:value="${search}" 
-                                           placeholder="Buscar por nombre o email...">
+                <div class="navbar-brand">
+                    <a href="/admin/home" class="d-flex align-items-center text-decoration-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-code me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
+                            <path d="M7 8l-4 4l4 4"></path>
+                            <path d="M17 8l4 4l-4 4"></path>
+                            <path d="M14 4l-4 16"></path>
+                        </svg>
+                        <span class="fw-bold text-white">TELITO</span> | Developer Portal
+                    </a>
+                </div>
+
+                <div class="navbar-nav flex-row order-md-last ms-auto">
+                    <div class="d-none d-md-flex align-items-center">
+                        <div class="nav-item me-2">
+                            <a href="?theme=dark" class="theme-switcher nav-link px-0 hide-theme-dark" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="Modo oscuro" data-bs-original-title="Modo oscuro">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
+                                </svg>
+                            </a>
+                            <a href="?theme=light" class="theme-switcher nav-link px-0 hide-theme-light" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="Modo claro" data-bs-original-title="Modo claro">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
+                                    <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"></path>
+                                </svg>
+                            </a>
+                        </div>
+
+                        <div class="nav-item dropdown">
+                            <a href="#" class="nav-link d-flex lh-1 p-0 dropdown-toggle" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario" aria-expanded="false">
+                                <span class="avatar avatar-sm user-avatar" style="background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                    <i class="fas fa-user-shield"></i>
+                                </span>
+                                <div class="d-none d-xl-block ps-2 text-white">
+                                    <div>Super Administrador</div>
+                                    <div class="mt-1 small opacity-75">Admin</div>
                                 </div>
-                                <div class="col-md-3">
-                                    <select class="form-select" name="rol">
-                                        <option value="">Todos los roles</option>
-                                        <option th:each="rol : ${roles}" 
-                                                th:value="${rol.nombreRol}" 
-                                                th:text="${rol.descripcion}"
-                                                th:selected="${rol.nombreRol == selectedRol}">
-                                            Developer
-                                        </option>
-                                    </select>
-                                </div>
-                                <div class="col-md-3">
-                                    <button type="submit" class="btn btn-primary w-100">
-                                        <i class="fas fa-search me-1"></i>Buscar
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                <a href="/admin/home" class="dropdown-item d-flex align-items-center">
+                                    <i class="fas fa-home me-2"></i> Dashboard
+                                </a>
+                                <a href="/admin/gestion-usuarios" class="dropdown-item d-flex align-items-center">
+                                    <i class="fas fa-users me-2"></i> Gestión de Usuarios
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <form action="/logout" method="post" style="margin: 0;">
+                                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                                    <button type="submit" class="dropdown-item d-flex align-items-center">
+                                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
                                     </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="page-wrapper">
+        <div class="page-header d-print-none">
+            <div class="container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col">
+                        <h2 class="page-title">
+                            <i class="fas fa-users me-2"></i>
+                            Gestión de Usuarios
+                        </h2>
+                        <div class="text-muted mt-1">Administra los usuarios del sistema TELITO Developer Portal</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-body">
+            <div class="container-xl">
+                <!-- Estadísticas -->
+                <div class="row row-cards mb-4">
+                    <div class="col-md-4">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-primary text-white avatar">
+                                            <i class="fas fa-users"></i>
+                                        </span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="${totalUsuarios}">0</div>
+                                        <div class="text-muted">Total Usuarios</div>
+                                    </div>
                                 </div>
                             </div>
-                        </form>
+                        </div>
                     </div>
-                    <div class="col-md-4 text-end">
-                        <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevoUsuarioModal">
-                            <i class="fas fa-plus me-1"></i>Nuevo Usuario
-                        </button>
+                    <div class="col-md-4">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-success text-white avatar">
+                                            <i class="fas fa-user-check"></i>
+                                        </span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="${usuariosActivos}">0</div>
+                                        <div class="text-muted">Usuarios Activos</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-warning text-white avatar">
+                                            <i class="fas fa-user-times"></i>
+                                        </span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="${usuariosInactivos}">0</div>
+                                        <div class="text-muted">Usuarios Inactivos</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <!-- Panel Principal -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-users me-2"></i>
+                            Lista de Usuarios Registrados
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <!-- Búsqueda y Filtros -->
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <form id="searchForm" method="get" action="/admin/gestion-usuarios">
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <span class="input-group-text">
+                                                    <i class="fas fa-search"></i>
+                                                </span>
+                                                <input type="text" class="form-control" 
+                                                       name="search" th:value="${search}" 
+                                                       placeholder="Buscar por nombre o email...">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <select class="form-select" name="rol">
+                                                <option value="">Todos los roles</option>
+                                                <option th:each="rol : ${roles}" 
+                                                        th:value="${rol.nombreRol}" 
+                                                        th:text="${rol.descripcion}"
+                                                        th:selected="${rol.nombreRol == selectedRol}">
+                                                    Developer
+                                                </option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <button type="submit" class="btn btn-primary w-100">
+                                                <i class="fas fa-search me-1"></i>Buscar
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevoUsuarioModal">
+                                    <i class="fas fa-plus me-1"></i>Nuevo Usuario
+                                </button>
+                            </div>
+                        </div>
 
                 <!-- Lista de Usuarios -->
                 <div class="row">
@@ -275,10 +403,14 @@
             }
 
             try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+                
                 const response = await fetch('/admin/gestion-usuarios', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken
                     },
                     body: JSON.stringify({
                         ...data,
@@ -311,16 +443,52 @@
             
             if (confirm(`¿Estás seguro de que quieres ${accion} este usuario?`)) {
                 try {
+                    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+                    
                     const response = await fetch(`/admin/gestion-usuarios/${dni}/estado`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
+                            [csrfHeader]: csrfToken
                         },
                         body: JSON.stringify({ estado: nuevoEstado })
                     });
 
                     if (response.ok) {
                         alert(`Usuario ${accion}do exitosamente`);
+                        
+                        // Obtener información del usuario para la actividad
+                        const responseData = await response.json();
+                        const nombreUsuario = responseData.nombreUsuario || 'Usuario';
+                        
+                        // Agregar actividad al dashboard
+                        const accionActividad = nuevoEstado ? 'ACTIVAR_USUARIO' : 'BANEAR_USUARIO';
+                        const descripcionActividad = `${nuevoEstado ? 'Activó' : 'Baneó'} al usuario ${nombreUsuario} (DNI: ${dni})`;
+                        
+                        // Agregar a localStorage para el dashboard
+                        let actividades = JSON.parse(localStorage.getItem('actividadesRecientes') || '[]');
+                        const nuevaActividad = {
+                            accion: accionActividad,
+                            descripcion: descripcionActividad,
+                            tiempo: 'Ahora',
+                            icono: nuevoEstado ? 'fa-user-check' : 'fa-user-slash',
+                            color: nuevoEstado ? 'success' : 'danger'
+                        };
+                        
+                        actividades.unshift(nuevaActividad);
+                        if (actividades.length > 10) actividades = actividades.slice(0, 10);
+                        localStorage.setItem('actividadesRecientes', JSON.stringify(actividades));
+                        
+                        // Notificar a otros tabs (como el dashboard) sobre el cambio
+                        localStorage.setItem('admin-user-updated', JSON.stringify({
+                            action: 'estado-changed',
+                            dni: dni,
+                            newStatus: nuevoEstado,
+                            nombreUsuario: nombreUsuario,
+                            timestamp: Date.now()
+                        }));
+                        
                         window.location.reload();
                     } else {
                         const error = await response.text();
@@ -355,5 +523,17 @@
 
         console.log('Sistema de gestión de usuarios cargado correctamente');
     </script>
+
+    <!-- Tabler Core Scripts -->
+    <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
+    <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+    
+            </div>
+        </div>
+    </div>
+
+    <!-- Script para funcionalidades de impersonación -->
+    <script th:replace="~{components/impersonation-banner :: impersonation-script}"></script>
+
 </body>
 </html>

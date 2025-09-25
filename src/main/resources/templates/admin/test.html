@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test - Panel de Administración</title>
+    <link rel="stylesheet" href="/tabler/dist/css/tabler.min.css">
+    <style>
+        :root {
+            --tblr-primary: #206bc4;
+            --tblr-success: #2fb344;
+            --tblr-danger: #d63384;
+            --tblr-warning: #f59f00;
+        }
+    </style>
+</head>
+<body class="d-flex flex-column">
+    <div class="page">
+        <!-- Header -->
+        <header class="navbar navbar-expand-md d-print-none">
+            <div class="container-xl">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <h1 class="navbar-brand navbar-brand-autodark d-none-navbar-horizontal pe-0 pe-md-3">
+                    <img src="/tabler/static/logo.svg" width="110" height="32" alt="Tabler" class="navbar-brand-image">
+                    TelitoDev - Admin Test
+                </h1>
+                <div class="navbar-nav flex-row order-md-last">
+                    <div class="nav-item dropdown">
+                        <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown">
+                            <span class="avatar avatar-sm" style="background-image: url(/tabler/static/avatars/000m.jpg)"></span>
+                            <div class="d-none d-xl-block ps-2">
+                                <div>Super Admin</div>
+                                <div class="mt-1 small text-muted">Test User</div>
+                            </div>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                            <a href="/admin/perfil" class="dropdown-item">Perfil</a>
+                            <div class="dropdown-divider"></div>
+                            <a href="/logout" class="dropdown-item">Cerrar Sesión</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page wrapper -->
+        <div class="page-wrapper">
+            <!-- Page header -->
+            <div class="page-header d-print-none">
+                <div class="container-xl">
+                    <div class="row g-2 align-items-center">
+                        <div class="col">
+                            <h2 class="page-title">
+                                Test de Conexión - Panel de Administración
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page body -->
+            <div class="page-body">
+                <div class="container-xl">
+                    <div class="row row-deck row-cards">
+                        <!-- Test Results -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Resultados de la Prueba</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="alert alert-success" role="alert">
+                                                <h4 class="alert-title">✅ Redirección Exitosa</h4>
+                                                <div class="text-muted">El sistema de redirección está funcionando correctamente.</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="alert alert-info" role="alert">
+                                                <h4 class="alert-title">ℹ️ Estado de Base de Datos</h4>
+                                                <div class="text-muted" th:text="${testResult ?: 'No se pudo conectar a la base de datos'}">
+                                                    Estado de conexión a BD
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-md-4">
+                                            <div class="card card-sm">
+                                                <div class="card-body">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-auto">
+                                                            <span class="bg-primary text-white avatar">U</span>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="font-weight-medium">
+                                                                Total Usuarios
+                                                            </div>
+                                                            <div class="text-muted" th:text="${totalUsuarios ?: '0'}">0</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card card-sm">
+                                                <div class="card-body">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-auto">
+                                                            <span class="bg-success text-white avatar">A</span>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="font-weight-medium">
+                                                                Acceso Admin
+                                                            </div>
+                                                            <div class="text-success">Funcionando</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="card card-sm">
+                                                <div class="card-body">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-auto">
+                                                            <span class="bg-warning text-white avatar">T</span>
+                                                        </div>
+                                                        <div class="col">
+                                                            <div class="font-weight-medium">
+                                                                Templates
+                                                            </div>
+                                                            <div class="text-success">Cargados</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Navigation Test -->
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Prueba de Navegación</h3>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <a href="/admin/home" class="btn btn-primary w-100 mb-2">
+                                                🏠 Dashboard Principal
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <a href="/admin/usuarios" class="btn btn-outline-primary w-100 mb-2">
+                                                👥 Gestión de Usuarios
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <a href="/admin/reportes" class="btn btn-outline-primary w-100 mb-2">
+                                                📊 Reportes
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <a href="/admin/configuracion" class="btn btn-outline-primary w-100 mb-2">
+                                                ⚙️ Configuración
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/tabler/dist/js/tabler.min.js"></script>
+</body>
+</html>

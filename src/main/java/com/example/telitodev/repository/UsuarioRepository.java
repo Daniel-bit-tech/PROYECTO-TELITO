@@ -14,10 +14,9 @@ import java.util.Optional;
 @Repository
 public interface UsuarioRepository extends JpaRepository<Usuario, String> {
 
+    // Métodos existentes
     Optional<Usuario> findByCorreoAndEstado(String correo, Boolean estado);
-
     Usuario findByDni(String dni);
-
     Usuario findByCorreo(String correo);
 
     // Métodos existentes
@@ -55,5 +54,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
                                 @Param("nombreRol") String nombreRol,
                                 @Param("estado") Boolean estado,
                                 Pageable pageable);
+
 
 }

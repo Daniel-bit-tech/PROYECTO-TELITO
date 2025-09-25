@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>TELITO DEVELOPER PORTAL | Mi Perfil</title>
+    <!-- CSRF tokens for impersonation -->
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
@@ -77,20 +80,33 @@
         .profile-avatar {
             text-align: center;
             margin-bottom: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .avatar-img {
-            width: 120px;
-            height: 120px;
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
             object-fit: cover;
-            margin-bottom: 1rem;
+            object-position: center;
+            margin-bottom: 0;
             border: 4px solid var(--tblr-border-color);
+            display: block;
+            background-color: var(--tblr-bg-surface);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            flex-shrink: 0;
         }
 
         .avatar-upload {
             position: relative;
             display: inline-block;
+            margin-bottom: 1rem;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
         }
 
         .avatar-edit {
@@ -226,6 +242,11 @@
         .badge-warning {
             background-color: rgba(var(--tblr-warning-rgb), 0.1);
             color: var(--tblr-warning);
+        }
+
+        .badge-danger {
+            background-color: rgba(220, 38, 38, 0.1);
+            color: #dc2626;
         }
 
         .api-list {
@@ -372,10 +393,49 @@
                 gap: 1rem;
             }
         }
+
+        /* Estilos para tema oscuro */
+        [data-bs-theme="dark"] {
+            --tblr-bg-surface: #1a1d29;
+            --tblr-bg-surface-secondary: #252736;
+            --tblr-border-color: #2d3142;
+            --tblr-body-color: #e9ecef;
+            --tblr-secondary-color: #adb5bd;
+        }
+
+        [data-bs-theme="dark"] .profile-sidebar {
+            background-color: var(--tblr-bg-surface);
+            border: 1px solid var(--tblr-border-color);
+        }
+
+        [data-bs-theme="dark"] .profile-main {
+            background-color: var(--tblr-bg-surface);
+            border: 1px solid var(--tblr-border-color);
+        }
+
+        [data-bs-theme="dark"] .avatar-img {
+            border-color: var(--tblr-border-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        [data-bs-theme="dark"] .form-control {
+            background-color: var(--tblr-bg-surface-secondary);
+            border-color: var(--tblr-border-color);
+            color: var(--tblr-body-color);
+        }
+
+        [data-bs-theme="dark"] .notification-item,
+        [data-bs-theme="dark"] .api-item {
+            background-color: var(--tblr-bg-surface-secondary);
+            border-color: var(--tblr-border-color);
+        }
     </style>
 </head>
 
 <body>
+<!-- Banner de impersonación -->
+<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
 
@@ -400,8 +460,8 @@
     <div class="content">
         <div class="profile-container">
             <div class="profile-header">
-                <h1 class="profile-title">Mi Perfil</h1>
-                <p class="profile-subtitle">Gestiona tu información personal, preferencias y actividad</p>
+                <h1 class="profile-title" th:text="'Mi Perfil' + (${usuario != null && usuario.rol.nombreRol == 'SUPERADMIN'} ? ' - Superadmin' : (${usuario != null && usuario.rol.nombreRol == 'QA'} ? ' - QA' : ''))">Mi Perfil</h1>
+                <p class="profile-subtitle" th:text="${usuario != null && usuario.rol.nombreRol == 'SUPERADMIN'} ? 'Gestiona tu información personal y supervisa la actividad del sistema' : (${usuario != null && usuario.rol.nombreRol == 'QA'} ? 'Gestiona tu información personal y actividades de calidad' : 'Gestiona tu información personal, preferencias y actividad')">Gestiona tu información personal, preferencias y actividad</p>
             </div>
 
             <div class="profile-tabs">
@@ -763,10 +823,14 @@
     <div id="footer-placeholder"></div>
 </div>
 
-<script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
-<script src="tabler/dist/js/tabler.min.js?1757307620"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Tabler JS from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
 
 <script>
+    // Aplicar tema oscuro al cargar la página
+    document.documentElement.setAttribute('data-bs-theme', 'dark');
 
     document.querySelectorAll('.profile-tab').forEach(tab => {
         tab.addEventListener('click', function() {

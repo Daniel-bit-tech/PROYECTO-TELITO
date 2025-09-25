@@ -25,9 +25,14 @@
                 </div>
                 <div class="col-md-4 text-end">
                     <button id="stopImpersonationBtn" 
-                            class="btn btn-warning btn-sm fw-bold">
+                            class="btn btn-warning btn-sm fw-bold me-2">
                         <i class="fas fa-sign-out-alt me-1"></i>
                         Volver a SuperAdmin
+                    </button>
+                    <button id="testImpersonationBtn" 
+                            class="btn btn-info btn-sm fw-bold">
+                        <i class="fas fa-bug me-1"></i>
+                        Test
                     </button>
                 </div>
             </div>
@@ -84,27 +89,106 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('🎭 Banner de impersonación cargado');
         
+        // Debug inmediato de tokens CSRF
+        console.log('🔍 Verificación inicial de tokens CSRF:');
+        const initialCsrfToken = document.querySelector('meta[name="_csrf"]');
+        const initialCsrfHeader = document.querySelector('meta[name="_csrf_header"]');
+        console.log('  - Meta _csrf presente:', initialCsrfToken ? 'Sí' : 'No');
+        console.log('  - Meta _csrf_header presente:', initialCsrfHeader ? 'Sí' : 'No');
+        if (initialCsrfToken) {
+            console.log('  - Token value:', initialCsrfToken.getAttribute('content'));
+        }
+        if (initialCsrfHeader) {
+            console.log('  - Header value:', initialCsrfHeader.getAttribute('content'));
+        }
+        
         // Configurar botón de detener impersonación
         const stopBtn = document.getElementById('stopImpersonationBtn');
+        const testBtn = document.getElementById('testImpersonationBtn');
+        
         if (stopBtn) {
             stopBtn.addEventListener('click', function() {
                 if (confirm('¿Estás seguro de que quieres volver a tu sesión de SuperAdmin?')) {
                     stopImpersonation();
                 }
             });
+        } else {
+            console.error('❌ No se encontró el botón stopImpersonationBtn');
+        }
+        
+        if (testBtn) {
+            testBtn.addEventListener('click', function() {
+                testConnection();
+            });
+        }
+        
+        function testConnection() {
+            console.log('🧪 Probando conexión...');
+            
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+            
+            console.log('🔑 CSRF Token:', csrfToken ? 'Encontrado' : 'NO ENCONTRADO');
+            console.log('🔑 CSRF Header:', csrfHeader ? csrfHeader : 'NO ENCONTRADO');
+            
+            // Probar primero el endpoint de status
+            fetch('/admin/gestion-usuarios/impersonation-status', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('📡 Status respuesta:', response.status, response.statusText);
+                return response.json();
+            })
+            .then(data => {
+                console.log('📊 Status data:', data);
+                alert('✅ Conexión OK. Ver consola para detalles.');
+            })
+            .catch(error => {
+                console.error('❌ Error en test:', error);
+                alert('❌ Error en test: ' + error.message);
+            });
         }
         
         function stopImpersonation() {
             console.log('🚪 Deteniendo impersonación...');
             
+            // Debug: Verificar que el DOM esté completamente cargado
+            console.log('📄 DOM readyState:', document.readyState);
+            console.log('🔍 Buscando meta tags CSRF...');
+            
             // Obtener tokens CSRF
-            const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
-            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+            const csrfTokenMeta = document.querySelector('meta[name="_csrf"]');
+            const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+            
+            console.log('🔍 Meta tag _csrf encontrado:', csrfTokenMeta ? 'Sí' : 'No');
+            console.log('🔍 Meta tag _csrf_header encontrado:', csrfHeaderMeta ? 'Sí' : 'No');
+            
+            if (csrfTokenMeta) {
+                console.log('🔍 Contenido del meta _csrf:', csrfTokenMeta.getAttribute('content'));
+            }
+            if (csrfHeaderMeta) {
+                console.log('🔍 Contenido del meta _csrf_header:', csrfHeaderMeta.getAttribute('content'));
+            }
+            
+            const csrfToken = csrfTokenMeta?.getAttribute('content');
+            const csrfHeader = csrfHeaderMeta?.getAttribute('content');
+            
+            console.log('🔑 CSRF Token:', csrfToken ? 'Encontrado' : 'NO ENCONTRADO');
+            console.log('🔑 CSRF Header:', csrfHeader ? csrfHeader : 'NO ENCONTRADO');
             
             if (!csrfToken || !csrfHeader) {
-                alert('❌ Error: Tokens de seguridad no encontrados');
+                console.error('❌ CSRF tokens missing - Debug info:');
+                console.error('  - Token value:', csrfToken);
+                console.error('  - Header value:', csrfHeader);
+                console.error('  - All meta tags:', document.querySelectorAll('meta'));
+                alert('❌ Error: Tokens de seguridad no encontrados. Revisa la consola para más detalles.');
                 return;
             }
+            
+            console.log('📡 Enviando petición a: /admin/gestion-usuarios/stop-impersonation');
             
             fetch('/admin/gestion-usuarios/stop-impersonation', {
                 method: 'POST',
@@ -113,16 +197,25 @@
                     [csrfHeader]: csrfToken
                 }
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('📡 Respuesta recibida:', response.status, response.statusText);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
             .then(data => {
                 console.log('✅ Impersonación detenida:', data);
                 alert('✅ ' + data.mensaje);
                 
                 // Redirigir a gestión de usuarios
-                window.location.href = data.redirectUrl || '/admin/gestion-usuarios';
+                const redirectUrl = data.redirectUrl || '/admin/gestion-usuarios';
+                console.log('🔄 Redirigiendo a:', redirectUrl);
+                window.location.href = redirectUrl;
             })
             .catch(error => {
-                console.error('❌ Error al detener impersonación:', error);
+                console.error('❌ Error completo:', error);
+                console.error('❌ Error al detener impersonación:', error.message);
                 alert('❌ Error al volver a SuperAdmin: ' + error.message);
             });
         }

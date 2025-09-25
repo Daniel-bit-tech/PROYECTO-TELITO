@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmar Cuenta - TELITO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+</head>
+<body class="bg-dark text-light">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4>Confirmar Cuenta</h4>
+                </div>
+                <div class="card-body bg-dark text-light">
+                    <!-- Mensaje de error -->
+                    <div th:if="${error}" class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${error}"></span>
+                    </div>
+                    
+                    <!-- Mensaje de éxito -->
+                    <div th:if="${success}" class="alert alert-success" role="alert">
+                        <i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span>
+                    </div>
+                    
+                    <form method="post" th:action="@{/admin/gestion-usuarios/confirmar-cuenta}" autocomplete="off" id="confirmForm">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" th:value="${email}" required readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="token" class="form-label">Código de Confirmación</label>
+                            <input type="text" class="form-control" id="token" name="token" th:value="${token}" maxlength="6" pattern="[0-9]{6}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Nueva Contraseña</label>
+                            <input type="password" class="form-control" id="password" name="password" minlength="8" required autocomplete="new-password">
+                            <div class="form-text text-light">Debe tener al menos 8 caracteres</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
+                            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" minlength="8" required autocomplete="new-password">
+                            <div class="form-text text-light">Debe coincidir con la contraseña anterior</div>
+                        </div>
+                        
+                        <!-- Botón principal con validación JavaScript -->
+                        <button type="button" class="btn btn-success w-100 mb-2" onclick="validateAndSubmit()">Confirmar y Activar Cuenta</button>
+                        
+                        <!-- Botón alternativo para debugging -->
+                        <button type="button" class="btn btn-info w-100 mb-2" onclick="submitViaJSON()">🔧 Método Alternativo (JSON)</button>
+                        
+                        <!-- Botón de envío directo sin validación -->
+                        <button type="submit" class="btn btn-warning w-100" onclick="return confirm('⚠️ Envío directo sin validación. ¿Continuar?')">🚀 Envío Directo</button>
+                        
+                        <!-- Botón oculto para envío real -->
+                        <button type="submit" id="hiddenSubmit" style="display: none;">Submit</button>
+                    </form>
+                    
+                    <script>
+                    function validateAndSubmit() {
+                        const email = document.getElementById('email').value;
+                        const token = document.getElementById('token').value;
+                        const password = document.getElementById('password').value;
+                        const confirmPassword = document.getElementById('confirmPassword').value;
+                        
+                        console.log('=== VALIDACIÓN FRONTEND ===');
+                        console.log('Email:', email);
+                        console.log('Token:', token);
+                        console.log('Password length:', password.length);
+                        console.log('ConfirmPassword length:', confirmPassword.length);
+                        console.log('Passwords match:', password === confirmPassword);
+                        
+                        // Validaciones
+                        if (!email || !token || !password || !confirmPassword) {
+                            alert('❌ Todos los campos son obligatorios');
+                            return;
+                        }
+                        
+                        if (token.length !== 6) {
+                            alert('❌ El código debe tener exactamente 6 dígitos');
+                            return;
+                        }
+                        
+                        if (password.length < 8) {
+                            alert('❌ La contraseña debe tener al menos 8 caracteres');
+                            return;
+                        }
+                        
+                        if (password !== confirmPassword) {
+                            alert('❌ Las contraseñas no coinciden');
+                            return;
+                        }
+                        
+                        console.log('✅ Validación exitosa, enviando formulario...');
+                        
+                        // Enviar formulario
+                        document.getElementById('hiddenSubmit').click();
+                    }
+                    
+                    // Función para envío via JSON (método alternativo)
+                    async function submitViaJSON() {
+                        const email = document.getElementById('email').value;
+                        const token = document.getElementById('token').value;
+                        const password = document.getElementById('password').value;
+                        const confirmPassword = document.getElementById('confirmPassword').value;
+                        
+                        console.log('=== ENVIANDO VIA JSON ===');
+                        
+                        try {
+                            const response = await fetch('/admin/gestion-usuarios/confirmar-cuenta-json', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    email: email,
+                                    token: token,
+                                    password: password,
+                                    confirmPassword: confirmPassword
+                                })
+                            });
+                            
+                            const result = await response.json();
+                            console.log('Respuesta JSON:', result);
+                            
+                            if (result.success) {
+                                alert('✅ Método JSON funcionó: ' + result.message);
+                            } else {
+                                alert('❌ Error JSON: ' + result.error);
+                            }
+                        } catch (error) {
+                            console.error('Error JSON:', error);
+                            alert('❌ Error en método JSON: ' + error.message);
+                        }
+                    }
+                    
+                    // Validación en tiempo real
+                    document.getElementById('confirmPassword').addEventListener('input', function() {
+                        const password = document.getElementById('password').value;
+                        const confirmPassword = this.value;
+                        
+                        if (confirmPassword && password !== confirmPassword) {
+                            this.classList.add('is-invalid');
+                        } else {
+                            this.classList.remove('is-invalid');
+                        }
+                    });
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -94,49 +94,54 @@
 <div class="login">
   <img th:src="@{/login/assets/img/login-bg.png}" alt="image" class="login__bg">
 
-  <form action="" class="login__form">
+  <form method="post" th:action="@{/register}" class="login__form">
     <h1 class="login__title"><i class="ri-terminal-box-fill"></i> REGISTRO</h1>
     <h2 class="login__subtitle">Developer Portal</h2>
 
+    <!-- Mensaje de error -->
+    <div th:if="${error}" style="background-color: #dc3545; color: white; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 14px;">
+      <i class="ri-alert-fill"></i> <span th:text="${error}"></span>
+    </div>
+
     <div class="login__inputs">
       <div class="login__box">
-        <input type="text" placeholder="Nombre" required class="login__input">
+        <input type="text" name="nombre" placeholder="Nombre" required class="login__input" th:value="${param.nombre}">
         <i class="ri-user-3-fill"></i>
       </div>
       <div class="login__box">
-        <input type="text" placeholder="Apellido Paterno" required class="login__input">
+        <input type="text" name="apellidoPaterno" placeholder="Apellido Paterno" required class="login__input" th:value="${param.apellidoPaterno}">
         <i class="ri-user-3-fill"></i>
       </div>
       <div class="login__box">
-        <input type="text" placeholder="Apellido Materno" required class="login__input">
+        <input type="text" name="apellidoMaterno" placeholder="Apellido Materno" class="login__input" th:value="${param.apellidoMaterno}">
         <i class="ri-user-3-fill"></i>
       </div>
       <div class="login__box">
-        <input type="text" placeholder="DNI" required class="login__input">
+        <input type="text" name="dni" placeholder="DNI" required class="login__input" pattern="[0-9]{8}" maxlength="8" th:value="${param.dni}">
         <i class="ri-id-card-fill"></i>
       </div>
       <div class="login__box">
-        <input type="email" placeholder="Correo institucional" required class="login__input">
+        <input type="email" name="correo" placeholder="Correo institucional" required class="login__input" th:value="${param.correo}">
         <i class="ri-mail-fill"></i>
       </div>
 
       <div class="login__box">
-        <input type="password" placeholder="Contraseña" required class="login__input">
+        <input type="password" name="contrasena" placeholder="Contraseña" required class="login__input" minlength="8">
         <i class="ri-lock-2-fill"></i>
       </div>
       <div class="login__box">
-        <input type="password" placeholder="Confirmar Contraseña" required class="login__input">
+        <input type="password" name="confirmarContrasena" placeholder="Confirmar Contraseña" required class="login__input" minlength="8">
         <i class="ri-lock-2-fill"></i>
       </div>
 
 
       <div class="login__roles" style="margin-top: 20px; text-align: left;">
         <label style="display: inline-flex; align-items: center; margin-right: 20px; color: #fff; font-family: 'Orbitron', sans-serif;">
-          <input type="radio" name="rol" value="desarrollador" required style="margin-right: 8px;">
+          <input type="radio" name="rol" value="desarrollador" required style="margin-right: 8px;" th:checked="${param.rol == 'desarrollador'}">
           Desarrollador
         </label>
         <label style="display: inline-flex; align-items: center; color: #fff; font-family: 'Orbitron', sans-serif;">
-          <input type="radio" name="rol" value="qa" required style="margin-right: 8px;">
+          <input type="radio" name="rol" value="qa" required style="margin-right: 8px;" th:checked="${param.rol == 'qa'}">
           QA
         </label>
       </div>
