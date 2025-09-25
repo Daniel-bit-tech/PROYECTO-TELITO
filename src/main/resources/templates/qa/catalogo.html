@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>TELITO DEVELOPER PORTAL | Catálogo de APIs</title>
-    <!-- CSRF tokens for impersonation -->
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
@@ -17,12 +16,36 @@
     <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
     <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
-    <!-- CSRF tokens for AJAX requests -->
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url("https://rsms.me/inter/inter.css");
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-description {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state .btn-primary {
+            margin-top: 20px;
+        }
 
 
         .catalog-container {
@@ -331,9 +354,6 @@
 </head>
 
 <body>
-<!-- Banner de impersonación -->
-<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
-
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
 
@@ -432,11 +452,43 @@
 
 
                     <div class="apis-grid">
+                        <div th:if="${#lists.isEmpty(apis)}" class="empty-state">
+                            <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                            <h4 class="empty-title">No hay APIs disponibles</h4>
+                            <p class="empty-description">Actualmente no hay APIs relacionadas a tu proyecto u organización.</p>
+                        </div>
+
+                        <div th:unless="${#lists.isEmpty(apis)}" th:each="api : ${apis}">
+                            <div class="api-card">
+                                <div class="api-header">
+                                    <div>
+                                        <h3 class="api-title" th:text="${api.nombreApi}"></h3> <!-- Nombre de la API -->
+
+                                    </div>
+                                </div>
+                                <div class="api-project">
+                                    <strong>Proyecto:</strong> <span th:text="${api.nombreProyecto}"></span> <!-- Nombre del Proyecto -->
+                                </div>
+
+                                <p class="api-description" th:text="${api.descripcion}"></p>
+
+                                <div class="api-actions">
+                                    <a th:href="@{/qa/apiDetalle}" class="btn-api btn-primary">
+                                        <i class="fas fa-book"></i> Documentación
+                                    </a>
+                                    <a href="#" class="btn-api btn-outline">
+                                        <i class="fas fa-play"></i> Probar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!--
                         <div class="api-card">
                             <div class="api-header">
                                 <div>
                                     <h3 class="api-title">Nombre API</h3>
-                                    <!-- Ejemplo: mostrar estado según dominio o tag -->
+
                                     <span class="api-status status-production"
                                           >Producción</span>
                                 </div>
@@ -454,7 +506,7 @@
                             </span>
                                                 <span class="meta-item">
                                 <i class="fas fa-bolt"></i>
-                                                    <!-- Ejemplo: uptime fijo o calculado -->
+
                                 98% uptime
                             </span>
                             </div>
@@ -462,8 +514,7 @@
                             <div class="api-tags">
 
                                 <span class="api-tag" >REST</span>
-                                <!--              <span class="api-tag" th:each="t : ${#strings.arraySplit(api.tag, ',')}"-->
-                                <!--                    th:text="${t}"></span>-->
+
                             </div>
 
                             <div class="api-actions">
@@ -475,6 +526,7 @@
                                 </a>
                             </div>
                         </div>
+        -->
                     </div>
                 </div>
 

@@ -16,9 +16,6 @@
     <link href="/tabler/dist/css/tabler-marketing.css?1757307617" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler-themes.css?1757307617" rel="stylesheet" />
     <!-- END PLUGINS STYLES -->
-    <!-- CSRF tokens for AJAX requests -->
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <!-- BEGIN DEMO STYLES -->
     <link href="/tabler/preview/css/demo.css?1757307617" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -30,9 +27,6 @@
     <!-- END CUSTOM FONT -->
 </head>
 <body>
-<!-- Banner de impersonación -->
-<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
-
 <!-- BEGIN GLOBAL THEME SCRIPT -->
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307617"></script>
 <!-- END GLOBAL THEME SCRIPT -->
@@ -115,10 +109,6 @@
                                         <input type="radio" class="form-check-input" name="form-estado" value="2" checked />
                                         <span class="form-check-label">FALLIDO</span>
                                     </label>
-                                    <label class="form-check">
-                                        <input type="radio" class="form-check-input" name="form-estado" value="3" />
-                                        <span class="form-check-label">CON INCIDENCIAS</span>
-                                    </label>
 
                                 </div>
                             </div>
@@ -146,7 +136,7 @@
                     </div>
                     <div class="col-md-9">
                         <div class="row row-cards">
-                            <div class="space-y">
+                            <div th:each="reporte : ${reportes}"  class="space-y">
                                 <div class="card">
                                     <div class="row g-0">
                                         <div class="col-auto">
@@ -158,152 +148,117 @@
                                             <div class="card-body ps-0">
                                                 <div class="row">
                                                     <div class="col">
-                                                        <h3 class="mb-0"><a href="#">API 1</a></h3>
+                                                        <h3>Reporte #<span th:text="|${reporte.idReporte}: ${reporte.api.nombre}|"></span></h3>
                                                     </div>
                                                     <div class="col-md-auto">
                                                         <div class="mt-3 badges">
-                                                            <a href="#" class="badge badge-outline text-secondary fw-normal badge-pill">Pagos</a>
-                                                            <a href="#" class="badge badge-outline text-secondary fw-normal badge-pill">REST</a>
+                                                            <a href="#" class="badge badge-outline text-secondary fw-normal badge-pill" th:text="${reporte.api.dominio.nombre}">Pagos</a>
+                                                            <a href="#" class="badge badge-outline text-secondary fw-normal badge-pill" th:text="${reporte.api.tag.nombre}">REST</a>
                                                         </div>
                                                     </div>
                                                 </div>
 
-                                                <div class="row">
-                                                    <div clas="col-md">
-                                                        Estado: <span style="color:green">APROBADA</span>
-                                                    </div>
-                                                    <div class="col-md-auto">
-                                                        Versión: 2.1
-                                                    </div>
-                                                </div>
+                                                <!--Acá tendría que ir el ESTADO de la API-->
                                                 <div class="row">
                                                     <div class="col-md">
-                                                        Fecha: 17/02/2025
+                                                        Estado:
+                                                        <span th:text="${reporte.estado}"
+                                                              th:classappend="${reporte.estado == 'Aprobado' ? 'text-success' : (reporte.estado == 'Fallido' ? 'text-danger' : '')}" style="text-transform: uppercase;"></span>
                                                     </div>
+
                                                 </div>
+
+
                                                 <div class="row">
                                                     <div class="col-md">
-                                                        Descripción: Procesa pagos con tarjeta en tiempo real
+                                                        Fecha: <span th:text="${#dates.format(reporte.fechaCreacion, 'dd-MM-yyyy HH:mm')}"></span>
+
                                                     </div>
                                                 </div>
+                                                <!--
+                                                <div class="row">
+                                                    <div class="col-md">
+                                                        <span th:text="${reporte.descripcion}"></span>
+
+                                                    </div>
+                                                </div>
+                                                -->
                                                 <br>
 
                                                 <div class="col-lg-6">
-                                                    <a href="#" class="btn btn-primary">Ver detalles</a>
-                                                    <a href="#" class="btn btn-danger">Generar issue</a>
+                                                    <a th:href="@{/qa/reporteDetalle(idReporte=${reporte.idReporte})}" class="btn btn-primary">Ver detalles</a>
+
+                                                    <!-- Mostrar el botón de "Generar Issue" solo si el estado es "Fallido" -->
+                                                    <a th:href="@{/qa/issueRealizar(idReporte=${reporte.idReporte})}"
+                                                       class="btn btn-danger"
+                                                       th:if="${reporte.estado == 'Fallido'}">
+                                                        Generar Issue
+                                                    </a>
                                                 </div>
 
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card">
-                                    <div class="row g-0">
-                                        <div class="col-auto">
-                                            <div class="card-body">
-                                                <div class="avatar avatar-md" style="background-image: url(./static/jobs/job-2.png)"></div>
-                                            </div>
-                                        </div>
-                                        <div class="col">
-                                            <div class="card-body ps-0">
-                                                <div class="row">
-                                                    <div class="col">
-                                                        <h3 class="mb-0"><a href="#">API 2</a></h3>
-                                                    </div>
-                                                    <div class="col-md-auto">
-                                                        <div class="mt-3 badges">
-                                                            <a href="#" class="badge badge-outline text-secondary fw-normal badge-pill">Clientes</a>
-                                                            <a href="#" class="badge badge-outline text-secondary fw-normal badge-pill">GraphQL</a>
 
-                                                        </div>
-                                                    </div>
 
-                                                </div>
-                                                <div class="row">
-                                                    <div clas="col-md">
-                                                        Estado: <span style="color:red">FALLIDO</span>
-                                                    </div>
-                                                    <div class="col-md-auto">
-                                                        Versión: 2.1
-                                                    </div>
-                                                </div>
-                                                <div class="row">
-                                                    <div class="col-md">
-                                                        Fecha: 17/02/2025
-                                                    </div>
-                                                </div>
-                                                <div>
-                                                    <div class="col-md">
-                                                        Descripción: Procesa pagos con tarjeta en tiempo real
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-lg-6">
-                                                    <a href="1-detalleReporte.html" class="btn btn-primary">Ver detalles</a>
-                                                    <a href="1-hacerIssue.html" class="btn btn-danger">Generar issue</a>
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <ul class="pagination" style="justify-content: center; align-items: center">
-                                        <li class="page-item disabled">
-                                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                                                <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-left -->
-                                                <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        stroke-width="2"
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        class="icon icon-1"
-                                                >
-                                                    <path d="M15 6l-6 6l6 6" />
-                                                </svg>
-                                            </a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#">1</a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#">2</a>
-                                        </li>
-                                        <li class="page-item active">
-                                            <a class="page-link" href="#">3</a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#">4</a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#">5</a>
-                                        </li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#">
-                                                <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-right -->
-                                                <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        width="24"
-                                                        height="24"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                        stroke="currentColor"
-                                                        stroke-width="2"
-                                                        stroke-linecap="round"
-                                                        stroke-linejoin="round"
-                                                        class="icon icon-1"
-                                                >
-                                                    <path d="M9 6l6 6l-6 6" />
-                                                </svg>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </div>
+                            </div>
+                            <div>
+                                <ul class="pagination" style="justify-content: center; align-items: center">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                            <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-left -->
+                                            <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="24"
+                                                    height="24"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    class="icon icon-1"
+                                            >
+                                                <path d="M15 6l-6 6l6 6" />
+                                            </svg>
+                                        </a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">1</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">2</a>
+                                    </li>
+                                    <li class="page-item active">
+                                        <a class="page-link" href="#">3</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">4</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">5</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">
+                                            <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-right -->
+                                            <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    width="24"
+                                                    height="24"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    stroke-width="2"
+                                                    stroke-linecap="round"
+                                                    stroke-linejoin="round"
+                                                    class="icon icon-1"
+                                            >
+                                                <path d="M9 6l6 6l-6 6" />
+                                            </svg>
+                                        </a>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
