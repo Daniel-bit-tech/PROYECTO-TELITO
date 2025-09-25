@@ -114,14 +114,6 @@ public class QaController {
         }
     }
 
-    @GetMapping("/reporteDetalle")
-    public String showReporteDetalleView(Model model, Authentication auth, HttpSession session) {
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
-        model.addAttribute("usuario", usuario);
-        return "qa/reporteDetalle";
-    }
-
     @GetMapping("/soporte")
     public String showSoporte(Model model, Authentication auth, HttpSession session) {
         // Obtener el usuario correcto considerando impersonación

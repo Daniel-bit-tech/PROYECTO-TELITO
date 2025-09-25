@@ -1,5 +1,6 @@
 package com.example.telitodev.repository;
 
+import com.example.telitodev.dto.ApiProyectoDTO;
 import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.Proyecto;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -38,5 +39,15 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
             "LEFT JOIN proyecto_has_api pha ON a.idAPI = pha.idAPI AND pha.idProyecto = :idProy " +
             "WHERE pha.idAPI IS NULL", nativeQuery = true)
     List<Api> findApisNotAssociatedWithProyecto(@Param("idProy") Integer idProyecto);
+
+    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(a.nombre, p.nombre, a.descripcion, " +
+            "a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion) " +
+            "FROM Api a " +
+            "JOIN ProyectoHasApi pha ON pha.api = a " +
+            "JOIN Proyecto p ON pha.proyecto = p " +
+            "JOIN Dominio d ON a.dominio.idDominio = d.idDominio " +  // Usamos a.dominio.idDominio
+            "JOIN Tag t ON a.tag.idTag = t.idTag " +  // Usamos a.tag.idTag
+            "WHERE p.organizacion.idOrganizacion = (SELECT u.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni)")
+    List<ApiProyectoDTO> findApisByUsuarioAndProyecto(@Param("dni") String dni);
 
 }

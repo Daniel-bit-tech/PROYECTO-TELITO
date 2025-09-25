@@ -28,7 +28,7 @@ public class Usuario {
     @Column(name = "contrasena", nullable = false, length = 256)
     private String contrasena;
     
-    @Column(name = "alias", nullable = false)
+    @Column(name = "alias", nullable = false, length = 50)
     private String alias;
 
     @Column(name = "fecha_registro", nullable = false)
@@ -36,9 +36,6 @@ public class Usuario {
     
     @Column(name = "estado", nullable = false)
     private Boolean estado;
-    
-    @Column(name = "alias", length = 50)
-    private String alias;
     
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idRol", nullable = false)
@@ -177,14 +174,6 @@ public class Usuario {
     
     public void setEstado(Boolean estado) {
         this.estado = estado;
-    }
-    
-    public String getAlias() {
-        return alias;
-    }
-    
-    public void setAlias(String alias) {
-        this.alias = alias;
     }
     
     public Rol getRol() {

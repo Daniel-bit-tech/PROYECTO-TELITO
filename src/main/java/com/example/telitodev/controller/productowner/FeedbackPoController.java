@@ -1,6 +1,7 @@
 package com.example.telitodev.controller.productowner;
 
 import com.example.telitodev.entity.Feedback;
+import com.example.telitodev.entity.Ticket;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.repository.FeedbackRepository;
 import com.example.telitodev.repository.UsuarioRepository;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +22,7 @@ import jakarta.servlet.http.HttpSession;
 @PreAuthorize("hasAnyRole('PO', 'SUPERADMIN')")
 public class FeedbackPoController {
 
+
     final UsuarioRepository usuarioRepository;
     final FeedbackRepository feedbackRepository;
 
@@ -29,9 +32,8 @@ public class FeedbackPoController {
     }
 
     @GetMapping("/feedback")
-    public String showFeedbackView(Model model, Authentication auth, HttpSession session) {
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+    public String showFeedbackView(Model model, Authentication auth) {
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
 
 
@@ -42,10 +44,8 @@ public class FeedbackPoController {
     }
 
     @GetMapping("/feedbackDetalle/{id}")
-    public String showFeedbackDetalleView(Model model, @PathVariable("id") int idTicket, Authentication auth, HttpSession session) {
-
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+    public String showFeedbackDetalleView(Model model, @PathVariable("id") int idFeedback, Authentication auth) {
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
 
 
@@ -57,18 +57,6 @@ public class FeedbackPoController {
         } else {
             return "redirect:/po/feedback";
         }
-    }
-
-
-    @PostMapping("/tickets/resolver/{id}")
-    public String resolverTicket(@PathVariable("id") int idTicket) {
-        Optional<Ticket> ticketOptional = ticketRepository.findById(idTicket);
-        if (ticketOptional.isPresent()) {
-            Ticket ticket = ticketOptional.get();
-            ticket.setEstado(true);
-            ticketRepository.save(ticket);
-        }
-        return "redirect:/po/feedback";
     }
 
     /**
