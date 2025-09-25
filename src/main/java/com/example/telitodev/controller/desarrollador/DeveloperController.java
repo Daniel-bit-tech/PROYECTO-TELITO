@@ -17,7 +17,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/dev")
-@PreAuthorize("hasAnyRole('DEV', 'SADMIN')")
+@PreAuthorize("hasAnyRole('DEV', 'SUPERADMIN')")
 public class DeveloperController {
 
     final UsuarioRepository usuarioRepository;
@@ -34,8 +34,8 @@ public class DeveloperController {
 
     @GetMapping("/home")
     public String showDeveloperView(Model model, Authentication auth, HttpSession session) {
-        String correo = auth.getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        // Obtener el usuario correcto considerando impersonación
+        Usuario usuario = obtenerUsuarioActual(auth, session);
 
         Integer NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(),true);
         List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
@@ -67,13 +67,37 @@ public class DeveloperController {
     }
 
     @GetMapping("/catalogo")
-    public String developerDashboard(Model model, Authentication authentication) {
-        model.addAttribute("smg", authentication.getName());
-
-
-
-
+    public String developerDashboard(Model model, Authentication authentication, HttpSession session) {
+        // Obtener el usuario correcto considerando impersonación
+        Usuario usuario = obtenerUsuarioActual(authentication, session);
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("smg", usuario.getCorreo());
 
         return "desarrollador/apis";
+    }
+
+    /**
+     * Método helper para obtener el usuario correcto durante impersonación
+     */
+    private Usuario obtenerUsuarioActual(Authentication auth, HttpSession session) {
+        // Verificar si hay impersonación activa
+        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
+        
+        if (isImpersonating != null && isImpersonating) {
+            // Durante impersonación, obtener usuario por DNI del usuario impersonado
+            String impersonatedUserDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
+            if (impersonatedUserDni != null) {
+                Usuario impersonatedUser = usuarioRepository.findByDni(impersonatedUserDni);
+                if (impersonatedUser != null) {
+                    System.out.println("🎭 DEV - Usando datos del usuario impersonado: " + impersonatedUser.getNombre());
+                    return impersonatedUser;
+                }
+            }
+        }
+        
+        // Sin impersonación, usar el usuario autenticado normal
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        System.out.println("👤 DEV - Usando datos del usuario autenticado: " + usuario.getNombre());
+        return usuario;
     }
 }

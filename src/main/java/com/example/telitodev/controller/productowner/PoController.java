@@ -16,11 +16,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/po")
-@PreAuthorize("hasAnyRole('PO', 'SADMIN')")
+@PreAuthorize("hasAnyRole('PO', 'SUPERADMIN')")
 public class PoController {
 
     final UsuarioRepository usuarioRepository;
@@ -36,7 +37,8 @@ public class PoController {
     }
     @GetMapping("/Dashboard")
     public String showDashboardView(Model model, Authentication auth, HttpSession session) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        // Obtener el usuario correcto considerando impersonación
+        Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
         
         // Agregar información de impersonación al modelo
@@ -50,31 +52,64 @@ public class PoController {
             model.addAttribute("isImpersonating", false);
         }
         
-        return "po/Dashboard";
+        return "po/home";
     }
+
     @GetMapping("/verPerfil")
-    public String showverPerfilView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+    public String showverPerfilView(Model model, Authentication auth, HttpSession session) {
+        // Obtener el usuario correcto considerando impersonación
+        Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
         return "po/verPerfil";
     }
 
     @GetMapping("/home")
-    public String showHomeView(Model model, Authentication auth) {
+    public String showHomeView(Model model, Authentication auth, HttpSession session, HttpServletRequest request) {
         List<Api> recentApis = apiService.getRecentApis();
         model.addAttribute("recentApis", recentApis);
 
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        // Obtener el usuario correcto considerando impersonación
+        Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
-
 
         List<Notificacion> notificaciones = notificacionService.obtenerNotificacionesPorUsuario(usuario.getDni());
         model.addAttribute("notificaciones", notificaciones);
 
-
         List<ActividadReciente> actividadesRecientes = actividadRecienteService.obtenerActividadesRecientesPorUsuario(usuario.getDni());
         model.addAttribute("actividadesRecientes", actividadesRecientes);
 
+        // Debug: Verificar token CSRF
+        Object csrfToken = request.getAttribute("_csrf");
+        System.out.println("🔑 CSRF Token en controller: " + (csrfToken != null ? "Presente" : "Ausente"));
+        if (csrfToken != null) {
+            System.out.println("🔑 CSRF Token details: " + csrfToken.toString());
+        }
+
         return "po/home";
+    }
+    
+    /**
+     * Método helper para obtener el usuario correcto durante impersonación
+     */
+    private Usuario obtenerUsuarioActual(Authentication auth, HttpSession session) {
+        // Verificar si hay impersonación activa
+        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
+        
+        if (isImpersonating != null && isImpersonating) {
+            // Durante impersonación, obtener usuario por DNI del usuario impersonado
+            String impersonatedUserDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
+            if (impersonatedUserDni != null) {
+                Usuario impersonatedUser = usuarioRepository.findByDni(impersonatedUserDni);
+                if (impersonatedUser != null) {
+                    System.out.println("🎭 PO - Usando datos del usuario impersonado: " + impersonatedUser.getNombre());
+                    return impersonatedUser;
+                }
+            }
+        }
+        
+        // Sin impersonación, usar el usuario autenticado normal
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        System.out.println("👤 PO - Usando datos del usuario autenticado: " + usuario.getNombre());
+        return usuario;
     }
 }

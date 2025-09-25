@@ -55,36 +55,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
                                 @Param("estado") Boolean estado,
                                 Pageable pageable);
 
-    // Métodos para paginación y filtros
-    Page<Usuario> findByNombreContainingIgnoreCaseOrCorreoContainingIgnoreCase(
-        String nombre, String correo, Pageable pageable);
-    
-    Page<Usuario> findByRol_NombreRol(String nombreRol, Pageable pageable);
-    
-    Page<Usuario> findByEstado(Boolean estado, Pageable pageable);
 
-    // Métodos para búsqueda rápida
-    List<Usuario> findTop10ByNombreContainingIgnoreCaseOrCorreoContainingIgnoreCase(
-        String nombre, String correo);
-
-    // Métodos para estadísticas
-    long countByEstado(Boolean estado);
-
-    // Método para verificar existencia por DNI
-    boolean existsByDni(String dni);
-
-    // Método para verificar existencia por correo
-    boolean existsByCorreo(String correo);
-
-    // Búsqueda avanzada con múltiples filtros
-    @Query("SELECT u FROM Usuario u WHERE " +
-           "(:nombre IS NULL OR LOWER(u.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) AND " +
-           "(:correo IS NULL OR LOWER(u.correo) LIKE LOWER(CONCAT('%', :correo, '%'))) AND " +
-           "(:nombreRol IS NULL OR u.rol.nombreRol = :nombreRol) AND " +
-           "(:estado IS NULL OR u.estado = :estado)")
-    Page<Usuario> findByFiltros(@Param("nombre") String nombre, 
-                               @Param("correo") String correo,
-                               @Param("nombreRol") String nombreRol, 
-                               @Param("estado") Boolean estado, 
-                               Pageable pageable);
 }

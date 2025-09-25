@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #dc3545;
-            --secondary-color: #c82333;
-            --accent-color: #e85e75;
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #8b7bd8;
             --light-bg: #f8f9fa;
             --dark-bg: #212529;
             --text-light: #f8f9fa;
@@ -218,6 +218,30 @@
                 margin: 0.25rem 0;
             }
         }
+
+        /* Light mode text color fixes */
+        [data-bs-theme="light"] .navbar-brand,
+        [data-bs-theme="light"] .nav-link,
+        [data-bs-theme="light"] .navbar-nav .nav-link,
+        [data-bs-theme="light"] .welcome-container h1,
+        [data-bs-theme="light"] .welcome-container p,
+        [data-bs-theme="light"] .navbar-text,
+        html[data-bs-theme="light"] .custom-navbar .navbar-brand,
+        html[data-bs-theme="light"] .custom-navbar .nav-link,
+        html[data-bs-theme="light"] .custom-navbar .navbar-nav .nav-link,
+        html[data-bs-theme="light"] .custom-navbar .navbar-text,
+        body[data-bs-theme="light"] .navbar-brand,
+        body[data-bs-theme="light"] .nav-link,
+        body[data-bs-theme="light"] .navbar-nav .nav-link {
+            color: #333 !important;
+            font-weight: 500 !important;
+        }
+
+        [data-bs-theme="light"] .nav-link:hover,
+        html[data-bs-theme="light"] .custom-navbar .nav-link:hover,
+        body[data-bs-theme="light"] .nav-link:hover {
+            color: #000 !important;
+        }
     </style>
 </head>
 <body>
@@ -257,10 +281,14 @@
 
                 <div class="nav-item dropdown" sec:authorize="isAuthenticated()">
                     <a href="#" class="nav-link d-flex lh-1 p-0 dropdown-toggle" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario">
-                        <span class="avatar avatar-sm user-avatar" th:style="'background-image: url(https://ui-avatars.com/api/?name='+${usuario.nombre}+'+'+${usuario.apellidoPaterno}+'&background=dc3545&color=fff)'"> </span>
+                        <!-- Mostrar avatar del usuario impersonado si aplica, sino del usuario actual -->
+                        <span class="avatar avatar-sm user-avatar" 
+                              th:style="'background-image: url(https://ui-avatars.com/api/?name='+${isImpersonating ? impersonatedUserName : usuario.nombre}+'+&background=dc3545&color=fff)'"> </span>
                         <div class="d-none d-xl-block ps-2 text-white">
-                            <div th:text="${usuario.nombre}">Admin</div>
-                            <div class="mt-1 small opacity-75" th:text="${usuario.rol.descripcion}">Administrador</div>
+                            <!-- Mostrar nombre del usuario impersonado si aplica, sino del usuario actual -->
+                            <div th:text="${isImpersonating ? impersonatedUserName : usuario.nombre}">Admin</div>
+                            <div class="mt-1 small opacity-75" 
+                                 th:text="${isImpersonating ? impersonatedUserRole : usuario.rol.descripcion}">Administrador</div>
                         </div>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -352,12 +380,41 @@
             e.preventDefault();
             const theme = this.classList.contains('hide-theme-dark') ? 'dark' : 'light';
             document.documentElement.setAttribute('data-bs-theme', theme);
+            document.body.setAttribute('data-bs-theme', theme);
             localStorage.setItem('theme', theme);
+            
+            // Force CSS update only for light mode
+            setTimeout(() => {
+                if (theme === 'light') {
+                    // Force dark text in light mode
+                    document.querySelectorAll('.custom-navbar .navbar-brand, .custom-navbar .nav-link, .custom-navbar .navbar-nav .nav-link, .welcome-title, .welcome-text').forEach(el => {
+                        el.style.color = '#333';
+                        el.style.fontWeight = '500';
+                    });
+                } else {
+                    // Reset to default for dark mode - remove inline styles
+                    document.querySelectorAll('.custom-navbar .navbar-brand, .custom-navbar .nav-link, .custom-navbar .navbar-nav .nav-link, .welcome-title, .welcome-text').forEach(el => {
+                        el.style.removeProperty('color');
+                        el.style.removeProperty('font-weight');
+                    });
+                }
+            }, 10);
         });
     });
 
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    document.body.setAttribute('data-bs-theme', savedTheme);
+    
+    // Apply theme styles on load only for light mode
+    if (savedTheme === 'light') {
+        setTimeout(() => {
+            document.querySelectorAll('.custom-navbar .navbar-brand, .custom-navbar .nav-link, .custom-navbar .navbar-nav .nav-link, .welcome-title, .welcome-text').forEach(el => {
+                el.style.color = '#333';
+                el.style.fontWeight = '500';
+            });
+        }, 100);
+    }
 
     document.addEventListener("DOMContentLoaded", function() {
         let path = window.location.pathname;

@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TELITO ADMIN | Editar Usuario</title>
+  <link th:href="|/tabler/dist/css/tabler.css?1757307620|" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { 
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #e2e8f0; 
+      min-height: 100vh;
+    }
+    
+    .main-card { 
+      background: rgba(30, 41, 59, 0.95); 
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border-radius: 16px;
+    }
+    
+    .card-header {
+      background: rgba(59, 130, 246, 0.1);
+      border-bottom: 1px solid rgba(59, 130, 246, 0.3);
+      border-radius: 16px 16px 0 0;
+    }
+    
+    .form-control, .form-select { 
+      background: rgba(15, 23, 42, 0.8); 
+      border: 2px solid rgba(59, 130, 246, 0.3); 
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus { 
+      background: rgba(15, 23, 42, 0.95);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+      color: #f1f5f9;
+    }
+    
+    .form-control:read-only {
+      background: rgba(100, 116, 139, 0.2) !important;
+      border-color: rgba(100, 116, 139, 0.4) !important;
+      color: #94a3b8 !important;
+      cursor: not-allowed;
+    }
+    
+    .form-label { 
+      color: #f1f5f9; 
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+    }
+    
+    .form-label i {
+      margin-right: 0.5rem;
+      color: #3b82f6;
+      width: 16px;
+    }
+    
+    .form-label.required::after {
+      content: "*";
+      color: #ef4444;
+      margin-left: 0.25rem;
+      font-weight: bold;
+    }
+    
+    .btn-primary { 
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border: none;
+      padding: 0.75rem 2rem;
+      border-radius: 10px;
+      font-weight: 600;
+      color: white;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+    }
+    
+    .btn-secondary {
+      background: rgba(100, 116, 139, 0.8);
+      border: 2px solid rgba(100, 116, 139, 0.6);
+      color: #e2e8f0;
+      padding: 0.75rem 2rem;
+      border-radius: 10px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(100, 116, 139, 1);
+      border-color: rgba(100, 116, 139, 0.8);
+      color: #f1f5f9;
+      text-decoration: none;
+      transform: translateY(-1px);
+    }
+    
+    .section-header {
+      color: #3b82f6;
+      font-weight: 600;
+      font-size: 1.1rem;
+      border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+      padding-bottom: 0.5rem;
+      margin-bottom: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .section-header:first-child {
+      margin-top: 0;
+    }
+    
+    .info-badge {
+      background: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    
+    .user-info {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 12px;
+      padding: 1rem;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+      margin-bottom: 1.5rem;
+    }
+    
+    .alert {
+      border-radius: 12px;
+      border: none;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .alert-warning {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    
+    /* Estilos para validación en tiempo real */
+    .form-control.is-valid, .form-select.is-valid {
+      border-color: #22c55e !important;
+      box-shadow: 0 0 0 0.25rem rgba(34, 197, 94, 0.25) !important;
+    }
+    
+    .form-control.is-invalid, .form-select.is-invalid {
+      border-color: #ef4444 !important;
+      box-shadow: 0 0 0 0.25rem rgba(239, 68, 68, 0.25) !important;
+    }
+    
+    /* Animación para botón de carga */
+    .btn:disabled {
+      opacity: 0.8;
+      cursor: not-allowed;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .fa-spin {
+      animation: spin 1s linear infinite;
+    }
+    
+    @media (max-width: 768px) {
+      .container-xl {
+        padding: 0 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container-xl mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div>
+        <h1 class="mb-1" style="color: #3b82f6;">
+          <i class="fas fa-user-edit me-2"></i>
+          Editar Usuario
+        </h1>
+        <p class="text-muted mb-0">
+          <i class="fas fa-info-circle me-1"></i>
+          Modifica los datos del usuario seleccionado
+        </p>
+      </div>
+      <a th:href="@{/admin/gestion-usuarios}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>
+        Volver a Gestión
+      </a>
+    </div>
+    
+    <!-- Card Principal -->
+    <div class="main-card">
+      <div class="card-header">
+        <h3 class="mb-0" style="color: #3b82f6;">
+          <i class="fas fa-user-cog me-2"></i>
+          Información Completa del Usuario
+        </h3>
+        <p class="text-muted mb-0 mt-1">Complete todos los campos requeridos para actualizar la información</p>
+      </div>
+      
+      <div class="card-body p-4">
+        <!-- Información actual del usuario -->
+        <div class="user-info">
+          <div class="row">
+            <div class="col-md-6">
+              <strong><i class="fas fa-id-card me-2 text-primary"></i>DNI:</strong>
+              <span th:text="${usuario?.dni}" class="ms-2">No disponible</span>
+            </div>
+            <div class="col-md-6">
+              <strong><i class="fas fa-user me-2 text-primary"></i>Nombre Completo:</strong>
+              <span th:text="${usuario?.nombre + ' ' + usuario?.apellidoPaterno + ' ' + (usuario?.apellidoMaterno ?: '')}" class="ms-2">No disponible</span>
+            </div>
+          </div>
+          <div class="row mt-2">
+            <div class="col-md-6">
+              <strong><i class="fas fa-user-tag me-2 text-primary"></i>Rol Actual:</strong>
+              <span class="info-badge ms-2" th:text="${usuario?.rol?.nombreRol}">No disponible</span>
+            </div>
+            <div class="col-md-6">
+              <strong><i class="fas fa-envelope me-2 text-primary"></i>Email:</strong>
+              <span th:text="${usuario?.correo}" class="ms-2">No disponible</span>
+            </div>
+          </div>
+        </div>
+        
+        <form th:action="@{/admin/gestion-usuarios/actualizar}" method="post">
+          <input type="hidden" name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          
+          <!-- INFORMACIÓN BÁSICA -->
+          <h4 class="section-header">
+            <i class="fas fa-id-card me-2"></i>Información Básica
+          </h4>
+          
+          <div class="row">
+            <!-- DNI (Solo lectura) -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">
+                  <i class="fas fa-id-card"></i>
+                  DNI (Documento de Identidad)
+                </label>
+                <input type="text" name="dni" th:value="${usuario?.dni}" readonly class="form-control">
+                <small class="text-muted">
+                  <i class="fas fa-lock me-1"></i>
+                  El DNI no se puede modificar por seguridad
+                </small>
+              </div>
+            </div>
+            
+            <!-- Fecha de Registro -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">
+                  <i class="fas fa-calendar-plus"></i>
+                  Fecha de Registro
+                </label>
+                <input type="text" th:value="${usuario?.fechaRegistro != null ? #dates.format(usuario.fechaRegistro, 'dd/MM/yyyy HH:mm') : 'No disponible'}" readonly class="form-control">
+                <small class="text-muted">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Fecha y hora de creación de la cuenta
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- DATOS PERSONALES -->
+          <h4 class="section-header">
+            <i class="fas fa-user me-2"></i>Datos Personales
+          </h4>
+          
+          <div class="row">
+            <!-- Nombre -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label required">
+                  <i class="fas fa-user"></i>
+                  Nombre
+                </label>
+                <input type="text" name="nombre" th:value="${usuario?.nombre}" class="form-control" required
+                       placeholder="Ingrese el nombre del usuario">
+              </div>
+            </div>
+            
+            <!-- Apellido Paterno -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label required">
+                  <i class="fas fa-user"></i>
+                  Apellido Paterno
+                </label>
+                <input type="text" name="apellidoPaterno" th:value="${usuario?.apellidoPaterno}" class="form-control" required
+                       placeholder="Ingrese el apellido paterno">
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <!-- Apellido Materno -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">
+                  <i class="fas fa-user"></i>
+                  Apellido Materno
+                </label>
+                <input type="text" name="apellidoMaterno" th:value="${usuario?.apellidoMaterno}" class="form-control"
+                       placeholder="Ingrese el apellido materno (opcional)">
+              </div>
+            </div>
+            
+            <!-- Correo -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label required">
+                  <i class="fas fa-envelope"></i>
+                  Correo Electrónico
+                </label>
+                <input type="email" name="correo" th:value="${usuario?.correo}" class="form-control" required
+                       placeholder="usuario@ejemplo.com">
+                <small class="text-muted">
+                  <i class="fas fa-info-circle me-1"></i>
+                  El correo debe ser único en el sistema
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONFIGURACIÓN DE CUENTA -->
+          <h4 class="section-header">
+            <i class="fas fa-cogs me-2"></i>Configuración de Cuenta
+          </h4>
+          
+          <div class="row">
+            <!-- Rol -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label required">
+                  <i class="fas fa-user-tag"></i>
+                  Rol del Usuario
+                </label>
+                <select name="idRol" class="form-select" required>
+                  <option value="">Seleccionar rol...</option>
+                  <option th:each="rol : ${roles}" 
+                          th:value="${rol?.idRol}" 
+                          th:text="${rol?.nombreRol + ' - ' + rol?.descripcion}"
+                          th:selected="${rol?.idRol == usuario?.rol?.idRol}">
+                  </option>
+                </select>
+                <small class="text-muted">
+                  <i class="fas fa-shield-alt me-1"></i>
+                  Define los permisos y accesos del usuario
+                </small>
+              </div>
+            </div>
+            
+            <!-- Estado -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label required">
+                  <i class="fas fa-toggle-on"></i>
+                  Estado de la Cuenta
+                </label>
+                <select name="estado" class="form-select" required>
+                  <option th:value="true" th:selected="${usuario?.estado}" 
+                          th:text="'✅ Activo - Usuario puede acceder al sistema'"></option>
+                  <option th:value="false" th:selected="${!usuario?.estado}" 
+                          th:text="'❌ Inactivo - Usuario bloqueado temporalmente'"></option>
+                </select>
+                <small class="text-muted">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Los usuarios inactivos no pueden iniciar sesión
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- CAMBIO DE CONTRASEÑA -->
+          <h4 class="section-header" style="color: #f59e0b; border-bottom-color: rgba(245, 158, 11, 0.3);">
+            <i class="fas fa-key me-2"></i>Cambio de Contraseña (Opcional)
+          </h4>
+          
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Nota:</strong> Complete los campos siguientes solo si desea cambiar la contraseña. 
+            De lo contrario, déjelos vacíos para mantener la contraseña actual.
+          </div>
+          
+          <div class="row">
+            <!-- Nueva Contraseña -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">
+                  <i class="fas fa-lock"></i>
+                  Nueva Contraseña
+                </label>
+                <input type="password" name="nuevaContrasena" class="form-control" 
+                       placeholder="Ingrese nueva contraseña (mínimo 8 caracteres)">
+                <small class="text-muted">
+                  <i class="fas fa-info-circle me-1"></i>
+                  Deje vacío para mantener la contraseña actual
+                </small>
+              </div>
+            </div>
+            
+            <!-- Confirmar Contraseña -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">
+                  <i class="fas fa-lock"></i>
+                  Confirmar Nueva Contraseña
+                </label>
+                <input type="password" name="confirmarContrasena" class="form-control" 
+                       placeholder="Confirme la nueva contraseña">
+                <small class="text-muted">
+                  <i class="fas fa-shield-alt me-1"></i>
+                  Debe coincidir con la nueva contraseña
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTONES DE ACCIÓN -->
+          <div class="d-flex justify-content-between align-items-center mt-4 pt-4" 
+               style="border-top: 1px solid rgba(59, 130, 246, 0.3);">
+            <a th:href="@{/admin/gestion-usuarios}" class="btn btn-secondary">
+              <i class="fas fa-times me-2"></i>
+              Cancelar Cambios
+            </a>
+            <div>
+              <button type="reset" class="btn me-3" 
+                      style="background: rgba(239, 68, 68, 0.8); border: 2px solid rgba(239, 68, 68, 0.6); color: #e2e8f0;">
+                <i class="fas fa-undo me-2"></i>
+                Restablecer
+              </button>
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-2"></i>
+                Guardar Cambios
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Validación del formulario
+    document.addEventListener('DOMContentLoaded', function() {
+      const form = document.querySelector('form');
+      const nuevaContrasenaInput = document.querySelector('input[name="nuevaContrasena"]');
+      const confirmarContrasenaInput = document.querySelector('input[name="confirmarContrasena"]');
+      
+      // Validación en tiempo real de contraseñas
+      function validarContrasenas() {
+        const nuevaContrasena = nuevaContrasenaInput.value;
+        const confirmarContrasena = confirmarContrasenaInput.value;
+        
+        // Limpiar estilos previos
+        nuevaContrasenaInput.classList.remove('is-invalid', 'is-valid');
+        confirmarContrasenaInput.classList.remove('is-invalid', 'is-valid');
+        
+        if (nuevaContrasena.length > 0) {
+          if (nuevaContrasena.length < 8) {
+            nuevaContrasenaInput.classList.add('is-invalid');
+          } else {
+            nuevaContrasenaInput.classList.add('is-valid');
+          }
+          
+          if (confirmarContrasena.length > 0) {
+            if (nuevaContrasena === confirmarContrasena) {
+              confirmarContrasenaInput.classList.add('is-valid');
+            } else {
+              confirmarContrasenaInput.classList.add('is-invalid');
+            }
+          }
+        }
+      }
+      
+      // Eventos de validación en tiempo real
+      nuevaContrasenaInput.addEventListener('input', validarContrasenas);
+      confirmarContrasenaInput.addEventListener('input', validarContrasenas);
+      
+      // Validación al enviar el formulario
+      form.addEventListener('submit', function(e) {
+        const nombre = document.querySelector('input[name="nombre"]').value.trim();
+        const apellidoPaterno = document.querySelector('input[name="apellidoPaterno"]').value.trim();
+        const correo = document.querySelector('input[name="correo"]').value.trim();
+        const rol = document.querySelector('select[name="idRol"]').value;
+        
+        // Validar campos obligatorios
+        if (!nombre || !apellidoPaterno || !correo || !rol) {
+          e.preventDefault();
+          alert('❌ Por favor, complete todos los campos obligatorios marcados con *');
+          return false;
+        }
+        
+        // Validar formato de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(correo)) {
+          e.preventDefault();
+          alert('❌ Por favor, ingrese un correo electrónico válido');
+          return false;
+        }
+        
+        // Validar contraseñas si se proporcionan
+        const nuevaContrasena = nuevaContrasenaInput.value.trim();
+        const confirmarContrasena = confirmarContrasenaInput.value.trim();
+        
+        if (nuevaContrasena.length > 0 || confirmarContrasena.length > 0) {
+          // Si se proporciona cualquier contraseña, ambas deben estar completas
+          if (nuevaContrasena.length === 0) {
+            e.preventDefault();
+            alert('❌ Debe proporcionar la nueva contraseña');
+            nuevaContrasenaInput.focus();
+            return false;
+          }
+          
+          if (confirmarContrasena.length === 0) {
+            e.preventDefault();
+            alert('❌ Debe confirmar la nueva contraseña');
+            confirmarContrasenaInput.focus();
+            return false;
+          }
+          
+          // Validar longitud mínima
+          if (nuevaContrasena.length < 8) {
+            e.preventDefault();
+            alert('❌ La nueva contraseña debe tener al menos 8 caracteres');
+            nuevaContrasenaInput.focus();
+            return false;
+          }
+          
+          // Validar que las contraseñas coincidan
+          if (nuevaContrasena !== confirmarContrasena) {
+            e.preventDefault();
+            alert('❌ Las contraseñas no coinciden');
+            confirmarContrasenaInput.focus();
+            return false;
+          }
+          
+          // Validar que no sea demasiado simple
+          const dni = document.querySelector('input[name="dni"]').value.toLowerCase();
+          const email = correo.toLowerCase();
+          const passwordLower = nuevaContrasena.toLowerCase();
+          
+          if (passwordLower.includes('123456') || 
+              passwordLower.includes('password') ||
+              passwordLower.includes('contraseña') ||
+              passwordLower === dni ||
+              passwordLower === email.split('@')[0]) {
+            e.preventDefault();
+            alert('❌ La contraseña es demasiado simple o predecible. Evite usar secuencias numéricas, palabras comunes o datos personales.');
+            nuevaContrasenaInput.focus();
+            return false;
+          }
+          
+          // Confirmar cambio de contraseña
+          if (!confirm('¿Está seguro de que desea cambiar la contraseña de este usuario?')) {
+            e.preventDefault();
+            return false;
+          }
+        }
+        
+        // Confirmar actualización
+        const usuarioNombre = nombre + ' ' + apellidoPaterno;
+        const mensaje = nuevaContrasena.length > 0 
+          ? `¿Confirma actualizar los datos de "${usuarioNombre}" incluyendo el cambio de contraseña?`
+          : `¿Confirma actualizar los datos de "${usuarioNombre}"?`;
+          
+        if (!confirm(mensaje)) {
+          e.preventDefault();
+          return false;
+        }
+        
+        // Mostrar indicador de carga
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Guardando...';
+        submitBtn.disabled = true;
+        
+        // Restaurar botón después de un tiempo en caso de error
+        setTimeout(() => {
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+        }, 10000);
+        
+        return true;
+      });
+      
+      // Validación adicional para el botón reset
+      document.querySelector('button[type="reset"]').addEventListener('click', function(e) {
+        if (!confirm('¿Está seguro de que desea restablecer todos los campos del formulario?')) {
+          e.preventDefault();
+        } else {
+          // Limpiar estilos de validación
+          document.querySelectorAll('.is-invalid, .is-valid').forEach(el => {
+            el.classList.remove('is-invalid', 'is-valid');
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

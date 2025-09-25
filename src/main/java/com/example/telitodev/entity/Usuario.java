@@ -9,7 +9,6 @@ import java.util.List;
 public class Usuario {
     
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "dni", length = 8)
     private String dni;
     
@@ -33,6 +32,9 @@ public class Usuario {
     
     @Column(name = "estado", nullable = false)
     private Boolean estado;
+    
+    @Column(name = "alias", length = 50)
+    private String alias;
     
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idRol", nullable = false)
@@ -148,6 +150,14 @@ public class Usuario {
     
     public void setEstado(Boolean estado) {
         this.estado = estado;
+    }
+    
+    public String getAlias() {
+        return alias;
+    }
+    
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
     
     public Rol getRol() {
