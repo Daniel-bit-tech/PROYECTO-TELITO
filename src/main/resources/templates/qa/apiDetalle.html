@@ -16,9 +16,6 @@
     <link href="/tabler/dist/css/tabler-marketing.css?1757307617" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler-themes.css?1757307617" rel="stylesheet" />
     <!-- END PLUGINS STYLES -->
-    <!-- CSRF tokens for AJAX requests -->
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <!-- BEGIN DEMO STYLES -->
     <link href="/tabler/preview/css/demo.css?1757307617" rel="stylesheet" />
     <link href="/tabler/preview/css/demo.css?1757307616" rel="stylesheet" />
@@ -31,9 +28,6 @@
     <!-- END CUSTOM FONT -->
 </head>
 <body>
-<!-- Banner de impersonación -->
-<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
-
 <!-- BEGIN GLOBAL THEME SCRIPT -->
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307617"></script>
 <!-- END GLOBAL THEME SCRIPT -->

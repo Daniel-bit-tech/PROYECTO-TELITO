@@ -228,7 +228,7 @@
         </button>
 
         <div class="navbar-brand">
-            <a th:href="@{/home}" class="d-flex align-items-center text-decoration-none">
+            <a href="./developer" class="d-flex align-items-center text-decoration-none">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-code me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                     <path d="M7 8l-4 4l4 4" />
@@ -259,14 +259,10 @@
 
                 <div class="nav-item dropdown" sec:authorize="isAuthenticated()">
                     <a href="#" class="nav-link d-flex lh-1 p-0 dropdown-toggle" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario">
-                        <!-- Mostrar avatar del usuario impersonado si aplica, sino del usuario actual -->
-                        <span class="avatar avatar-sm user-avatar" 
-                              th:style="'background-image: url(https://ui-avatars.com/api/?name='+${isImpersonating ? impersonatedUserName : usuario.nombre}+'+&background=4361ee&color=fff)'"> </span>
+                        <span class="avatar avatar-sm user-avatar" th:style="'background-image: url(https://ui-avatars.com/api/?name='+${usuario.nombre}+'+'+${usuario.apellidoPaterno}+'&background=4361ee&color=fff)'"> </span>
                         <div class="d-none d-xl-block ps-2 text-white">
-                            <!-- Mostrar nombre del usuario impersonado si aplica, sino del usuario actual -->
-                            <div th:text="${isImpersonating ? impersonatedUserName : usuario.nombre}">Luis Torres</div>
-                            <div class="mt-1 small opacity-75" 
-                                 th:text="${isImpersonating ? impersonatedUserRole : usuario.rol.descripcion}">Quality Assurance</div>
+                            <div th:text="${usuario.nombre}">Luis Torres</div>
+                            <div class="mt-1 small opacity-75" th:text="${usuario.rol.descripcion}">Quality Assurance</div>
                         </div>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">

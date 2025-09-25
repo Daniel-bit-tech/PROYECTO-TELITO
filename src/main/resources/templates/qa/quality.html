@@ -4,8 +4,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>TELITO DEVELOPER PORTAL | Inicio</title>
     <link th:href="|/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620|" rel="stylesheet" />
     <link th:href="|/tabler/dist/css/tabler.css?1757307620|" rel="stylesheet" />
@@ -396,9 +394,6 @@
 </head>
 
 <body>
-<!-- Banner de impersonación -->
-<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
-
 <script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
 <div class="page">
 
@@ -417,8 +412,8 @@
                         <a th:href="@{/qa/catalogo}" class="btn btn-primary">
                             <i class="fas fa-rocket"></i> Validar APIs
                         </a>
-                        <a th:href="@{/qa/reportes}" class="btn btn-outline-light">
-                            <i class="fas fa-search"></i> Ver reportes
+                        <a th:href="@{/qa/issues}" class="btn btn-outline-light">
+                            <i class="fas fa-search"></i> Ver issues
                         </a>
                     </div>
                 </div>
@@ -480,9 +475,6 @@
                             </button>
                         </li>
                     </ul>
-
-
-
                 </div>
 
                 <div class="dashboard-card">
@@ -654,4 +646,3 @@
 <script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
 </body>
 </html>
-

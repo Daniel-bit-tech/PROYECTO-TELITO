@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Search for Jobs - Tabler - Premium and Open Source dashboard template with responsive and high quality UI.</title>
+    <title>Detalles del issue</title>
     <!-- BEGIN GLOBAL MANDATORY STYLES -->
     <link href="/tabler/dist/css/tabler.css?1757307617" rel="stylesheet" />
     <!-- END GLOBAL MANDATORY STYLES -->
@@ -16,9 +16,6 @@
     <link href="/tabler/dist/css/tabler-marketing.css?1757307617" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler-themes.css?1757307617" rel="stylesheet" />
     <!-- END PLUGINS STYLES -->
-    <!-- CSRF tokens for AJAX requests -->
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <!-- BEGIN DEMO STYLES -->
     <link href="/tabler/preview/css/demo.css?1757307617" rel="stylesheet" />
     <link href="/tabler/preview/css/demo.css?1757307616" rel="stylesheet" />
@@ -28,12 +25,298 @@
     <style>
         @import url("https://rsms.me/inter/inter.css");
     </style>
+    <style>
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-description {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state .btn-primary {
+            margin-top: 20px;
+        }
+
+        .catalog-header {
+            padding: 2rem 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .catalog-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .catalog-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .feedback-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .feedback-header {
+            padding: 2rem 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .feedback-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .feedback-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .feedback-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--tblr-border-color);
+            margin-bottom: 2rem;
+        }
+
+        .feedback-tab {
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .feedback-tab.active {
+            color: var(--tblr-primary);
+            border-bottom-color: var(--tblr-primary);
+        }
+
+        .feedback-form-container {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .feedback-form-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+
+        .rating-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .rating-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .rating-star {
+            font-size: 1.5rem;
+            color: var(--tblr-border-color);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .rating-star.active,
+        .rating-star:hover {
+            color: #ffc107;
+        }
+
+        .feedback-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .feedback-card {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding: 0;
+        }
+
+        .feedback-meta {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feedback-author {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .feedback-date {
+            color: var(--tblr-secondary-color);
+            font-size: 0.875rem;
+        }
+
+        .feedback-rating {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .feedback-star {
+            color: #ffc107;
+            font-size: 0.875rem;
+        }
+
+        .feedback-content {
+            margin-bottom: 1rem;
+        }
+
+        .feedback-subject {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feedback-message {
+            color: var(--tblr-body-color);
+            line-height: 1.5;
+        }
+
+        .feedback-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--tblr-secondary-color);
+        }
+
+        .feedback-api {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feedback-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: rgba(var(--tblr-warning-rgb), 0.1);
+            color: var(--tblr-warning);
+        }
+
+        .status-reviewed {
+            background-color: rgba(var(--tblr-success-rgb), 0.1);
+            color: var(--tblr-success);
+        }
+
+        .status-closed {
+            background-color: rgba(var(--tblr-secondary-rgb), 0.1);
+            color: var(--tblr-secondary);
+        }
+
+        .btn-primary {
+            background-color: var(--tblr-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--tblr-primary-dark);
+        }
+
+        @media (max-width: 768px) {
+            .feedback-tabs {
+                flex-direction: column;
+            }
+
+            .feedback-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .feedback-footer {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+        }
+
+    </style>
     <!-- END CUSTOM FONT -->
 </head>
 <body>
-<!-- Banner de impersonación -->
-<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
-
 <!-- BEGIN GLOBAL THEME SCRIPT -->
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307617"></script>
 <!-- END GLOBAL THEME SCRIPT -->
@@ -49,13 +332,9 @@
                 <div class="row g-2 align-items-center">
 
                     <div class="col" >
-                        <h2>Issue de API 1</h2>
+                        <h2 th:text="|Issue de ${issue.reporte.api.nombre}|"></h2>
                     </div>
                     <!-- Page title actions -->
-
-                    <div class="col-md-auto">
-                        <a th:href="@{/qa/issueRealizar}" class="btn btn-success">Generar issue</a>
-                    </div>
                 </div>
             </div>
             <!-- END PAGE HEADER -->
@@ -70,7 +349,7 @@
                             <div class="datagrid">
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Dominio/Tags</div>
-                                    <div class="datagrid-content">Clientes/REST</div>
+                                    <div class="datagrid-content" th:text="|${issue.reporte.api.dominio.nombre}/${issue.reporte.api.tag.nombre}|"></div>
                                 </div>
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Versión</div>
@@ -78,11 +357,11 @@
                                 </div>
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Estado</div>
-                                    <div class="datagrid-content"><span style="color:red">FALLIDO</span></div>
+                                    <div class="datagrid-content"><span style="color:#ffcc00" th:text="${issue.estado}">EN PROGRESO</span></div>
                                 </div>
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Fecha</div>
-                                    <div class="datagrid-content">12/09/2026</div>
+                                    <div class="datagrid-content"><span th:text="${#dates.format(issue.fechaCreacion, 'dd-mm-yyyy HH:mm')}"></span></div>
                                 </div>
 
 
@@ -90,357 +369,132 @@
                             <br>
                             <div class="datagrid-item">
                                 <div class="datagrid-title">Descripción</div>
-                                <div class="datagrid-content">Lorem ipsum dolor sit amet, consectetur adipisicing elit.</div>
+                                <div class="datagrid-content"><span th:text="${issue.descripcion}"></span></div>
                             </div>
 
                         </div>
                     </div>
                     <br>
 
-                    <div class="container-xl">
-                        <div class="row g-5">
-                            <div class="col-sm-2">
-                                <div class="sticky-top">
-                                    <h3>Menu</h3>
-                                    <nav class="nav nav-vertical nav-pills" id="pills">
-                                        <a class="nav-link" href="#pills-home">Información</a>
-                                        <a class="nav-link" href="#pills-profile">Foro</a>
-                                    </nav>
+                    <div class="feedback-tabs">
+                        <div class="feedback-tab active" data-tab="evidences">Evidencias del reporte</div>
+                        <!--
+                        <div class="feedback-tab" data-tab="my-feedback">Información</div>
+                        -->
+                        <div class="feedback-tab" data-tab="roadmap">Foro</div>
+                        <div class="feedback-tab" data-tab="create-foro">Crear comentario al foro</div>
+                    </div>
+
+                    <div id="evidences" class="feedback-tab-content">
+                        <div class="feedback-form-container">
+                            <h3 class="feedback-form-title">Evidencias</h3>
+                            <p>Acá se muestran los archivos adjuntos que muestran errores en la API</p>
+
+                        </div>
+                    </div>
+                    <!--
+
+                    <div id="my-feedback" class="feedback-tab-content" style="display: none;">
+                        <div class="feedback-list">
+                            <h3>Información</h3>
+                            <ul class="steps steps-vertical">
+                                <li class="step-item">
+                                    <div class="h4 m-0">07/06/2025 13:07</div>
+                                    <div class="text-secondary">
+                                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus culpa cum expedita ipsam laborum nam ratione reprehenderit sed
+                                        sint tenetur!
+                                    </div>
+                                </li>
+                                <li class="step-item">
+                                    <div class="h4 m-0">10/05/2025 13:07</div>
+                                    <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
+                                </li>
+                                <li class="step-item ">
+                                    <div class="h4 m-0">08/05/2025 13:07</div>
+                                    <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
+                                </li>
+                                <li class="step-item active">
+                                    <div class="h4 m-0">07/05/2025 13:07</div>
+                                    <div class="text-secondary">Parche 1</div>
+                                    <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    -->
+
+                    <div id="roadmap" class="feedback-tab-content" style="display: none;">
+                        <div class="feedback-form-container">
+                            <h3 class="feedback-form-title">Foro</h3>
+                            <div class="card">
+                                <!-- Si no hay comentarios, mostrar mensaje -->
+                                <div th:if="${#lists.isEmpty(issue.comentarios)}" class="empty-state">
+                                    <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                                    <h4 class="empty-title">Aún no hay comentarios</h4>
+                                    <p class="empty-description">Sé el primero en dejar un comentario sobre este issue.</p>
+                                    <a href="#" class="btn-primary switch-tab" data-tab="leave-comment-btn">
+                                        <i class="fas fa-comment"></i> Deja tu comentario
+                                    </a>
                                 </div>
-                            </div>
-                            <div class="col-sm" data-bs-spy="scroll" data-bs-target="#pills" data-bs-offset="0">
-                                <div class="card card-lg">
-                                    <div class="card-body">
-                                        <h3 id="pills-home">Información</h3>
-                                        <ul class="steps steps-vertical">
-                                            <li class="step-item">
-                                                <div class="h4 m-0">07/06/2025 13:07</div>
-                                                <div class="text-secondary">
-                                                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus culpa cum expedita ipsam laborum nam ratione reprehenderit sed
-                                                    sint tenetur!
+
+                                <!-- Si hay comentarios, mostrarlos -->
+                                <div th:unless="${#lists.isEmpty(issue.comentarios)}">
+                                    <div class="feedback-list">
+                                        <div th:each="comentario : ${issue.comentarios}" class="feedback-card">
+                                            <div class="feedback-header">
+                                                <div class="feedback-meta">
+                                                    <div class="feedback-author" th:text="|${comentario.usuario.nombre}-${comentario.usuario.rol.nombreRol}|"></div>
+                                                    <div class="feedback-date" th:text="${#dates.format(comentario.fecha, 'dd/MM/yyyy HH:mm')}"></div>
                                                 </div>
-                                            </li>
-                                            <li class="step-item">
-                                                <div class="h4 m-0">10/05/2025 13:07</div>
-                                                <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
-                                            </li>
-                                            <li class="step-item ">
-                                                <div class="h4 m-0">08/05/2025 13:07</div>
-                                                <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
-                                            </li>
-                                            <li class="step-item active">
-                                                <div class="h4 m-0">07/05/2025 13:07</div>
-                                                <div class="text-secondary">Parche 1</div>
-                                                <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
-                                            </li>
-                                        </ul>
-                                        <h3 id="pills-profile">Foro</h3>
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h3 class="card-title">Juan Pérez</h3>
                                             </div>
-                                            <div class="card-body">
-                                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit obcaecati hic nemo eligendi nesciunt quod consequuntur dicta distinctio expedita suscipit accusantium fugiat voluptate ipsa sed veritatis, ullam voluptas maxime repellat.
+                                            <div class="feedback-content">
+                                                <div class="feedback-message" th:text="${comentario.comentario}"></div>
+                                                <div th:if="${comentario.adjuntos.size() > 0}">
+                                                    <a th:each="adjunto : ${comentario.adjuntos}" href="@{/qa/verAdjunto/{idAdjunto}(idAdjunto=${adjunto.idAdjunto})}" class="btn btn-link">
+                                                        Ver adjunto
+                                                    </a>
+                                                </div>
                                             </div>
-                                            <div class="card-body">
-                                                <a href="#">[Ver evidencia 1]</a>
-                                            </div>
-                                            <div class="card-footer">12/12/2025 3:49</div>
-
                                         </div>
-                                        <br>
-
-                                        <a href="#" class="btn btn-primary">Participar</a>
-
                                     </div>
                                 </div>
+
                             </div>
+
+
                         </div>
                     </div>
 
+                    <div id="create-foro" class="feedback-tab-content" style="display:none">
+                        <div class="feedback-form-container">
+                            <h3 class="feedback-form-title">Foro - Deja tu Comentario</h3>
+                            <form th:action="@{/qa/crearComentario}" method="POST" enctype="multipart/form-data">
+                                <!-- ID del Issue y Reporte -->
+                                <input type="hidden" name="idIssue" th:value="${issue.id.idIssue}" />
+                                <input type="hidden" name="idReporte" th:value="${issue.reporte.idReporte}" />
 
+                                <div class="form-group">
+                                    <label for="comentario" class="form-label">Tu Comentario:</label>
+                                    <textarea id="comentario" name="comentario" class="form-control" rows="4" required></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label for="archivo" class="form-label">Adjuntar archivo (opcional):</label>
+                                    <input type="file" id="archivo" name="archivo" class="form-control" />
+                                </div>
+                                <button type="submit" class="btn btn-primary mt-3">Enviar Comentario</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
 
             </div>
             <!-- END PAGE BODY -->
             <!--  BEGIN FOOTER  -->
-            <footer class="footer footer-transparent d-print-none">
-                <div class="container-xl">
-                    <div class="row text-center align-items-center flex-row-reverse">
 
-                        <div class="col-12 col-lg-auto mt-3 mt-lg-0">
-                            <ul class="list-inline list-inline-dots mb-0">
-                                <li class="list-inline-item">
-                                    Copyright &copy; 2025
-                                    <a href="." class="link-secondary">Tabler</a>. All rights reserved.
-                                </li>
-                                <li class="list-inline-item">
-                                    <a href="./changelog.html" class="link-secondary" rel="noopener"> v1.4.0 </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </footer>
             <!--  END FOOTER  -->
         </div>
     </div>
-    <div class="settings">
-        <a
-                href="#"
-                class="btn btn-floating btn-icon btn-primary"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#offcanvasSettings"
-                aria-controls="offcanvasSettings"
-                aria-label="Theme Settings"
-        >
-            <!-- Download SVG icon from http://tabler.io/icons/icon/brush -->
-            <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="icon icon-1"
-            >
-                <path d="M3 21v-4a4 4 0 1 1 4 4h-4" />
-                <path d="M21 3a16 16 0 0 0 -12.8 10.2" />
-                <path d="M21 3a16 16 0 0 1 -10.2 12.8" />
-                <path d="M10.6 9a9 9 0 0 1 4.4 4.4" />
-            </svg>
-        </a>
-        <form class="offcanvas offcanvas-start offcanvas-narrow" tabindex="-1" id="offcanvasSettings">
-            <div class="offcanvas-header">
-                <h2 class="offcanvas-title">Theme Settings</h2>
-                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-            </div>
-            <div class="offcanvas-body d-flex flex-column">
-                <div>
-                    <div class="mb-4">
-                        <label class="form-label">Color mode</label>
-                        <p class="form-hint">Choose the color mode for your app.</p>
-                        <label class="form-check">
-                            <div class="form-selectgroup-item">
-                                <input type="radio" name="theme" value="light" class="form-check-input" checked />
-                                <div class="form-check-label">Light</div>
-                            </div>
-                        </label>
-                        <label class="form-check">
-                            <div class="form-selectgroup-item">
-                                <input type="radio" name="theme" value="dark" class="form-check-input" />
-                                <div class="form-check-label">Dark</div>
-                            </div>
-                        </label>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label">Color scheme</label>
-                        <p class="form-hint">The perfect color mode for your app.</p>
-                        <div class="row g-2">
-                            <div class="col-auto">
-                                <label class="form-colorinput">
-                                    <input name="theme-primary" type="radio" value="blue" class="form-colorinput-input" />
-                                    <span class="form-colorinput-color bg-blue"></span>
-                                </label>
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-colorinput">
-                                    <input name="theme-primary" type="radio" value="azure" class="form-colorinput-input" />
-                                    <span class="form-colorinput-color bg-azure"></span>
-                                </label>
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-colorinput">
-                                    <input name="theme-primary" type="radio" value="indigo" class="form-colorinput-input" />
-                                    <span class="form-colorinput-color bg-indigo"></span>
-                                </label>
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-colorinput">
-                                    <input name="theme-primary" type="radio" value="purple" class="form-colorinput-input" />
-                                    <span class="form-colorinput-color bg-purple"></span>
-                                </label>
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-colorinput">
-                                    <input name="theme-primary" type="radio" value="pink" class="form-colorinput-input" />
-                                    <span class="form-colorinput-color bg-pink"></span>
-                                </label>
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-colorinput">
-                                    <input name="theme-primary" type="radio" value="red" class="form-colorinput-input" />
-                                    <span class="form-colorinput-color bg-red"></span>
-                                </label>
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-colorinput">
-                                    <input name="theme-primary" type="radio" value="orange" class="form-colorinput-input" />
-                                    <span class="form-colorinput-color bg-orange"></span>
-                                </label>
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-colorinput">
-                                    <input name="theme-primary" type="radio" value="yellow" class="form-colorinput-input" />
-                                    <span class="form-colorinput-color bg-yellow"></span>
-                                </label>
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-colorinput">
-                                    <input name="theme-primary" type="radio" value="lime" class="form-colorinput-input" />
-                                    <span class="form-colorinput-color bg-lime"></span>
-                                </label>
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-colorinput">
-                                    <input name="theme-primary" type="radio" value="green" class="form-colorinput-input" />
-                                    <span class="form-colorinput-color bg-green"></span>
-                                </label>
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-colorinput">
-                                    <input name="theme-primary" type="radio" value="teal" class="form-colorinput-input" />
-                                    <span class="form-colorinput-color bg-teal"></span>
-                                </label>
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-colorinput">
-                                    <input name="theme-primary" type="radio" value="cyan" class="form-colorinput-input" />
-                                    <span class="form-colorinput-color bg-cyan"></span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label">Font family</label>
-                        <p class="form-hint">Choose the font family that fits your app.</p>
-                        <div>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-font" value="sans-serif" class="form-check-input" checked />
-                                    <div class="form-check-label">Sans-serif</div>
-                                </div>
-                            </label>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-font" value="serif" class="form-check-input" />
-                                    <div class="form-check-label">Serif</div>
-                                </div>
-                            </label>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-font" value="monospace" class="form-check-input" />
-                                    <div class="form-check-label">Monospace</div>
-                                </div>
-                            </label>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-font" value="comic" class="form-check-input" />
-                                    <div class="form-check-label">Comic</div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label">Theme base</label>
-                        <p class="form-hint">Choose the gray shade for your app.</p>
-                        <div>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-base" value="slate" class="form-check-input" />
-                                    <div class="form-check-label">Slate</div>
-                                </div>
-                            </label>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-base" value="gray" class="form-check-input" checked />
-                                    <div class="form-check-label">Gray</div>
-                                </div>
-                            </label>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-base" value="zinc" class="form-check-input" />
-                                    <div class="form-check-label">Zinc</div>
-                                </div>
-                            </label>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-base" value="neutral" class="form-check-input" />
-                                    <div class="form-check-label">Neutral</div>
-                                </div>
-                            </label>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-base" value="stone" class="form-check-input" />
-                                    <div class="form-check-label">Stone</div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label">Corner Radius</label>
-                        <p class="form-hint">Choose the border radius factor for your app.</p>
-                        <div>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-radius" value="0" class="form-check-input" />
-                                    <div class="form-check-label">0</div>
-                                </div>
-                            </label>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-radius" value="0.5" class="form-check-input" />
-                                    <div class="form-check-label">0.5</div>
-                                </div>
-                            </label>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-radius" value="1" class="form-check-input" checked />
-                                    <div class="form-check-label">1</div>
-                                </div>
-                            </label>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-radius" value="1.5" class="form-check-input" />
-                                    <div class="form-check-label">1.5</div>
-                                </div>
-                            </label>
-                            <label class="form-check">
-                                <div class="form-selectgroup-item">
-                                    <input type="radio" name="theme-radius" value="2" class="form-check-input" />
-                                    <div class="form-check-label">2</div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-auto space-y">
-                    <button type="button" class="btn w-100" id="reset-changes">
-                        <!-- Download SVG icon from http://tabler.io/icons/icon/rotate -->
-                        <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="icon icon-1"
-                        >
-                            <path d="M19.95 11a8 8 0 1 0 -.5 4m.5 5v-5h-5" />
-                        </svg>
-                        Reset changes
-                    </button>
-                    <a href="#" class="btn btn-primary w-100" data-bs-dismiss="offcanvas"> Save </a>
-                </div>
-            </div>
-        </form>
-    </div>
+
     <!-- BEGIN GLOBAL MANDATORY SCRIPTS -->
     <script src="/tabler/dist/js/tabler.min.js?1757307617" defer></script>
     <!-- END GLOBAL MANDATORY SCRIPTS -->
@@ -498,6 +552,109 @@
             });
             checkItems();
         });
+    </script>
+    <script>
+
+        document.querySelectorAll('.feedback-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+
+                document.querySelectorAll('.feedback-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.feedback-tab-content').forEach(c => c.style.display = 'none');
+
+
+                this.classList.add('active');
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).style.display = 'block';
+            });
+        });
+
+
+        document.querySelectorAll('.rating-star').forEach(star => {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+                document.getElementById('feedback-rating').value = value;
+
+
+                document.querySelectorAll('.rating-star').forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.innerHTML = '<i class="fas fa-star"></i>';
+                        s.classList.add('active');
+                    } else {
+                        s.innerHTML = '<i class="far fa-star"></i>';
+                        s.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+
+        document.getElementById('feedback-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const rating = document.getElementById('feedback-rating').value;
+            if (rating === '0') {
+                alert('Por favor, proporciona una calificación con las estrellas');
+                return;
+            }
+
+
+            console.log('Feedback enviado:', {
+                api: document.getElementById('feedback-api').value,
+                subject: document.getElementById('feedback-subject').value,
+                type: document.getElementById('feedback-type').value,
+                rating: rating,
+                message: document.getElementById('feedback-message').value,
+                contact: document.getElementById('feedback-contact').checked
+            });
+
+            alert('¡Gracias por tu feedback! Tu comentario ha sido enviado al equipo de Telito.');
+            this.reset();
+
+
+            document.querySelectorAll('.rating-star').forEach(s => {
+                s.innerHTML = '<i class="far fa-star"></i>';
+                s.classList.remove('active');
+            });
+            document.getElementById('feedback-rating').value = '0';
+        });
+
+
+        document.querySelectorAll('.switch-tab').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tabId = this.getAttribute('data-tab');
+                document.querySelectorAll('.feedback-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.feedback-tab-content').forEach(c => c.style.display = 'none');
+
+                document.querySelector(`.feedback-tab[data-tab="${tabId}"]`).classList.add('active');
+                document.getElementById(tabId).style.display = 'block';
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Obtén el botón de dejar comentario
+            const leaveCommentButton = document.getElementById('leave-comment-btn');
+
+            if (leaveCommentButton) {
+                leaveCommentButton.addEventListener('click', function(e) {
+                    e.preventDefault(); // Prevenir comportamiento por defecto (evitar que la página se recargue)
+
+                    // Cambia las clases de activación de pestañas
+                    document.querySelectorAll('.feedback-tab').forEach(tab => tab.classList.remove('active'));
+                    document.querySelectorAll('.feedback-tab-content').forEach(content => content.style.display = 'none');
+
+                    // Activa la pestaña "Crear comentario"
+                    const createTab = document.querySelector('.feedback-tab[data-tab="create-foro"]');
+                    createTab.classList.add('active');
+
+                    // Muestra el contenido del formulario de crear comentario
+                    document.getElementById('create-foro').style.display = 'block';
+                });
+            }
+        });
+
     </script>
     <!-- END PAGE SCRIPTS -->
 </body>
