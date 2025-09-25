@@ -15,4 +15,8 @@ public interface ProyectoRepository extends JpaRepository<Proyecto, Integer> {
     List<Proyecto> findByActivoAndOrganizacion_Usuarios_Dni(Boolean activo, String organizacion_usuarios_dni);
 
     List<Proyecto> findByPublicoAndOrganizacion_Usuarios_Dni(Boolean publico, String organizacion_usuarios_dni);
+
+    List<Proyecto> findByPublico(Boolean publico);
+    List<Proyecto> findByActivo(Boolean activo);
+
 }
