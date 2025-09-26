@@ -128,14 +128,15 @@ public class ProyectosController {
 
     @PostMapping("/guardar")
     @PreAuthorize("hasRole('PO')")
-    public String guardarProyecto(@Valid @ModelAttribute("proyecto") Proyecto proyecto,
+    public String guardarProyecto(@ModelAttribute("proyecto") Proyecto proyecto,
                                      Model model, Authentication auth) {
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
-        if (usuario.getOrganizacion().equals(proyecto.getOrganizacion()) && proyecto.getUsuarioLider().equals(usuario)) {
-            if (proyecto.getIdProyecto() != null) {
-                // Edición
+        if (proyecto.getIdProyecto() != null) {
+            //Edición
+            if (usuario.getOrganizacion().equals(proyecto.getOrganizacion()) && proyecto.getUsuarioLider().equals(usuario)) {
+
                 Proyecto existente = proyectoRepository.findById(proyecto.getIdProyecto())
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -144,14 +145,15 @@ public class ProyectosController {
                 proyecto.setOrganizacion(existente.getOrganizacion());
                 proyecto.setUsuarioLider(existente.getUsuarioLider());
             } else {
-                // Creación
-                proyecto.setOrganizacion(usuario.getOrganizacion());
-                proyecto.setUsuarioLider(usuario);
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto");
             }
-            proyectoRepository.save(proyecto);
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto");
+            // Creación
+            proyecto.setOrganizacion(usuario.getOrganizacion());
+            proyecto.setUsuarioLider(usuario);
         }
+
+        proyectoRepository.save(proyecto);
 
         model.addAttribute("usuario", usuario);
         return "redirect:/proyectos/" + proyecto.getIdProyecto();
