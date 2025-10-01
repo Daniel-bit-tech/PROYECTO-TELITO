@@ -125,9 +125,14 @@ public class SecurityConfig {
                             System.out.println("Redirigiendo QA a /qa/home");
                             return "/qa/home";
                         case "ROLE_PO":
+<<<<<<< HEAD
                             System.out.println("Redirigiendo PO a /po/home");
                             return "/po/home";
 
+=======
+//                            return "/po/home";
+                            return "/po/home";
+>>>>>>> 16b2e09ff5dfdc0fbea01ac61c6098f29e725164
                         default:
                             System.out.println("Rol no reconocido: " + role);
                             break;
