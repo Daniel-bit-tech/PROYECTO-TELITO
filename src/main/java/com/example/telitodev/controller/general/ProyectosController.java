@@ -63,7 +63,7 @@ public class ProyectosController {
 
         model.addAttribute("usuario", usuario);
 
-        return "desarrollador/proyectos";
+        return "general/proyectos";
     }
 
 

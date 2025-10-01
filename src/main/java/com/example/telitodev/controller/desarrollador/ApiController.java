@@ -74,10 +74,7 @@ public class ApiController {
 //    @PreAuthorize("hasAnyRole('DEV','SUPERADMIN','QA','PO')")
     @PreAuthorize("isAuthenticated()")
     public String detalleApi(@PathVariable Integer id,
-                             @RequestParam(value = "fecha",required = false) String fecha,
                              Model model, Authentication auth, HttpSession session) {
-
-        System.out.println("\n\n\n DOCS \n");
 
         boolean apiExists = apiRepository.existsById(id);
         if (apiExists) {
@@ -89,9 +86,8 @@ public class ApiController {
         // Obtener el usuario correcto considerando impersonación
         Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
-        model.addAttribute("fecha", fecha);
 
-        return "desarrollador/documentacion";
+        return "general/docs/documentacion";
     }
 
 
