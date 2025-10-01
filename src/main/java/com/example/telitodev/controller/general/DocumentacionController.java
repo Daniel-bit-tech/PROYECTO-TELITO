@@ -46,7 +46,20 @@ public class DocumentacionController {
         return "general/docs/docDetalle";
     }
 
-    
+    // Vista de playground (interactivo)
+    @GetMapping("/{idDoc}/playground")
+    public String viewPlayground(@PathVariable Integer idDoc, Model model, Authentication auth, HttpSession session) {
+        Optional<Documentacion> doc = documentacionRepository.findById(idDoc);
+        if (doc.isPresent()) {
+            model.addAttribute("doc", doc.get());
+        } else throw new IllegalArgumentException("Documentación no encontrada");
+
+        // Obtener el usuario correcto considerando impersonación
+        Usuario usuario = obtenerUsuarioActual(auth, session);
+        model.addAttribute("usuario", usuario);
+
+        return "general/docs/playground";
+    }
 
     /**
      * Endpoint que devuelve el JSON OpenAPI asociado

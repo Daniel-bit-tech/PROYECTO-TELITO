@@ -1,7 +1,11 @@
 package com.example.telitodev.entity;
 
 import jakarta.persistence.*;
-import java.sql.Date;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -18,20 +22,26 @@ public class Proyecto {
     private Organizacion organizacion;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="dni_po_lider")
+    @JoinColumn(name="dni_po_lider",nullable = false)
     private Usuario usuarioLider;
 
+    @Size(min = 5, max = 45)
+    @NotBlank
     @Column(name = "nombre", length = 45, nullable = false)
     private String nombre;
 
+    @Size(min = 20, max = 100)
+    @NotBlank
     @Column(name = "descripcion", length = 100)
     private String descripcion;
 
     @Column(name = "fecha_inicio", nullable = false)
-    private Date fechaInicio;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate fechaInicio;
 
     @Column(name = "fecha_fin")
-    private Date fechaFin;
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    private LocalDate fechaFin;
 
     @Column(name = "url_repositorio")
     private String repositorio;
@@ -83,17 +93,17 @@ public class Proyecto {
         this.descripcion = descripcion;
     }
 
-    public Date getFechaInicio() {
+    public LocalDate getFechaInicio() {
         return fechaInicio;
     }
-    public void setFechaInicio(Date fechaInicio) {
+    public void setFechaInicio(LocalDate fechaInicio) {
         this.fechaInicio = fechaInicio;
     }
 
-    public Date getFechaFin() {
+    public LocalDate getFechaFin() {
         return fechaFin;
     }
-    public void setFechaFin(Date fechaFin) {
+    public void setFechaFin(LocalDate fechaFin) {
         this.fechaFin = fechaFin;
     }
 

@@ -552,7 +552,7 @@
       <span class="meta-item">
         <i class="fas fa-calendar"></i>
         Creado:
-        <span th:text="${#temporals.format(proyecto.fechaInicio.toLocalDate(), 'dd/MM/yyyy')}">01/01/2025</span>
+        <span th:text="${#temporals.format(proyecto.fechaInicio, 'dd/MM/yyyy')}">01/01/2025</span>
       </span>
 <!--            <span class="meta-item">-->
 <!--        <i class="fas fa-code-branch"></i>-->
@@ -560,7 +560,7 @@
 <!--      </span>-->
             <span class="meta-item" th:if="${!proyecto.activo and proyecto.fechaFin != null}">
         Finalizado:
-        <span th:text="${#temporals.format(proyecto.fechaFin.toLocalDate(), 'dd/MM/yyyy')}">01/01/2025</span>
+        <span th:text="${#temporals.format(proyecto.fechaFin, 'dd/MM/yyyy')}">01/01/2025</span>
       </span>
           </div>
 
