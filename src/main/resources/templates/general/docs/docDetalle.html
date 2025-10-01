@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8" />
+    <title th:text="${doc.api.nombre} + ' - Documentación'">Documentación API</title>
+    <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet"/>
+    <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<script src="/tabler/dist/js/tabler-theme.min.js"></script>
+
+<div class="page">
+    <header th:replace="desarrollador/header :: header" sec:authorize="hasRole('DEV')"></header>
+    <header th:replace="admin/header :: header" sec:authorize="hasRole('SUPERADMIN')"></header>
+    <header th:replace="po/header_po :: header" sec:authorize="hasRole('PO')"></header>
+    <header th:replace="qa/header_qa :: header" sec:authorize="hasRole('QA')"></header>
+
+    <div class="page-wrapper">
+        <div class="page-body">
+            <div class="container-xl">
+
+<!--                <div th:replace="general/docs/docsHeader :: doc-header" th:with="currentView='docs'"></div>-->
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Modo Solo Lectura:</strong> Esta vista muestra la documentación sin opciones de prueba.
+                                </div>
+
+                                <!-- Scalar API Reference -->
+                                <div id="app"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/tabler/dist/js/tabler.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+<script th:inline="javascript">
+    const app = Scalar.createApiReference('#app', {
+        theme: 'solarized',
+        layout: 'modern',
+        hideClientButton: true,
+        showSidebar: true,
+        showToolbar: 'never',
+        operationTitleSource: 'summary',
+        _integration: 'html',
+        isEditable: false,
+        isLoading: false,
+        hideModels: false,
+        documentDownloadType: 'both',
+        hideTestRequestButton: true,
+        hideSearch: false,
+        hideDarkModeToggle: false,
+        withDefaultFonts: true,
+        defaultOpenAllTags: false,
+        expandAllModelSections: false,
+        expandAllResponses: false,
+        url: [[@{'/documentacion/' + ${doc.idDocumentacion} + '/openapi.json'}]]
+    })
+</script>
+</body>
+</html>

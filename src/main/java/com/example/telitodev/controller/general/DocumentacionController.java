@@ -1,4 +1,4 @@
-package com.example.telitodev.controller.desarrollador;
+package com.example.telitodev.controller.general;
 
 
 import com.example.telitodev.entity.Documentacion;
@@ -6,13 +6,17 @@ import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.repository.DocumentacionRepository;
 import com.example.telitodev.repository.UsuarioRepository;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 @Controller
@@ -28,19 +32,45 @@ public class DocumentacionController {
     }
 
     @GetMapping("/{idDoc}")
-    public String showLoginForm(@PathVariable Integer idDoc, Model model, Authentication auth, HttpSession session) {
+    public String mostarVistaDocDetalle(@PathVariable Integer idDoc, Model model, Authentication auth, HttpSession session) {
 
         Optional<Documentacion> doc = documentacionRepository.findById(idDoc);
-        model.addAttribute("doc", doc.orElse(null));
-
-//        System.out.println(doc.get().getContenido());
+        if (doc.isPresent()) {
+            model.addAttribute("doc", doc.get());
+        } else throw new IllegalArgumentException("Documentación no encontrada");
 
         // Obtener el usuario correcto considerando impersonación
         Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
 
-        return "general/docDetalle";    //CAMBIAR
+        return "general/docs/docDetalle";
     }
+
+    
+
+    /**
+     * Endpoint que devuelve el JSON OpenAPI asociado
+     * Consumido por Scalar (url)
+     */
+    @ResponseBody
+    @GetMapping("/{idDoc}/openapi.json")
+    public ResponseEntity<String> obtenerOpenApiSpec(@PathVariable Integer idDoc) {
+        Documentacion doc = documentacionRepository.findById(idDoc)
+                .orElseThrow(() -> new IllegalArgumentException("Documentación no encontrada"));
+
+        // Si el contenido es un JSON válido guardado en BD
+        if (doc.getContenido() != null) {
+            System.out.println(doc.getContenido());
+            String json = doc.getContenido();
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .contentLength(json.getBytes(StandardCharsets.UTF_8).length)
+                    .body(json);
+        }
+
+        return ResponseEntity.notFound().build();
+    }
+
 
     /**
      * Método helper para obtener el usuario correcto durante impersonación

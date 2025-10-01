@@ -478,7 +478,7 @@
 <!-- Banner de impersonación -->
 <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
 
-<script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
 
     <header th:replace="desarrollador/header :: header"
@@ -609,172 +609,13 @@
 </div>
 
 
-<div class="modal" id="project-modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3 class="modal-title">Nuevo Proyecto</h3>
-      <button class="modal-close" onclick="closeModal()">&times;</button>
-    </div>
-    <div class="modal-body">
-      <form id="project-form">
-        <div class="form-group">
-          <label class="form-label">Nombre del Proyecto</label>
-          <input type="text" class="form-control" id="project-name" placeholder="Mi aplicación web" required>
-          <div class="form-text">Un nombre descriptivo para tu proyecto</div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Descripción</label>
-          <textarea class="form-control form-textarea" id="project-description" placeholder="Describe el propósito y funcionalidades de tu proyecto..." required></textarea>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Seleccionar APIs</label>
-          <div class="api-selector">
-            <div class="api-option">
-              <input type="checkbox" id="api-users" name="apis" value="api-users">
-              <label for="api-users">API de Usuarios - Gestión de usuarios y autenticación</label>
-            </div>
-            <div class="api-option">
-              <input type="checkbox" id="api-payments" name="apis" value="api-payments">
-              <label for="api-payments">API de Pagos - Procesamiento de transacciones</label>
-            </div>
-            <div class="api-option">
-              <input type="checkbox" id="api-products" name="apis" value="api-products">
-              <label for="api-products">API de Productos - Gestión de catálogo e inventario</label>
-            </div>
-            <div class="api-option">
-              <input type="checkbox" id="api-notifications" name="apis" value="api-notifications">
-              <label for="api-notifications">API de Notificaciones - Envío de emails y notificaciones</label>
-            </div>
-            <div class="api-option">
-              <input type="checkbox" id="api-analytics" name="apis" value="api-analytics">
-              <label for="api-analytics">API de Analytics - Métricas y análisis de datos</label>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Configurar Entornos</label>
-          <div class="environment-config">
-            <div class="environment-header">
-              <span class="environment-title">Entorno de Producción</span>
-              <input type="checkbox" id="env-producción" checked>
-            </div>
-            <div class="form-group">
-              <label class="form-label">URL Base</label>
-              <input type="url" class="form-control" placeholder="https://api.telito.com/v1">
-            </div>
-          </div>
-
-          <div class="environment-config">
-            <div class="environment-header">
-              <span class="environment-title">Entorno de Staging</span>
-              <input type="checkbox" id="env-qa" checked>
-            </div>
-            <div class="form-group">
-              <label class="form-label">URL Base</label>
-              <input type="url" class="form-control" placeholder="https://staging-api.telito.com/v1">
-            </div>
-          </div>
-
-          <div class="environment-config">
-            <div class="environment-header">
-              <span class="environment-title">Entorno de Desarrollo</span>
-              <input type="checkbox" id="env-desarrollo" checked>
-            </div>
-            <div class="form-group">
-              <label class="form-label">URL Base</label>
-              <input type="url" class="form-control" placeholder="https://dev-api.telito.com/v1">
-            </div>
-          </div>
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="saveProject()">Crear Proyecto</button>
-    </div>
-  </div>
-</div>
-
 <script>
-
-  document.getElementById('new-project-btn').addEventListener('click', function() {
-    document.getElementById('project-modal').style.display = 'flex';
-  });
-
-  function closeModal() {
-    document.getElementById('project-modal').style.display = 'none';
-  }
-
-  function saveProject() {
-    const projectName = document.getElementById('project-name').value;
-    const projectDescription = document.getElementById('project-description').value;
-
-    if (!projectName || !projectDescription) {
-      alert('Por favor, complete todos los campos obligatorios.');
-      return;
-    }
-
-
-    const selectedApis = [];
-    document.querySelectorAll('input[name="apis"]:checked').forEach(api => {
-      selectedApis.push(api.value);
-    });
-
-    if (selectedApis.length === 0) {
-      alert('Por favor, seleccione al menos una API.');
-      return;
-    }
-
-
-    console.log('Proyecto guardado:', {
-      name: projectName,
-      description: projectDescription,
-      apis: selectedApis,
-      environments: {
-        production: document.getElementById('env-producción').checked,
-        staging: document.getElementById('env-qa').checked,
-        development: document.getElementById('env-desarrollo').checked
-      }
-    });
-
-
-    closeModal();
-    document.getElementById('project-form').reset();
-
-
-    alert('Proyecto creado exitosamente');
-  }
-
-
-  window.addEventListener('click', function(e) {
-    const modal = document.getElementById('project-modal');
-    if (e.target === modal) {
-      closeModal();
-    }
-  });
-
-
   const searchInput = document.querySelector('.search-input');
   searchInput.addEventListener('input', function() {
     const searchTerm = this.value.toLowerCase();
     console.log('Buscando proyectos:', searchTerm);
 
-
   });
-
-
-  // document.querySelectorAll('.filter-btn').forEach(btn => {
-  //   btn.addEventListener('click', function() {
-  //     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  //     this.classList.add('active');
-  //
-  //     const filterType = this.textContent.trim();
-  //     console.log('Filtrando por:', filterType);
-  //   });
-  // });
 
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', function () {
