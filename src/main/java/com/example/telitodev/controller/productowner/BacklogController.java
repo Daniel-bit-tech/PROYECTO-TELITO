@@ -29,8 +29,11 @@ public class BacklogController {
     @GetMapping("/backlog")
     public String showBacklogView(Model model, Authentication auth, HttpSession session) {
         // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
-        model.addAttribute("usuario", usuario);
+        if (auth != null && auth.isAuthenticated()) {
+            // Obtener el usuario correcto considerando impersonación
+            Usuario usuario = obtenerUsuarioActual(auth, session);
+            model.addAttribute("usuario", usuario);
+        }
         List<Backlog> backlogs = backlogRepository.findAll();
         model.addAttribute("backlogs", backlogs);
         return "po/backlog";
