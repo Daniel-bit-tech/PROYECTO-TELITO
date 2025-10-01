@@ -8,10 +8,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -97,7 +100,7 @@ public class ProyectosController {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         proyecto.setUsuarioLider(usuario);
         proyecto.setOrganizacion(usuario.getOrganizacion());
-        proyecto.setFechaInicio(new Date(System.currentTimeMillis()));
+        proyecto.setFechaInicio(LocalDate.now());
         proyecto.setPublico(true);
         proyecto.setActivo(true);
         model.addAttribute("proyecto", proyecto);
@@ -128,10 +131,15 @@ public class ProyectosController {
 
     @PostMapping("/guardar")
     @PreAuthorize("hasRole('PO')")
-    public String guardarProyecto(@ModelAttribute("proyecto") Proyecto proyecto,
-                                     Model model, Authentication auth) {
+    public String guardarProyecto(@Valid @ModelAttribute("proyecto") Proyecto proyecto, BindingResult result,
+                                     Model model, Authentication auth, RedirectAttributes redirectAttributes) {
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        model.addAttribute("usuario", usuario);
+
+        if (result.hasErrors()) {
+            return "po/formEditarProy";
+        }
 
         if (proyecto.getIdProyecto() != null) {
             //Edición
@@ -148,6 +156,8 @@ public class ProyectosController {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto");
             }
         } else {
+
+            System.out.println("Creando proy: "+proyecto.getNombre());
             // Creación
             proyecto.setOrganizacion(usuario.getOrganizacion());
             proyecto.setUsuarioLider(usuario);
@@ -155,7 +165,6 @@ public class ProyectosController {
 
         proyectoRepository.save(proyecto);
 
-        model.addAttribute("usuario", usuario);
         return "redirect:/proyectos/" + proyecto.getIdProyecto();
     }
 
