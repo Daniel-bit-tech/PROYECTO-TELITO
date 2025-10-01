@@ -39,6 +39,7 @@ public class ApiController {
         this.tagRepository = tagRepository;
     }
 
+
     @GetMapping()
     public String catalogo(@RequestParam(value = "dominios",required = false) List<Integer> selDominios,
                            @RequestParam(value = "tags", required = false) List<Integer> selTags,

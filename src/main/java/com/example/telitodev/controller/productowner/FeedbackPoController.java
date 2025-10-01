@@ -1,18 +1,17 @@
 package com.example.telitodev.controller.productowner;
 
-import com.example.telitodev.entity.Feedback;
-import com.example.telitodev.entity.Ticket;
-import com.example.telitodev.entity.Usuario;
-import com.example.telitodev.repository.FeedbackRepository;
-import com.example.telitodev.repository.UsuarioRepository;
+
+import com.example.telitodev.service.*;
+import com.example.telitodev.entity.*;
+import com.example.telitodev.repository.*;
+
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Optional;
 import jakarta.servlet.http.HttpSession;
@@ -22,24 +21,24 @@ import jakarta.servlet.http.HttpSession;
 @PreAuthorize("hasAnyRole('PO', 'SUPERADMIN')")
 public class FeedbackPoController {
 
-
+    final FeedbackService feedbackService;
+    final BacklogService backlogService;
     final UsuarioRepository usuarioRepository;
     final FeedbackRepository feedbackRepository;
 
-    public FeedbackPoController(UsuarioRepository usuarioRepository, FeedbackRepository feedbackRepository) {
+    public FeedbackPoController(UsuarioRepository usuarioRepository, FeedbackRepository feedbackRepository, BacklogService backlogService, FeedbackService feedbackService) {
         this.usuarioRepository = usuarioRepository;
         this.feedbackRepository = feedbackRepository;
+        this.backlogService = backlogService;
+        this.feedbackService = feedbackService;
     }
 
     @GetMapping("/feedback")
     public String showFeedbackView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-
-
         List<Feedback> listaFeedback = feedbackRepository.findAll();
         model.addAttribute("listaFeedback", listaFeedback);
-
         return "po/feedback";
     }
 
@@ -48,7 +47,6 @@ public class FeedbackPoController {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
 
-
         Optional<Feedback> feedbackOptional = feedbackRepository.findById(idFeedback);
 
         if (feedbackOptional.isPresent()) {
@@ -56,6 +54,30 @@ public class FeedbackPoController {
             return "po/feedbackDetalle";
         } else {
             return "redirect:/po/feedback";
+        }
+    }
+
+    @PostMapping("/registrarFeedbackEnBacklog")
+    public String registrarFeedbackEnBacklog(@RequestParam("idFeedback") Integer idFeedback,
+                                             @RequestParam("asunto") String asunto,
+                                             Authentication auth, // Inyectamos Authentication para obtener el usuario autenticado
+                                             Model model) {
+        try {
+            // Obtener el usuario autenticado
+            Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+
+            // Llamamos al FeedbackService para registrar el feedback en el backlog
+            Backlog backlog = feedbackService.registrarFeedbackEnBacklog(idFeedback, asunto, usuario);
+
+            System.out.println("Usuario autenticado: " + usuario.getCorreo() + " con rol " + usuario.getRol().getNombreRol());
+
+
+            // Redirigir al PO a la vista de Feedback o Backlog
+            return "redirect:/po/backlog";
+
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al registrar el backlog: " + e.getMessage());
+            return "po/error"; // Vista de error en caso de fallar
         }
     }
 

@@ -129,9 +129,23 @@
 
                             <div class="card-footer bg-transparent mt-auto">
                                 <div class="btn-list justify-content-end">
+                                    <!-- Formulario para registrar el Feedback en el Backlog -->
+                                    <form action="/po/registrarFeedbackEnBacklog" method="POST">
+                                        <!-- Enviar el id del Feedback -->
+                                        <input type="hidden" name="idFeedback" th:value="${feedback.idFeedback}" />
+
+                                        <!-- El asunto por defecto es "--", no editable en esta vista -->
+                                        <input type="hidden" name="asunto" value="--" />
+
+                                        <!-- Botón para enviar el formulario -->
+                                        <button type="submit" class="btn btn-pinterest">Registrar en Backlog</button>
+                                    </form>
+
+                                    <!-- Botón para volver a la vista anterior -->
                                     <a th:href="@{/po/feedback}" class="btn btn-pinterest">Volver</a>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>

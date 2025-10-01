@@ -1,6 +1,8 @@
 package com.example.telitodev.controller.productowner;
 
+import com.example.telitodev.entity.Backlog;
 import com.example.telitodev.entity.Usuario;
+import com.example.telitodev.repository.BacklogRepository;
 import com.example.telitodev.repository.UsuarioRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -10,14 +12,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import jakarta.servlet.http.HttpSession;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/po")
 @PreAuthorize("hasAnyRole('PO', 'SUPERADMIN')")
 public class BacklogController {
 
     final UsuarioRepository usuarioRepository;
-    public BacklogController(UsuarioRepository usuarioRepository) {
+    final BacklogRepository backlogRepository;
+    public BacklogController(UsuarioRepository usuarioRepository, BacklogRepository backlogRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.backlogRepository = backlogRepository;
     }
 
     @GetMapping("/backlog")
@@ -25,6 +31,8 @@ public class BacklogController {
         // Obtener el usuario correcto considerando impersonación
         Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
+        List<Backlog> backlogs = backlogRepository.findAll();
+        model.addAttribute("backlogs", backlogs);
         return "po/backlog";
     }
 
