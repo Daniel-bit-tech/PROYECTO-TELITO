@@ -1,8 +1,10 @@
-<html lang="es" data-bs-theme="dark"><head>
+<html lang="es" data-bs-theme="dark">
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>TELITO DEVELOPER PORTAL | Sistema de Reservas Deportivas</title>
+
     <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet">
     <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet">
     <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet">
@@ -12,6 +14,7 @@
     <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet">
     <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet">
     <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet">
+
     <style>
         @import url("https://rsms.me/inter/inter.css");
         .api-card:hover {
@@ -54,6 +57,16 @@
             border-radius: 8px;
             padding: 8px;
         }
+        /* Custom styles for the roadmap chart */
+        #roadmap-chart {
+            width: 100%;
+            height: 450px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
     </style>
 </head>
 
@@ -69,182 +82,32 @@
             <div class="container-xl">
                 <div class="row g-2 align-items-center">
                     <div class="col">
-                        <!-- Page pre-title -->
-
-                        <h2 class="page-title">Roadmap</h2>
+                        <h2 class="page-title">Roadmap de APIs</h2>
                     </div>
-                    <!-- Page title actions -->
-
-                    <div class="col-auto ms-auto d-print-none">
-                        <div class="btn-list">
-                  <span class="d-none d-sm-inline">
-
-                  </span>
-                            <!--a class="btn btn-purple" th:href="@{/po/roadmapDetalle}" data-bs-toggle="modal" data-bs-target="#modal-report">
-                            //Download SVG icon from http://tabler.io/icons/icon/plus//
-                            Gestion Detalles</a> -->
-                            <a class="btn btn-purple" th:href="@{/po/roadmapDetalle}"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-pinterest -->
-                                Gestion Detalle</a>
-                            <a href="#" class="btn btn-primary btn-6 d-sm-none btn-icon" data-bs-toggle="modal" data-bs-target="#modal-report" aria-label="Create new report">
-                                <!-- Download SVG icon from http://tabler.io/icons/icon/plus -->
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-2">
-                                    <path d="M12 5l0 14"></path>
-                                    <path d="M5 12l14 0"></path>
-                                </svg>
-                            </a>
-                        </div>
-                        <!-- BEGIN MODAL -->
-                        <!-- END MODAL -->
-                    </div><div class="col-auto ms-auto d-print-none">
-                    <div class="btn-list">
-                  <span class="d-none d-sm-inline">
-
-                  </span>
-
-                        <!-- <a class="btn btn-green" th:href="@{/po/roadmapGestion}" data-bs-toggle="modal" data-bs-target="#modal-report">
-                            // Download SVG icon from http://tabler.io/icons/icon/plus //
-                            Gestion Estratégica</a> -->
-                        <a class="btn btn-green" th:href="@{/po/roadmapGestion}"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-pinterest -->
-
-                            Gestion Estratégica</a>
-                        <a href="#" class="btn btn-primary btn-6 d-sm-none btn-icon" data-bs-toggle="modal" data-bs-target="#modal-report" aria-label="Create new report">
-                            <!-- Download SVG icon from http://tabler.io/icons/icon/plus -->
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-2">
-                                <path d="M12 5l0 14"></path>
-                                <path d="M5 12l14 0"></path>
-                            </svg>
-                        </a>
-                    </div>
-                    <!-- BEGIN MODAL -->
-                    <!-- END MODAL -->
-                </div>
                 </div>
             </div>
         </div>
         <!-- END PAGE HEADER -->
+
         <!-- BEGIN PAGE BODY -->
         <div class="page-body">
             <div class="container-xl">
                 <div class="row row-deck row-cards">
-
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <h3 class="card-title">Traffic summary</h3>
-                                <div id="chart-mentions" class="position-relative chart-lg" style="min-height: 240px;"><div id="apexchartsts4q7snsi" class="apexcharts-canvas apexchartsts4q7snsi apexcharts-theme-" style="width: 504px; height: 240px;"><svg id="SvgjsSvg3788" width="504" height="240" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:svgjs="http://svgjs.dev" class="apexcharts-svg apexcharts-zoomable" xmlns:data="ApexChartsNS" transform="translate(0, 0)"><foreignObject x="0" y="0" width="504" height="240"><div class="apexcharts-legend" xmlns="http://www.w3.org/1999/xhtml" style="max-height: 120px;"></div><style type="text/css">
-                                    .apexcharts-flip-y {
-                                        transform: scaleY(-1) translateY(-100%);
-                                        transform-origin: top;
-                                        transform-box: fill-box;
-                                    }
-                                    .apexcharts-flip-x {
-                                        transform: scaleX(-1);
-                                        transform-origin: center;
-                                        transform-box: fill-box;
-                                    }
-                                    .apexcharts-legend {
-                                        display: flex;
-                                        overflow: auto;
-                                        padding: 0 10px;
-                                    }
-                                    .apexcharts-legend.apx-legend-position-bottom, .apexcharts-legend.apx-legend-position-top {
-                                        flex-wrap: wrap
-                                    }
-                                    .apexcharts-legend.apx-legend-position-right, .apexcharts-legend.apx-legend-position-left {
-                                        flex-direction: column;
-                                        bottom: 0;
-                                    }
-                                    .apexcharts-legend.apx-legend-position-bottom.apexcharts-align-left, .apexcharts-legend.apx-legend-position-top.apexcharts-align-left, .apexcharts-legend.apx-legend-position-right, .apexcharts-legend.apx-legend-position-left {
-                                        justify-content: flex-start;
-                                    }
-                                    .apexcharts-legend.apx-legend-position-bottom.apexcharts-align-center, .apexcharts-legend.apx-legend-position-top.apexcharts-align-center {
-                                        justify-content: center;
-                                    }
-                                    .apexcharts-legend.apx-legend-position-bottom.apexcharts-align-right, .apexcharts-legend.apx-legend-position-top.apexcharts-align-right {
-                                        justify-content: flex-end;
-                                    }
-                                    .apexcharts-legend-series {
-                                        cursor: pointer;
-                                        line-height: normal;
-                                        display: flex;
-                                        align-items: center;
-                                    }
-                                    .apexcharts-legend-text {
-                                        position: relative;
-                                        font-size: 14px;
-                                    }
-                                    .apexcharts-legend-text *, .apexcharts-legend-marker * {
-                                        pointer-events: none;
-                                    }
-                                    .apexcharts-legend-marker {
-                                        position: relative;
-                                        display: flex;
-                                        align-items: center;
-                                        justify-content: center;
-                                        cursor: pointer;
-                                        margin-right: 1px;
-                                    }
-
-                                    .apexcharts-legend-series.apexcharts-no-click {
-                                        cursor: auto;
-                                    }
-                                    .apexcharts-legend .apexcharts-hidden-zero-series, .apexcharts-legend .apexcharts-hidden-null-series {
-                                        display: none !important;
-                                    }
-                                    .apexcharts-inactive-legend {
-                                        opacity: 0.45;
-                                    }</div>
-                                <div class="col-12">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <p class="mb-3">Using Storage <strong>6854.45 MB </strong>of 8 GB</p>
-                                            <div class="progress progress-separated mb-3">
-                                                <div class="progress-bar bg-primary" role="progressbar" style="width: 44%" aria-label="Regular"></div>
-                                                <div class="progress-bar bg-info" role="progressbar" style="width: 19%" aria-label="System"></div>
-                                                <div class="progress-bar bg-success" role="progressbar" style="width: 9%" aria-label="Shared"></div>
-                                            </div>
-                                            <div class="row">
-                                                <div class="col-auto d-flex align-items-center pe-2">
-                                                    <span class="legend me-2 bg-primary"></span>
-                                                    <span>Nueva</span>
-                                                    <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-secondary">915MB</span>
-                                                </div>
-                                                <div class="col-auto d-flex align-items-center px-2">
-                                                    <span class="legend me-2 bg-info"></span>
-                                                    <span>Deprecated</span>
-                                                    <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-secondary">415MB</span>
-                                                </div>
-                                                <div class="col-auto d-flex align-items-center px-2">
-                                                    <span class="legend me-2 bg-success"></span>
-                                                    <span>Producción</span>
-                                                    <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-secondary">201MB</span>
-                                                </div>
-                                                <div class="col-auto d-flex align-items-center ps-2">
-                                                    <span class="legend me-2"></span>
-                                                    <span>Beta</span>
-                                                    <span class="d-none d-md-inline d-lg-none d-xxl-inline ms-2 text-secondary">612MB</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <h3 class="card-title">Roadmap de APIs</h3>
+                                <!-- Roadmap Chart Placeholder -->
+                                <div id="roadmap-chart"></div>
                             </div>
                         </div>
                     </div>
-
-
-
-
-
-
-
-
-
                 </div>
             </div>
         </div>
         <!-- END PAGE BODY -->
-        <!--  BEGIN FOOTER  -->
+
+        <!-- BEGIN FOOTER -->
         <footer class="footer footer-transparent d-print-none">
             <div class="container-xl">
                 <div class="row text-center align-items-center flex-row-reverse">
@@ -255,90 +118,87 @@
                             <li class="list-inline-item">
                                 <a href="https://github.com/tabler/tabler" target="_blank" class="link-secondary" rel="noopener">Source code</a>
                             </li>
-                            <li class="list-inline-item">
-                                <a href="https://github.com/sponsors/codecalm" target="_blank" class="link-secondary" rel="noopener">
-                                    <!-- Download SVG icon from http://tabler.io/icons/icon/heart -->
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-pink icon-inline icon-4">
-                                        <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"></path>
-                                    </svg>
-                                    Sponsor
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="col-12 col-lg-auto mt-3 mt-lg-0">
-                        <ul class="list-inline list-inline-dots mb-0">
-                            <li class="list-inline-item">
-                                Copyright © 2025
-                                <a href="." class="link-secondary">Tabler</a>. All rights reserved.
-                            </li>
-                            <li class="list-inline-item">
-                                <a href="./changelog.html" class="link-secondary" rel="noopener"> v1.4.0 </a>
-                            </li>
                         </ul>
                     </div>
                 </div>
             </div>
         </footer>
-        <!--  END FOOTER  -->
+        <!-- END FOOTER -->
     </div>
-
-
-    <div class="chatbot-container">
-        <div class="chatbot-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasChatbot">
-            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-message-chatbot" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                <path d="M18 4a3 3 0 0 1 3 3v8a3 3 0 0 1 -3 3h-5l-5 3v-3h-2a3 3 0 0 1 -3 -3v-8a3 3 0 0 1 3 -3h12z"></path>
-                <path d="M9.5 9h.01"></path>
-                <path d="M14.5 9h.01"></path>
-                <path d="M9.5 13a3.5 3.5 0 0 0 5 0"></path>
-            </svg>
-        </div>
-    </div>
-
-
-    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasChatbot">
-        <div class="offcanvas-header">
-            <h2 class="offcanvas-title">Asistente Virtual</h2>
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body">
-            <div class="chat-messages p-3">
-                <div class="chat-message chat-message-left">
-                    <div class="d-flex">
-                        <div class="flex-shrink-0">
-                            <span class="avatar avatar-sm" style="background-image: url(./tabler/static/avatars/000f.jpg)"></span>
-                        </div>
-                        <div class="flex-fill ms-3">
-                            <div class="card">
-                                <div class="card-body">
-                                    <p>¡Hola! Soy tu asistente para el sistema de reservas deportivas. ¿En qué puedo ayudarte hoy?</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="chat-input p-3 border-top">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Escribe tu pregunta...">
-                    <button class="btn btn-primary" type="button">Enviar</button>
-                </div>
-                <div class="mt-2 text-center">
-                    <small class="text-muted">Preguntas frecuentes:</small>
-                    <div class="mt-1">
-                        <a href="#" class="badge badge-outline text-reset">¿Cómo integrar pagos con imagen?</a>
-                        <a href="#" class="badge badge-outline text-reset">API de Reservas documentación</a>
-                        <a href="#" class="badge badge-outline text-reset">Problemas de autenticación</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="footer-placeholder"></div>
 </div>
 
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
 <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
-<div class="tooltip bs-tooltip-auto fade show" role="tooltip" id="tooltip401309" style="position: absolute; inset: 0px auto auto 0px; margin: 0px; transform: translate3d(983px, 54px, 0px);" data-popper-placement="bottom"><div class="tooltip-arrow" style="position: absolute; transform: translate3d(42.5px, 0px, 0px); left: 0px;"></div><div class="tooltip-inner">Modo claro</div></div></body></html>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+<script>
+    // Datos hardcodeados del roadmap
+    const roadmapData = [
+        { api: 'API 1', start: '2025-10-01', end: '2025-10-15', estado: 'Nueva' },
+        { api: 'API 2', start: '2025-10-10', end: '2025-11-01', estado: 'En desarrollo' },
+        { api: 'API 3', start: '2025-11-01', end: '2025-11-15', estado: 'Próxima' }
+    ];
+
+    // Colores por estado
+    const colorPorEstado = {
+        'Nueva': '#f59f00',       // Amarillo
+        'En desarrollo': '#22b8cf', // Celeste
+        'Próxima': '#94d82d'      // Verde
+    };
+
+    // Prepara los datos para ApexCharts
+    const seriesData = roadmapData.map(item => ({
+        x: item.api,
+        y: [new Date(item.start).getTime(), new Date(item.end).getTime()],  // Convertir las fechas en timestamp
+        fillColor: colorPorEstado[item.estado] || '#adb5bd',
+        estado: item.estado
+    }));
+
+    // Configuración de ApexCharts
+    const options = {
+        chart: {
+            type: 'rangeBar',
+            height: 460
+        },
+        plotOptions: {
+            bar: {
+                horizontal: true,
+                barHeight: '60%',
+                distributed: true
+            }
+        },
+        series: [{
+            name: 'Fase',
+            data: seriesData
+        }],
+        xaxis: {
+            type: 'datetime',
+            labels: { datetimeUTC: false }
+        },
+        tooltip: {
+            y: {
+                formatter: (val, opts) => {
+                    const item = opts.w.config.series[0].data[opts.dataPointIndex];
+                    const start = new Date(item.y[0]).toLocaleDateString();
+                    const end = new Date(item.y[1]).toLocaleDateString();
+                    return `${item.estado} · ${start} → ${end}`;
+                }
+            }
+        },
+        legend: { show: false },
+        dataLabels: {
+            enabled: true,
+            formatter: (_, opts) => {
+                const item = opts.w.config.series[0].data[opts.dataPointIndex];
+                return item.estado;
+            }
+        },
+        grid: { strokeDashArray: 3 }
+    };
+
+    // Inicializar y renderizar el gráfico
+    new ApexCharts(document.querySelector("#roadmap-chart"), options).render();
+</script>
+</body>
+</html>
