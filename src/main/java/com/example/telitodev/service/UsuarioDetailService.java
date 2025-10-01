@@ -40,6 +40,11 @@ public class UsuarioDetailService implements UserDetailsService {
             throw new UsuarioDesactivadoException("Usuario inactivo. Comuníquese con el administrador.");
         }
 
+        // Verificar si el usuario tiene rol asignado
+        if (usuario.getRol() == null) {
+            throw new UsernameNotFoundException("Usuario sin rol asignado");
+        }
+
         String nombreRol = usuario.getRol().getNombreRol();
         System.out.println("Usuario activo encontrado: " + usuario.getCorreo() + " - Rol: " + nombreRol);
 

@@ -24,36 +24,63 @@ public class CatalogoController {
     final UsuarioRepository usuarioRepository;
     final ApiService apiService;
     final ApiRepository apiRepository;
+    final DominioRepository dominioRepository;
+    final TagRepository tagRepository;
 
-    public CatalogoController(UsuarioRepository usuarioRepository, ApiService apiService, ApiRepository apiRepository) {
+    public CatalogoController(UsuarioRepository usuarioRepository, ApiService apiService, ApiRepository apiRepository, DominioRepository dominioRepository, TagRepository tagRepository) {
         this.usuarioRepository = usuarioRepository;
         this.apiService = apiService;
         this.apiRepository = apiRepository;
+        this.dominioRepository = dominioRepository;
+        this.tagRepository = tagRepository;
     }
-
     @GetMapping("/catalogo")
     public String showCatalogoView(@RequestParam(value = "nombre", required = false) String nombre,
+                                   @RequestParam(value = "dominios", required = false) List<Integer> selDominios,
+                                   @RequestParam(value = "tags", required = false) List<Integer> selTags,
                                    Model model, Authentication auth, HttpSession session) {
 
-        List<Api> apis;
+        String dominios = selDominios == null ? null : selDominios.toString();
+        String tags = selTags == null ? null : selTags.toString();
+        System.out.println("Doms: " + dominios + " \nTags: " + tags);
 
+        // Se determina el filtro para obtener las APIs
+        List<Api> apis;
         if (nombre != null && !nombre.trim().isEmpty()) {
-            // Llama a un método que filtre solo por nombre
+            // Si hay un nombre, filtra por nombre
             apis = apiRepository.findByNombreContainingIgnoreCase(nombre);
+        } else if (selDominios != null || selTags != null) {
+            // Si hay filtros por dominios o tags
+            apis = apiRepository.findByFilters(nombre, selDominios, selTags);
         } else {
-            // Si no hay nombre, muestra todas las APIs
+            // Si no hay filtro, obtiene todas las APIs
             apis = apiRepository.findAll();
         }
 
-        model.addAttribute("apis", apis);
-        model.addAttribute("nombre", nombre); // Esto es importante para mantener el valor en el buscador
+        // Imprime los nombres de las APIs en la consola
+        for (Api api : apis) {
+            System.out.println("api " + api.getNombre());
+        }
 
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
-        model.addAttribute("usuario", usuario);
+        // Si hay un usuario autenticado, agrega la información del usuario
+        if (auth != null && auth.isAuthenticated()) {
+            Usuario usuario = obtenerUsuarioActual(auth, session);
+            model.addAttribute("usuario", usuario);
+        }
+
+        // Se agregan las listas de dominios y tags al modelo
+        model.addAttribute("listaDominios", dominioRepository.findAll());
+        model.addAttribute("listaTags", tagRepository.findAll());
+
+        // Se agregan las APIs y los filtros seleccionados al modelo
+        model.addAttribute("apis", apis);
+        model.addAttribute("selTags", selTags);
+        model.addAttribute("selDominios", selDominios);
+        model.addAttribute("nombre", nombre);
 
         return "po/catalogo";
     }
+
 
     @GetMapping("/documentacion")
     public String showDocumentacionView(@RequestParam("id") Integer idApi, Model model, Authentication auth, HttpSession session) {
@@ -99,4 +126,6 @@ public class CatalogoController {
         System.out.println("👤 Catalogo - Usando datos del usuario autenticado: " + usuario.getNombre());
         return usuario;
     }
+
+
 }

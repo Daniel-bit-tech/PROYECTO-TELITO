@@ -380,7 +380,7 @@
 
 
                 <div class="catalog-content">
-                    <form method="get" action="/apis" id="filterForm">
+                    <form method="get" action="/po/catalogo" id="filterForm">
                         <input type="hidden" name="nombre" id="nombreHidden">
                         <div class="filters-sidebar">
                             <div class="filter-section">
@@ -388,17 +388,12 @@
                                     <i class="fas fa-signal"></i> Dominios
                                 </h3>
                                 <div class="filter-tags">
-                                    <!--              <label class="filter-tag">-->
-                                    <!--                <input type="checkbox" name="dominios" checked> Todos los Dominios-->
-                                    <!--              </label>-->
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="dominios" value="Seguridad"> Seguridad
-                                    </label>
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="dominios" value="Finanzas"> Finanzas
-                                    </label>
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="dominios" value="Logistica"> Logistica
+                                    <label class="filter-tag" th:each="dom : ${listaDominios}">
+                                        <input type="checkbox"
+                                               name="dominios"
+                                               th:value="${dom.idDominio}"
+                                               th:checked="${selDominios != null and selDominios.contains(dom.idDominio)}">
+                                        <span th:text="${dom.nombre}">Nombre dominio</span>
                                     </label>
                                 </div>
                             </div>
@@ -408,20 +403,12 @@
                                     <i class="fas fa-tag"></i> Tag
                                 </h3>
                                 <div class="filter-tags">
-                                    <!--              <label class="filter-tag">-->
-                                    <!--                <input type="checkbox" checked> Todas-->
-                                    <!--              </label>-->
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="tags" value="REST"> REST
-                                    </label>
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="tags" value="GraphQL"> GraphQL
-                                    </label>
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="tags" value="Webhook"> Webhooks
-                                    </label>
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="tags" value="Eventos"> Eventos
+                                    <label class="filter-tag" th:each="tag : ${listaTags}">
+                                        <input type="checkbox"
+                                               name="tags"
+                                               th:value="${tag.idTag}"
+                                               th:checked="${selTags != null and selTags.contains(tag.idTag)}">
+                                        <span th:text="${tag.nombre}">Nombre Tag</span>
                                     </label>
                                 </div>
                             </div>
@@ -487,8 +474,7 @@
             </main>
         </div>
     </div>
-
-    <div id="footer-placeholder"></div>
+    <div th:replace="po/footer.html :: footer"></div>
 </div>
 
 <script>
