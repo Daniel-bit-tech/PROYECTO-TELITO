@@ -24,33 +24,45 @@ public class CatalogoController {
     final UsuarioRepository usuarioRepository;
     final ApiService apiService;
     final ApiRepository apiRepository;
+    final DominioRepository dominioRepository;
+    final TagRepository tagRepository;
 
-    public CatalogoController(UsuarioRepository usuarioRepository, ApiService apiService, ApiRepository apiRepository) {
+    public CatalogoController(DominioRepository dominioRepository,TagRepository tagRepository,UsuarioRepository usuarioRepository, ApiService apiService, ApiRepository apiRepository) {
         this.usuarioRepository = usuarioRepository;
         this.apiService = apiService;
         this.apiRepository = apiRepository;
+        this.dominioRepository = dominioRepository;
+        this.tagRepository = tagRepository;
     }
 
     @GetMapping("/catalogo")
     public String showCatalogoView(@RequestParam(value = "nombre", required = false) String nombre,
+                                   @RequestParam(value = "dominios",required = false) List<Integer> selDominios,
+                                   @RequestParam(value = "tags", required = false) List<Integer> selTags,
                                    Model model, Authentication auth, HttpSession session) {
 
-        List<Api> apis;
+        String dominios = selDominios == null ? null : selDominios.toString();
+        String tags = selTags == null ? null : selTags.toString();
+        System.out.println("Doms: "+dominios + " \nTags: " + tags);
 
-        if (nombre != null && !nombre.trim().isEmpty()) {
-            // Llama a un método que filtre solo por nombre
-            apis = apiRepository.findByNombreContainingIgnoreCase(nombre);
-        } else {
-            // Si no hay nombre, muestra todas las APIs
-            apis = apiRepository.findAll();
+        List<Api> apis = apiRepository.findByFilters(nombre, selDominios, selTags);
+        for (Api api : apis) {
+            System.out.println("api " + api.getNombre());
         }
 
-        model.addAttribute("apis", apis);
-        model.addAttribute("nombre", nombre); // Esto es importante para mantener el valor en el buscador
+        if (auth != null && auth.isAuthenticated()) {
+            // Obtener el usuario correcto considerando impersonación
+            Usuario usuario = obtenerUsuarioActual(auth, session);
+            model.addAttribute("usuario", usuario);
+        }
 
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
-        model.addAttribute("usuario", usuario);
+        model.addAttribute("listaDominios", dominioRepository.findAll());
+        model.addAttribute("listaTags", tagRepository.findAll());
+
+        model.addAttribute("apis", apis);
+        model.addAttribute("selTags", selTags);
+        model.addAttribute("selDominios", selDominios);
+        model.addAttribute("nombre", nombre);
 
         return "po/catalogo";
     }

@@ -418,6 +418,7 @@
 
 
         <div class="apis-grid">
+          //
           <div class="api-card" th:each="api : ${apis}">
             <div class="api-header">
               <div>
@@ -451,6 +452,7 @@
 <!--              <span class="api-tag" th:each="t : ${#strings.arraySplit(api.tag, ',')}"-->
 <!--                    th:text="${t}"></span>-->
             </div>
+            //
 
             <div class="api-actions">
               <a th:href="@{'/apis/' + ${api.idApi} + '/docs'}" class="btn-api btn-primary">
