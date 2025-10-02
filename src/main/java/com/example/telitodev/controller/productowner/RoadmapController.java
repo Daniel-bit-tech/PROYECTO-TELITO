@@ -13,9 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 
-
-import java.util.List;
-import java.util.Optional;
+import java.time.ZoneId;
+import java.util.*;
 
 
 @Controller
@@ -43,6 +42,8 @@ public class RoadmapController {
             model.addAttribute("usuario", usuario);
         }
 
+        List<Map<String,Object>> roadmapMAP = new ArrayList<>();
+
         // Verificación de datos antes de pasarlos a la vista
         if (roadmapList == null || roadmapList.isEmpty()) {
             System.out.println("No hay roadmaps disponibles.");
@@ -50,9 +51,23 @@ public class RoadmapController {
             for (Roadmap roadmap : roadmapList) {
                 System.out.println("Roadmap - API: " + roadmap.getApi() + ", Estado: " + roadmap.getEstado() + ", Fecha Inicio: " + roadmap.getFechaInicio() + ", Fecha Fin: " + roadmap.getFechaFin());
             }
+            roadmapMAP = roadmapList.stream().map(r -> {
+                Map<String, Object> m = new HashMap<>();
+                m.put("api", r.getApi().getNombre());
+                m.put("start", r.getFechaInicio().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate().toString());
+                m.put("end", r.getFechaFin() != null
+                        ? r.getFechaFin().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate().toString()
+                        : null);
+                m.put("estado", r.getEstado());
+                return m;
+            }).toList();
         }
 
-        model.addAttribute("roadmapList", roadmapList); // Pasar los datos al modelo
+        model.addAttribute("roadmapData", roadmapMAP); // Pasar los datos al modelo
         return "po/roadmap"; // Vista donde se muestra el roadmap
     }
 

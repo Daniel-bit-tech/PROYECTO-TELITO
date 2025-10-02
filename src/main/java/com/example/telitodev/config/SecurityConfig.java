@@ -76,7 +76,7 @@ public class SecurityConfig {
 //                        .accessDeniedPage("/acceso-denegado")
 //                )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/**") // Deshabilitar CSRF para endpoints API
+                        .ignoringRequestMatchers("/api/**","/po/**") // Deshabilitar CSRF para endpoints API
                 )
                 // Agregar filtro personalizado para verificar usuarios activos en tiempo real
                 .addFilterBefore(usuarioActivoFilter, UsernamePasswordAuthenticationFilter.class);
