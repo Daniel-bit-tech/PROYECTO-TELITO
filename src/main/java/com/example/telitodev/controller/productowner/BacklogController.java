@@ -8,8 +8,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 
 import java.util.List;
@@ -38,6 +37,16 @@ public class BacklogController {
         model.addAttribute("backlogs", backlogs);
         return "po/backlog";
     }
+
+    @PostMapping("/marcar-como-resuelto/{id}")
+    public String markAsResolved(@PathVariable("id") Integer id) {
+        Backlog backlog = backlogRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Backlog no encontrado"));
+        backlog.setEstadoBacklog("Resuelto");  // Cambia el estado a "Resuelto"
+        backlogRepository.save(backlog);        // Guarda el cambio
+        return "redirect:/backlog";             // Recarga la misma vista
+    }
+
 
     /**
      * Método helper para obtener el usuario correcto durante impersonación

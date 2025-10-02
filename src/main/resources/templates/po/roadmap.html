@@ -132,57 +132,41 @@
 
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
-<script>
-    // Datos hardcodeados del roadmap
-    const roadmapData = [
-        { api: 'API 1', start: '2025-10-01', end: '2025-10-15', estado: 'Nueva' },
-        { api: 'API 2', start: '2025-10-10', end: '2025-11-01', estado: 'En desarrollo' },
-        { api: 'API 3', start: '2025-11-01', end: '2025-11-15', estado: 'Próxima' }
-    ];
+<script th:inline="javascript">
+    /<![CDATA[/
+    let roadmapData = [[${roadmapData}]];
+    console.log(roadmapData);
+    /]]>/
 
     // Colores por estado
     const colorPorEstado = {
-        'Nueva': '#f59f00',       // Amarillo
-        'En desarrollo': '#22b8cf', // Celeste
-        'Próxima': '#94d82d'      // Verde
+        'Nueva': '#f59f00',
+        'En desarrollo': '#22b8cf',
+        'Próxima': '#94d82d'
     };
 
-    // Prepara los datos para ApexCharts
+    // Preparar datos para ApexCharts
     const seriesData = roadmapData.map(item => ({
         x: item.api,
-        y: [new Date(item.start).getTime(), new Date(item.end).getTime()],  // Convertir las fechas en timestamp
+        y: [new Date(item.start).getTime(), new Date(item.end).getTime()],
         fillColor: colorPorEstado[item.estado] || '#adb5bd',
         estado: item.estado
     }));
 
-    // Configuración de ApexCharts
     const options = {
-        chart: {
-            type: 'rangeBar',
-            height: 460
-        },
+        chart: { type: 'rangeBar', height: 460 },
         plotOptions: {
-            bar: {
-                horizontal: true,
-                barHeight: '60%',
-                distributed: true
-            }
+            bar: { horizontal: true, barHeight: '60%', distributed: true }
         },
-        series: [{
-            name: 'Fase',
-            data: seriesData
-        }],
-        xaxis: {
-            type: 'datetime',
-            labels: { datetimeUTC: false }
-        },
+        series: [{ name: 'Fase', data: seriesData }],
+        xaxis: { type: 'datetime', labels: { datetimeUTC: false } },
         tooltip: {
             y: {
                 formatter: (val, opts) => {
                     const item = opts.w.config.series[0].data[opts.dataPointIndex];
                     const start = new Date(item.y[0]).toLocaleDateString();
                     const end = new Date(item.y[1]).toLocaleDateString();
-                    return `${item.estado} · ${start} → ${end}`;
+                    return '${item.estado} · ${start} → ${end}';
                 }
             }
         },
@@ -197,7 +181,6 @@
         grid: { strokeDashArray: 3 }
     };
 
-    // Inicializar y renderizar el gráfico
     new ApexCharts(document.querySelector("#roadmap-chart"), options).render();
 </script>
 </body>
