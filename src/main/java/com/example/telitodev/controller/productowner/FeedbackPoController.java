@@ -60,9 +60,17 @@ public class FeedbackPoController {
     @PostMapping("/registrarFeedbackEnBacklog")
     public String registrarFeedbackEnBacklog(@RequestParam("idFeedback") Integer idFeedback,
                                              @RequestParam("asunto") String asunto,
+                                             Model model,
                                              Authentication auth, // Inyectamos Authentication para obtener el usuario autenticado
-                                             Model model) {
+                                             HttpSession session) {
         try {
+
+            if (auth != null && auth.isAuthenticated()) {
+                // Obtener el usuario correcto considerando impersonación
+                Usuario usuario = obtenerUsuarioActual(auth, session);
+                model.addAttribute("usuario", usuario);
+            }
+
             // Obtener el usuario autenticado
             Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
