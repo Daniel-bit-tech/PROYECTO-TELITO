@@ -112,7 +112,7 @@
                                         <tr>
                                             <th class="w-1"><font style="vertical-align: inherit;">No.</font></th>
                                             <th><font style="vertical-align: inherit;">Nombre</font></th>
-                                            <th><font style="vertical-align: inherit;">Tipo</font></th>
+
                                             <th><font style="vertical-align: inherit;">Encargados</font></th>
                                             <th><font style="vertical-align: inherit;">Prioridad</font></th>
                                             <th><font style="vertical-align: inherit;">Estado</font></th>
@@ -125,7 +125,7 @@
                                         <tr th:each="backlog : ${backlogs}">
                                             <td><span class="text-secondary" th:text="${backlog.idBacklog}"></span></td>
                                             <td><a href="invoice.html" class="text-reset" tabindex="-1" th:text="${backlog.api.nombre}"></a></td>
-                                            <td th:text="${backlog.asunto}"></td>
+
                                             <td th:text="${backlog.usuarioEncargado.nombre}"></td> <!-- Modifica según la propiedad -->
                                             <td th:text="${backlog.prioridad}"></td>
                                             <td><span class="badge bg-success me-1" th:text="${backlog.estadoBacklog}"></span></td>
