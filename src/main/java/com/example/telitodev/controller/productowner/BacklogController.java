@@ -26,25 +26,27 @@ public class BacklogController {
     }
 
     @GetMapping("/backlog")
-    public String showBacklogView(Model model, Authentication auth, HttpSession session) {
+    public String showBacklogView(Model model, Authentication auth, HttpSession session,
+                    @RequestParam(name = "q", required = false) String q) {
         // Obtener el usuario correcto considerando impersonación
         if (auth != null && auth.isAuthenticated()) {
             // Obtener el usuario correcto considerando impersonación
             Usuario usuario = obtenerUsuarioActual(auth, session);
             model.addAttribute("usuario", usuario);
         }
-        List<Backlog> backlogs = backlogRepository.findAll();
+        List<Backlog> backlogs = backlogRepository.findAll(); // <-- intacto
         model.addAttribute("backlogs", backlogs);
+        model.addAttribute("q", q == null ? "" : q); // para prellenar el input/JS
         return "po/backlog";
     }
 
-    @PostMapping("/marcar-como-resuelto/{id}")
+    @PostMapping("/backlog/marcar-como-resuelto/{id}")
     public String markAsResolved(@PathVariable("id") Integer id) {
         Backlog backlog = backlogRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Backlog no encontrado"));
         backlog.setEstadoBacklog("Resuelto");  // Cambia el estado a "Resuelto"
         backlogRepository.save(backlog);        // Guarda el cambio
-        return "redirect:/backlog";             // Recarga la misma vista
+        return "redirect:/po/backlog";             // Recarga la misma vista
     }
 
 

@@ -25,13 +25,15 @@ public class FeedbackPoController {
     final BacklogService backlogService;
     final UsuarioRepository usuarioRepository;
     final FeedbackRepository feedbackRepository;
+    final BacklogRepository backlogRepository;
 
-    public FeedbackPoController(UsuarioRepository usuarioRepository, FeedbackRepository feedbackRepository, BacklogService backlogService, FeedbackService feedbackService) {
+    public FeedbackPoController(BacklogRepository backlogRepository,UsuarioRepository usuarioRepository, FeedbackRepository feedbackRepository, BacklogService backlogService, FeedbackService feedbackService) {
         this.usuarioRepository = usuarioRepository;
         this.feedbackRepository = feedbackRepository;
         this.backlogService = backlogService;
         this.feedbackService = feedbackService;
-    }
+        this.backlogRepository = backlogRepository;
+        }
 
     @GetMapping("/feedback")
     public String showFeedbackView(Model model, Authentication auth) {
@@ -71,23 +73,27 @@ public class FeedbackPoController {
                 model.addAttribute("usuario", usuario);
             }
 
-            // Obtener el usuario autenticado
             Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
-            // Llamamos al FeedbackService para registrar el feedback en el backlog
-            Backlog backlog = feedbackService.registrarFeedbackEnBacklog(idFeedback, asunto, usuario);
+            // Verificar si el feedback ya está registrado en el backlog
+            Optional<Backlog> existingBacklog = backlogRepository.findByFeedback_IdFeedback(idFeedback);
 
-            System.out.println("Usuario autenticado: " + usuario.getCorreo() + " con rol " + usuario.getRol().getNombreRol());
+            if (existingBacklog.isPresent()) {
+                model.addAttribute("feedbackRegistrado", true);
+            } else {
+                // Registrar el feedback en el backlog
+                feedbackService.registrarFeedbackEnBacklog(idFeedback, asunto, usuario);
+                model.addAttribute("feedbackRegistrado", false); // Si se registra, pasamos false para mostrar el botón de "registrar"
+            }
 
-
-            // Redirigir al PO a la vista de Feedback o Backlog
-            return "redirect:/po/backlog";
+            return "redirect:/po/feedback"; // Regresar a la vista de feedback
 
         } catch (Exception e) {
             model.addAttribute("error", "Error al registrar el backlog: " + e.getMessage());
-            return "po/error"; // Vista de error en caso de fallar
+            return "po/error";
         }
     }
+
 
     /**
      * Método helper para obtener el usuario correcto durante impersonación
