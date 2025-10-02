@@ -90,13 +90,37 @@
                                 <div class="datagrid-title">Estado</div>
                                 <div class="datagrid-content">
                                     <span th:if="${!#lists.isEmpty(api.estadosApi)}" class="status status-green" th:text="${api.estadosApi[0].nombreEstado}">Producción</span>
-                                    <span th:if="${#lists.isEmpty(api.estadosApi)}" class="status status-red">Sin estado definido</span>
+                                    <span th:if="${#lists.isEmpty(api.estadosApi)}" class="status status-green">Produccion</span>
                                 </div>
                             </div>
 
                             <div class="datagrid-item">
                                 <div class="datagrid-title">Descripción</div>
                                 <div class="datagrid-content" th:text="${api.descripcion}"></div>
+                            </div>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Beneficios</div>
+                                <div class="datagrid-content" th:text="${doc.beneficios}">Beneficios de la API</div>
+                            </div>
+
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Limitaciones</div>
+                                <div class="datagrid-content" th:text="${doc.limitaciones}">Limitaciones de la API</div>
+                            </div>
+
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Flujo Funcional</div>
+                                <div class="datagrid-content" th:text="${doc.flujoFuncional}">Flujo funcional de la API</div>
+                            </div>
+
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">SLA</div>
+                                <div class="datagrid-content" th:text="${doc.sla}">SLA de la API</div>
+                            </div>
+
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Costos</div>
+                                <div class="datagrid-content" th:text="${doc.costos}">Costos de la API</div>
                             </div>
                         </div>
                     </div>
