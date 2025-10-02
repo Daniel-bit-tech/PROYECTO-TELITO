@@ -2,6 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>TELITO DEVELOPER PORTAL | Catálogo de APIs</title>
@@ -424,38 +425,43 @@
                         <div class="api-card" th:each="api : ${apis}">
                             <div class="api-header">
                                 <div>
-                                    <h3 class="api-title" th:text="${api.nombre}">API Inventario</h3>
-                                    <span class="api-status status-production" th:text="${api.dominio}">Logistica</span>
+                                    <h3 class="api-title" th:text="${api.nombre}">Nombre API</h3>
+                                    <!-- Ejemplo: mostrar estado según dominio o tag -->
+                                    <span class="api-status status-production"
+                                          th:text="${api.dominio.nombre}">Producción</span>
                                 </div>
                                 <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #4299e1;"></i>
                             </div>
 
-                            <p class="api-description" th:text="${api.descripcion}">Gestión de productos y stock en almacenes.</p>
+                            <p class="api-description" th:text="${api.descripcion}">
+                                Descripción de la API
+                            </p>
 
                             <div class="api-meta">
-                                        <span class="meta-item">
-                                            <i class="fas fa-code-branch"></i>
-                                            <span th:if="${not #lists.isEmpty(api.versionesApi)}"
-                                                  th:text="${api.versionesApi[0].version}">v1.0</span>
-                                            <span th:if="${#lists.isEmpty(api.versionesApi)}">N/A</span>
-                                        </span>
-                                <span class="meta-item">
-                                            <i class="fas fa-bolt"></i>
-                                            <span>98% uptime</span>
-                                        </span>
+                                    <span class="meta-item">
+                                        <i class="fas fa-code-branch"></i>
+                                        <span th:text="${api.versionesApi != null and !api.versionesApi.isEmpty()? api.versionesApi.get(0).version : 'Sin versión'}"></span>
+                                    </span>
+                                                        <span class="meta-item">
+                                        <i class="fas fa-bolt"></i>
+                                                            <!-- Ejemplo: uptime fijo o calculado -->
+                                        98% uptime
+                                    </span>
                             </div>
 
                             <div class="api-tags">
-                                <span class="api-tag" th:each="tag : ${#strings.arraySplit(api.tag, ',')}" th:text="${tag}"></span>
+
+                                <span class="api-tag" th:text="${api.tag.nombre}"></span>
+                                <!--              <span class="api-tag" th:each="t : ${#strings.arraySplit(api.tag, ',')}"-->
+                                <!--                    th:text="${t}"></span>-->
                             </div>
+
 
                             <div class="api-actions">
                                 <a th:href="@{'/po/documentacion?id=' + ${api.idApi}}" class="btn-api btn-primary">
                                     <i class="fas fa-book"></i> Documentación
                                 </a>
-                                <a class="btn-api btn-outline" th:href="@{'/po/KPIs?id=' + ${api.idApi}}">
-                                    <i class="fas fa-play"></i> KPIs
-                                </a>
+
                             </div>
                         </div>
                     </div>
@@ -474,6 +480,7 @@
             </main>
         </div>
     </div>
+
     <div th:replace="po/footer.html :: footer"></div>
 </div>
 
