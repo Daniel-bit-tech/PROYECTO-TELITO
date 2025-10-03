@@ -12,5 +12,5 @@ import org.springframework.data.repository.query.Param;
 @Repository
 public interface BacklogRepository extends JpaRepository<Backlog, Integer> {
     Optional<Backlog> findByFeedback_IdFeedback(Integer idFeedback);
-    Page<Backlog> findByNombreContainingIgnoreCase(String nombre, Pageable pageable);
+
 }
