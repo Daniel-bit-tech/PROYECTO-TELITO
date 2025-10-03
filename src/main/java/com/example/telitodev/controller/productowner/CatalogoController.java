@@ -1,9 +1,8 @@
 package com.example.telitodev.controller.productowner;
 
-import com.example.telitodev.entity.Api;
-import com.example.telitodev.entity.Usuario;
+import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
-import com.example.telitodev.service.ApiService; // Importa el servicio
+import com.example.telitodev.service.*; // Importa el servicio
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -24,57 +23,81 @@ public class CatalogoController {
     final UsuarioRepository usuarioRepository;
     final ApiService apiService;
     final ApiRepository apiRepository;
+    final DominioRepository dominioRepository;
+    final TagRepository tagRepository;
+    final DocAltoNivelRepository docAltoNivelRepository;
 
-    public CatalogoController(UsuarioRepository usuarioRepository, ApiService apiService, ApiRepository apiRepository) {
+    public CatalogoController(DocAltoNivelRepository docAltoNivelRepository,DominioRepository dominioRepository,TagRepository tagRepository,UsuarioRepository usuarioRepository, ApiService apiService, ApiRepository apiRepository) {
         this.usuarioRepository = usuarioRepository;
         this.apiService = apiService;
+        this.docAltoNivelRepository = docAltoNivelRepository;
         this.apiRepository = apiRepository;
+        this.dominioRepository = dominioRepository;
+        this.tagRepository = tagRepository;
     }
 
     @GetMapping("/catalogo")
     public String showCatalogoView(@RequestParam(value = "nombre", required = false) String nombre,
+                                   @RequestParam(value = "dominios",required = false) List<Integer> selDominios,
+                                   @RequestParam(value = "tags", required = false) List<Integer> selTags,
                                    Model model, Authentication auth, HttpSession session) {
 
-        List<Api> apis;
+        String dominios = selDominios == null ? null : selDominios.toString();
+        String tags = selTags == null ? null : selTags.toString();
+        System.out.println("Doms: "+dominios + " \nTags: " + tags);
 
-        if (nombre != null && !nombre.trim().isEmpty()) {
-            // Llama a un método que filtre solo por nombre
-            apis = apiRepository.findByNombreContainingIgnoreCase(nombre);
-        } else {
-            // Si no hay nombre, muestra todas las APIs
-            apis = apiRepository.findAll();
+        List<Api> apis = apiRepository.findByFilters(nombre, selDominios, selTags);
+        for (Api api : apis) {
+            System.out.println("api " + api.getNombre());
         }
 
-        model.addAttribute("apis", apis);
-        model.addAttribute("nombre", nombre); // Esto es importante para mantener el valor en el buscador
+        if (auth != null && auth.isAuthenticated()) {
+            // Obtener el usuario correcto considerando impersonación
+            Usuario usuario = obtenerUsuarioActual(auth, session);
+            model.addAttribute("usuario", usuario);
+        }
 
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
-        model.addAttribute("usuario", usuario);
+        model.addAttribute("listaDominios", dominioRepository.findAll());
+        model.addAttribute("listaTags", tagRepository.findAll());
+
+        model.addAttribute("apis", apis);
+        model.addAttribute("selTags", selTags);
+        model.addAttribute("selDominios", selDominios);
+        model.addAttribute("nombre", nombre);
 
         return "po/catalogo";
     }
 
+
     @GetMapping("/documentacion")
     public String showDocumentacionView(@RequestParam("id") Integer idApi, Model model, Authentication auth, HttpSession session) {
 
+        // Obtener la documentación de alto nivel para la API seleccionada
+        Optional<doc_alto_nivel> docAltoNivelOptional = docAltoNivelRepository.findByApi_IdApi(idApi);
         Optional<Api> apiOptional = apiService.getApiById(idApi);
 
-        if (apiOptional.isPresent()) {
+
+        if (docAltoNivelOptional.isPresent() && apiOptional.isPresent()) {
+            // Si la documentación existe, la añadimos al modelo
             Api api = apiOptional.get();
             model.addAttribute("api", api);
+            System.out.println("API seleccionada: " + api);
+            doc_alto_nivel docAltoNivel = docAltoNivelOptional.get();
+            model.addAttribute("doc", docAltoNivel);
         } else {
-
+            // Si no existe, redirigimos al catálogo
             return "redirect:/po/catalogo";
         }
 
-        // Obtener el usuario correcto considerando impersonación
+        // Obtener el usuario autenticado
         Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
+        model.addAttribute("usuario", usuario);
 
-        return "po/documentacion";
+        return "po/documentacion";  // Página de documentación de alto nivel
     }
-    
+
+
     /**
      * Método helper para obtener el usuario correcto durante impersonación
      */

@@ -28,7 +28,7 @@ public class SecurityConfig {
 
     @Autowired
     private UsuarioDetailService usuarioDetailService;
-    
+
     @Autowired
     private UsuarioActivoFilter usuarioActivoFilter;
 
@@ -76,7 +76,7 @@ public class SecurityConfig {
 //                        .accessDeniedPage("/acceso-denegado")
 //                )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/**") // Deshabilitar CSRF para endpoints API
+                        .ignoringRequestMatchers("/api/**","/po/**") // Deshabilitar CSRF para endpoints API
                 )
                 // Agregar filtro personalizado para verificar usuarios activos en tiempo real
                 .addFilterBefore(usuarioActivoFilter, UsernamePasswordAuthenticationFilter.class);
@@ -106,7 +106,7 @@ public class SecurityConfig {
             protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
                 System.out.println("=== AuthenticationSuccessHandler ejecutado ===");
                 System.out.println("Usuario: " + authentication.getName());
-                
+
                 Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
                 System.out.println("Autoridades encontradas: " + authorities);
 
