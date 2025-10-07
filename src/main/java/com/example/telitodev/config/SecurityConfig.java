@@ -72,6 +72,11 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
+                .rememberMe(remember -> remember
+                        .key("remember-me")
+                        .rememberMeParameter("remember-me")
+                        .tokenValiditySeconds(86400)
+                        .userDetailsService(usuarioDetailService))      //.tokenRepository(persistentTokenRepository(dataSource)) para cookies persistentes
 //                .exceptionHandling(exception -> exception
 //                        .accessDeniedPage("/acceso-denegado")
 //                )
