@@ -235,7 +235,7 @@
                     <path d="M17 8l4 4l-4 4" />
                     <path d="M14 4l-4 16" />
                 </svg>
-                <span class="fw-bold text-white">TELITO</span> | Developer Portal
+                <span class="fw-bold text-body">TELITO</span> | Developer Portal
             </a>
         </div>
 
@@ -262,7 +262,7 @@
                     <!-- Mostrar avatar del usuario impersonado si aplica, sino del usuario actual -->
                     <span class="avatar avatar-sm user-avatar" 
                           th:style="'background-image: url(https://ui-avatars.com/api/?name='+${isImpersonating ? impersonatedUserName : usuario.nombre}+'+&background=4361ee&color=fff)'"> </span>
-                    <div class="d-none d-xl-block ps-2 text-white">
+                    <div class="d-none d-xl-block ps-2 text-body">
                         <!-- Mostrar nombre del usuario impersonado si aplica, sino del usuario actual -->
                         <div th:text="${isImpersonating ? impersonatedUserName : usuario.nombre}">Juan Perez</div>
                         <div class="mt-1 small opacity-75" 
