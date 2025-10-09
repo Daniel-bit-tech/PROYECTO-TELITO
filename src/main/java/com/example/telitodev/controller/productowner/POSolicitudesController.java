@@ -39,9 +39,9 @@ public class POSolicitudesController extends BaseController {
                 return "redirect:/login";
             }
 
-            // Validar que el usuario tenga rol PO
-            if (usuario.getRol().getIdRol() != 1) {
-                return "redirect:/access-denied";
+            // Validar que el usuario tenga rol PO o SUPERADMIN (para impersonación)
+            if (!usuario.getRol().getNombreRol().equals("PO") && !usuario.getRol().getNombreRol().equals("SUPERADMIN")) {
+                return "redirect:/po/home?error=access_denied";
             }
 
             // Agregar atributos de impersonación
@@ -56,11 +56,11 @@ public class POSolicitudesController extends BaseController {
             model.addAttribute("solicitudesPendientes", solicitudesPendientes);
             model.addAttribute("totalSolicitudes", solicitudesPendientes.size());
 
-            return "po/solicitudes";
+            return "po/bandejaSolicitud";
             
         } catch (Exception e) {
             model.addAttribute("error", "Error al cargar las solicitudes: " + e.getMessage());
-            return "po/solicitudes";
+            return "po/bandejaSolicitud";
         }
     }
 
@@ -72,12 +72,13 @@ public class POSolicitudesController extends BaseController {
     public ResponseEntity<?> procesarDecision(
             @PathVariable Integer idSolicitud,
             @RequestBody SolicitudAccesoDecisionRequest decision,
-            Authentication authentication) {
+            Authentication authentication,
+            HttpSession session) {
         
         try {
             // Verificar que el usuario sea PO
-            Usuario usuario = usuarioService.findByCorreo(authentication.getName());
-            if (usuario == null || usuario.getRol().getIdRol() != 1) {
+            Usuario usuario = getCurrentUser(authentication, session);
+            if (usuario == null || (!usuario.getRol().getNombreRol().equals("PO") && !usuario.getRol().getNombreRol().equals("SUPERADMIN"))) {
                 return ResponseEntity.status(403).body("No tienes permisos para realizar esta acción");
             }
 
@@ -97,11 +98,11 @@ public class POSolicitudesController extends BaseController {
      */
     @GetMapping("/api/solicitudes-pendientes-all")
     @ResponseBody
-    public ResponseEntity<List<SolicitudAccesoResponse>> obtenerSolicitudesPendientes(Authentication authentication) {
+    public ResponseEntity<List<SolicitudAccesoResponse>> obtenerSolicitudesPendientes(Authentication authentication, HttpSession session) {
         try {
-            Usuario usuario = usuarioService.findByCorreo(authentication.getName());
+            Usuario usuario = getCurrentUser(authentication, session);
             
-            if (usuario == null || usuario.getRol().getIdRol() != 1) {
+            if (usuario == null || (!usuario.getRol().getNombreRol().equals("PO") && !usuario.getRol().getNombreRol().equals("SUPERADMIN"))) {
                 return ResponseEntity.status(403).build();
             }
 

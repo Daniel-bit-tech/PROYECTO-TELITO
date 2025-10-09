@@ -44,8 +44,7 @@ public class QaController extends BaseController {
 
     @GetMapping("/home")
     public String showQaView(Model model, Authentication auth, HttpSession session) {
-        String correo = auth.getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        Usuario usuario = getCurrentUser(auth, session);
         Integer NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(),true);
         List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_Dni(usuario.getDni());
         List<Notificacion> notis = notificacionRepository.findByUsuario_Dni(usuario.getDni());

@@ -67,7 +67,7 @@ public class RoadmapController extends BaseController {
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate().toString()
                         : null);
-                m.put("estado", r.getEstado().toString());
+                m.put("estado", r.getEstado().getDisplayName());
                 return m;
             }).toList();
         }
@@ -80,44 +80,27 @@ public class RoadmapController extends BaseController {
     // obtener solo un roadmap
 
 
-    /**
-     * Método helper para obtener el usuario correcto durante impersonación
-     */
-    private Usuario obtenerUsuarioActual(Authentication auth, HttpSession session) {
-        // Verificar si hay impersonación activa
-        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
-
-        if (isImpersonating != null && isImpersonating) {
-            // Durante impersonación, obtener usuario por DNI del usuario impersonado
-            String impersonatedUserDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
-            if (impersonatedUserDni != null) {
-                Usuario impersonatedUser = usuarioRepository.findByDni(impersonatedUserDni);
-                if (impersonatedUser != null) {
-                    System.out.println("🎭 Roadmap - Usando datos del usuario impersonado: " + impersonatedUser.getNombre());
-                    return impersonatedUser;
-                }
-            }
-        }
-
-        // Sin impersonación, usar el usuario autenticado normal
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        System.out.println("👤 Roadmap - Usando datos del usuario autenticado: " + usuario.getNombre());
-        return usuario;
-    }
-
-
     // ----------------------------- IGNORA ESTO POR AHORA ---------------------------------------
     @GetMapping("/roadmapGestion")
     public String showRoadmapGestionView(Model model, Authentication auth, HttpSession session) {
         // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+        Usuario usuario = getCurrentUser(auth, session);
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         model.addAttribute("usuario", usuario);
         return "po/roadmapGestion";
     }
+    
     @GetMapping("/roadmapDetalle")
     public String showRoadmapDetalleView(Model model, Authentication auth, HttpSession session) {
         // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+        Usuario usuario = getCurrentUser(auth, session);
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         model.addAttribute("usuario", usuario);
         return "po/roadmapDetalle";
     }
