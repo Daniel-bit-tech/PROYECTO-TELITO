@@ -41,7 +41,7 @@ public class CatalogoqaController extends BaseController {
     public String showCatalogo (@RequestParam(required = false) String nombre,
                                 @RequestParam(required = false) List<String> dominios,
                                 @RequestParam(required = false) List<String> tags,
-                                Model model, Authentication auth) {
+                                Model model, Authentication auth, HttpSession session) {
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         String dni = usuario.getDni();
@@ -53,10 +53,12 @@ public class CatalogoqaController extends BaseController {
         // Obtener las APIs relacionadas al proyecto y la organización del usuario
         List<ApiProyectoDTO> apis = apiRepository.findApisByFilters(dni, nombre, dominios, tags);
 
-
         // Cargar listas completas para poblar checkboxes
         List<Dominio> allDominios = dominioRepository.findAll();
         List<Tag> allTags = tagRepository.findAll();
+
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("apis", apis);

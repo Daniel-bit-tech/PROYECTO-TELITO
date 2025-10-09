@@ -64,7 +64,7 @@ public class QaController extends BaseController {
 
     @GetMapping("/perfilQa")
     public String showPerfil (Model model, Authentication auth, HttpSession session) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
         
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
@@ -74,8 +74,12 @@ public class QaController extends BaseController {
     }
 
     @GetMapping("/apiDetalle")
-    public String showRoadmapView(Model model, Authentication auth) {
+    public String showRoadmapView(Model model, Authentication auth, HttpSession session) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         model.addAttribute("usuario", usuario);
         return "qa/apiDetalle";
     }
@@ -136,8 +140,12 @@ public class QaController extends BaseController {
 
 
     @GetMapping("/reporteRealizar")
-    public String madeReport(Model model, Authentication auth){
+    public String madeReport(Model model, Authentication auth, HttpSession session){
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         model.addAttribute("usuario", usuario);
         return "qa/reporteRealizar";
     }

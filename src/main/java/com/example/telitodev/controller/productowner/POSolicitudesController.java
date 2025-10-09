@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.productowner;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.dto.SolicitudAccesoDecisionRequest;
 import com.example.telitodev.dto.SolicitudAccesoResponse;
 import com.example.telitodev.entity.Usuario;
@@ -12,11 +13,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
 @RequestMapping("/po")
-public class POSolicitudesController {
+public class POSolicitudesController extends BaseController {
 
     @Autowired
     private OnboardingService onboardingService;
@@ -28,10 +30,10 @@ public class POSolicitudesController {
      * Vista principal de solicitudes pendientes para PO
      */
     @GetMapping("/solicitudes")
-    public String mostrarSolicitudesPendientes(Model model, Authentication authentication) {
+    public String mostrarSolicitudesPendientes(Model model, Authentication authentication, HttpSession session) {
         try {
-            // Obtener el usuario autenticado
-            Usuario usuario = usuarioService.findByCorreo(authentication.getName());
+            // Obtener el usuario autenticado considerando impersonación
+            Usuario usuario = getCurrentUser(authentication, session);
             
             if (usuario == null) {
                 return "redirect:/login";
@@ -41,6 +43,9 @@ public class POSolicitudesController {
             if (usuario.getRol().getIdRol() != 1) {
                 return "redirect:/access-denied";
             }
+
+            // Agregar atributos de impersonación
+            addImpersonationAttributes(model, session);
 
             model.addAttribute("usuario", usuario);
 

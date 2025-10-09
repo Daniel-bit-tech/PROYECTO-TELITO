@@ -1,7 +1,9 @@
 package com.example.telitodev.controller.general;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -21,7 +23,7 @@ import java.util.Optional;
 @Controller
 @PreAuthorize("isAuthenticated()")
 @RequestMapping("/proyectos")
-public class ProyectosController {
+public class ProyectosController extends BaseController {
 
     final UsuarioRepository usuarioRepository;
     final ApiRepository apiRepository;
@@ -38,9 +40,12 @@ public class ProyectosController {
 
     @GetMapping()
     public String mostrarListaProyectos(@RequestParam(value = "filter", required = false) String filtro,
-                           Model model, Authentication auth) {
+                           Model model, Authentication auth, HttpSession session) {
 
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
 
         List<Proyecto> listaProyectos = null;
         if (usuario.getRol().getNombreRol().equals("SUPERADMIN")) {
@@ -71,9 +76,13 @@ public class ProyectosController {
 
 
     @GetMapping("/{id}")
-    public String mostrarDetalleProyecto(@PathVariable Integer id, Model model, Authentication auth) {
+    public String mostrarDetalleProyecto(@PathVariable Integer id, Model model, Authentication auth, HttpSession session) {
 
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         Proyecto proyecto = proyectoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -96,8 +105,12 @@ public class ProyectosController {
 
     @GetMapping("/nuevo")
     @PreAuthorize("hasRole('PO')")
-    public String mostrarFormEditar(@ModelAttribute("proyecto") Proyecto proyecto, Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+    public String mostrarFormEditar(@ModelAttribute("proyecto") Proyecto proyecto, Model model, Authentication auth, HttpSession session) {
+        Usuario usuario = getCurrentUser(auth, session);
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         proyecto.setUsuarioLider(usuario);
         proyecto.setOrganizacion(usuario.getOrganizacion());
         proyecto.setFechaInicio(LocalDate.now());
@@ -113,8 +126,12 @@ public class ProyectosController {
     @GetMapping("{id}/config")
     @PreAuthorize("hasRole('PO')")
     public String mostrarFormCrear(@PathVariable Integer id, @ModelAttribute("proyecto") Proyecto proyecto,
-                                   Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+                                   Model model, Authentication auth, HttpSession session) {
+        Usuario usuario = getCurrentUser(auth, session);
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         Optional<Proyecto> proyectoOptional = proyectoRepository.findById(id);
         if (proyectoOptional.isPresent() &&
                 proyectoOptional.get().getOrganizacion().equals(usuario.getOrganizacion()) &&
