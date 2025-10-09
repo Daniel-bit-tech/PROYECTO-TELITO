@@ -35,4 +35,7 @@ public interface SolicitudAccesoRepository extends JpaRepository<SolicitudAcceso
 
     // Contar solicitudes aprobadas de un usuario
     Integer countByUsuario_DniAndEstado(String dni, Boolean estado);
+
+    // Método más específico para solicitudes pendientes por organización
+    List<SolicitudAcceso> findByEstadoAndUsuario_Organizacion_IdOrganizacionOrderByFechaSolicitudDesc(Boolean estado, Integer idOrganizacion);
 }

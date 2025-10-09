@@ -3,8 +3,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>TELITO DEVELOPER PORTAL | Sistema de Reservas Deportivas</title>
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet">
     <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet">
     <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet">
@@ -63,7 +61,6 @@
 <script src="tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
     <div th:replace="po/header_po.html :: header"></div>
-    <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
 
     <!-- Main Content -->
     <div class="page-wrapper">
@@ -97,64 +94,88 @@
 
                                     </div>
                                 </div>
-                                <h3 class="card-title mt-4">Russel Pope</h3>
-                                <div class="row g-3">
+                                <h3 class="card-title mt-4" th:text="${solicitud != null ? solicitud.desarrollador : 'Desarrollador'}">Desarrollador</h3>
+                                <div class="row g-3" th:if="${solicitud != null}">
                                     <div class="col-md">
-                                        <div class="form-label">Cargo</div>
+                                        <div class="form-label">Proyecto</div>
                                         <div class="mt-3">
-                                            <span class="badge bg-purple-lt">QA</span>
+                                            <span class="badge bg-green-lt" th:text="${solicitud.nombreProyecto}">Proyecto</span>
                                         </div>
                                     </div>
                                     <div class="col-md">
                                         <div class="form-label">Email</div>
                                         <div class="mt-3">
-                                            <span class="badge bg-purple-lt">Pope@gmail.com</span>
+                                            <span class="badge bg-blue-lt" th:text="${solicitud.email}">Email</span>
                                         </div>
                                     </div>
 
                                 </div>
                                 <h3 class="card-title mt-4">API solicitada</h3>
 
-                                <div>
+                                <div th:if="${solicitud != null}">
                                     <div class="row g-2">
-
-
+                                        <div class="col-md">
+                                            <span class="badge bg-blue" th:text="${solicitud.nombreApi}">API</span>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <p class="card-subtitle">Pagos API</p>
-                                <h3 class="card-title mt-4">Tipo de solicitud</h3>
-                                <div>
+                                <h3 class="card-title mt-4">Estado de la solicitud</h3>
+                                <div th:if="${solicitud != null}">
                                     <div class="row g-2">
+                                        <div class="col-md">
+                                            <span class="badge bg-yellow-lt" th:text="${solicitud.estado}">PENDIENTE</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <p class="card-subtitle">Entorno a Sandbox</p>
+                                <p class="card-subtitle mt-3" th:text="${solicitud != null ? 'Fecha: ' + solicitud.fechaFormatted : 'Fecha'}">Fecha</p>
 
-                                <div class="col col-lg-6">
+                                <div class="col col-lg-12" th:if="${solicitud != null}">
                                     <div class="chat-bubble">
                                         <div class="chat-bubble-title">
                                             <div class="row">
-                                                <div class="col chat-bubble-author">Motivo</div>
-
+                                                <div class="col chat-bubble-author">Descripción del uso</div>
                                             </div>
                                         </div>
                                         <div class="chat-bubble-body">
-                                            <p>Necesita procesar pagos en la plataforma de ecommerce, además de necesitar el entorno de prueba tipo Sandbox en su aplicación web</p>
+                                            <p th:text="${solicitud.descripcionUso}">Descripción del proyecto</p>
                                         </div>
                                     </div>
                                 </div>
 
 
                             </div>
-                            <div class="card-footer bg-transparent mt-auto">
+                            <div class="card-footer bg-transparent mt-auto" th:if="${solicitud != null}">
                                 <div class="btn-list justify-content-end">
-                                    <a class="btn btn-green" href="/po/bandejaSolicitud"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-pinterest -->
-
-                                        Volver</a>
-                                    <a class="btn btn-red" href="#"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-youtube -->
-                                        Rechazar Solicitud</a>
-                                    <a class="btn btn-blue" href="#"><!-- Download SVG icon from http://tabler.io/icons/icon/brand-bitbucket -->
-                                        Aceptar Solicitud</a>
+                                    <a class="btn btn-green" href="/po/bandejaSolicitud" style="min-width: 140px;">
+                                        Volver
+                                    </a>
+                                    
+                                    <!-- Botón de Rechazar -->
+                                    <form th:action="@{/po/rechazarSolicitud}" method="post" style="display: inline;">
+                                        <input type="hidden" name="id" th:value="${solicitud.idSolicitudAcceso}"/>
+                                        <input type="hidden" name="motivo" value="Solicitud rechazada por el Product Owner"/>
+                                        <button type="submit" class="btn btn-red" onclick="return confirm('¿Está seguro de rechazar esta solicitud?')" style="min-width: 140px;">
+                                            Rechazar Solicitud
+                                        </button>
+                                    </form>
+                                    
+                                    <!-- Botón de Aprobar -->
+                                    <form th:action="@{/po/aprobarSolicitud}" method="post" style="display: inline;">
+                                        <input type="hidden" name="id" th:value="${solicitud.idSolicitudAcceso}"/>
+                                        <button type="submit" class="btn btn-blue" onclick="return confirm('¿Está seguro de aprobar esta solicitud?')" style="min-width: 140px;">
+                                            Aceptar Solicitud
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            
+                            <!-- Mostrar error si no hay solicitud -->
+                            <div th:if="${solicitud == null}" class="card-footer bg-transparent mt-auto">
+                                <div class="alert alert-danger">
+                                    <h4>Error</h4>
+                                    <p th:text="${error}">No se pudo cargar la solicitud</p>
+                                    <a class="btn btn-green" href="/po/bandejaSolicitud" style="min-width: 140px;">Volver</a>
                                 </div>
                             </div>
                         </div>

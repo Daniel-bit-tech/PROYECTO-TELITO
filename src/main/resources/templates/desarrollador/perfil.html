@@ -824,13 +824,14 @@
 </div>
 
 <!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<!-- Tabler JS from CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>-->
+<!--&lt;!&ndash; Tabler JS from CDN &ndash;&gt;-->
+<!--<script src="https://cdn.jsdelivr.net/npm/@tabler/core@1.0.0-beta17/dist/js/tabler.min.js"></script>-->
+<script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
 
 <script>
     // Aplicar tema oscuro al cargar la página
-    document.documentElement.setAttribute('data-bs-theme', 'dark');
+    // document.documentElement.setAttribute('data-bs-theme', 'dark');
 
     document.querySelectorAll('.profile-tab').forEach(tab => {
         tab.addEventListener('click', function() {
@@ -844,19 +845,6 @@
             document.getElementById(tabId).style.display = 'block';
         });
     });
-
-
-    document.getElementById('avatar-input').addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.querySelector('.avatar-img').src = e.target.result;
-            }
-            reader.readAsDataURL(file);
-        }
-    });
-
 
     document.getElementById('personal-form').addEventListener('submit', function(e) {
         e.preventDefault();

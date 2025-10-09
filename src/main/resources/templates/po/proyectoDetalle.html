@@ -4,11 +4,12 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>Detalle Proyecto</title>
+    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
     <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
     <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler.min.css" rel="stylesheet"/>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
@@ -34,8 +35,8 @@
 
     <header th:replace="desarrollador/header :: header"
             sec:authorize="hasRole('DEV')"></header>
-<!--    <header th:replace="admin/header :: header"-->
-<!--            sec:authorize="hasRole('SUPERADMIN')"></header>-->
+    <header th:replace="admin/header :: header"
+            sec:authorize="hasRole('SUPERADMIN')"></header>
     <header th:replace="po/header_po :: header"
             sec:authorize="hasRole('PO')"></header>
     <header th:replace="qa/header_qa :: header"
@@ -58,7 +59,7 @@
                                         <div class="card-body">
                                             <div class="row align-items-center">
                                                 <div class="col-auto">
-                                                    <span class="avatar avatar-2 rounded" style="background-image: url(/static/org-logo.png)"> </span>
+<!--                                                    <span class="avatar avatar-2 rounded" style="background-image: url(/static/org-logo.png)"> </span>-->
                                                 </div>
                                                 <div class="col">
                                                     <div class="font-weight-medium" th:text="${proyecto.organizacion.nombre}">Organización X</div>
@@ -76,9 +77,7 @@
                                     <div class="card-body">
                                         <div class="row">
                                             <div class="col-auto">
-                                                <span class="avatar avatar-2 rounded"
-                                                      style="background-image: url(/static/avatars/004m.jpg)">
-                                                </span>
+<!--                                                <span class="avatar avatar-2 rounded" style="background-image: url(/static/avatars/004m.jpg)"> </span>-->
                                             </div>
                                             <div class="col">
                                                 <div class="font-weight-medium" th:text="${proyecto.usuarioLider.nombre+' '+proyecto.usuarioLider.apellidoPaterno}">Egan Poetz</div>
@@ -107,7 +106,9 @@
                             <div class="card-header">
                                 <h3 class="card-title">Información del Proyecto</h3>
                                 <div class="card-actions">
-                                    <a class="btn btn-primary btn-3" th:href="@{'/proyectos/' + ${proyecto.idProyecto}+'/config'}">
+                                    <a sec:authorize="hasRole('PO')"
+                                       th:if="${usuario.organizacion.idOrganizacion == proyecto.organizacion.idOrganizacion}"
+                                            class="btn btn-primary btn-3" th:href="@{'/proyectos/' + ${proyecto.idProyecto}+'/config'}">
                                         <i class="icon fas fa-cog"></i> Configurar
                                     </a>
                                 </div>
@@ -153,7 +154,9 @@
                             <div class="card-header">
                                 <h3 class="card-title">APIs Asociadas</h3>
                                 <div class="card-actions">
-                                    <button class="btn btn-outline btn-primary" id="add-apis" onclick="abrirModalAgregarApi()">
+                                    <button sec:authorize="hasRole('PO')"
+                                            th:if="${usuario.organizacion.idOrganizacion == proyecto.organizacion.idOrganizacion}"
+                                            class="btn btn-outline btn-primary" id="add-apis" onclick="abrirModalAgregarApi()">
                                         <i class="icon fas fa-plus"></i> Agregar
                                     </button>
                                 </div>
@@ -261,8 +264,8 @@
         </div>
     </div>
 </div>
-<script src="/tabler/dist/js/tabler.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
 
 <script>
     function abrirModalAgregarApi() {

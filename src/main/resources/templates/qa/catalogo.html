@@ -380,47 +380,28 @@
                 </div>
 
                 <div class="search-filters">
-                    <div class="search-box">
-                        <i class="fas fa-search search-icon"></i>
-                        <input type="text" class="search-input" id="search" name="nombre" placeholder="Buscar APIs por nombre">
-                    </div>
-
-                    <!--        <div class="filter-buttons">-->
-                    <!--          <button class="filter-btn active">-->
-                    <!--            <i class="fas fa-layer-group"></i> Todas-->
-                    <!--          </button>-->
-                    <!--          <button class="filter-btn">-->
-                    <!--            <i class="fas fa-check-circle"></i> Activas-->
-                    <!--          </button>-->
-                    <!--          <button class="filter-btn">-->
-                    <!--            <i class="fas fa-star"></i> Populares-->
-                    <!--          </button>-->
-                    <!--          <button class="filter-btn">-->
-                    <!--            <i class="fas fa-clock"></i> Recientes-->
-                    <!--          </button>-->
-                    <!--        </div>-->
+                    <form method="GET" th:action="@{/qa/catalogo}" id="searchForm">
+                        <div class="search-box">
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" class="search-input" id="search" name="nombre"
+                                   th:value="${nombre}" placeholder="Buscar APIs por nombre">
+                        </div>
+                    </form>
                 </div>
 
                 <div class="catalog-content">
-                    <form method="get" action="/apis" id="filterForm">
-                        <input type="hidden" name="nombre" id="nombreHidden">
+                    <form method="GET" th:action="@{/qa/catalogo}" id="filterForm">
+                        <input type="hidden" name="nombre" id="nombreHidden" th:value="${nombre}"/>
                         <div class="filters-sidebar">
                             <div class="filter-section">
                                 <h3 class="filter-section-title">
                                     <i class="fas fa-signal"></i> Dominios
                                 </h3>
                                 <div class="filter-tags">
-                                    <!--              <label class="filter-tag">-->
-                                    <!--                <input type="checkbox" name="dominios" checked> Todos los Dominios-->
-                                    <!--              </label>-->
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="dominios" value="Seguridad"> Seguridad
-                                    </label>
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="dominios" value="Finanzas"> Finanzas
-                                    </label>
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="dominios" value="Logistica"> Logistica
+                                    <label th:each="dominio : ${dominios}" class="filter-tag">
+                                        <input type="checkbox" name="dominios" th:value="${dominio.nombre}"
+                                               th:checked="${selectedDominios != null and selectedDominios.contains(dominio.nombre)}"/>
+                                        <span th:text="${dominio.nombre}"></span>
                                     </label>
                                 </div>
                             </div>
@@ -430,20 +411,10 @@
                                     <i class="fas fa-tag"></i> Tag
                                 </h3>
                                 <div class="filter-tags">
-                                    <!--              <label class="filter-tag">-->
-                                    <!--                <input type="checkbox" checked> Todas-->
-                                    <!--              </label>-->
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="tags" value="REST"> REST
-                                    </label>
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="tags" value="GraphQL"> GraphQL
-                                    </label>
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="tags" value="Webhook"> Webhooks
-                                    </label>
-                                    <label class="filter-tag">
-                                        <input type="checkbox" name="tags" value="Eventos"> Eventos
+                                    <label th:each="tag : ${tags}" class="filter-tag">
+                                        <input type="checkbox" name="tags"  th:value="${tag.nombre}"
+                                               th:checked="${selectedTags != null and selectedTags.contains(tag.nombre)}"/>
+                                        <span th:text="${tag.nombre}"></span>
                                     </label>
                                 </div>
                             </div>
@@ -467,6 +438,10 @@
                                 <div class="api-header">
                                     <div>
                                         <h3 class="api-title" th:text="${api.nombreApi}"></h3> <!-- Nombre de la API -->
+                                        <span class="api-status status-production"
+                                              th:text="${api.nombreDominio}">Producción</span>
+                                        <span class="api-status status-production"
+                                              th:text="${api.nombreTag}">Producción</span>
 
                                     </div>
                                 </div>
@@ -486,65 +461,68 @@
                                 </div>
                             </div>
                         </div>
-
-                        <!--
-                        <div class="api-card">
-                            <div class="api-header">
-                                <div>
-                                    <h3 class="api-title">Nombre API</h3>
-
-                                    <span class="api-status status-production"
-                                          >Producción</span>
-                                </div>
-                                <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #4299e1;"></i>
-                            </div>
-
-                            <p class="api-description">
-                                Descripción de la API
-                            </p>
-
-                            <div class="api-meta">
-                            <span class="meta-item">
-                                <i class="fas fa-code-branch"></i>
-                                <span>2.1</span>
-                            </span>
-                                                <span class="meta-item">
-                                <i class="fas fa-bolt"></i>
-
-                                98% uptime
-                            </span>
-                            </div>
-
-                            <div class="api-tags">
-
-                                <span class="api-tag" >REST</span>
-
-                            </div>
-
-                            <div class="api-actions">
-                                <a th:href="@{/qa/apiDetalle}" class="btn-api btn-primary">
-                                    <i class="fas fa-book"></i> Documentación
-                                </a>
-                                <a href="#" class="btn-api btn-outline">
-                                    <i class="fas fa-play"></i> Probar
-                                </a>
-                            </div>
-                        </div>
-        -->
                     </div>
+
+
+                </div>
+                <div>
+                    <ul class="pagination" style="justify-content: center; align-items: center">
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
+                                <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-left -->
+                                <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="icon icon-1"
+                                >
+                                    <path d="M15 6l-6 6l6 6" />
+                                </svg>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">1</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">2</a>
+                        </li>
+                        <li class="page-item active">
+                            <a class="page-link" href="#">3</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">4</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">5</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#">
+                                <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-right -->
+                                <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="24"
+                                        height="24"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        stroke-width="2"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        class="icon icon-1"
+                                >
+                                    <path d="M9 6l6 6l-6 6" />
+                                </svg>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
 
-                <!--        Falta Paginacion <div class="pagination">-->
-                <!--          <button class="pagination-btn">-->
-                <!--            <i class="fas fa-chevron-left"></i>-->
-                <!--          </button>-->
-                <!--          <button class="pagination-btn active">1</button>-->
-                <!--          <button class="pagination-btn">2</button>-->
-                <!--          <button class="pagination-btn">3</button>-->
-                <!--          <button class="pagination-btn">-->
-                <!--            <i class="fas fa-chevron-right"></i>-->
-                <!--          </button>-->
-                <!--        </div>-->
             </main>
         </div>
     </div>
@@ -554,6 +532,7 @@
 
 <script>
 
+    // Cuando se hace submit manual (Enter o Aplicar Filtros)
     document.getElementById('filterForm').addEventListener('submit', function() {
         document.getElementById('nombreHidden').value = document.getElementById('search').value;
     });
@@ -607,7 +586,6 @@
         });
     });
 </script>
-
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
 <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
 </body>

@@ -1,14 +1,17 @@
 package com.example.telitodev.controller.productowner;
 
+import com.example.telitodev.entity.Backlog;
 import com.example.telitodev.entity.Usuario;
+import com.example.telitodev.repository.BacklogRepository;
 import com.example.telitodev.repository.UsuarioRepository;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/po")
@@ -16,17 +19,36 @@ import jakarta.servlet.http.HttpSession;
 public class BacklogController {
 
     final UsuarioRepository usuarioRepository;
-    public BacklogController(UsuarioRepository usuarioRepository) {
+    final BacklogRepository backlogRepository;
+    public BacklogController(UsuarioRepository usuarioRepository, BacklogRepository backlogRepository) {
         this.usuarioRepository = usuarioRepository;
+        this.backlogRepository = backlogRepository;
     }
 
     @GetMapping("/backlog")
-    public String showBacklogView(Model model, Authentication auth, HttpSession session) {
+    public String showBacklogView(Model model, Authentication auth, HttpSession session,
+                    @RequestParam(name = "q", required = false) String q) {
         // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
-        model.addAttribute("usuario", usuario);
+        if (auth != null && auth.isAuthenticated()) {
+            // Obtener el usuario correcto considerando impersonación
+            Usuario usuario = obtenerUsuarioActual(auth, session);
+            model.addAttribute("usuario", usuario);
+        }
+        List<Backlog> backlogs = backlogRepository.findAll(); // <-- intacto
+        model.addAttribute("backlogs", backlogs);
+        model.addAttribute("q", q == null ? "" : q); // para prellenar el input/JS
         return "po/backlog";
     }
+
+    @PostMapping("/backlog/marcar-como-resuelto/{id}")
+    public String markAsResolved(@PathVariable("id") Integer id) {
+        Backlog backlog = backlogRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Backlog no encontrado"));
+        backlog.setEstadoBacklog("Resuelto");  // Cambia el estado a "Resuelto"
+        backlogRepository.save(backlog);        // Guarda el cambio
+        return "redirect:/po/backlog";             // Recarga la misma vista
+    }
+
 
     /**
      * Método helper para obtener el usuario correcto durante impersonación

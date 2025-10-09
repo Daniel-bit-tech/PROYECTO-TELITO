@@ -1,18 +1,17 @@
 package com.example.telitodev.controller.productowner;
 
-import com.example.telitodev.entity.Feedback;
-import com.example.telitodev.entity.Ticket;
-import com.example.telitodev.entity.Usuario;
-import com.example.telitodev.repository.FeedbackRepository;
-import com.example.telitodev.repository.UsuarioRepository;
+
+import com.example.telitodev.service.*;
+import com.example.telitodev.entity.*;
+import com.example.telitodev.repository.*;
+
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 import java.util.Optional;
 import jakarta.servlet.http.HttpSession;
@@ -22,24 +21,26 @@ import jakarta.servlet.http.HttpSession;
 @PreAuthorize("hasAnyRole('PO', 'SUPERADMIN')")
 public class FeedbackPoController {
 
-
+    final FeedbackService feedbackService;
+    final BacklogService backlogService;
     final UsuarioRepository usuarioRepository;
     final FeedbackRepository feedbackRepository;
+    final BacklogRepository backlogRepository;
 
-    public FeedbackPoController(UsuarioRepository usuarioRepository, FeedbackRepository feedbackRepository) {
+    public FeedbackPoController(BacklogRepository backlogRepository,UsuarioRepository usuarioRepository, FeedbackRepository feedbackRepository, BacklogService backlogService, FeedbackService feedbackService) {
         this.usuarioRepository = usuarioRepository;
         this.feedbackRepository = feedbackRepository;
-    }
+        this.backlogService = backlogService;
+        this.feedbackService = feedbackService;
+        this.backlogRepository = backlogRepository;
+        }
 
     @GetMapping("/feedback")
     public String showFeedbackView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-
-
         List<Feedback> listaFeedback = feedbackRepository.findAll();
         model.addAttribute("listaFeedback", listaFeedback);
-
         return "po/feedback";
     }
 
@@ -47,7 +48,6 @@ public class FeedbackPoController {
     public String showFeedbackDetalleView(Model model, @PathVariable("id") int idFeedback, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-
 
         Optional<Feedback> feedbackOptional = feedbackRepository.findById(idFeedback);
 
@@ -58,6 +58,42 @@ public class FeedbackPoController {
             return "redirect:/po/feedback";
         }
     }
+
+    @PostMapping("/registrarFeedbackEnBacklog")
+    public String registrarFeedbackEnBacklog(@RequestParam("idFeedback") Integer idFeedback,
+                                             @RequestParam("asunto") String asunto,
+                                             Model model,
+                                             Authentication auth, // Inyectamos Authentication para obtener el usuario autenticado
+                                             HttpSession session) {
+        try {
+
+            if (auth != null && auth.isAuthenticated()) {
+                // Obtener el usuario correcto considerando impersonación
+                Usuario usuario = obtenerUsuarioActual(auth, session);
+                model.addAttribute("usuario", usuario);
+            }
+
+            Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+
+            // Verificar si el feedback ya está registrado en el backlog
+            Optional<Backlog> existingBacklog = backlogRepository.findByFeedback_IdFeedback(idFeedback);
+
+            if (existingBacklog.isPresent()) {
+                model.addAttribute("feedbackRegistrado", true);
+            } else {
+                // Registrar el feedback en el backlog
+                feedbackService.registrarFeedbackEnBacklog(idFeedback, asunto, usuario);
+                model.addAttribute("feedbackRegistrado", false); // Si se registra, pasamos false para mostrar el botón de "registrar"
+            }
+
+            return "redirect:/po/feedback"; // Regresar a la vista de feedback
+
+        } catch (Exception e) {
+            model.addAttribute("error", "Error al registrar el backlog: " + e.getMessage());
+            return "po/error";
+        }
+    }
+
 
     /**
      * Método helper para obtener el usuario correcto durante impersonación

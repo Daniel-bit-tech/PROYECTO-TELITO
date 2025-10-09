@@ -13,6 +13,8 @@ public class GlobalExceptionHandler {
 
     /// ERRORES INTERNOS ///
 
+
+
     @ExceptionHandler(ResponseStatusException.class)
     public String handleResponseStatus(ResponseStatusException ex, Model model) {
         model.addAttribute("titulo", "Error " + ex.getStatusCode().value());

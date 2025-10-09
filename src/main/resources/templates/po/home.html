@@ -413,9 +413,9 @@
                     <h2 class="welcome-title">¡Hola otra vez, <span th:text="${usuario.nombre}">María</span>!</h2>
                     <p class="welcome-text">Tienes <span></span> APIs con credenciales activas y <span></span> notificaciones sin leer.</p>
                     <div class="welcome-actions">
-                        <button class="btn btn-primary">
+                        <a class="btn btn-primary" th:href="@{/proyectos/nuevo}">
                             <i class="fas fa-rocket"></i> Crear nuevo proyecto
-                        </button>
+                        </a>
                         <a href="/apis" class="btn btn-outline-light">
                             <i class="fas fa-search"></i> Explorar APIs
                         </a>

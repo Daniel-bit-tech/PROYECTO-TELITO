@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8" />
+    <title th:text="${doc.api.nombre} + ' - Playground'">Playground API</title>
+    <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet"/>
+    <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* CRÍTICO: El API Client necesita altura definida */
+        #scalar-client {
+            height: 85vh;
+            min-height: 600px;
+            width: 100%;
+        }
+
+        /* Asegurar que el contenedor no tenga overflow oculto */
+        .card-body {
+            overflow: visible !important;
+        }
+    </style>
+</head>
+<body>
+<script src="/tabler/dist/js/tabler-theme.min.js"></script>
+
+<div class="page">
+    <header th:replace="desarrollador/header :: header" sec:authorize="hasRole('DEV')"></header>
+    <header th:replace="admin/header :: header" sec:authorize="hasRole('SUPERADMIN')"></header>
+    <header th:replace="po/header_po :: header" sec:authorize="hasRole('PO')"></header>
+    <header th:replace="qa/header_qa :: header" sec:authorize="hasRole('QA')"></header>
+
+    <div class="page-wrapper">
+        <div class="page-body">
+            <div class="container-xl">
+
+                <!-- Header compartido -->
+                <div th:replace="general/docs/docsHeader :: doc-header" th:with="currentView='playground'"></div>
+
+                <!-- Contenido: Scalar API Client Standalone -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <div class="alert alert-warning m-3">
+                                    <div class="d-flex">
+                                        <div class="me-3">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="alert-title">Modo Interactivo Activado</h4>
+                                            <div class="text-muted">
+                                                Esta es una interfaz tipo Postman donde puedes ejecutar requests reales.
+                                                <strong>Ten precaución</strong> con operaciones destructivas.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Scalar API Client Container -->
+                                <div id="scalar-client"></div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/tabler/dist/js/tabler.min.js"></script>
+<script type="module" th:inline="javascript">
+    /*<![CDATA[*/
+    import { createApiClientApp } from 'https://cdn.jsdelivr.net/npm/@scalar/api-client/+esm';
+
+    const docId = /*[[${doc.idDocumentacion}]]*/ 6;
+
+    console.log('🚀 Iniciando Scalar API Client...');
+
+    // Cargar el OpenAPI spec
+    fetch('/documentacion/' + docId + '/openapi.json')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error al cargar el spec: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(spec => {
+            console.log('✅ OpenAPI spec cargado:', spec);
+
+            const element = document.getElementById('scalar-client');
+
+            if (!element) {
+                console.error('❌ Elemento #scalar-client no encontrado');
+                return;
+            }
+
+            // Configuración del API Client
+            const config = {
+                // CRÍTICO: Pasar el spec como objeto, no como URL
+                spec: spec,
+
+                // Tema
+                theme: 'solarized',
+
+                // Mostrar sidebar con endpoints
+                showSidebar: true
+            };
+
+            console.log('⚙️ Configuración:', config);
+
+            // Inicializar el cliente
+            createApiClientApp(element, config)
+                .then(() => {
+                    console.log('✅ Scalar API Client inicializado correctamente');
+                })
+                .catch(error => {
+                    console.error('❌ Error inicializando Scalar:', error);
+                    element.innerHTML = `
+                        <div class="alert alert-danger m-3">
+                            <h4 class="alert-title">Error cargando el playground</h4>
+                            <p>${error.message}</p>
+                            <button class="btn btn-primary mt-2" onclick="location.reload()">
+                                <i class="fas fa-refresh me-1"></i> Reintentar
+                            </button>
+                        </div>
+                    `;
+                });
+        })
+        .catch(error => {
+            console.error('❌ Error cargando OpenAPI spec:', error);
+            document.getElementById('scalar-client').innerHTML = `
+                <div class="alert alert-danger m-3">
+                    <h4 class="alert-title">Error al cargar la especificación OpenAPI</h4>
+                    <p>No se pudo cargar el archivo OpenAPI desde el servidor.</p>
+                    <p><strong>Error:</strong> ${error.message}</p>
+                    <button class="btn btn-primary mt-2" onclick="location.reload()">
+                        <i class="fas fa-refresh me-1"></i> Reintentar
+                    </button>
+                </div>
+            `;
+        });
+
+    /*]]>*/
+</script>
+</body>
+</html>

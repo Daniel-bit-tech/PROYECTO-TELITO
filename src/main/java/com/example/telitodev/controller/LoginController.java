@@ -26,7 +26,11 @@ public class LoginController {
     @GetMapping("/login")
     public String showLoginForm(@RequestParam(value = "error", required = false) String error,
                                 @RequestParam(value = "logout", required = false) String logout,
-                                Model model, HttpSession session) {
+                                Model model, HttpSession session, Authentication auth) {
+
+        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() != null) {
+            return "redirect:/home";
+        }
         
         if (error != null) {
             String errorMessage = "Credenciales inválidas";
@@ -73,11 +77,7 @@ public class LoginController {
         return "sesion/login";
     }
 
-//    @PostMapping("/login")
-//    public String processLogin(@RequestParam String correo, @RequestParam String contrasena, Model model, HttpSession session) {
-//
-//        return "redirect:/developer";
-//    }
+
 
     @GetMapping("/home")
     public String home(Authentication authentication) {

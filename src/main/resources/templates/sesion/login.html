@@ -109,6 +109,8 @@
          </div>
       </div>
 
+      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
       <div class="login__check">
          <div class="login__check-box">
             <input type="checkbox" name="remember-me" class="login__check-input" id="user-check">
