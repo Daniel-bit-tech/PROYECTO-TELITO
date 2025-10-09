@@ -177,20 +177,19 @@
                     <table id="docsTable" class="backstage-table">
                         <thead>
                         <tr>
-<!--                            <th>#</th>-->
                             <th>Tipo</th>
-                            <th>Contenido</th>
+                            <th>Versión</th>
+                            <th>Descripción</th>
                             <th>Fecha</th>
                             <th>Ejemplos</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr th:each="doc : ${docs}">
-<!--                            <td>-->
-<!--                                <div class="doc-name" th:text="${doc}"></div>-->
-<!--                                <div class="doc-description" th:text="${doc.contenido}"></div>-->
-<!--                            </td>-->
                             <td><span class="badge badge-component" th:text="${doc.tipo}"></span></td>
+                            <td>
+                                <div class="doc-description" th:text="${doc.versionApi.version}"></div>
+                            </td>
                             <td><a th:href="@{/documentacion/{id}(id=${doc.idDocumentacion})}"
                                    th:text="${doc.descripcion}"></a></td>
                             <td th:text="${#dates.format(doc.fechaCreacion, 'dd-MM-yyyy')}"></td>
@@ -270,7 +269,7 @@
                 <div class="chat-message chat-message-left">
                     <div class="d-flex">
                         <div class="flex-shrink-0">
-                            <span class="avatar avatar-xl" style="background-image: url(/tabler/static/og.png)"></span>
+                            <span class="avatar avatar-xl" style="background-image: url(/og.png)"></span>
                         </div>
                         <div class="flex-fill ms-3">
                             <div class="card">

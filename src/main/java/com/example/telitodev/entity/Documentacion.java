@@ -102,4 +102,12 @@ public class Documentacion {
     public void setEjemplosCodigo(List<EjemplosCodigo> ejemplosCodigo) {
         this.ejemplosCodigo = ejemplosCodigo;
     }
+
+    public VersionApi getVersionApi() {
+        return versionApi;
+    }
+
+    public void setVersionApi(VersionApi versionApi) {
+        this.versionApi = versionApi;
+    }
 }

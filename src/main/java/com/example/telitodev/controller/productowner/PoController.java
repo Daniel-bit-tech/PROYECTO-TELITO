@@ -9,16 +9,19 @@ import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.service.ApiService;
 import com.example.telitodev.service.NotificacionService;
 import com.example.telitodev.service.ActividadRecienteService; // Importa el servicio
+import com.example.telitodev.service.OnboardingService;
+import com.example.telitodev.dto.SolicitudAccesoDecisionRequest;
+import com.example.telitodev.dto.SolicitudAccesoResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 import java.util.List;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 
 @Controller
 @RequestMapping("/po")
@@ -29,8 +32,11 @@ public class PoController extends BaseController {
     final ApiService apiService;
     final NotificacionService notificacionService;
     final ActividadRecienteService actividadRecienteService;
+    final OnboardingService onboardingService;
 
-    public PoController(UsuarioRepository usuarioRepository, ApiService apiService, NotificacionService notificacionService, ActividadRecienteService actividadRecienteService) {
+    public PoController(UsuarioRepository usuarioRepository, ApiService apiService, 
+                       NotificacionService notificacionService, ActividadRecienteService actividadRecienteService,
+                       OnboardingService onboardingService) {
         this.usuarioRepository = usuarioRepository;
         this.apiService = apiService;
         this.notificacionService = notificacionService;
@@ -46,6 +52,7 @@ public class PoController extends BaseController {
         addImpersonationAttributes(model, session);
         
         return "po/home";
+        this.onboardingService = onboardingService;
     }
 
     @GetMapping("/verPerfil")
@@ -61,7 +68,7 @@ public class PoController extends BaseController {
     }
 
     @GetMapping("/home")
-    public String showHomeView(Model model, Authentication auth, HttpSession session, HttpServletRequest request) {
+    public String showHomeView(Model model, Authentication auth) {
         List<Api> recentApis = apiService.getRecentApis();
         model.addAttribute("recentApis", recentApis);
 
@@ -72,19 +79,98 @@ public class PoController extends BaseController {
         // Agregar información de impersonación al modelo
         addImpersonationAttributes(model, session);
 
+
         List<Notificacion> notificaciones = notificacionService.obtenerNotificacionesPorUsuario(usuario.getDni());
         model.addAttribute("notificaciones", notificaciones);
+
 
         List<ActividadReciente> actividadesRecientes = actividadRecienteService.obtenerActividadesRecientesPorUsuario(usuario.getDni());
         model.addAttribute("actividadesRecientes", actividadesRecientes);
 
-        // Debug: Verificar token CSRF
-        Object csrfToken = request.getAttribute("_csrf");
-        System.out.println("🔑 CSRF Token en controller: " + (csrfToken != null ? "Presente" : "Ausente"));
-        if (csrfToken != null) {
-            System.out.println("🔑 CSRF Token details: " + csrfToken.toString());
-        }
-
         return "po/home";
+    }
+
+    /**
+     * Endpoint para aprobar una solicitud de API
+     */
+    @PostMapping("/api/solicitud/{idSolicitud}/aprobar")
+    @ResponseBody
+    public ResponseEntity<?> aprobarSolicitud(@PathVariable Integer idSolicitud, 
+                                            Authentication auth) {
+        try {
+            // Crear request de decisión
+            SolicitudAccesoDecisionRequest decision = new SolicitudAccesoDecisionRequest();
+            decision.setAccion("APROBAR");
+            
+            // Procesar la solicitud
+            SolicitudAccesoResponse response = onboardingService.procesarSolicitud(idSolicitud, decision);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Solicitud aprobada exitosamente",
+                "solicitud", response
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Endpoint para rechazar una solicitud de API
+     */
+    @PostMapping("/api/solicitud/{idSolicitud}/rechazar")
+    @ResponseBody
+    public ResponseEntity<?> rechazarSolicitud(@PathVariable Integer idSolicitud,
+                                             @RequestParam(required = false) String motivo,
+                                             Authentication auth) {
+        try {
+            // Crear request de decisión
+            SolicitudAccesoDecisionRequest decision = new SolicitudAccesoDecisionRequest();
+            decision.setAccion("RECHAZAR");
+            decision.setMotivoRechazo(motivo);
+            
+            // Procesar la solicitud
+            SolicitudAccesoResponse response = onboardingService.procesarSolicitud(idSolicitud, decision);
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Solicitud rechazada exitosamente",
+                "solicitud", response
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Endpoint para obtener todas las solicitudes pendientes de aprobación
+     */
+    @GetMapping("/api/solicitudes-pendientes")
+    @ResponseBody
+    public ResponseEntity<?> obtenerSolicitudesPendientes(Authentication auth) {
+        try {
+            // Obtener usuario PO actual
+            Usuario po = usuarioRepository.findByCorreo(auth.getName());
+            
+            // Obtener solicitudes pendientes de su organización
+            List<SolicitudAccesoResponse> solicitudesPendientes = 
+                onboardingService.obtenerSolicitudesPendientesPorOrganizacion(po.getOrganizacion().getIdOrganizacion());
+            
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "solicitudes", solicitudesPendientes
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", e.getMessage()
+            ));
+        }
     }
 }

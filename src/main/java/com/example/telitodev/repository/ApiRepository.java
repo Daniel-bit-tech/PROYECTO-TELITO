@@ -1,3 +1,4 @@
+
 package com.example.telitodev.repository;
 
 import com.example.telitodev.dto.ApiProyectoDTO;
@@ -22,6 +23,10 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
     List<Api> findByNombreContainingIgnoreCase(String nombre);
 
+    @Query(value = "SELECT a.* FROM api a " +
+            "LEFT JOIN proyecto_has_api pha ON a.idAPI = pha.idAPI AND pha.idProyecto = :idProy " +
+            "WHERE pha.idAPI IS NULL", nativeQuery = true)
+    List<Api> findApisNotAssociatedWithProyecto(@Param("idProy") Integer idProyecto);
 
     @Query(value = "SELECT a.* FROM api a " +
             "LEFT JOIN dominio d ON a.idDominio = d.idDominio " +
@@ -33,13 +38,6 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
                             @Param("idDominios") List<Integer> idDominios,
                             @Param("idTags") List<Integer> idTags);
 
-
-
-    @Query(value = "SELECT a.* FROM api a " +
-            "LEFT JOIN proyecto_has_api pha ON a.idAPI = pha.idAPI AND pha.idProyecto = :idProy " +
-            "WHERE pha.idAPI IS NULL", nativeQuery = true)
-    List<Api> findApisNotAssociatedWithProyecto(@Param("idProy") Integer idProyecto);
-
     @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(a.nombre, p.nombre, a.descripcion, " +
             "a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion) " +
             "FROM Api a " +
@@ -50,4 +48,31 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
             "WHERE p.organizacion.idOrganizacion = (SELECT u.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni)")
     List<ApiProyectoDTO> findApisByUsuarioAndProyecto(@Param("dni") String dni);
 
+    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(a.nombre, p.nombre, a.descripcion, " +
+            "a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion) " +
+            "FROM Api a " +
+            "JOIN ProyectoHasApi pha ON pha.api = a " +
+            "JOIN Proyecto p ON pha.proyecto = p " +
+            "JOIN Dominio d ON a.dominio.idDominio = d.idDominio " +
+            "JOIN Tag t ON a.tag.idTag = t.idTag " +
+            "WHERE p.organizacion.idOrganizacion = (SELECT u.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
+            "AND LOWER(a.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))")
+    List<ApiProyectoDTO> findApisByUsuarioAndProyectoAndNombre(@Param("dni") String dni,
+                                                               @Param("nombre") String nombre);
+
+    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
+            "a.nombre, p.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion) " +
+            "FROM Api a " +
+            "JOIN ProyectoHasApi pha ON pha.api = a " +
+            "JOIN Proyecto p ON pha.proyecto = p " +
+            "JOIN Dominio d ON a.dominio.idDominio = d.idDominio " +
+            "JOIN Tag t ON a.tag.idTag = t.idTag " +
+            "WHERE p.organizacion.idOrganizacion = (SELECT u.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
+            "AND (:nombre IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
+            "AND (:dominios IS NULL OR d.nombre IN :dominios) " +
+            "AND (:tags IS NULL OR t.nombre IN :tags)")
+    List<ApiProyectoDTO> findApisByFilters(@Param("dni") String dni,
+                                           @Param("nombre") String nombre,
+                                           @Param("dominios") List<String> dominios,
+                                           @Param("tags") List<String> tags);
 }

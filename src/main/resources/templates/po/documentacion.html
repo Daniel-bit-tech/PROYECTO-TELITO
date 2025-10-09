@@ -16,45 +16,64 @@
     <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet">
     <style>
         @import url("https://rsms.me/inter/inter.css");
-        .api-card:hover {
+
+        .api-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .category-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .category-card:hover {
             transform: translateY(-5px);
-            transition: transform 0.2s ease;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
         }
-        .quick-action-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .chatbot-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        .chatbot-btn {
+
+        .category-icon {
             width: 60px;
             height: 60px;
-            border-radius: 50%;
-            background-color: #206bc4;
-            color: white;
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
         }
-        .api-status-badge {
+
+        .category-badge {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 15px;
+            right: 15px;
         }
-        .sport-icon {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 8px;
+
+        .notification-item {
+            border-left: 4px solid #206bc4;
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .sla-badge {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .section-title {
+            border-bottom: 2px solid #206bc4;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: #206bc4;
         }
     </style>
 </head>
@@ -66,11 +85,19 @@
     <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
 
     <div class="page-wrapper">
+        <!-- Header de la API -->
         <div class="page-header d-print-none" aria-label="Page header">
             <div class="container-xl">
-                <div class="row g-2 align-items-center">
-                    <div class="col">
-                        <h2 class="page-title" th:text="${api.nombre}"></h2>
+                <div class="api-header">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h1 class="page-title text-white mb-2" th:text="${api.nombre}">API Name</h1>
+                            <p class="text-white-80 mb-0" th:text="${api.descripcion}">API Description</p>
+                        </div>
+                        <div class="col-auto">
+                            <span th:if="${!#lists.isEmpty(api.estadosApi)}" class="sla-badge" th:text="${api.estadosApi[0].nombreEstado}">PRODUCCION</span>
+                            <span th:if="${#lists.isEmpty(api.estadosApi)}" class="sla-badge">PRODUCCION</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -78,25 +105,61 @@
 
         <div class="page-body">
             <div class="container-xl">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="datagrid">
-                            <div class="datagrid-item">
-                                <div class="datagrid-title">Nombre</div>
-                                <div class="datagrid-content" th:text="${api.nombre}"></div>
-                            </div>
+                <!-- Notificaciones de API -->
 
-                            <div class="datagrid-item">
-                                <div class="datagrid-title">Estado</div>
-                                <div class="datagrid-content">
-                                    <span th:if="${!#lists.isEmpty(api.estadosApi)}" class="status status-green" th:text="${api.estadosApi[0].nombreEstado}">Producción</span>
-                                    <span th:if="${#lists.isEmpty(api.estadosApi)}" class="status status-red">Sin estado definido</span>
+
+                <!-- Categorías Principales -->
+
+
+                <!-- Información Detallada -->
+                <div class="row mt-4">
+                    <!-- Beneficios y Limitaciones -->
+                    <div class="col-lg-6">
+                        <div class="card category-card">
+                            <div class="card-body">
+                                <h3 class="section-title">🚀 Beneficios y Limitaciones</h3>
+                                <div class="mb-3">
+                                    <h6>Beneficios</h6>
+                                    <p class="text-muted" th:text="${doc.beneficios}">Comprehensive API benefits description...</p>
+                                </div>
+                                <div>
+                                    <h6>Limitaciones</h6>
+                                    <p class="text-muted" th:text="${doc.limitaciones}">API limitations and constraints...</p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
 
-                            <div class="datagrid-item">
-                                <div class="datagrid-title">Descripción</div>
-                                <div class="datagrid-content" th:text="${api.descripcion}"></div>
+                    <!-- SLA y Costos -->
+                    <div class="col-lg-6">
+                        <div class="card category-card">
+                            <div class="card-body">
+                                <h3 class="section-title">📊 SLA y costos</h3>
+                                <div class="mb-3">
+                                    <h6>Servicion de Acuerdo </h6>
+                                    <p class="text-muted" th:text="${doc.sla}">SLA 95% annual, 3 activities can be used to continue to reduce volumes on investments worldwide.</p>
+                                </div>
+                                <div>
+                                    <h6>Costo de Estructura</h6>
+                                    <p class="text-muted" th:text="${doc.costos}">Flexible pricing model based on usage and features...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flujo Funcional -->
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card category-card">
+                            <div class="card-body">
+                                <h3 class="section-title">🔄 Flujo funcional</h3>
+                                <p class="text-muted" th:text="${doc.flujoFuncional}">Flow software can be difficult to store. The use of new data allows us to make possible our costs time.</p>
+                                <div class="mt-3">
+                                    <span class="badge bg-blue me-2">Time-to-market</span>
+                                    <span class="badge bg-green me-2">Traceable</span>
+                                    <span class="badge bg-purple me-2">Accessible</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -104,7 +167,7 @@
             </div>
         </div>
 
-        <div id="footer-placeholder"></div>
+        <div th:replace="po/footer.html :: footer"></div>
     </div>
 </div>
 

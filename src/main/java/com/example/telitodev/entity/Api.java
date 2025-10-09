@@ -89,7 +89,12 @@ public class Api {
         this.tag = tag;
         this.endpointUrl = endpointUrl;
     }
-    
+
+    @Override
+    public String toString() {
+        return nombre;  // O cualquier otro atributo que quieras mostrar, como 'descripcion'
+    }
+
     // Getters y Setters
     public Integer getIdApi() {
         return idApi;

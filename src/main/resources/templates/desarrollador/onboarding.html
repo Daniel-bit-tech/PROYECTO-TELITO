@@ -293,6 +293,76 @@
             color: var(--tblr-danger);
         }
 
+        /* Estilos para solicitudes pendientes */
+        .requests-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .request-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--tblr-border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .request-item:last-child {
+            border-bottom: none;
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .request-api-name {
+            font-weight: 500;
+            color: var(--tblr-body-color);
+        }
+
+        .request-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background-color: rgba(var(--tblr-warning-rgb), 0.1);
+            color: var(--tblr-warning);
+        }
+
+        .request-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .request-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .request-label {
+            color: var(--tblr-secondary-color);
+            font-size: 0.75rem;
+        }
+
+        .request-value {
+            color: var(--tblr-body-color);
+        }
+
+        .request-description {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background-color: var(--tblr-bg-surface-secondary);
+            border-radius: 4px;
+            font-size: 0.875rem;
+            color: var(--tblr-secondary-color);
+        }
+
         .form-group {
             margin-bottom: 1.5rem;
         }
@@ -417,6 +487,25 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Estilos para paginación */
+        .pagination-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .pagination-container .btn.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        #keys-page-info {
+            font-size: 0.875rem;
+            color: var(--tblr-secondary-color);
+            font-weight: 500;
+        }
     </style>
 </head>
 
@@ -521,6 +610,32 @@
                         <!-- Las API Keys se cargarán dinámicamente -->
                         <div class="loading-message" style="padding: 2rem; text-align: center; color: var(--tblr-secondary-color);">
                             <i class="fas fa-spinner fa-spin"></i> Cargando credenciales...
+                        </div>
+                    </div>
+
+                    <!-- Controles de paginación para API Keys -->
+                    <div id="keys-pagination" class="pagination-container" style="display: none; padding: 1rem; border-top: 1px solid var(--tblr-border-color); text-align: center;">
+                        <button id="keys-prev-btn" class="btn btn-sm btn-outline-primary me-2" onclick="cambiarPaginaKeys(-1)">
+                            <i class="fas fa-chevron-left"></i> Anterior
+                        </button>
+                        <span id="keys-page-info" class="mx-3 text-muted"></span>
+                        <button id="keys-next-btn" class="btn btn-sm btn-outline-primary ms-2" onclick="cambiarPaginaKeys(1)">
+                            Siguiente <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Nueva sección para solicitudes pendientes -->
+                <div class="onboarding-card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-clock"></i> Solicitudes Pendientes</h3>
+                        <div class="card-subtitle">APIs solicitadas esperando aprobación del Product Owner</div>
+                    </div>
+
+                    <div class="requests-list" id="requests-container">
+                        <!-- Las solicitudes pendientes se cargarán dinámicamente -->
+                        <div class="loading-message" style="padding: 2rem; text-align: center; color: var(--tblr-secondary-color);">
+                            <i class="fas fa-spinner fa-spin"></i> Cargando solicitudes...
                         </div>
                     </div>
                 </div>
@@ -630,6 +745,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         cargarApisDisponibles();
         cargarMisCredenciales();
+        cargarSolicitudesPendientes();
     });
 
     // Manejar el envío de solicitudes
@@ -653,7 +769,7 @@
         // Preparar datos de la solicitud
         const apiIdRaw = apiSelect.value;
         const apiIdParsed = parseInt(apiIdRaw);
-        
+
         const solicitudData = {
             apiId: apiIdParsed,
             nombreProyecto: projectName.value,
@@ -667,7 +783,7 @@
         console.log('apiIdParsed:', apiIdParsed, 'tipo:', typeof apiIdParsed);
         console.log('isNaN(apiIdParsed):', isNaN(apiIdParsed));
         console.log('solicitudData:', solicitudData);
-        
+
         // Validar que apiId sea un número válido
         if (isNaN(apiIdParsed)) {
             alert('Error: ID de API no válido. Por favor selecciona una API.');
@@ -681,7 +797,7 @@
     // Función para cargar APIs disponibles
     function cargarApisDisponibles() {
         console.log('Cargando APIs disponibles...');
-        
+
         // Usar el endpoint REST que sabemos que funciona
         fetch('/api/onboarding/apis')
             .then(response => {
@@ -698,7 +814,7 @@
             .catch(error => {
                 console.error('Error al cargar APIs:', error);
                 mostrarError('Error al cargar las APIs disponibles');
-                
+
                 // Mostrar mensaje en el dropdown
                 const select = document.getElementById('api-select');
                 if (select) {
@@ -710,12 +826,12 @@
     // Función para mostrar APIs disponibles
     function mostrarApisDisponibles(apis) {
         const container = document.getElementById('apis-container');
-        
+
         if (!container) {
             console.warn('Elemento apis-container no encontrado');
             return;
         }
-        
+
         if (!apis || apis.length === 0) {
             container.innerHTML = '<li style="padding: 2rem; text-align: center; color: var(--tblr-secondary-color);">No hay APIs disponibles</li>';
             return;
@@ -723,7 +839,7 @@
 
         const iconos = {
             'Seguridad': 'fas fa-shield-alt',
-            'Finanzas': 'fas fa-credit-card', 
+            'Finanzas': 'fas fa-credit-card',
             'Logistica': 'fas fa-truck',
             'Comunicación': 'fas fa-comments',
             'Analítica': 'fas fa-chart-bar',
@@ -758,14 +874,14 @@
     // Función para actualizar el select de APIs
     function actualizarSelectAPIs(apis) {
         const select = document.getElementById('api-select');
-        
+
         if (!select) {
             console.error('Elemento api-select no encontrado');
             return;
         }
-        
+
         select.innerHTML = '<option value="">Selecciona una API</option>';
-        
+
         if (!apis || apis.length === 0) {
             const option = document.createElement('option');
             option.value = "";
@@ -774,7 +890,7 @@
             select.appendChild(option);
             return;
         }
-        
+
         apis.forEach(api => {
             const option = document.createElement('option');
             option.value = api.idApi;
@@ -783,12 +899,19 @@
         });
     }
 
+    // Variables para paginación de API Keys
+    let todasLasCredenciales = [];
+    let paginaActualKeys = 1;
+    const credencialesPorPagina = 5;
+
     // Función para cargar credenciales del usuario
     function cargarMisCredenciales() {
         fetch('/api/onboarding/mis-credenciales')
             .then(response => response.json())
             .then(credenciales => {
-                mostrarMisCredenciales(credenciales);
+                todasLasCredenciales = credenciales;
+                paginaActualKeys = 1;
+                mostrarMisCredencialesPaginadas();
             })
             .catch(error => {
                 console.error('Error al cargar credenciales:', error);
@@ -796,19 +919,41 @@
             });
     }
 
-    // Función para mostrar credenciales del usuario
-    function mostrarMisCredenciales(credenciales) {
+    // Función para cargar solicitudes pendientes del usuario
+    function cargarSolicitudesPendientes() {
+        fetch('/api/onboarding/mis-solicitudes')
+            .then(response => response.json())
+            .then(solicitudes => {
+                mostrarSolicitudesPendientes(solicitudes);
+            })
+            .catch(error => {
+                console.error('Error al cargar solicitudes pendientes:', error);
+                document.getElementById('requests-container').innerHTML =
+                    '<div style="padding: 2rem; text-align: center; color: var(--tblr-danger-color);">Error al cargar las solicitudes</div>';
+            });
+    }
+
+    // Función para mostrar credenciales paginadas
+    function mostrarMisCredencialesPaginadas() {
         const container = document.getElementById('keys-container');
-        
-        if (credenciales.length === 0) {
+        const paginationContainer = document.getElementById('keys-pagination');
+
+        if (todasLasCredenciales.length === 0) {
             container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--tblr-secondary-color);">No tienes credenciales activas</div>';
+            paginationContainer.style.display = 'none';
             return;
         }
 
-        container.innerHTML = credenciales.map(credencial => {
+        // Calcular índices para la paginación
+        const startIndex = (paginaActualKeys - 1) * credencialesPorPagina;
+        const endIndex = startIndex + credencialesPorPagina;
+        const credencialesPagina = todasLasCredenciales.slice(startIndex, endIndex);
+
+        // Mostrar las credenciales de la página actual
+        container.innerHTML = credencialesPagina.map(credencial => {
             const estadoClass = credencial.estado ? 'status-active' : 'status-revoked';
             const estadoTexto = credencial.estadoTexto;
-            
+
             return `
                 <div class="key-item">
                     <div class="key-header">
@@ -840,16 +985,106 @@
                 </div>
             `;
         }).join('');
+
+        // Actualizar controles de paginación
+        actualizarPaginacionKeys();
+    }
+
+    // Función para actualizar los controles de paginación
+    function actualizarPaginacionKeys() {
+        const totalPaginas = Math.ceil(todasLasCredenciales.length / credencialesPorPagina);
+        const paginationContainer = document.getElementById('keys-pagination');
+        const pageInfo = document.getElementById('keys-page-info');
+        const prevBtn = document.getElementById('keys-prev-btn');
+        const nextBtn = document.getElementById('keys-next-btn');
+
+        if (totalPaginas <= 1) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        paginationContainer.style.display = 'block';
+        pageInfo.textContent = `Página ${paginaActualKeys} de ${totalPaginas}`;
+
+        prevBtn.disabled = paginaActualKeys === 1;
+        nextBtn.disabled = paginaActualKeys === totalPaginas;
+
+        if (prevBtn.disabled) {
+            prevBtn.classList.add('disabled');
+        } else {
+            prevBtn.classList.remove('disabled');
+        }
+
+        if (nextBtn.disabled) {
+            nextBtn.classList.add('disabled');
+        } else {
+            nextBtn.classList.remove('disabled');
+        }
+    }
+
+    // Función para cambiar de página en las API Keys
+    function cambiarPaginaKeys(direccion) {
+        const totalPaginas = Math.ceil(todasLasCredenciales.length / credencialesPorPagina);
+        const nuevaPagina = paginaActualKeys + direccion;
+
+        if (nuevaPagina >= 1 && nuevaPagina <= totalPaginas) {
+            paginaActualKeys = nuevaPagina;
+            mostrarMisCredencialesPaginadas();
+        }
+    }
+
+    // Función para mostrar solicitudes pendientes del usuario
+    function mostrarSolicitudesPendientes(solicitudes) {
+        const container = document.getElementById('requests-container');
+
+        if (solicitudes.length === 0) {
+            container.innerHTML = '<div style="padding: 2rem; text-align: center; color: var(--tblr-secondary-color);">No tienes solicitudes pendientes</div>';
+            return;
+        }
+
+        container.innerHTML = solicitudes.map(solicitud => {
+            const estadoClass = solicitud.estado === 'PENDIENTE' ? 'bg-warning' :
+                solicitud.estado === 'APROBADA' ? 'bg-success' : 'bg-danger';
+            const iconClass = solicitud.estado === 'PENDIENTE' ? 'fa-clock' :
+                solicitud.estado === 'APROBADA' ? 'fa-check-circle' : 'fa-times-circle';
+
+            return `
+                <div class="request-item" style="border: 1px solid var(--tblr-border-color); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: between; align-items: center;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; margin-bottom: 0.5rem;">
+                                <i class="fas ${iconClass}" style="margin-right: 0.5rem;"></i>
+                                ${solicitud.nombreApi}
+                            </div>
+                            <div style="color: var(--tblr-secondary-color); font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                Proyecto: ${solicitud.nombreProyecto}
+                            </div>
+                            <div style="color: var(--tblr-secondary-color); font-size: 0.875rem;">
+                                ${solicitud.fechaFormatted}
+                            </div>
+                        </div>
+                        <div>
+                            <span class="badge ${estadoClass}">${solicitud.estado}</span>
+                        </div>
+                    </div>
+                    ${solicitud.descripcionUso ? `
+                    <div style="margin-top: 0.5rem; padding: 0.5rem; background-color: var(--tblr-bg-surface); border-radius: 4px; font-size: 0.875rem;">
+                        ${solicitud.descripcionUso}
+                    </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
     }
 
     // Función para enviar solicitud de acceso
     function enviarSolicitudAcceso(solicitudData) {
         const submitBtn = document.querySelector('.btn-submit');
         const originalText = submitBtn.innerHTML;
-        
+
         // Debug: mostrar datos que se envían
         console.log('Enviando solicitud con datos:', solicitudData);
-        
+
         // Deshabilitar botón y mostrar loading
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
@@ -861,64 +1096,99 @@
             },
             body: JSON.stringify(solicitudData)
         })
-        .then(async response => {
-            console.log('Response status:', response.status);
-            console.log('Response headers:', response.headers);
-            
-            if (!response.ok) {
-                // Intentar leer el mensaje de error del servidor
-                try {
-                    const errorData = await response.json();
-                    console.log('Error data received:', errorData);
-                    const errorMessage = errorData.error || errorData.message || `HTTP error! status: ${response.status}`;
-                    throw new Error(errorMessage);
-                } catch (jsonError) {
-                    console.log('No se pudo leer JSON de error:', jsonError);
-                    // Si no se puede leer JSON, intentar leer como texto
+            .then(async response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                if (!response.ok) {
+                    // Intentar leer el mensaje de error del servidor
+                    const responseClone = response.clone(); // Clonar para poder leer múltiples veces
                     try {
-                        const errorText = await response.text();
-                        console.log('Error text received:', errorText);
-                        throw new Error(errorText || `HTTP error! status: ${response.status}`);
-                    } catch (textError) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        const errorData = await response.json();
+                        console.log('Error data received:', errorData);
+                        let errorMessage;
+
+                        // Verificar diferentes propiedades del objeto de error
+                        if (errorData.error) {
+                            errorMessage = errorData.error;
+                        } else if (errorData.message) {
+                            errorMessage = errorData.message;
+                        } else if (typeof errorData === 'string') {
+                            errorMessage = errorData;
+                        } else {
+                            errorMessage = `HTTP error! status: ${response.status}`;
+                        }
+
+                        console.log('Error message to throw:', errorMessage);
+                        throw new Error(errorMessage);
+                    } catch (jsonError) {
+                        console.log('No se pudo leer JSON de error:', jsonError);
+                        // Si no se puede leer JSON, intentar leer como texto
+                        try {
+                            const errorText = await responseClone.text();
+                            console.log('Error text received:', errorText);
+
+                            // Si el texto contiene JSON, intentar parsearlo
+                            if (errorText.includes('{') && errorText.includes('}')) {
+                                try {
+                                    const parsedError = JSON.parse(errorText);
+                                    const errorMessage = parsedError.error || parsedError.message || errorText;
+                                    throw new Error(errorMessage);
+                                } catch (parseError) {
+                                    throw new Error(errorText || `HTTP error! status: ${response.status}`);
+                                }
+                            } else {
+                                throw new Error(errorText || `HTTP error! status: ${response.status}`);
+                            }
+                        } catch (textError) {
+                            console.log('Error leyendo texto:', textError);
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
                     }
                 }
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Verificar si es una respuesta de API ya activa (información)
-            if (data.type === 'INFO' && data.message) {
-                // Mostrar modal informativo en lugar de error
-                showInfoModal(data.message);
-                return;
-            }
-            
-            if (data.error) {
-                throw new Error(data.error);
-            }
-            
-            // Mostrar modal de confirmación
-            document.getElementById('confirmation-modal').style.display = 'flex';
-            
-            // Limpiar formulario
-            document.getElementById('api-key-form').reset();
-            
-            // Recargar credenciales
-            setTimeout(() => {
-                cargarMisCredenciales();
-            }, 2000);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Mostrar modal de error en lugar de alert
-            showErrorModal(error.message);
-        })
-        .finally(() => {
-            // Restaurar botón
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalText;
-        });
+                return response.json();
+            })
+            .then(data => {
+                // Verificar si es una respuesta de API ya activa (información)
+                if (data.type === 'INFO' && data.message) {
+                    // Mostrar modal informativo en lugar de error
+                    showInfoModal(data.message);
+                    return;
+                }
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Mostrar modal de confirmación
+                document.getElementById('confirmation-modal').style.display = 'flex';
+
+                // Limpiar formulario
+                document.getElementById('api-key-form').reset();
+
+                // Recargar credenciales y solicitudes pendientes
+                setTimeout(() => {
+                    cargarMisCredenciales();
+                    cargarSolicitudesPendientes(); // Recargar solicitudes después de crear una nueva
+                }, 2000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                const errorMessage = error.message || 'Ha ocurrido un error inesperado';
+
+                // Si el mensaje contiene "Esta API ya está en tus keys activas", mostrarlo como información
+                if (errorMessage.includes('Esta API ya está en tus keys activas')) {
+                    showInfoModal(errorMessage);
+                } else {
+                    // Mostrar modal de error para otros errores
+                    showErrorModal(errorMessage);
+                }
+            })
+            .finally(() => {
+                // Restaurar botón
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
     }
 
     function selectAPI(apiId) {
@@ -947,34 +1217,34 @@
                     'Accept': 'application/json'
                 }
             })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(error => {
-                        throw new Error(error.error || 'Error al revocar la credencial');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Mostrar mensaje de éxito
-                alert('✅ Credencial revocada exitosamente');
-                
-                // Recargar la lista de credenciales
-                cargarMisCredenciales();
-            })
-            .catch(error => {
-                console.error('Error al revocar credencial:', error);
-                alert('❌ Error: ' + error.message);
-            });
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(error => {
+                            throw new Error(error.error || 'Error al revocar la credencial');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Mostrar mensaje de éxito
+                    alert('✅ Credencial revocada exitosamente');
+
+                    // Recargar la lista de credenciales
+                    cargarMisCredenciales();
+                })
+                .catch(error => {
+                    console.error('Error al revocar credencial:', error);
+                    alert('❌ Error: ' + error.message);
+                });
         }
     }
 
     function formatearFecha(timestamp) {
         const fecha = new Date(timestamp);
-        return fecha.toLocaleDateString('es-ES', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+        return fecha.toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
     }
 
@@ -993,9 +1263,9 @@
             animation: slideIn 0.3s ease-out;
         `;
         notification.textContent = mensaje;
-        
+
         document.body.appendChild(notification);
-        
+
         setTimeout(() => {
             notification.remove();
         }, 3000);
@@ -1014,19 +1284,37 @@
 
     // Funciones para el modal de error
     function showErrorModal(message) {
+        console.log('Mostrando modal de error con mensaje:', message);
+
         // Cambiar el icono y título para errores
-        document.querySelector('#error-modal .modal-title').innerHTML = '❌ Error';
-        document.querySelector('#error-modal .modal-content').style.borderLeft = '5px solid #dc3545';
-        document.getElementById('error-message').textContent = message;
-        document.getElementById('error-modal').style.display = 'flex';
+        const modalTitle = document.querySelector('#error-modal .modal-title');
+        const modalContent = document.querySelector('#error-modal .modal-content');
+        const errorMessage = document.getElementById('error-message');
+        const modal = document.getElementById('error-modal');
+
+        if (modalTitle) modalTitle.innerHTML = '❌ Error';
+        if (modalContent) modalContent.style.borderLeft = '5px solid #dc3545';
+        if (errorMessage) errorMessage.textContent = message || 'Ha ocurrido un error';
+        if (modal) modal.style.display = 'flex';
+
+        console.log('Modal de error mostrado');
     }
 
     function showInfoModal(message) {
+        console.log('Mostrando modal de información con mensaje:', message);
+
         // Cambiar el icono y título para información
-        document.querySelector('#error-modal .modal-title').innerHTML = '💡 Información';
-        document.querySelector('#error-modal .modal-content').style.borderLeft = '5px solid #007bff';
-        document.getElementById('error-message').textContent = message;
-        document.getElementById('error-modal').style.display = 'flex';
+        const modalTitle = document.querySelector('#error-modal .modal-title');
+        const modalContent = document.querySelector('#error-modal .modal-content');
+        const errorMessage = document.getElementById('error-message');
+        const modal = document.getElementById('error-modal');
+
+        if (modalTitle) modalTitle.innerHTML = '💡 Información';
+        if (modalContent) modalContent.style.borderLeft = '5px solid #007bff';
+        if (errorMessage) errorMessage.textContent = message || 'Información';
+        if (modal) modal.style.display = 'flex';
+
+        console.log('Modal de información mostrado');
     }
 
     function closeErrorModal() {
@@ -1039,12 +1327,12 @@
         if (e.target === modal) {
             closeModal();
         }
-        
+
         const errorModal = document.getElementById('error-modal');
         if (e.target === errorModal) {
             closeErrorModal();
         }
-        
+
         const infoModal = document.getElementById('error-modal'); // Reutilizamos el mismo modal
         if (e.target === infoModal) {
             closeErrorModal();

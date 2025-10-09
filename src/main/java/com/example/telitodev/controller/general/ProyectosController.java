@@ -8,10 +8,13 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,12 +43,22 @@ public class ProyectosController {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
         List<Proyecto> listaProyectos = null;
-        if (filtro != null && filtro.equals("activos")) {
-            listaProyectos = proyectoRepository.findByActivoAndOrganizacion_Usuarios_Dni(true, usuario.getDni());
-        } else if (filtro != null && filtro.equals("ocultos")) {
-            listaProyectos = proyectoRepository.findByPublicoAndOrganizacion_Usuarios_Dni(false, usuario.getDni());
+        if (usuario.getRol().getNombreRol().equals("SUPERADMIN")) {
+            if (filtro != null && filtro.equals("activos")) {
+                listaProyectos = proyectoRepository.findByActivo(true);
+            } else if (filtro != null && filtro.equals("ocultos")) {
+                listaProyectos = proyectoRepository.findByPublico(false);
+            } else {
+                listaProyectos = proyectoRepository.findAll();
+            }
         } else {
-            listaProyectos = proyectoRepository.findByOrganizacion_Usuarios_Dni(usuario.getDni());
+            if (filtro != null && filtro.equals("activos")) {
+                listaProyectos = proyectoRepository.findByActivoAndOrganizacion_Usuarios_Dni(true, usuario.getDni());
+            } else if (filtro != null && filtro.equals("ocultos")) {
+                listaProyectos = proyectoRepository.findByPublicoAndOrganizacion_Usuarios_Dni(false, usuario.getDni());
+            } else {
+                listaProyectos = proyectoRepository.findByOrganizacion_Usuarios_Dni(usuario.getDni());
+            }
         }
 
         model.addAttribute("listaProyectos", listaProyectos);
@@ -53,7 +66,7 @@ public class ProyectosController {
 
         model.addAttribute("usuario", usuario);
 
-        return "desarrollador/proyectos";
+        return "general/proyectos";
     }
 
 
@@ -66,7 +79,8 @@ public class ProyectosController {
 
         if (proyecto.getPublico() ||
                 usuario.getRol().getNombreRol().equals("SUPERADMIN") ||
-                (usuario.getRol().getNombreRol().equals("PO") && proyecto.getOrganizacion().equals(usuario.getOrganizacion()))) {
+//                (usuario.getRol().getNombreRol().equals("PO") && proyecto.getOrganizacion().equals(usuario.getOrganizacion()))) {
+                (proyecto.getOrganizacion().equals(usuario.getOrganizacion()))) {
             model.addAttribute("proyecto", proyecto);
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes ver los detalles de este proyecto");
@@ -86,7 +100,7 @@ public class ProyectosController {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         proyecto.setUsuarioLider(usuario);
         proyecto.setOrganizacion(usuario.getOrganizacion());
-        proyecto.setFechaInicio(new Date(System.currentTimeMillis()));
+        proyecto.setFechaInicio(LocalDate.now());
         proyecto.setPublico(true);
         proyecto.setActivo(true);
         model.addAttribute("proyecto", proyecto);
@@ -117,14 +131,20 @@ public class ProyectosController {
 
     @PostMapping("/guardar")
     @PreAuthorize("hasRole('PO')")
-    public String guardarProyecto(@Valid @ModelAttribute("proyecto") Proyecto proyecto,
-                                     Model model, Authentication auth) {
+    public String guardarProyecto(@Valid @ModelAttribute("proyecto") Proyecto proyecto, BindingResult result,
+                                     Model model, Authentication auth, RedirectAttributes redirectAttributes) {
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        model.addAttribute("usuario", usuario);
 
-        if (usuario.getOrganizacion().equals(proyecto.getOrganizacion()) && proyecto.getUsuarioLider().equals(usuario)) {
-            if (proyecto.getIdProyecto() != null) {
-                // Edición
+        if (result.hasErrors()) {
+            return "po/formEditarProy";
+        }
+
+        if (proyecto.getIdProyecto() != null) {
+            //Edición
+            if (usuario.getOrganizacion().equals(proyecto.getOrganizacion()) && proyecto.getUsuarioLider().equals(usuario)) {
+
                 Proyecto existente = proyectoRepository.findById(proyecto.getIdProyecto())
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
@@ -133,16 +153,18 @@ public class ProyectosController {
                 proyecto.setOrganizacion(existente.getOrganizacion());
                 proyecto.setUsuarioLider(existente.getUsuarioLider());
             } else {
-                // Creación
-                proyecto.setOrganizacion(usuario.getOrganizacion());
-                proyecto.setUsuarioLider(usuario);
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto");
             }
-            proyectoRepository.save(proyecto);
         } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto");
+
+            System.out.println("Creando proy: "+proyecto.getNombre());
+            // Creación
+            proyecto.setOrganizacion(usuario.getOrganizacion());
+            proyecto.setUsuarioLider(usuario);
         }
 
-        model.addAttribute("usuario", usuario);
+        proyectoRepository.save(proyecto);
+
         return "redirect:/proyectos/" + proyecto.getIdProyecto();
     }
 

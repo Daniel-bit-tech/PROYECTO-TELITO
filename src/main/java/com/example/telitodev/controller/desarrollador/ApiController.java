@@ -40,6 +40,7 @@ public class ApiController extends BaseController {
         this.tagRepository = tagRepository;
     }
 
+
     @GetMapping()
     public String catalogo(@RequestParam(value = "dominios",required = false) List<Integer> selDominios,
                            @RequestParam(value = "tags", required = false) List<Integer> selTags,
@@ -78,10 +79,7 @@ public class ApiController extends BaseController {
 //    @PreAuthorize("hasAnyRole('DEV','SUPERADMIN','QA','PO')")
     @PreAuthorize("isAuthenticated()")
     public String detalleApi(@PathVariable Integer id,
-                             @RequestParam(value = "fecha",required = false) String fecha,
                              Model model, Authentication auth, HttpSession session) {
-
-        System.out.println("\n\n\n DOCS \n");
 
         boolean apiExists = apiRepository.existsById(id);
         if (apiExists) {
@@ -93,12 +91,11 @@ public class ApiController extends BaseController {
         // Obtener el usuario correcto considerando impersonación usando BaseController
         Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
-        model.addAttribute("fecha", fecha);
         
         // Agregar información de impersonación al modelo usando BaseController
         addImpersonationAttributes(model, session);
 
-        return "desarrollador/documentacion";
+        return "general/docs/documentacion";
     }
 
 

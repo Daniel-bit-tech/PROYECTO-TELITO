@@ -30,7 +30,7 @@ public class SecurityConfig {
 
     @Autowired
     private UsuarioDetailService usuarioDetailService;
-    
+
     @Autowired
     private UsuarioActivoFilter usuarioActivoFilter;
 
@@ -80,11 +80,16 @@ public class SecurityConfig {
                         .deleteCookies("JSESSIONID")
                         .permitAll()
                 )
+                .rememberMe(remember -> remember
+                        .key("remember-me")
+                        .rememberMeParameter("remember-me")
+                        .tokenValiditySeconds(86400)
+                        .userDetailsService(usuarioDetailService))      //.tokenRepository(persistentTokenRepository(dataSource)) para cookies persistentes
 //                .exceptionHandling(exception -> exception
 //                        .accessDeniedPage("/acceso-denegado")
 //                )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/**") // Deshabilitar CSRF para endpoints API
+                        .ignoringRequestMatchers("/api/**","/po/**") // Deshabilitar CSRF para endpoints API
                 )
                 // Control de sesiones concurrentes y seguridad de sesión
                 .sessionManagement(session -> session
@@ -124,7 +129,7 @@ public class SecurityConfig {
             protected String determineTargetUrl(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
                 System.out.println("=== AuthenticationSuccessHandler ejecutado ===");
                 System.out.println("Usuario: " + authentication.getName());
-                
+
                 Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
                 System.out.println("Autoridades encontradas: " + authorities);
 

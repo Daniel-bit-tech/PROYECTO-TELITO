@@ -58,8 +58,8 @@
 
     .search-box {
       flex: 1;
-      min-width: 300px;
       position: relative;
+      margin-bottom: 1.5rem;
     }
 
     .search-input {
@@ -171,6 +171,7 @@
       flex-direction: column;
       transition: transform 0.2s, box-shadow 0.2s;
       height: 100%;
+      max-height: 300px;
     }
 
     .api-card:hover {
@@ -354,11 +355,11 @@
           </div>
         </div>
 
-      <div class="search-filters">
-        <div class="search-box">
-          <i class="fas fa-search search-icon"></i>
-          <input type="text" class="search-input" id="search" name="nombre" placeholder="Buscar APIs por nombre" th:value="${nombre != null ? nombre : ''}">
-        </div>
+<!--      <div class="search-filters">-->
+<!--        <div class="search-box">-->
+<!--          <i class="fas fa-search search-icon"></i>-->
+<!--          <input type="text" class="search-input" id="search" name="nombre" placeholder="Buscar APIs por nombre" th:value="${nombre != null ? nombre : ''}">-->
+<!--        </div>-->
 
 <!--        <div class="filter-buttons">-->
 <!--          <button class="filter-btn active">-->
@@ -374,12 +375,18 @@
 <!--            <i class="fas fa-clock"></i> Recientes-->
 <!--          </button>-->
 <!--        </div>-->
-      </div>
+<!--      </div>-->
 
       <div class="catalog-content">
         <form method="get" action="/apis" id="filterForm">
-            <input type="hidden" name="nombre" id="nombreHidden">
         <div class="filters-sidebar">
+<!--            <div class="filter-section">-->
+                <div class="search-box">
+                  <i class="fas fa-search search-icon"></i>
+                  <input type="text" class="search-input" id="search" name="nombre" placeholder="Buscar APIs por nombre" th:value="${nombre != null ? nombre : ''}">
+                </div>
+<!--            </div>-->
+
             <div class="filter-section">
                 <h3 class="filter-section-title">
                     <i class="fas fa-signal"></i> Dominios
