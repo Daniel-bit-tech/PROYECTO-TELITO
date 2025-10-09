@@ -7,6 +7,27 @@ import java.util.Date;
 @Table(name = "roadmap")
 public class Roadmap {
 
+    public enum EstadoRoadmap {
+        Nueva("Nueva"),
+        En_desarrollo("En desarrollo"), 
+        Próxima("Próxima");
+        
+        private final String displayName;
+        
+        EstadoRoadmap(String displayName) {
+            this.displayName = displayName;
+        }
+        
+        public String getDisplayName() {
+            return displayName;
+        }
+        
+        @Override
+        public String toString() {
+            return displayName;
+        }
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -16,8 +37,9 @@ public class Roadmap {
     @JoinColumn(name = "api_id", referencedColumnName = "idAPI", nullable = false)
     private Api api;
 
-    @Column(name = "estado", nullable = false, length = 50)
-    private String estado;  // Nueva, En desarrollo, Próxima
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false, columnDefinition = "ENUM('Nueva','En desarrollo','Próxima')")
+    private EstadoRoadmap estado;
 
     @Column(name = "fecha_inicio", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -31,7 +53,7 @@ public class Roadmap {
     // Constructores
     public Roadmap() {}
 
-    public Roadmap(Api api, String estado, Date fechaInicio, Date fechaFin, Date fechaLimite) {
+    public Roadmap(Api api, EstadoRoadmap estado, Date fechaInicio, Date fechaFin) {
         this.api = api;
         this.estado = estado;
         this.fechaInicio = fechaInicio;
@@ -67,11 +89,11 @@ public class Roadmap {
         this.api = api;
     }
 
-    public String getEstado() {
+    public EstadoRoadmap getEstado() {
         return estado;
     }
 
-    public void setEstado(String estado) {
+    public void setEstado(EstadoRoadmap estado) {
         this.estado = estado;
     }
 

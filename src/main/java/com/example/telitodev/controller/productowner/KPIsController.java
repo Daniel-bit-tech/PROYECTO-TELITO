@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.productowner;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.service.MetricsService;
@@ -9,10 +10,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpSession;
+
 @Controller
 @RequestMapping("/po")
 @PreAuthorize("hasAnyRole('PO', 'SADMIN')")
-public class KPIsController {
+public class KPIsController extends BaseController {
 
     private final UsuarioRepository usuarioRepository;
     private final MetricsService metricsService;
@@ -24,8 +27,12 @@ public class KPIsController {
 
     /** Vista principal de KPIs (inyecta métricas de cabecera + lista básica) */
     @GetMapping("/KPIs")
-    public String showKPIsView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+    public String showKPIsView(Model model, Authentication auth, HttpSession session) {
+        Usuario usuario = getCurrentUser(auth, session);
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         model.addAttribute("usuario", usuario);
 
         // KPIs (puedes cambiar a las versiones *Fast()* si prefieres agregaciones directas en DB)

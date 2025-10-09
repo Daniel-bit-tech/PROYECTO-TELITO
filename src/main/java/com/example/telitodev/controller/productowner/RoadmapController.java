@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.productowner;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.service.*;
 import com.example.telitodev.repository.*;
@@ -20,7 +21,7 @@ import java.util.*;
 @Controller
 @RequestMapping("/po")
 @PreAuthorize("hasAnyRole('PO', 'SUPERADMIN')")
-public class RoadmapController {
+public class RoadmapController extends BaseController {
 
     final UsuarioRepository usuarioRepository;
     final RoadmapRepository roadmapRepository;
@@ -38,7 +39,11 @@ public class RoadmapController {
 
         if (auth != null && auth.isAuthenticated()) {
             // Obtener el usuario correcto considerando impersonación
-            Usuario usuario = obtenerUsuarioActual(auth, session);
+            Usuario usuario = getCurrentUser(auth, session);
+            
+            // Agregar atributos de impersonación
+            addImpersonationAttributes(model, session);
+            
             model.addAttribute("usuario", usuario);
         }
 
@@ -62,7 +67,7 @@ public class RoadmapController {
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate().toString()
                         : null);
-                m.put("estado", r.getEstado());
+                m.put("estado", r.getEstado().toString());
                 return m;
             }).toList();
         }

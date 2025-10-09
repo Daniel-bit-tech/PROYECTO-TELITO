@@ -12,6 +12,7 @@ import com.example.telitodev.service.ActividadRecienteService; // Importa el ser
 import com.example.telitodev.service.OnboardingService;
 import com.example.telitodev.dto.SolicitudAccesoDecisionRequest;
 import com.example.telitodev.dto.SolicitudAccesoResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -41,7 +42,9 @@ public class PoController extends BaseController {
         this.apiService = apiService;
         this.notificacionService = notificacionService;
         this.actividadRecienteService = actividadRecienteService;
+        this.onboardingService = onboardingService;
     }
+    
     @GetMapping("/Dashboard")
     public String showDashboardView(Model model, Authentication auth, HttpSession session) {
         // Obtener el usuario correcto considerando impersonación
@@ -52,7 +55,6 @@ public class PoController extends BaseController {
         addImpersonationAttributes(model, session);
         
         return "po/home";
-        this.onboardingService = onboardingService;
     }
 
     @GetMapping("/verPerfil")
@@ -68,7 +70,7 @@ public class PoController extends BaseController {
     }
 
     @GetMapping("/home")
-    public String showHomeView(Model model, Authentication auth) {
+    public String showHomeView(Model model, Authentication auth, HttpSession session) {
         List<Api> recentApis = apiService.getRecentApis();
         model.addAttribute("recentApis", recentApis);
 

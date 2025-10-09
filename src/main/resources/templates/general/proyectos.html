@@ -484,13 +484,13 @@
 <div class="page">
 
     <header th:replace="desarrollador/header :: header"
-            sec:authorize="hasRole('DEV')"></header>
+            th:if="${isImpersonating ? impersonatedUserRole == 'DEV' : #authorization.hasRole('DEV')}"></header>
     <header th:replace="admin/header :: header"
-            sec:authorize="hasRole('SUPERADMIN')"></header>
+            th:if="${isImpersonating ? impersonatedUserRole == 'SUPERADMIN' : #authorization.hasRole('SUPERADMIN')}"></header>
     <header th:replace="po/header_po :: header"
-            sec:authorize="hasRole('PO')"></header>
+            th:if="${isImpersonating ? impersonatedUserRole == 'PO' : #authorization.hasRole('PO')}"></header>
     <header th:replace="qa/header_qa :: header"
-            sec:authorize="hasRole('QA')"></header>
+            th:if="${isImpersonating ? impersonatedUserRole == 'QA' : #authorization.hasRole('QA')}"></header>
 
   <div class="content">
     <div class="projects-container">

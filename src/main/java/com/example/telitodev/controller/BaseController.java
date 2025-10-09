@@ -33,12 +33,15 @@ public abstract class BaseController {
         if (isImpersonating) {
             String impersonatedUserDni = impersonationService.getImpersonatedUserDni(session);
             String impersonatedUserName = impersonationService.getImpersonatedUserName(session);
+            String impersonatedUserRole = (String) session.getAttribute("IMPERSONATED_USER_ROLE");
             
             System.out.println("  - impersonatedUserDni: " + impersonatedUserDni);
             System.out.println("  - impersonatedUserName: " + impersonatedUserName);
+            System.out.println("  - impersonatedUserRole: " + impersonatedUserRole);
             
             model.addAttribute("impersonatedUserDni", impersonatedUserDni);
             model.addAttribute("impersonatedUserName", impersonatedUserName);
+            model.addAttribute("impersonatedUserRole", impersonatedUserRole);
         } else {
             System.out.println("  - No hay impersonación activa");
         }
