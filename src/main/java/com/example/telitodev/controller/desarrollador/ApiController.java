@@ -1,6 +1,7 @@
 package com.example.telitodev.controller.desarrollador;
 
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.Documentacion;
 import com.example.telitodev.entity.Usuario;
@@ -19,7 +20,7 @@ import java.util.Optional;
 @Controller
 @RequestMapping("/apis")
 
-public class ApiController {
+public class ApiController extends BaseController {
 
     final ApiRepository apiRepository;
     final UsuarioRepository usuarioRepository;
@@ -54,8 +55,8 @@ public class ApiController {
         }
 
         if (auth != null && auth.isAuthenticated()) {
-            // Obtener el usuario correcto considerando impersonación
-            Usuario usuario = obtenerUsuarioActual(auth, session);
+            // Obtener el usuario correcto considerando impersonación usando BaseController
+            Usuario usuario = getCurrentUser(auth, session);
             model.addAttribute("usuario", usuario);
         }
 
@@ -66,6 +67,9 @@ public class ApiController {
         model.addAttribute("selTags", selTags);
         model.addAttribute("selDominios", selDominios);
         model.addAttribute("nombre", nombre);
+        
+        // Agregar información de impersonación al modelo usando BaseController
+        addImpersonationAttributes(model, session);
 
         return "desarrollador/apis";
     }
@@ -86,10 +90,13 @@ public class ApiController {
             model.addAttribute("docs", docs);
         }
 
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+        // Obtener el usuario correcto considerando impersonación usando BaseController
+        Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
         model.addAttribute("fecha", fecha);
+        
+        // Agregar información de impersonación al modelo usando BaseController
+        addImpersonationAttributes(model, session);
 
         return "desarrollador/documentacion";
     }
@@ -103,36 +110,14 @@ public class ApiController {
             model.addAttribute("api", api.get());
         }
 
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+        // Obtener el usuario correcto considerando impersonación usando BaseController
+        Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
+        
+        // Agregar información de impersonación al modelo usando BaseController
+        addImpersonationAttributes(model, session);
 
         return "desarrollador/sandbox";
-    }
-
-    /**
-     * Método helper para obtener el usuario correcto durante impersonación
-     */
-    private Usuario obtenerUsuarioActual(Authentication auth, HttpSession session) {
-        // Verificar si hay impersonación activa
-        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
-        
-        if (isImpersonating != null && isImpersonating) {
-            // Durante impersonación, obtener usuario por DNI del usuario impersonado
-            String impersonatedUserDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
-            if (impersonatedUserDni != null) {
-                Usuario impersonatedUser = usuarioRepository.findByDni(impersonatedUserDni);
-                if (impersonatedUser != null) {
-                    System.out.println("🎭 API DEV - Usando datos del usuario impersonado: " + impersonatedUser.getNombre());
-                    return impersonatedUser;
-                }
-            }
-        }
-        
-        // Sin impersonación, usar el usuario autenticado normal
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        System.out.println("👤 API DEV - Usando datos del usuario autenticado: " + usuario.getNombre());
-        return usuario;
     }
     // Endpoint de Versiones de Api específica
     @GetMapping("/{id}/versiones")

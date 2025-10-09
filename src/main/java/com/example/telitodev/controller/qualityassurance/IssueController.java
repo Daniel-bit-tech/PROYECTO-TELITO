@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.qualityassurance;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
@@ -17,7 +19,7 @@ import java.util.List;
 @Controller
 @RequestMapping("/qa")
 @PreAuthorize("hasAnyRole('QA', 'SADMIN')")
-public class IssueController {
+public class IssueController extends BaseController {
     @Autowired
     private IssueRepository issueRepository;
     @Autowired
@@ -32,8 +34,12 @@ public class IssueController {
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
     @GetMapping("/issues")
-    public String showIssueView(Model model, Authentication auth) {
+    public String showIssueView(Model model, Authentication auth, HttpSession session) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         model.addAttribute("usuario", usuario);
 
         List<Issue> issues = issueRepository.findAll();
@@ -42,9 +48,13 @@ public class IssueController {
     }
 
     @GetMapping("/issueDetalle/{idIssue}/{idReporte}")
-    public String showIssueDetalleView(Model model, Authentication auth,
+    public String showIssueDetalleView(Model model, Authentication auth, HttpSession session,
                                        @PathVariable Integer idIssue, @PathVariable Integer idReporte) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         model.addAttribute("usuario", usuario);
 
         // Crear el IssueId usando los dos parámetros de la URL
@@ -69,9 +79,13 @@ public class IssueController {
 
 
     @GetMapping("/issueRealizar")
-    public String madeIssue(Model model, Authentication auth,
+    public String madeIssue(Model model, Authentication auth, HttpSession session,
                             @RequestParam("idReporte") Integer idReporte) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         model.addAttribute("usuario", usuario);
 
         // Obtener el reporte por id

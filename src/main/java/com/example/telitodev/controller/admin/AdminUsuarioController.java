@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.admin;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.entity.Rol;
 import com.example.telitodev.entity.TokenConfirmacion;
@@ -7,6 +8,7 @@ import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.repository.RolRepository;
 import com.example.telitodev.repository.TokenConfirmacionRepository;
 import com.example.telitodev.service.EmailService;
+import com.example.telitodev.service.ImpersonationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,7 +41,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/admin/gestion-usuarios")
 @PreAuthorize("hasRole('SUPERADMIN')")
-public class AdminUsuarioController {
+public class AdminUsuarioController extends BaseController {
     /**
      * Vista para que el usuario confirme su cuenta y establezca su contraseña
      */
@@ -70,6 +72,9 @@ public class AdminUsuarioController {
     @Autowired
     private com.example.telitodev.service.AuditoriaService auditoriaService;
 
+    @Autowired
+    private ImpersonationService impersonationService;
+
     /**
      * Página principal de gestión de usuarios con filtros y paginación
      */
@@ -80,7 +85,8 @@ public class AdminUsuarioController {
                        @RequestParam(value = "rol", required = false) String rol,
                        @RequestParam(value = "page", defaultValue = "0") int page,
                        @RequestParam(value = "size", defaultValue = "4") int size,
-                       HttpServletRequest request) {
+                       HttpServletRequest request,
+                       HttpSession session) {
         try {
             System.out.println("=== FILTROS RECIBIDOS ===");
             System.out.println("Search: '" + search + "'");
@@ -155,6 +161,9 @@ public class AdminUsuarioController {
             System.out.println("Usuarios activos: " + usuariosActivos);
             System.out.println("Usuarios inactivos: " + usuariosInactivos);
 
+            // Agregar información de impersonación al modelo
+            addImpersonationAttributes(model, session);
+
             return "admin/gestion-usuarios-dev-style";
 
         } catch (Exception e) {
@@ -177,6 +186,9 @@ public class AdminUsuarioController {
             model.addAttribute("hasNext", false);
             model.addAttribute("hasPrevious", false);
             model.addAttribute("error", "Error al cargar usuarios: " + e.getMessage());
+            
+            // Agregar información de impersonación al modelo incluso en caso de error
+            addImpersonationAttributes(model, session);
             
             return "admin/gestion-usuarios-dev-style";
         }
@@ -872,6 +884,7 @@ public class AdminUsuarioController {
      * Verificar estado de impersonación
      */
     @GetMapping("/impersonation-status")
+    @PreAuthorize("hasRole('SUPERADMIN') or hasRole('QA') or hasRole('DEV') or hasRole('PO')")
     @ResponseBody
     public ResponseEntity<?> verificarEstadoImpersonacion(HttpSession session) {
         try {
@@ -938,26 +951,13 @@ public class AdminUsuarioController {
                 return ResponseEntity.badRequest().body("❌ Por seguridad, no se puede impersonar a otro SuperAdmin");
             }
 
-            // Obtener admin actual
-            String currentAdmin = request.getUserPrincipal().getName();
-            System.out.println("👤 Admin actual: " + currentAdmin);
-
-            // Guardar la sesión actual del admin (para poder volver)
-            session.setAttribute("IS_IMPERSONATING", true);
-            session.setAttribute("ORIGINAL_ADMIN_USERNAME", currentAdmin);
-            session.setAttribute("IMPERSONATED_USER_DNI", dni);
-            session.setAttribute("IMPERSONATED_USER_EMAIL", usuario.getCorreo());
-            session.setAttribute("IMPERSONATED_USER_NAME", usuario.getNombre() + " " + usuario.getApellidoPaterno());
-            session.setAttribute("IMPERSONATED_USER_ROLE", usuario.getRol().getNombreRol());
+            // Usar el servicio de impersonación para cambiar el SecurityContext
+            boolean impersonacionExitosa = impersonationService.startImpersonation(dni, session);
             
-            // Verificar que se guardaron
-            System.out.println("📊 Variables de sesión guardadas:");
-            System.out.println("  - IS_IMPERSONATING: " + session.getAttribute("IS_IMPERSONATING"));
-            System.out.println("  - ORIGINAL_ADMIN_USERNAME: " + session.getAttribute("ORIGINAL_ADMIN_USERNAME"));
-            System.out.println("  - IMPERSONATED_USER_DNI: " + session.getAttribute("IMPERSONATED_USER_DNI"));
-            System.out.println("  - IMPERSONATED_USER_EMAIL: " + session.getAttribute("IMPERSONATED_USER_EMAIL"));
-            System.out.println("  - IMPERSONATED_USER_NAME: " + session.getAttribute("IMPERSONATED_USER_NAME"));
-            System.out.println("  - IMPERSONATED_USER_ROLE: " + session.getAttribute("IMPERSONATED_USER_ROLE"));
+            if (!impersonacionExitosa) {
+                System.out.println("❌ Error al iniciar impersonación");
+                return ResponseEntity.badRequest().body("Error al iniciar la impersonación");
+            }
             
             String redirectUrl = getRedirectUrlForRole(usuario.getRol().getNombreRol());
             System.out.println("🔄 Redirigiendo a: " + redirectUrl);
@@ -981,40 +981,32 @@ public class AdminUsuarioController {
      * Detener impersonación - Volver a la sesión original del admin
      */
     @PostMapping("/stop-impersonation")
+    @PreAuthorize("hasRole('SUPERADMIN') or hasRole('QA') or hasRole('DEV') or hasRole('PO')")
     @ResponseBody
     public ResponseEntity<?> detenerImpersonacion(HttpSession session) {
         try {
             System.out.println("=== DETENIENDO IMPERSONACIÓN ===");
             System.out.println("Session ID: " + session.getId());
             
-            Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
-            System.out.println("IS_IMPERSONATING actual: " + isImpersonating);
-            
-            if (isImpersonating == null || !isImpersonating) {
+            if (!impersonationService.isImpersonating(session)) {
                 System.out.println("❌ No hay impersonación activa");
                 return ResponseEntity.badRequest().body("No hay impersonación activa");
             }
 
+            String impersonatedName = impersonationService.getImpersonatedUserName(session);
             String originalAdmin = (String) session.getAttribute("ORIGINAL_ADMIN_USERNAME");
-            String impersonatedDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
-            String impersonatedName = (String) session.getAttribute("IMPERSONATED_USER_NAME");
             
-            System.out.println("📊 Datos antes de limpiar:");
+            System.out.println("📊 Datos antes de detener:");
             System.out.println("  - Admin original: " + originalAdmin);
-            System.out.println("  - Usuario impersonado: " + impersonatedName + " (DNI: " + impersonatedDni + ")");
+            System.out.println("  - Usuario impersonado: " + impersonatedName);
             
-            // Limpiar atributos de impersonación
-            session.removeAttribute("IS_IMPERSONATING");
-            session.removeAttribute("ORIGINAL_ADMIN_USERNAME");
-            session.removeAttribute("IMPERSONATED_USER_DNI");
-            session.removeAttribute("IMPERSONATED_USER_EMAIL");
-            session.removeAttribute("IMPERSONATED_USER_NAME");
-            session.removeAttribute("IMPERSONATED_USER_ROLE");
+            // Usar el servicio para detener la impersonación
+            boolean detencionExitosa = impersonationService.stopImpersonation(session);
             
-            // Verificar limpieza
-            System.out.println("🧹 Después de limpiar:");
-            System.out.println("  - IS_IMPERSONATING: " + session.getAttribute("IS_IMPERSONATING"));
-            System.out.println("  - IMPERSONATED_USER_DNI: " + session.getAttribute("IMPERSONATED_USER_DNI"));
+            if (!detencionExitosa) {
+                System.out.println("❌ Error al detener impersonación");
+                return ResponseEntity.badRequest().body("Error al detener la impersonación");
+            }
             
             System.out.println("✅ Impersonación terminada. Volviendo a: " + originalAdmin);
             
@@ -1418,7 +1410,9 @@ public class AdminUsuarioController {
                 System.out.println("   - Email: " + nuevoUsuario.getCorreo());
                 System.out.println("   - Alias: " + nuevoUsuario.getAlias());
                 System.out.println("   - Rol: " + nuevoUsuario.getRol().getNombreRol());
+                System.out.println("   - Rol ID: " + nuevoUsuario.getRol().getIdRol());
                 System.out.println("   - Estado: " + nuevoUsuario.getEstado());
+                System.out.println("   - Organización: " + (nuevoUsuario.getOrganizacion() != null ? nuevoUsuario.getOrganizacion().getNombre() : "null"));
                 
             } catch (Exception e) {
                 System.err.println("❌ Error configurando usuario: " + e.getMessage());
@@ -2072,6 +2066,59 @@ public class AdminUsuarioController {
                 .body(Map.of(
                     "error", true,
                     "mensaje", "Error eliminando usuario: " + e.getMessage()
+                ));
+        }
+    }
+
+    /**
+     * Endpoint de prueba para verificar configuración de email
+     */
+    @PostMapping("/test-email")
+    @PreAuthorize("hasRole('SUPERADMIN')")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> testEmail(@RequestParam String email) {
+        try {
+            System.out.println("=== INICIANDO TEST DE EMAIL ===");
+            System.out.println("Email destino: " + email);
+            
+            // Probar configuración básica
+            boolean conectividad = emailService.probarConectividad();
+            if (!conectividad) {
+                return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "mensaje", "Error de conectividad SMTP. Revisa los logs para más detalles."
+                ));
+            }
+            
+            // Enviar email de prueba
+            boolean emailEnviado = emailService.enviarTokenConfirmacion(
+                email,
+                "Usuario de Prueba", 
+                "123456",
+                LocalDateTime.now().plusMinutes(30)
+            );
+            
+            if (emailEnviado) {
+                System.out.println("✅ Email de prueba enviado exitosamente");
+                return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "mensaje", "Email de prueba enviado exitosamente a " + email
+                ));
+            } else {
+                System.out.println("❌ Falló el envío del email de prueba");
+                return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "mensaje", "Error enviando email de prueba. Revisa los logs para más detalles."
+                ));
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error en test de email: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "error", true,
+                    "mensaje", "Error en test de email: " + e.getMessage()
                 ));
         }
     }

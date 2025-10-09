@@ -112,7 +112,8 @@ public class AuditoriaService {
             
         } catch (Exception e) {
             System.err.println("❌ Error registrando actividad de auditoría: " + e.getMessage());
-            e.printStackTrace();
+            // Registrar el error pero no lanzar excepción para no interrumpir el flujo principal
+            // e.printStackTrace(); // Solo para debug
         }
     }
     

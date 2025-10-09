@@ -43,7 +43,7 @@ public class Proyecto {
     private Boolean activo;
 
     //Relaciones
-    @OneToMany(mappedBy = "proyecto", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "proyecto", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ProyectoHasApi> proyectoHasApis;
 
     //Get y Set

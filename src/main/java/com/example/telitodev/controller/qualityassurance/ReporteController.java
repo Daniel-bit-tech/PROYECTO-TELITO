@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.qualityassurance;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.Reporte;
 import com.example.telitodev.entity.Usuario; // <-- Importa la clase Usuario
 import com.example.telitodev.repository.ReporteRepository;
@@ -13,12 +14,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
 @RequestMapping("/qa")
 @PreAuthorize("hasAnyRole('QA', 'SADMIN')")
-public class ReporteController {
+public class ReporteController extends BaseController {
 
     @Autowired
     private ReporteRepository reporteRepository;
@@ -27,13 +29,17 @@ public class ReporteController {
     private UsuarioRepository usuarioRepository;
 
     @GetMapping("/reportes")
-    public String showReporteView(Model model, Authentication auth,
+    public String showReporteView(Model model, Authentication auth, HttpSession session,
                                   @RequestParam(required = false) String[] formType,
                                   @RequestParam(required = false) String formEstado,
                                   @RequestParam(required = false) String formFecha) {
         // Obtén el objeto Usuario y agrégalo al modelo
         String correo = auth.getName();
         Usuario usuario = usuarioRepository.findByCorreo(correo);
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         model.addAttribute("usuario", usuario);
 
         // Filtrar los reportes según los parámetros
@@ -46,9 +52,13 @@ public class ReporteController {
     }
 
     @GetMapping("/reporteDetalle")
-    public String showReporteDetalleView(Model model, Authentication auth,
+    public String showReporteDetalleView(Model model, Authentication auth, HttpSession session,
                                          @RequestParam("idReporte") Integer idReporte) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         model.addAttribute("usuario", usuario);
 
         Reporte reporte = reporteRepository.findById(idReporte).orElse(null);

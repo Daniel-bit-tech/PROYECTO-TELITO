@@ -12,12 +12,12 @@ public class ProyectoHasApi {
     private ProyectoHasApiId proyectoHasApiId = new ProyectoHasApiId();
 
     @MapsId("idProyecto")
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idProyecto")
     private Proyecto proyecto;
 
     @MapsId("idApi")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idAPI")
     private Api api;
 
@@ -27,11 +27,11 @@ public class ProyectoHasApi {
     @Column(name = "proposito")
     private String proposito;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idVersion")
     private VersionApi version;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idEntorno")
     private Entorno entorno;
 

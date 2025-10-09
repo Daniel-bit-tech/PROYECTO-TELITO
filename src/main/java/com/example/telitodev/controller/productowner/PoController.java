@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.productowner;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.entity.Notificacion;
@@ -22,7 +23,7 @@ import jakarta.servlet.http.HttpSession;
 @Controller
 @RequestMapping("/po")
 @PreAuthorize("hasAnyRole('PO', 'SUPERADMIN')")
-public class PoController {
+public class PoController extends BaseController {
 
     final UsuarioRepository usuarioRepository;
     final ApiService apiService;
@@ -38,19 +39,11 @@ public class PoController {
     @GetMapping("/Dashboard")
     public String showDashboardView(Model model, Authentication auth, HttpSession session) {
         // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+        Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
         
-        // Agregar información de impersonación al modelo
-        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
-        if (isImpersonating != null && isImpersonating) {
-            model.addAttribute("isImpersonating", true);
-            model.addAttribute("impersonatedUserDni", session.getAttribute("IMPERSONATED_USER_DNI"));
-            model.addAttribute("originalAdminUsername", session.getAttribute("ORIGINAL_ADMIN_USERNAME"));
-            System.out.println("🎭 PO - Modo impersonación detectado para DNI: " + session.getAttribute("IMPERSONATED_USER_DNI"));
-        } else {
-            model.addAttribute("isImpersonating", false);
-        }
+        // Agregar información de impersonación al modelo usando BaseController
+        addImpersonationAttributes(model, session);
         
         return "po/home";
     }
@@ -58,8 +51,12 @@ public class PoController {
     @GetMapping("/verPerfil")
     public String showverPerfilView(Model model, Authentication auth, HttpSession session) {
         // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+        Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
+        
+        // Agregar información de impersonación al modelo
+        addImpersonationAttributes(model, session);
+        
         return "po/verPerfil";
     }
 
@@ -68,9 +65,12 @@ public class PoController {
         List<Api> recentApis = apiService.getRecentApis();
         model.addAttribute("recentApis", recentApis);
 
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+        // Obtener el usuario correcto considerando impersonación usando BaseController
+        Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
+
+        // Agregar información de impersonación al modelo
+        addImpersonationAttributes(model, session);
 
         List<Notificacion> notificaciones = notificacionService.obtenerNotificacionesPorUsuario(usuario.getDni());
         model.addAttribute("notificaciones", notificaciones);
@@ -86,30 +86,5 @@ public class PoController {
         }
 
         return "po/home";
-    }
-    
-    /**
-     * Método helper para obtener el usuario correcto durante impersonación
-     */
-    private Usuario obtenerUsuarioActual(Authentication auth, HttpSession session) {
-        // Verificar si hay impersonación activa
-        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
-        
-        if (isImpersonating != null && isImpersonating) {
-            // Durante impersonación, obtener usuario por DNI del usuario impersonado
-            String impersonatedUserDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
-            if (impersonatedUserDni != null) {
-                Usuario impersonatedUser = usuarioRepository.findByDni(impersonatedUserDni);
-                if (impersonatedUser != null) {
-                    System.out.println("🎭 PO - Usando datos del usuario impersonado: " + impersonatedUser.getNombre());
-                    return impersonatedUser;
-                }
-            }
-        }
-        
-        // Sin impersonación, usar el usuario autenticado normal
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        System.out.println("👤 PO - Usando datos del usuario autenticado: " + usuario.getNombre());
-        return usuario;
     }
 }

@@ -1,6 +1,7 @@
 package com.example.telitodev.controller.desarrollador;
 
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.Documentacion;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.repository.DocumentacionRepository;
@@ -17,7 +18,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/documentacion")
-public class DocumentacionController {
+public class DocumentacionController extends BaseController {
 
     final UsuarioRepository usuarioRepository;
     final DocumentacionRepository documentacionRepository;
@@ -35,36 +36,14 @@ public class DocumentacionController {
 
 //        System.out.println(doc.get().getContenido());
 
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+        // Obtener el usuario correcto considerando impersonación usando BaseController
+        Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
+        
+        // Agregar información de impersonación al modelo usando BaseController
+        addImpersonationAttributes(model, session);
 
         return "general/docDetalle";    //CAMBIAR
-    }
-
-    /**
-     * Método helper para obtener el usuario correcto durante impersonación
-     */
-    private Usuario obtenerUsuarioActual(Authentication auth, HttpSession session) {
-        // Verificar si hay impersonación activa
-        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
-        
-        if (isImpersonating != null && isImpersonating) {
-            // Durante impersonación, obtener usuario por DNI del usuario impersonado
-            String impersonatedUserDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
-            if (impersonatedUserDni != null) {
-                Usuario impersonatedUser = usuarioRepository.findByDni(impersonatedUserDni);
-                if (impersonatedUser != null) {
-                    System.out.println("🎭 Documentacion DEV - Usando datos del usuario impersonado: " + impersonatedUser.getNombre());
-                    return impersonatedUser;
-                }
-            }
-        }
-        
-        // Sin impersonación, usar el usuario autenticado normal
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        System.out.println("👤 Documentacion DEV - Usando datos del usuario autenticado: " + usuario.getNombre());
-        return usuario;
     }
 
 }

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Sesiones | TelitoDev Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .session-card {
+            transition: all 0.3s ease;
+        }
+        .session-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .session-active {
+            border-left: 4px solid #28a745;
+        }
+        .session-warning {
+            border-left: 4px solid #ffc107;
+        }
+        .session-expired {
+            border-left: 4px solid #dc3545;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Incluir banner de impersonación si está activo -->
+    <div th:replace="~{fragments/impersonation-banner :: impersonation-banner}"></div>
+
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-1">
+                            <i class="fas fa-users-cog text-primary"></i>
+                            Gestión de Sesiones Administrativas
+                        </h1>
+                        <p class="text-muted">Monitoreo y control de sesiones activas de administradores</p>
+                    </div>
+                    <div>
+                        <a href="/admin/home" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver al Admin
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mensajes de estado -->
+        <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${success}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <div th:if="${warning}" class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span th:text="${warning}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Estadísticas principales -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stats-card">
+                    <div class="card-body text-center">
+                        <i class="fas fa-users fa-2x mb-2"></i>
+                        <h3 class="mb-1" th:text="${totalSessions ?: 0}">0</h3>
+                        <p class="mb-0">Sesiones Activas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-success">
+                    <div class="card-body text-center">
+                        <i class="fas fa-shield-alt fa-2x text-success mb-2"></i>
+                        <h3 class="mb-1 text-success">Activo</h3>
+                        <p class="mb-0 text-muted">Control de Sesiones</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-info">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clock fa-2x text-info mb-2"></i>
+                        <h3 class="mb-1 text-info">60 min</h3>
+                        <p class="mb-0 text-muted">Timeout de Sesión</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-warning">
+                    <div class="card-body text-center">
+                        <i class="fas fa-limit fa-2x text-warning mb-2"></i>
+                        <h3 class="mb-1 text-warning">2</h3>
+                        <p class="mb-0 text-muted">Max Sesiones/Usuario</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controles de acción -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-tools"></i>
+                            Acciones de Mantenimiento
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-warning" onclick="refreshSessions()">
+                                <i class="fas fa-sync-alt"></i>
+                                Actualizar
+                            </button>
+                            <form method="post" th:action="@{/admin/sesiones/limpiar-expiradas}" style="display: inline;">
+                                <button type="submit" class="btn btn-info" 
+                                        onclick="return confirm('¿Deseas limpiar las sesiones expiradas?')">
+                                    <i class="fas fa-broom"></i>
+                                    Limpiar Expiradas
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de sesiones activas -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-list"></i>
+                            Sesiones Activas
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:if="${#lists.isEmpty(activeSessions)}" class="text-center py-4">
+                            <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No hay sesiones activas</h5>
+                            <p class="text-muted">Todas las sesiones administrativas están inactivas en este momento.</p>
+                        </div>
+
+                        <div th:if="${!#lists.isEmpty(activeSessions)}" class="row">
+                            <div th:each="session : ${activeSessions}" class="col-lg-6 col-xl-4 mb-3">
+                                <div class="card session-card session-active h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h6 class="card-title mb-0">
+                                                <i class="fas fa-user"></i>
+                                                <span th:text="${session.principalName ?: 'Usuario Desconocido'}">Usuario</span>
+                                            </h6>
+                                            <span class="badge bg-success">Activa</span>
+                                        </div>
+                                        
+                                        <div class="small text-muted mb-2">
+                                            <div><strong>ID Sesión:</strong> <code th:text="${#strings.abbreviate(session.sessionId, 20)}">session-id</code></div>
+                                            <div><strong>Creada:</strong> <span th:text="${#temporals.format(session.creationTime, 'dd/MM/yyyy HH:mm')}">fecha</span></div>
+                                            <div><strong>Último acceso:</strong> <span th:text="${#temporals.format(session.lastAccessedTime, 'dd/MM/yyyy HH:mm')}">fecha</span></div>
+                                        </div>
+
+                                        <div class="d-flex gap-2 mt-3">
+                                            <a th:href="@{'/admin/sesiones/usuario/' + ${session.principalName}}" 
+                                               class="btn btn-sm btn-outline-info">
+                                                <i class="fas fa-eye"></i> Ver Todas
+                                            </a>
+                                            
+                                            <form method="post" 
+                                                  th:action="@{'/admin/sesiones/invalidar/' + ${session.sessionId}}" 
+                                                  style="display: inline;"
+                                                  th:if="${session.principalName != currentUser}">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        onclick="return confirm('¿Confirmas invalidar esta sesión?')">
+                                                    <i class="fas fa-times"></i> Invalidar
+                                                </button>
+                                            </form>
+                                            
+                                            <span th:if="${session.principalName == currentUser}" 
+                                                  class="btn btn-sm btn-secondary disabled">
+                                                <i class="fas fa-user-shield"></i> Tu sesión
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Auto-refresh cada 30 segundos
+        let autoRefreshInterval;
+        
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(function() {
+                updateSessionStats();
+            }, 30000);
+        }
+        
+        function stopAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
+        }
+        
+        function refreshSessions() {
+            location.reload();
+        }
+        
+        function updateSessionStats() {
+            fetch('/admin/sesiones/api/estadisticas')
+                .then(response => response.json())
+                .then(data => {
+                    // Actualizar estadísticas sin recargar la página
+                    console.log('Estadísticas actualizadas:', data);
+                })
+                .catch(error => {
+                    console.error('Error actualizando estadísticas:', error);
+                });
+        }
+        
+        // Iniciar auto-refresh cuando la página carga
+        document.addEventListener('DOMContentLoaded', function() {
+            startAutoRefresh();
+        });
+        
+        // Detener auto-refresh cuando la página se va a descargar
+        window.addEventListener('beforeunload', function() {
+            stopAutoRefresh();
+        });
+    </script>
+</body>
+</html>

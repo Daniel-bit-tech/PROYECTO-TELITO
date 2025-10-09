@@ -223,6 +223,9 @@
                                 </form>
                             </div>
                             <div class="col-md-4 text-end">
+                                <button type="button" class="btn btn-info me-2" onclick="mostrarTestEmail()">
+                                    <i class="fas fa-envelope me-1"></i>Test Email
+                                </button>
                                 <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevoUsuarioModal">
                                     <i class="fas fa-plus me-1"></i>Nuevo Usuario
                                 </button>
@@ -520,6 +523,56 @@
                 });
             });
         });
+
+        // Función para test de email
+        window.mostrarTestEmail = function() {
+            const email = prompt('Ingresa el email para enviar la prueba:');
+            if (email && email.trim()) {
+                testEmail(email.trim());
+            }
+        };
+
+        // Función para enviar test de email
+        function testEmail(email) {
+            console.log('Enviando test de email a:', email);
+            
+            // Mostrar indicador de carga
+            const button = document.querySelector('button[onclick="mostrarTestEmail()"]');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Enviando...';
+            button.disabled = true;
+            
+            const formData = new FormData();
+            formData.append('email', email);
+            
+            fetch('/admin/gestion-usuarios/test-email', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="_csrf"]').getAttribute('content')
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Respuesta test email:', data);
+                
+                if (data.success) {
+                    alert('✅ ' + data.mensaje);
+                } else {
+                    alert('❌ ' + data.mensaje);
+                }
+            })
+            .catch(error => {
+                console.error('Error en test email:', error);
+                alert('❌ Error enviando test de email. Revisa los logs del servidor.');
+            })
+            .finally(() => {
+                // Restaurar botón
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
 
         console.log('Sistema de gestión de usuarios cargado correctamente');
     </script>
