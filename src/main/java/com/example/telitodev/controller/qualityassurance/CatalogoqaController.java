@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.qualityassurance;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.dto.ApiProyectoDTO;
 import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.Usuario;
@@ -12,12 +13,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
 @RequestMapping("/qa")
 @PreAuthorize("hasAnyRole('QA', 'SADMIN')")
-public class CatalogoqaController {
+public class CatalogoqaController extends BaseController {
     final UsuarioRepository usuarioRepository;
     final ApiRepository apiRepository;
 
@@ -27,10 +29,14 @@ public class CatalogoqaController {
     }
 
     @GetMapping("/catalogo")        //reutilizar vista apis.html de dev?
-    public String showCatalogo (Model model, Authentication auth) {
+    public String showCatalogo (Model model, Authentication auth, HttpSession session) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         // Obtener las APIs relacionadas al proyecto y la organización del usuario
         List<ApiProyectoDTO> apis = apiRepository.findApisByUsuarioAndProyecto(usuario.getDni());
+        
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+        
         model.addAttribute("usuario", usuario);
         model.addAttribute("apis", apis);
         return "qa/catalogo";

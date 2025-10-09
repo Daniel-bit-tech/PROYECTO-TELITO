@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.desarrollador;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.service.OnboardingService;
@@ -18,10 +19,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.ResponseEntity;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
-public class OnboardingController {
+public class OnboardingController extends BaseController {
 
     final UsuarioRepository usuarioRepository;
     final OnboardingService onboardingService;
@@ -32,8 +34,9 @@ public class OnboardingController {
     }
 
     @GetMapping("/onboarding")
-    public String showonb(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+    public String showonb(Model model, Authentication auth, HttpSession session) {
+        // Obtener el usuario correcto considerando impersonación usando BaseController
+        Usuario usuario = getCurrentUser(auth, session);
         
         if (usuario == null) {
             throw new RuntimeException("Usuario no encontrado");
@@ -45,6 +48,9 @@ public class OnboardingController {
         }
 
         model.addAttribute("usuario", usuario);
+
+        // Agregar información de impersonación al modelo usando BaseController
+        addImpersonationAttributes(model, session);
 
         // Obtener datos adicionales para la vista
         try {
