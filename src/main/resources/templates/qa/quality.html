@@ -412,7 +412,7 @@
 
             <div class="welcome-banner">
                 <div class="welcome-content">
-                    <h2 class="welcome-title">¡Hola otra vez, <span th:text="${usuario.nombre}">Juan</span>!</h2>
+                    <h2 class="welcome-title">¡Hola otra vez, <span th:text="${isImpersonating ? impersonatedUserName : usuario.nombre}">Juan</span>!</h2>
                     <p class="welcome-text">Tienes <span th:text="${NcredActivas}">0</span> APIs pendientes para validar</span> notificaciones sin leer.</p>
                     <div class="welcome-actions">
                         <a th:href="@{/qa/catalogo}" class="btn btn-primary">
