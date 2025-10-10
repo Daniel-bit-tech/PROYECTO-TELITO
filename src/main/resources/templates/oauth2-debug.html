@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug OAuth2 - TelitoDev</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f8f9fa; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+        .info-box { background: #e7f3ff; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #007bff; }
+        .error-box { background: #ffe7e7; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #dc3545; }
+        .success-box { background: #e7ffe7; padding: 15px; border-radius: 5px; margin: 15px 0; border-left: 4px solid #28a745; }
+        code { background: #f1f1f1; padding: 2px 5px; border-radius: 3px; }
+        .btn { 
+            display: inline-block; 
+            padding: 10px 20px; 
+            margin: 10px 5px; 
+            background: #007bff; 
+            color: white; 
+            text-decoration: none; 
+            border-radius: 5px; 
+        }
+        .btn:hover { background: #0056b3; text-decoration: none; color: white; }
+        .btn-google { background: #db4437; }
+        .btn-google:hover { background: #c23321; }
+        .btn-test { background: #28a745; }
+        .btn-test:hover { background: #1e7e34; }
+        table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f8f9fa; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐛 Debug OAuth2 Configuration</h1>
+        
+        <div class="info-box">
+            <h3>📋 Información de Configuración OAuth2</h3>
+            <table>
+                <tr>
+                    <th>Parámetro</th>
+                    <th>Valor</th>
+                </tr>
+                <tr>
+                    <td><strong>Client ID:</strong></td>
+                    <td><code th:text="${clientId}">CLIENT_ID</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Redirect URI:</strong></td>
+                    <td><code th:text="${redirectUri}">REDIRECT_URI</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Scopes:</strong></td>
+                    <td><code th:text="${scopes}">SCOPES</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Authorization URL:</strong></td>
+                    <td><code>https://accounts.google.com/o/oauth2/v2/auth</code></td>
+                </tr>
+                <tr>
+                    <td><strong>Token URL:</strong></td>
+                    <td><code>https://oauth2.googleapis.com/token</code></td>
+                </tr>
+                <tr>
+                    <td><strong>User Info URL:</strong></td>
+                    <td><code>https://www.googleapis.com/oauth2/v3/userinfo</code></td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="info-box">
+            <h3>🔗 Enlaces de Prueba</h3>
+            <p>
+                <a th:href="@{/oauth2/authorization/google}" class="btn btn-google">
+                    🚀 Probar OAuth2 con Google
+                </a>
+                <a th:href="@{/login}" class="btn">
+                    🔐 Login Manual
+                </a>
+                <a th:href="@{/oauth2-config}" class="btn btn-test">
+                    🧪 Página de Pruebas
+                </a>
+            </p>
+        </div>
+        
+        <div class="error-box">
+            <h3>⚠️ Verificaciones Importantes</h3>
+            <ul>
+                <li><strong>Google Cloud Console:</strong> Verifica que el Redirect URI esté configurado exactamente como: <code>http://localhost:8080/login/oauth2/code/google</code></li>
+                <li><strong>Client ID y Secret:</strong> Asegúrate de que las credenciales en <code>application.properties</code> sean correctas</li>
+                <li><strong>Dominios autorizados:</strong> Agrega <code>localhost</code> y <code>localhost:8080</code> en Google Console</li>
+                <li><strong>APIs habilitadas:</strong> Verifica que Google+ API y OAuth2 API estén habilitadas</li>
+            </ul>
+        </div>
+        
+        <div class="success-box">
+            <h3>✅ URLs que deben funcionar</h3>
+            <ul>
+                <li><code>GET /oauth2/authorization/google</code> - Inicia el flujo OAuth2</li>
+                <li><code>GET /login/oauth2/code/google</code> - Callback de Google (manejado automáticamente)</li>
+                <li><code>GET /login?error=oauth2</code> - Página de error OAuth2</li>
+                <li><code>POST /logout</code> - Cerrar sesión</li>
+            </ul>
+        </div>
+        
+        <div class="info-box">
+            <h3>🔍 URLs de Google para debugging</h3>
+            <p>Puedes probar manualmente construyendo esta URL:</p>
+            <code style="word-break: break-all; display: block; margin: 10px 0; padding: 10px; background: #f8f9fa;">
+                https://accounts.google.com/o/oauth2/v2/auth?response_type=code&amp;client_id=<span th:text="${clientId}">CLIENT_ID</span>&amp;scope=openid%20profile%20email&amp;state=RANDOM_STATE&amp;redirect_uri=http://localhost:8080/login/oauth2/code/google
+            </code>
+        </div>
+        
+        <div class="info-box">
+            <h3>📝 Pasos para solucionar problemas:</h3>
+            <ol>
+                <li><strong>Verifica Google Console:</strong> Ve a <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
+                <li><strong>APIs & Services > Credentials</strong></li>
+                <li><strong>Busca tu OAuth 2.0 Client ID</strong></li>
+                <li><strong>Edita y agrega estos Authorized redirect URIs:</strong>
+                    <ul>
+                        <li><code>http://localhost:8080/login/oauth2/code/google</code></li>
+                        <li><code>http://localhost:8080/oauth2/callback</code> (alternativo)</li>
+                    </ul>
+                </li>
+                <li><strong>Autoriza estos dominios:</strong>
+                    <ul>
+                        <li><code>localhost</code></li>
+                        <li><code>localhost:8080</code></li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>

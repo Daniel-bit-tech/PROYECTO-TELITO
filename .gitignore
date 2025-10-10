@@ -31,3 +31,21 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Archivos de configuración sensibles ###
+.env
+.env.local
+.env.local.temp
+.env.production
+application-secret.properties
+application-private.properties
+
+### Logs ###
+*.log
+logs/
+
+### Archivos temporales ###
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db

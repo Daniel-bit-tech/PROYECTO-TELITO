@@ -74,12 +74,18 @@
             <groupId>org.thymeleaf.extras</groupId>
             <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
+        <!-- OAuth2 Client para integración con proveedores externos -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
         <!-- Email -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
-        <!-- Spring Session para manejo avanzado de sesiones -->
+        <!-- Spring Session para manejo avanzado de sesiones - TEMPORALMENTE COMENTADO PARA OAUTH2 -->
+        <!--
         <dependency>
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-core</artifactId>
@@ -88,7 +94,9 @@
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-jdbc</artifactId>
         </dependency>
-        <!-- Redis para almacenamiento de sesiones (opcional) -->
+        -->
+        <!-- Redis para almacenamiento de sesiones (opcional) - TEMPORALMENTE COMENTADO -->
+        <!--
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
@@ -97,6 +105,7 @@
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session-data-redis</artifactId>
         </dependency>
+        -->
     </dependencies>
 
     <build>

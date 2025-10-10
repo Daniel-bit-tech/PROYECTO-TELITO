@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpSession;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Servicio para manejar la impersonación de usuarios
@@ -206,17 +207,37 @@ public class ImpersonationService {
      * Si no hay impersonación, devuelve el usuario autenticado
      */
     public Usuario getCurrentUser(Authentication auth, HttpSession session) {
+        System.out.println("🔍 ImpersonationService.getCurrentUser():");
+        System.out.println("  - Auth name: " + auth.getName());
+        
         if (isImpersonating(session)) {
             String impersonatedDni = getImpersonatedUserDni(session);
+            System.out.println("  - Impersonating: " + impersonatedDni);
             if (impersonatedDni != null) {
                 Usuario impersonatedUser = usuarioRepository.findByDni(impersonatedDni);
                 if (impersonatedUser != null) {
+                    System.out.println("  - Returning impersonated user: " + impersonatedUser.getCorreo());
                     return impersonatedUser;
                 }
             }
         }
         
         // Sin impersonación o si falla, usar usuario autenticado normal
-        return usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        
+        // Si no se encuentra por correo, intentar buscar por OAuth provider ID
+        if (usuario == null) {
+            System.out.println("  - No encontrado por correo, buscando por OAuth provider ID: " + auth.getName());
+            Optional<Usuario> usuarioOptional = usuarioRepository.findByOauthProviderIdAndOauthProvider(auth.getName(), "google");
+            usuario = usuarioOptional.orElse(null);
+        }
+        
+        System.out.println("  - Returning authenticated user: " + (usuario != null ? usuario.getCorreo() : "null"));
+        
+        if (usuario == null) {
+            throw new RuntimeException("Usuario no encontrado en la base de datos: " + auth.getName());
+        }
+        
+        return usuario;
     }
 }

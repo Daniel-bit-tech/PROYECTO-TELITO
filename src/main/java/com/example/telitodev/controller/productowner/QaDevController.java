@@ -21,7 +21,7 @@ import com.example.telitodev.repository.UsuarioRepository;
 
 @Controller("productOwnerQaDevController")
 @RequestMapping("/qa-dev")
-@PreAuthorize("hasAnyRole('QA', 'DEV')")
+@PreAuthorize("hasAnyRole('QA', 'DEV', 'DEVELOPER')")
 public class QaDevController {
 
     private final TicketService ticketService;
