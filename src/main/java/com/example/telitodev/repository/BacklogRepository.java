@@ -11,6 +11,20 @@ import org.springframework.data.repository.query.Param;
 
 @Repository
 public interface BacklogRepository extends JpaRepository<Backlog, Integer> {
+
+    // Método existente - mantenerlo
     Optional<Backlog> findByFeedback_IdFeedback(Integer idFeedback);
 
+    // ✅ NUEVO: Paginación básica
+    Page<Backlog> findAll(Pageable pageable);
+
+    // ✅ NUEVO: Búsqueda en múltiples campos
+    @Query("SELECT b FROM Backlog b WHERE " +
+            "b.api.nombre LIKE %:search% OR " +
+            "b.usuarioEncargado.nombre LIKE %:search% OR " +
+            "b.descripcion LIKE %:search% OR " +
+            "b.prioridad LIKE %:search% OR " +
+            "b.estadoBacklog LIKE %:search% OR " +
+            "b.asunto LIKE %:search%")
+    Page<Backlog> searchBacklogs(@Param("search") String search, Pageable pageable);
 }

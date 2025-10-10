@@ -99,6 +99,7 @@
                                 <h3 class="card-title">Roadmap de APIs</h3>
                                 <!-- Roadmap Chart Placeholder -->
                                 <div id="roadmap-chart"></div>
+                                <div id="roadmap-controls" class="mt-4"></div>
                             </div>
                         </div>
                     </div>
@@ -129,32 +130,34 @@
 
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
 <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 
 <script th:inline="javascript">
-    /*<![CDATA[*/ let roadmapData = [[${roadmapData}]]; console.log(roadmapData); /*]]>*/
+    /*<![CDATA[*/
+    let roadmapData = [[${roadmapData}]];
+    let roadmapControls = [[${roadmapControls}]];
+    /*]]>*/
 
-    // Colores por estado
+    // =========================
+    // 1) GRÁFICA (sin cambios)
+    // =========================
     const colorPorEstado = {
         'Nueva': '#f59f00',
         'En desarrollo': '#22b8cf',
-        'Próxima': '#94d82d'
+        'Próxima': '#94d82d',
+        'OLD': 'transparent'  // Sin color para el estado "OLD" (pausa)
     };
 
-    // Preparar datos para ApexCharts
-    const seriesData = roadmapData.map(item => ({
+    const seriesData = (roadmapData || []).map(item => ({
         x: item.api,
         y: [new Date(item.start).getTime(), new Date(item.end).getTime()],
-        fillColor: colorPorEstado[item.estado] || '#adb5bd',
+        fillColor: colorPorEstado[item.estado] || 'transparent', // Si es "OLD", no tendrá color
         estado: item.estado
     }));
 
     const options = {
         chart: { type: 'rangeBar', height: 460 },
-        plotOptions: {
-            bar: { horizontal: true, barHeight: '60%', distributed: true }
-        },
+        plotOptions: { bar: { horizontal: true, barHeight: '60%', distributed: true } },
         series: [{ name: 'Fase', data: seriesData }],
         xaxis: { type: 'datetime', labels: { datetimeUTC: false } },
         tooltip: {
@@ -163,7 +166,7 @@
                     const item = opts.w.config.series[0].data[opts.dataPointIndex];
                     const start = new Date(item.y[0]).toLocaleDateString();
                     const end = new Date(item.y[1]).toLocaleDateString();
-                    return '${item.estado} · ${start} → ${end}';
+                    return `${item.estado} · ${start} → ${end}`;
                 }
             }
         },
@@ -179,6 +182,157 @@
     };
 
     new ApexCharts(document.querySelector("#roadmap-chart"), options).render();
+
+    // ==================================================
+    // 2) CONTROLES (Desplegable + Terminar/OLD + Reanudar)
+    // ==================================================
+
+    // Si no existe contenedor para controles, créalo debajo del chart
+    (function ensureControlsContainer(){
+        if (!document.getElementById('roadmap-controls')) {
+            const chartEl = document.getElementById('roadmap-chart');
+            if (chartEl && chartEl.parentElement) {
+                const div = document.createElement('div');
+                div.id = 'roadmap-controls';
+                div.className = 'mt-4';
+                chartEl.parentElement.appendChild(div);
+            }
+        }
+    })();
+
+    // Flujo estricto y etiquetas
+    const FLOW = {
+        PROXIMA:        ['EN_DESARROLLO', 'OLD'],
+        EN_DESARROLLO:  ['NUEVA', 'OLD'],
+        NUEVA:          ['OLD'],
+        OLD:            ['PROXIMA'] // reanudar (nuevo tramo)
+    };
+
+    const LABEL = {
+        PROXIMA:        'Próxima',
+        EN_DESARROLLO:  'En desarrollo',
+        NUEVA:          'Nueva',
+        OLD:            'OLD (pausar)'
+    };
+
+    // Normalizador etiqueta->enum
+    function toEnum(etiqueta){
+        if(!etiqueta) return 'PROXIMA';
+        const s = etiqueta.toString().toLowerCase();
+        if (s.includes('en desarrollo')) return 'EN_DESARROLLO';
+        if (s.includes('nueva'))         return 'NUEVA';
+        if (s.includes('próxima') || s.includes('proxima')) return 'PROXIMA';
+        if (s.includes('old')) return 'OLD';
+        return 'PROXIMA';
+    }
+
+    // Construir fuente para controles:
+    const controlsByApi = {}; // { apiId, apiNombre, open, closed[], currentEstado, lastClosedEstado }
+
+    if (Array.isArray(roadmapControls) && roadmapControls.length) {
+        roadmapControls.forEach(c => {
+            controlsByApi[c.apiId] = {
+                apiId: c.apiId,
+                apiNombre: c.apiNombre,
+                open: (c.currentEstado && c.currentEstado !== 'OLD') ? c.currentEstado : null,
+                closed: [],
+                currentEstado: (c.currentEstado || 'OLD')
+            };
+        });
+    } else {
+        (roadmapData || []).forEach(seg => {
+            const apiId = seg.apiId;
+            if (!apiId) return;
+            const apiNombre = seg.api;
+            const estadoEnum = toEnum(seg.estado);
+
+            controlsByApi[apiId] ??= { apiId, apiNombre, open: null, closed: [] };
+
+            if (!seg.end) {
+                controlsByApi[apiId].open = estadoEnum;
+            } else {
+                controlsByApi[apiId].closed.push({ estado: estadoEnum, fin: new Date(seg.end) });
+            }
+        });
+
+        Object.values(controlsByApi).forEach(it => {
+            if (it.open) {
+                it.currentEstado = it.open;
+            } else {
+                it.currentEstado = 'OLD';
+                it.lastClosedEstado = it.closed.sort((a,b)=>b.fin-a.fin)[0]?.estado || null;
+            }
+        });
+    }
+
+    // Render de controles
+    function renderControles(){
+        const cont = document.getElementById('roadmap-controls');
+        if (!cont) return;
+        cont.innerHTML = '';
+
+        const items = Object.values(controlsByApi).sort((a,b)=> a.apiNombre.localeCompare(b.apiNombre));
+
+        items.forEach(item => {
+            let opciones;
+            if (item.currentEstado === 'OLD' && item.lastClosedEstado) {
+                const next = (FLOW[item.lastClosedEstado] || []).filter(x => x !== 'OLD');
+                opciones = next.length ? next : ['PROXIMA'];
+            } else if (item.currentEstado === 'OLD' && !item.lastClosedEstado) {
+                opciones = ['PROXIMA'];
+            } else {
+                opciones = FLOW[item.currentEstado] || [];
+            }
+
+            const row = document.createElement('div');
+            row.className = 'd-flex align-items-center gap-2 mb-2';
+
+            row.innerHTML = `
+        <strong style="min-width:220px">${item.apiNombre}</strong>
+        <span style="min-width:180px">Actual: <em>${LABEL[item.currentEstado] || 'OLD'}</em></span>
+        <select id="sel-${item.apiId}" class="form-select" style="width:240px;display:inline-block">
+          ${opciones.map(opt => `<option value="${opt}">${LABEL[opt]}</option>`).join('')}
+        </select>
+        <input type="date" id="fec-${item.apiId}" class="form-control" style="width:160px;display:inline-block">
+        <button class="btn ${opciones.length === 1 && opciones[0] === 'OLD' ? 'btn-warning' : 'btn-primary'}"
+                onclick="aplicarCambio(${item.apiId})">
+          ${opciones.length === 1 && opciones[0] === 'OLD' ? 'Terminar (OLD)' : 'Guardar'}
+        </button>
+      `;
+            cont.appendChild(row);
+        });
+    }
+    renderControles();
+
+    // Acciones contra el backend
+    async function aplicarCambio(apiId){
+        const sel   = document.getElementById(`sel-${apiId}`);
+        const fecha = document.getElementById(`fec-${apiId}`).value || '';
+        const nuevo = sel.value;
+
+        if (nuevo === 'OLD') {
+            if(!confirm('¿Confirmas terminar esta API? Pasará a OLD y se dejará de monitorear.')) return;
+            const qs = new URLSearchParams();
+            if (fecha) qs.set('fecha', fecha);
+            const res = await fetch(`/po/roadmap/${apiId}/terminar?${qs.toString()}`, { method:'POST' });
+            if (!res.ok) { alert('No se pudo terminar'); return; }
+        } else {
+            const res = await fetch(`/po/roadmap/${apiId}/estado`, {
+                method: 'PATCH',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ nuevoEstado: nuevo, fecha })
+            });
+            if (!res.ok) {
+                const msg = await res.text().catch(()=> '');
+                alert('No se pudo cambiar el estado. ' + msg);
+                return;
+            }
+        }
+        location.reload();
+    }
 </script>
+
+
+
 </body>
 </html>
