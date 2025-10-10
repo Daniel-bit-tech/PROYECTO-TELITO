@@ -18,7 +18,7 @@ import java.util.Optional;
 
 @Controller
 
-@PreAuthorize("hasAnyRole('DEV', 'SADMIN')")
+@PreAuthorize("hasAnyRole('DEV', 'DEVELOPER', 'SADMIN')")
 public class MetricasController {
 
     private final UsuarioRepository usuarioRepository;
