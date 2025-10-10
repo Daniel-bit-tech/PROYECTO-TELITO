@@ -38,6 +38,11 @@ public class doc_alto_nivel {
     @Column(columnDefinition = "LONGTEXT")
     private String costos;
 
+    // ✅ NUEVA COLUMNA AÑADIDA
+    @Lob
+    @Column(name = "ejemplos_integracion", columnDefinition = "LONGTEXT")
+    private String ejemplosIntegracion;
+
     @Column(name = "creado_en", updatable = false)
     private Instant creadoEn;
 
@@ -110,6 +115,15 @@ public class doc_alto_nivel {
 
     public void setCostos(String costos) {
         this.costos = costos;
+    }
+
+    // ✅ NUEVO GETTER Y SETTER
+    public String getEjemplosIntegracion() {
+        return ejemplosIntegracion;
+    }
+
+    public void setEjemplosIntegracion(String ejemplosIntegracion) {
+        this.ejemplosIntegracion = ejemplosIntegracion;
     }
 
     public Instant getCreadoEn() {
