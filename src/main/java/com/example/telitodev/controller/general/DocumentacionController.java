@@ -1,64 +1,126 @@
 package com.example.telitodev.controller.general;
 
 
-import com.example.telitodev.entity.Documentacion;
+import com.example.telitodev.entity.Api;
+import com.example.telitodev.entity.ContratoApi;
 import com.example.telitodev.entity.Usuario;
+import com.example.telitodev.repository.ApiRepository;
+import com.example.telitodev.repository.ContratoRepository;
 import com.example.telitodev.repository.DocumentacionRepository;
 import com.example.telitodev.repository.UsuarioRepository;
+import com.example.telitodev.service.DocMDService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
 @RequestMapping("/documentacion")
+@PreAuthorize("isAuthenticated()")
 public class DocumentacionController {
+
+    private final DocMDService docMDService;
 
     final UsuarioRepository usuarioRepository;
     final DocumentacionRepository documentacionRepository;
+    final ContratoRepository contratoRepository;
+    final ApiRepository apiRepository;
 
-    public DocumentacionController(UsuarioRepository usuarioRepository, DocumentacionRepository documentacionRepository) {
+    public DocumentacionController(DocMDService docMDService, UsuarioRepository usuarioRepository, DocumentacionRepository documentacionRepository, ContratoRepository contratoRepository, ApiRepository apiRepository) {
+        this.docMDService = docMDService;
         this.usuarioRepository = usuarioRepository;
         this.documentacionRepository = documentacionRepository;
+        this.contratoRepository = contratoRepository;
+        this.apiRepository = apiRepository;
     }
 
-    @GetMapping("/{idDoc}")
-    public String mostarVistaDocDetalle(@PathVariable Integer idDoc, Model model, Authentication auth, HttpSession session) {
-
-        Optional<Documentacion> doc = documentacionRepository.findById(idDoc);
-        if (doc.isPresent()) {
-            model.addAttribute("doc", doc.get());
-        } else throw new IllegalArgumentException("Documentación no encontrada");
-
+    // Vista de contrato
+    @GetMapping({"/{idApi}/contrato", "/{idApi}/contrato/{idContrato}"})
+    public String viewContratoApi(@PathVariable Integer idApi, @PathVariable(required = false) Integer idContrato, Model model, Authentication auth, HttpSession session, RedirectAttributes redirectAttributes) throws IOException {
         // Obtener el usuario correcto considerando impersonación
         Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
 
-        return "general/docs/docDetalle";
+        Optional<Api> apiX = apiRepository.findById(idApi);
+        if (apiX.isPresent()) {
+            Api api = apiX.get();
+            model.addAttribute("api", api);
+        } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No existe la api seleccionada");
+
+        List<String> nombresSecs = docMDService.nombresSecsDoc(idApi);
+        model.addAttribute("nombresSecs", nombresSecs);
+
+        model.addAttribute("currentView", "contrato");
+
+        List<ContratoApi> contratosApi = contratoRepository.findByVersionApi_Api_IdApi(idApi);
+        if (contratosApi==null || contratosApi.isEmpty()) {
+            model.addAttribute("contratoValido", false);
+            return "general/docs/contrato";
+        } else model.addAttribute("contratoValido", true);
+
+        model.addAttribute("listaContratosApi", contratosApi);
+
+        if (idContrato == null) {
+            model.addAttribute("contratoApi", contratosApi.get(0));
+        } else {
+            ContratoApi contratoApi = contratoRepository.findByIdContratoApiAndVersionApi_Api_IdApi(idContrato, idApi);
+            if (contratoApi == null) {
+//                model.addAttribute("contratoApi", contratosApi.get(0));
+                redirectAttributes.addFlashAttribute("warn", "El contrato seleccionado no pertenece a la api seleccionada. Se muestra contrato válido");
+                return "redirect:/documentacion/"+idApi+"/contrato";
+            } else model.addAttribute("contratoApi", contratoApi);
+        }
+
+        return "general/docs/contrato";
     }
 
-    // Vista de playground (interactivo)
-    @GetMapping("/{idDoc}/playground")
-    public String viewPlayground(@PathVariable Integer idDoc, Model model, Authentication auth, HttpSession session) {
-        Optional<Documentacion> doc = documentacionRepository.findById(idDoc);
-        if (doc.isPresent()) {
-            model.addAttribute("doc", doc.get());
-        } else throw new IllegalArgumentException("Documentación no encontrada");
+    @GetMapping("/{idApi}/{section}")
+    public String mostrarVistaSecDoc(@PathVariable Integer idApi, @PathVariable String section, Model model, Authentication auth, HttpSession session) throws IOException {
 
-        // Obtener el usuario correcto considerando impersonación
+        System.out.println("SECTION: " + section);
+
         Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
 
-        return "general/docs/playground";
+        Optional<Api> apiX = apiRepository.findById(idApi);
+        if (apiX.isPresent()) {
+            Api api = apiX.get();
+            model.addAttribute("api", api);
+        } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No existe el api");
+
+        List<String> nombresSecs = docMDService.nombresSecsDoc(idApi);
+        model.addAttribute("nombresSecs", nombresSecs);
+
+        model.addAttribute("currentView", section);
+
+
+        return "general/docs/seccionDoc";
+    }
+
+
+    /** Endpoint para obtener una sección específica de doc técnica
+     * @param idApi id de Api para buscar documentacion
+     * @param section seccion del archivo .md a enviar
+     * @return parseo de .md a html
+     */
+    @GetMapping("/{idApi}/{section}/.html")
+    @ResponseBody
+    public String getSection(@PathVariable Integer idApi, @PathVariable String section) throws IOException {
+        Map<String, String> sections = docMDService.mapeoSecsDoc(idApi);
+        return sections.getOrDefault(section, "<p>Sección no encontrada</p>");
     }
 
     /**
@@ -66,15 +128,14 @@ public class DocumentacionController {
      * Consumido por Scalar (url)
      */
     @ResponseBody
-    @GetMapping("/{idDoc}/openapi.json")
-    public ResponseEntity<String> obtenerOpenApiSpec(@PathVariable Integer idDoc) {
-        Documentacion doc = documentacionRepository.findById(idDoc)
+    @GetMapping("/{idContrato}/openapi.json")
+    public ResponseEntity<String> obtenerOpenApiSpec(@PathVariable Integer idContrato) {
+        ContratoApi contratoApi = contratoRepository.findById(idContrato)
                 .orElseThrow(() -> new IllegalArgumentException("Documentación no encontrada"));
 
         // Si el contenido es un JSON válido guardado en BD
-        if (doc.getContenido() != null) {
-            System.out.println(doc.getContenido());
-            String json = doc.getContenido();
+        if (contratoApi.getContenido() != null) {
+            String json = contratoApi.getContenido();
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_JSON)
                     .contentLength(json.getBytes(StandardCharsets.UTF_8).length)

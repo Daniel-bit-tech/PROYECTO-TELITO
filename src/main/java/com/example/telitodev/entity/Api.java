@@ -22,36 +22,33 @@ public class Api {
     @Column(name = "fecha_creacion")
     private Timestamp fechaCreacion;
 
-//    @Column(name = "dominio", length = 50)
-//    private String dominio;
     @ManyToOne
     @JoinColumn(name = "idDominio", nullable = false)
     private Dominio dominio;
 
-//    @Column(name = "tag", length = 45)
-//    private String tag;
     @ManyToOne
     @JoinColumn(name = "idTag", nullable = false)
     private Tag tag;
 
     @Column(name = "endpointURL", nullable = false, length = 45)
     private String endpointUrl;
+
+    @ManyToOne
+    @JoinColumn(name = "idEstado", nullable = false)
+    private EstadoApi estadoApi;
     
     // Relaciones
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ApiHasEntorno> apiHasEntornos;
     
-    @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<ContratoApi> contratosApi;
+//    @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    private List<ContratoApi> contratosApi;
     
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CredencialApi> credencialesApi;
     
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Documentacion> documentaciones;
-    
-    @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<EstadoApi> estadosApi;
     
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Feedback> feedbacks;
@@ -160,14 +157,6 @@ public class Api {
         this.apiHasEntornos = apiHasEntornos;
     }
     
-    public List<ContratoApi> getContratosApi() {
-        return contratosApi;
-    }
-    
-    public void setContratosApi(List<ContratoApi> contratosApi) {
-        this.contratosApi = contratosApi;
-    }
-    
     public List<CredencialApi> getCredencialesApi() {
         return credencialesApi;
     }
@@ -184,12 +173,12 @@ public class Api {
         this.documentaciones = documentaciones;
     }
     
-    public List<EstadoApi> getEstadosApi() {
-        return estadosApi;
+    public EstadoApi getEstadoApi() {
+        return estadoApi;
     }
     
-    public void setEstadosApi(List<EstadoApi> estadosApi) {
-        this.estadosApi = estadosApi;
+    public void setEstadoApi(EstadoApi estadosApi) {
+        this.estadoApi = estadosApi;
     }
     
     public List<Feedback> getFeedbacks() {
