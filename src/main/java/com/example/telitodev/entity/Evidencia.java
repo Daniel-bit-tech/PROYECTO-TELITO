@@ -20,7 +20,7 @@ public class Evidencia {
     private byte[] evidencia;
 
     @Lob
-    @Column(name = "descripción", length = 200)
+    @Column(name = "descripcion", length = 200)
     private String descripcion;
 
     @ManyToOne(fetch = FetchType.LAZY)
