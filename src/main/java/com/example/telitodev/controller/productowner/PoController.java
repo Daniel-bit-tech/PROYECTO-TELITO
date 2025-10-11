@@ -26,7 +26,6 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/po")
-@PreAuthorize("hasAnyRole('PO', 'SUPERADMIN')")
 public class PoController extends BaseController {
 
     final UsuarioRepository usuarioRepository;

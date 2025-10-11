@@ -194,6 +194,20 @@ public class ImpersonationService {
     }
 
     /**
+     * Obtiene el rol del usuario que está siendo impersonado
+     */
+    public String getImpersonatedUserRole(HttpSession session) {
+        return (String) session.getAttribute("IMPERSONATED_USER_ROLE");
+    }
+
+    /**
+     * Obtiene el email del usuario que está siendo impersonado
+     */
+    public String getImpersonatedUserEmail(HttpSession session) {
+        return (String) session.getAttribute("IMPERSONATED_USER_EMAIL");
+    }
+
+    /**
      * Verifica si un usuario es SuperAdmin
      */
     private boolean isSuperAdmin(Usuario usuario) {

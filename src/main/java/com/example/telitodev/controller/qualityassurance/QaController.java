@@ -18,7 +18,6 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/qa")
-@PreAuthorize("hasAnyRole('QA', 'SADMIN')")
 public class QaController extends BaseController {
 
     final UsuarioRepository usuarioRepository;

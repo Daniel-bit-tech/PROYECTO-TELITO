@@ -20,7 +20,6 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/dev")
-@PreAuthorize("hasAnyRole('DEV', 'SUPERADMIN')")
 public class DeveloperController extends BaseController {
 
     final UsuarioRepository usuarioRepository;

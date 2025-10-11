@@ -1,6 +1,7 @@
 package com.example.telitodev.config;
 import com.example.telitodev.service.UsuarioDetailService;
 import com.example.telitodev.filter.UsuarioActivoFilter;
+import com.example.telitodev.filter.ImpersonationAuthorizationFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,9 @@ public class SecurityConfig {
     private UsuarioActivoFilter usuarioActivoFilter;
 
     @Autowired
+    private ImpersonationAuthorizationFilter impersonationAuthorizationFilter;
+
+    @Autowired
     private SessionRegistry sessionRegistry;
 
     @Bean
@@ -51,10 +55,12 @@ public class SecurityConfig {
                         // API endpoints - requieren autenticación pero sin CSRF
                         .requestMatchers("/api/onboarding/**").authenticated()
 
-                        // De rol
-                        // Endpoints de impersonación - accesibles durante impersonación
+                        // Endpoints de impersonación - reglas específicas
                         .requestMatchers("/admin/gestion-usuarios/stop-impersonation").hasAnyRole("SUPERADMIN", "QA", "DEV", "PO")
                         .requestMatchers("/admin/gestion-usuarios/impersonation-status").hasAnyRole("SUPERADMIN", "QA", "DEV", "PO")
+                        .requestMatchers("/admin/gestion-usuarios/**").hasRole("SUPERADMIN")
+                        
+                        // Portales - reglas de seguridad tradicionales (el filtro maneja la impersonación)
                         .requestMatchers("/admin/**").hasRole("SUPERADMIN")
                         .requestMatchers("/dev/**").hasAnyRole("DEV", "SUPERADMIN")
                         .requestMatchers("/qa/**").hasAnyRole("QA", "SUPERADMIN")
@@ -101,8 +107,9 @@ public class SecurityConfig {
                         .sessionFixation().migrateSession() // Prevenir session fixation attacks
                         .invalidSessionUrl("/login?invalid=true")
                 )
-                // Agregar filtro personalizado para verificar usuarios activos en tiempo real
-                .addFilterBefore(usuarioActivoFilter, UsernamePasswordAuthenticationFilter.class);
+                // Agregar filtros personalizados
+                .addFilterBefore(usuarioActivoFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(impersonationAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

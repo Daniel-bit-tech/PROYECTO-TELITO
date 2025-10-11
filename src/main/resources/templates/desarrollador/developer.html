@@ -414,7 +414,7 @@
           <h2 class="welcome-title">¡Hola otra vez, <span th:text="${usuario.nombre}">Juan</span>!</h2>
           <p class="welcome-text">Tienes <span th:text="${NcredActivas}">0</span> APIs con credenciales activas y <span th:text="${Nnotis}">0</span> notificaciones sin leer.</p>
           <div class="welcome-actions">
-            <form th:action="@{/proyectos}" method="get">
+            <form th:action="@{/dev/proyectos}" method="get">
               <button type="submit" class="btn btn-primary">
                 <i class="fas fa-rocket"></i> Ver tus proyectos
               </button>
