@@ -493,10 +493,10 @@
     </div>
     <div th:unless="${isImpersonating}">
         <!-- Sin impersonación, usar rol real -->
-        <div th:if="${#authorization.hasRole('DEV')}" th:replace="desarrollador/header :: header"></div>
-        <div th:if="${#authorization.hasRole('PO')}" th:replace="po/header_po :: header"></div>
-        <div th:if="${#authorization.hasRole('QA')}" th:replace="qa/header_qa :: header"></div>
-        <div th:if="${#authorization.hasRole('SUPERADMIN')}" th:replace="admin/header :: header"></div>
+        <header th:replace="desarrollador/header :: header" sec:authorize="hasRole('DEV')"></header>
+        <header th:replace="admin/header :: header" sec:authorize="hasRole('SUPERADMIN')"></header>
+        <header th:replace="po/header_po :: header" sec:authorize="hasRole('PO')"></header>
+        <header th:replace="qa/header_qa :: header" sec:authorize="hasRole('QA')"></header>
     </div>
 
   <div class="content">

@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Controller
-@PreAuthorize("isAuthenticated()")
+@PreAuthorize("hasAnyRole('DEV','QA','SUPERADMIN','DEVELOPER')")
 @RequestMapping("/proyectos")
 public class ProyectosController extends BaseController {
 
