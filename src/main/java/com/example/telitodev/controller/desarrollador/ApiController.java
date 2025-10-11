@@ -2,14 +2,14 @@ package com.example.telitodev.controller.desarrollador;
 
 
 import com.example.telitodev.controller.BaseController;
-import com.example.telitodev.entity.Api;
-import com.example.telitodev.entity.Documentacion;
-import com.example.telitodev.entity.Usuario;
-import com.example.telitodev.entity.VersionApi;
+import com.example.telitodev.dto.EntornoDto;
+import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
 import com.example.telitodev.service.DocMDService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/apis")

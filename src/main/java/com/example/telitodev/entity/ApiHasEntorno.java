@@ -1,5 +1,7 @@
 package com.example.telitodev.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 @Entity
@@ -12,11 +14,13 @@ public class ApiHasEntorno {
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("idApi")
     @JoinColumn(name = "idAPI")
+    @JsonBackReference("api-entorno")
     private Api api;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("idEntorno")
     @JoinColumn(name = "idEntorno")
+    @JsonManagedReference("entorno-api")
     private Entorno entorno;
     
     @Column(name = "url_base", length = 255)

@@ -72,7 +72,6 @@ public class DeveloperController extends BaseController {
         model.addAttribute("notificaciones", notis);
         model.addAttribute("tickets", tickets);
         
-        // Agregar información de impersonación al modelo usando BaseController
         addImpersonationAttributes(model, session);
 
         return "desarrollador/developer";
@@ -80,14 +79,24 @@ public class DeveloperController extends BaseController {
 
     @GetMapping("/catalogo")
     public String developerDashboard(Model model, Authentication authentication, HttpSession session) {
-        // Obtener el usuario correcto considerando impersonación usando BaseController
         Usuario usuario = getCurrentUser(authentication, session);
         model.addAttribute("usuario", usuario);
         model.addAttribute("smg", usuario.getCorreo());
 
-        // Agregar información de impersonación al modelo
         addImpersonationAttributes(model, session);
 
         return "desarrollador/apis";
+    }
+
+    @GetMapping("/sandbox")
+    public String mostrarSandboxPage(Model model, Authentication auth, HttpSession session) {
+
+        Usuario usuario = getCurrentUser(auth, session);
+        model.addAttribute("usuario", usuario);
+
+        addImpersonationAttributes(model, session);
+
+
+        return "desarrollador/sandbox";
     }
 }

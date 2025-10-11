@@ -1,5 +1,8 @@
 package com.example.telitodev.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 
@@ -20,11 +23,13 @@ public class CredencialApi {
     
     @Column(name = "estado", nullable = false)
     private Boolean estado;
-    
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idUsuario", nullable = false, referencedColumnName = "dni")
     private Usuario usuario;
-    
+
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idAPI", nullable = false)
     private Api api;
