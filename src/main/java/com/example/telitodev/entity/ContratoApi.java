@@ -13,26 +13,29 @@ public class ContratoApi {
     private Integer idContratoApi;
     
     @Column(name = "formato", nullable = false)
-    private Integer formato;
+    private String formato;
     
-    @Column(name = "url_documento", nullable = false, length = 45)
-    private String urlDocumento;
+    @Column(name = "url_contrato", nullable = true, length = 45)
+    private String urlContrato;
     
-    @Column(name = "fecha_subida")
-    private Timestamp fechaSubida;
+    @Column(name = "fecha_modificacion")
+    private Timestamp fechaModificacion;
+
+    @Column(name = "contenido", columnDefinition = "JSON")
+    private String contenido;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idAPI", nullable = false)
-    private Api api;
+    @JoinColumn(name = "idVersion", nullable = false)
+    private VersionApi versionApi;
     
     // Constructores
     public ContratoApi() {}
     
-    public ContratoApi(Integer formato, String urlDocumento, Timestamp fechaSubida, Api api) {
+    public ContratoApi(String formato, String urlContrato, Timestamp fechaModificacion, VersionApi versionApi) {
         this.formato = formato;
-        this.urlDocumento = urlDocumento;
-        this.fechaSubida = fechaSubida;
-        this.api = api;
+        this.urlContrato = urlContrato;
+        this.fechaModificacion = fechaModificacion;
+        this.versionApi = versionApi;
     }
     
     // Getters y Setters
@@ -44,35 +47,43 @@ public class ContratoApi {
         this.idContratoApi = idContratoApi;
     }
     
-    public Integer getFormato() {
+    public String getFormato() {
         return formato;
     }
     
-    public void setFormato(Integer formato) {
+    public void setFormato(String formato) {
         this.formato = formato;
     }
     
-    public String getUrlDocumento() {
-        return urlDocumento;
+    public String getUrlContrato() {
+        return urlContrato;
     }
     
-    public void setUrlDocumento(String urlDocumento) {
-        this.urlDocumento = urlDocumento;
+    public void setUrlContrato(String urlContrato) {
+        this.urlContrato = urlContrato;
     }
     
-    public Timestamp getFechaSubida() {
-        return fechaSubida;
+    public Timestamp getFechaModificacion() {
+        return fechaModificacion;
     }
     
-    public void setFechaSubida(Timestamp fechaSubida) {
-        this.fechaSubida = fechaSubida;
+    public void setFechaModificacion(Timestamp fechaModificacion) {
+        this.fechaModificacion = fechaModificacion;
     }
-    
-    public Api getApi() {
-        return api;
+
+    public String getContenido() {
+        return contenido;
     }
-    
-    public void setApi(Api api) {
-        this.api = api;
+
+    public void setContenido(String contenido) {
+        this.contenido = contenido;
+    }
+
+    public VersionApi getVersionApi() {
+        return versionApi;
+    }
+
+    public void setVersionApi(VersionApi versionApi) {
+        this.versionApi = versionApi;
     }
 }

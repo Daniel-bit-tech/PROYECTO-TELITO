@@ -13,16 +13,19 @@ public class Documentacion {
     @Column(name = "idDocumentacion")
     private Integer idDocumentacion;
     
-    @Column(name = "tipo", length = 45)
+    @Column(name = "tipo", length = 45, nullable = false)
     private String tipo;
 
-    @Column(name = "descripcion", columnDefinition = "TEXT")
+    @Column(name = "descripcion", columnDefinition = "TEXT", nullable = false)
     private String descripcion;
+
+    @Column(name = "url_documento", nullable = true, length = 45)
+    private String urlDocumento;
     
     @Column(name = "contenido", columnDefinition = "JSON")
     private String contenido;
     
-    @Column(name = "fecha_creacion")
+    @Column(name = "fecha_modificacion", nullable = false)
     private Timestamp fechaCreacion;
     
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,7 +35,11 @@ public class Documentacion {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idVersion", nullable = false)
     private VersionApi versionApi;
-    
+
+    @Column(name = "formato", nullable = true)
+    private String formato;
+
+    // Relaciones
     @OneToMany(mappedBy = "documentacion", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<EjemplosCodigo> ejemplosCodigo;
     

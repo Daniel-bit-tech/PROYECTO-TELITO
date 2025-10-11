@@ -2,6 +2,8 @@ package com.example.telitodev.entity;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "estadoapi")
 public class EstadoApi {
@@ -12,18 +14,18 @@ public class EstadoApi {
     
     @Column(name = "estado", nullable = false, length = 25)
     private String estado;
-    
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idAPI", nullable = false)
-    private Api api;
+
+
+    // Relaciones
+    @OneToMany(mappedBy = "estadoApi")
+    private List<Api> apis;
     
     // Constructores
     public EstadoApi() {}
     
-    public EstadoApi(Integer idEstado, String estado, Api api) {
+    public EstadoApi(Integer idEstado, String estado) {
         this.idEstado = idEstado;
         this.estado = estado;
-        this.api = api;
     }
     
     // Getters y Setters
@@ -42,12 +44,12 @@ public class EstadoApi {
     public void setEstado(String estado) {
         this.estado = estado;
     }
-    
-    public Api getApi() {
-        return api;
+
+    public List<Api> getApis() {
+        return apis;
     }
-    
-    public void setApi(Api api) {
-        this.api = api;
+
+    public void setApis(List<Api> apis) {
+        this.apis = apis;
     }
 }

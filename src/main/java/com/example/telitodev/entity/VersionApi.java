@@ -32,6 +32,10 @@ public class VersionApi {
     @OneToMany(mappedBy = "versionApi", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnore
     private List<Documentacion> documentaciones;
+
+    @OneToMany(mappedBy = "versionApi", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JsonIgnore
+    private List<ContratoApi> contratosApi;
     
     // Constructores
     public VersionApi() {}
@@ -84,5 +88,21 @@ public class VersionApi {
     
     public void setApi(Api api) {
         this.api = api;
+    }
+
+    public List<Documentacion> getDocumentaciones() {
+        return documentaciones;
+    }
+
+    public void setDocumentaciones(List<Documentacion> documentaciones) {
+        this.documentaciones = documentaciones;
+    }
+
+    public List<ContratoApi> getContratosApi() {
+        return contratosApi;
+    }
+
+    public void setContratosApi(List<ContratoApi> contratosApi) {
+        this.contratosApi = contratosApi;
     }
 }

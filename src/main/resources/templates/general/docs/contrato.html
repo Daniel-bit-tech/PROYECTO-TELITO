@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8" />
+    <title>Contratos - Telito</title>
+    <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet"/>
+    <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Override específico para el grid problem en responses */
+        .scalar-card.scalar-card.bg-b-2 .scalar-card-content.overflow-auto.grid {
+            display: block !important;
+            min-width: 100% !important;
+        }
+
+        .bg-activo{
+            background-color: rgba(var(--tblr-success-rgb), 0.1);
+            color: var(--tblr-success);
+        }
+        .bg-deprecado{
+            background-color: rgba(var(--tblr-warning-rgb), 0.1);
+            color: var(--tblr-warning);
+        }
+        .bg-inactivo{
+            background-color: rgba(var(--tblr-danger-rgb), 0.1);
+            color: var(--tblr-danger);
+        }
+    </style>
+</head>
+<body>
+<script src="/tabler/dist/js/tabler-theme.min.js"></script>
+
+<div class="page">
+    <header th:replace="desarrollador/header :: header" sec:authorize="hasRole('DEV')"></header>
+    <header th:replace="admin/header :: header" sec:authorize="hasRole('SUPERADMIN')"></header>
+    <header th:replace="po/header_po :: header" sec:authorize="hasRole('PO')"></header>
+    <header th:replace="qa/header_qa :: header" sec:authorize="hasRole('QA')"></header>
+
+    <div th:if="${warn}" class="alert alert-warning" role="alert" th:text="${warn}">
+        Mensaje
+    </div>
+
+    <div class="page-wrapper">
+        <div class="page-body">
+            <div class="container-xl">
+                <!-- Header de navegación -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="page-pretitle">Documentación</div>
+                        <h1 class="page-title" th:text="${api.nombre}">API 1</h1>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-3 col-md-4 mb-4 mb-md-0">
+                        <!--                    <div th:replace="fragments/docs/sidebar :: docs-sidebar(${doc.id}, 'info')"></div>-->
+                        <div th:replace="general/docs/docSidebar :: docs-sidebar(${api.idApi}, ${currentView}, ${nombresSecs})"></div>
+
+                        <!-- Información rápida -->
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <h4 class="card-title">Detalles Rápidos</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-2">
+                                    <strong>Base URL:</strong>
+                                    <code th:text="${api.endpointUrl}">https://api.telito.com/v1</code>
+                                </div>
+                                <!--                                <div class="mb-2">-->
+                                <!--                                    <strong>Formato:</strong>-->
+                                <!--                                    <span class="badge bg-blue text-blue-fg">JSON</span>-->
+                                <!--                                </div>-->
+                                <!--                                <div class="mb-2">-->
+                                <!--                                    <strong>Autenticación:</strong>-->
+                                <!--                                    <span class="badge bg-orange text-orange-fg" >JWT</span>-->
+                                <!--                                </div>-->
+                                <div>
+                                    <strong>Estado:</strong>
+                                    <span class="badge" th:classappend="' bg-'+${api.estadoApi.estado.toLowerCase()}"
+                                          th:text="${api.estadoApi.estado}">TESTING</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contenido principal -->
+                    <div class="col-lg-9 col-md-6">
+                        <div class="card ms-3" th:if="${contratoValido}">
+                            <div class="card-header">
+                                <h2 class="card-title" th:text="'Contrato: '+${contratoApi.versionApi.version}">Contratos:</h2>
+
+<!--                                    <div class="col-auto">-->
+<!--                                        <select class="form-select" name="contrato" id="contratoSelect">-->
+<!--                                            <option value="" disabled selected>Seleccione un contrato</option>-->
+<!--                                            <option th:each="contrato : ${listaContratosApi}"-->
+<!--                                                    th:value="${contrato.idContratoApi}"-->
+<!--                                                    th:text="${contrato.formato} + ' - Versión ' + ${contrato.versionApi.version}-->
+<!--                                                        + ' (' + ${#dates.format(contrato.fechaModificacion, 'dd-MM-yyyy')} + ')'">-->
+<!--                                            </option>-->
+<!--                                        </select>-->
+<!--                                    </div>-->
+
+                                <div class="card-actions">
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                            Seleccione contrato
+                                        </button>
+                                        <div class="dropdown-menu">
+                                            <a class="dropdown-item" th:each="contrato : ${listaContratosApi}"
+                                               th:href="@{'/documentacion/' + ${contrato.versionApi.api.idApi} + '/contrato/' + ${contrato.idContratoApi}}">
+                                                <div><strong th:text="${contrato.formato}"></strong></div>
+                                                <small th:text="'Versión ' + ${contrato.versionApi.version}"></small><br>
+                                                <small th:text="${#dates.format(contrato.fechaModificacion, 'dd-MM-yyyy')}"></small>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body w-100" id="app">
+                                <!-- Aquí se renderiza dinámicamente -->
+
+                            </div>
+                        </div>
+
+                        <div class="card ms-3" style="min-height: auto" th:unless="${contratoValido}">
+                            <div class="card-header">
+                                <div class="row align-items-center">
+                                    <div class="col">
+                                        <h2 class="card-title">No se encontró ningún contrato para esta Api</h2>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/tabler/dist/js/tabler.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+<script th:inline="javascript" th:if="${contratoApi != null}">
+    const app = Scalar.createApiReference('#app', {
+        theme: 'solarized',
+        layout: 'modern',
+        hideClientButton: true,
+        showSidebar: false,
+        showToolbar: 'never',
+        operationTitleSource: 'summary',
+        _integration: 'html',
+        isEditable: false,
+        isLoading: false,
+        hideModels: false,
+        documentDownloadType: 'both',
+        hideTestRequestButton: false,
+        hideSearch: false,
+        hideDarkModeToggle: false,
+        withDefaultFonts: true,
+        defaultOpenAllTags: false,
+        expandAllModelSections: false,
+        url: [[@{'/documentacion/' + ${contratoApi.idContratoApi} + '/openapi.json'}]]
+    })
+</script>
+</body>
+</html>

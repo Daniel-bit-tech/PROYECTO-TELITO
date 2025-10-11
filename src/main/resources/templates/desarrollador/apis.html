@@ -380,12 +380,15 @@
       <div class="catalog-content">
         <form method="get" action="/apis" id="filterForm">
         <div class="filters-sidebar">
-<!--            <div class="filter-section">-->
+            <div class="filter-section" style="overflow-y: hidden">
                 <div class="search-box">
                   <i class="fas fa-search search-icon"></i>
                   <input type="text" class="search-input" id="search" name="nombre" placeholder="Buscar APIs por nombre" th:value="${nombre != null ? nombre : ''}">
                 </div>
-<!--            </div>-->
+                <button type="submit" class="btn-api btn-primary" style="width: 100%;">
+                    <i class="fas fa-filter"></i> Aplicar Filtros
+                </button>
+            </div>
 
             <div class="filter-section">
                 <h3 class="filter-section-title">
@@ -416,10 +419,6 @@
                 </label>
             </div>
           </div>
-
-          <button type="submit" class="btn-api btn-primary" style="width: 100%;">
-            <i class="fas fa-filter"></i> Aplicar Filtros
-          </button>
         </div>
         </form>
 

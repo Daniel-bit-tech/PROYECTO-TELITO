@@ -7,20 +7,27 @@ import com.example.telitodev.entity.Documentacion;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.entity.VersionApi;
 import com.example.telitodev.repository.*;
+import com.example.telitodev.service.DocMDService;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
 @RequestMapping("/apis")
 
 public class ApiController extends BaseController {
+
+    private final DocMDService docMDService;
 
     final ApiRepository apiRepository;
     final UsuarioRepository usuarioRepository;
@@ -30,9 +37,10 @@ public class ApiController extends BaseController {
     final DominioRepository dominioRepository;
     final TagRepository tagRepository;
 
-    public ApiController(ApiRepository apiRepository, UsuarioRepository usuarioRepository, VersionApiRepository versionApiRepository, DocumentacionRepository documentacionRepository, VersionApiRepository versionApiRepository1, EjemplosCodigoRepository ejemplosCodigoRepository, DominioRepository dominioRepository, TagRepository tagRepository) {
+    public ApiController(ApiRepository apiRepository, UsuarioRepository usuarioRepository, VersionApiRepository versionApiRepository, DocMDService docMDService, DocumentacionRepository documentacionRepository, VersionApiRepository versionApiRepository1, EjemplosCodigoRepository ejemplosCodigoRepository, DominioRepository dominioRepository, TagRepository tagRepository) {
         this.apiRepository = apiRepository;
         this.usuarioRepository = usuarioRepository;
+        this.docMDService = docMDService;
         this.documentacionRepository = documentacionRepository;
         this.versionApiRepository = versionApiRepository1;
         this.ejemplosCodigoRepository = ejemplosCodigoRepository;
@@ -75,27 +83,51 @@ public class ApiController extends BaseController {
         return "desarrollador/apis";
     }
 
-    @GetMapping("/{id}/docs")
+//    @GetMapping("/{id}/docs")
 //    @PreAuthorize("hasAnyRole('DEV','SUPERADMIN','QA','PO')")
+//    @PreAuthorize("isAuthenticated()")
+//    public String detalleApi(@PathVariable Integer id,
+//                             Model model, Authentication auth, HttpSession session) {
+//
+//        boolean apiExists = apiRepository.existsById(id);
+//        if (apiExists) {
+//
+//            List<Documentacion> docs = documentacionRepository.findByApi_IdApiOrderByFechaCreacionDesc(id);
+//            model.addAttribute("docs", docs);
+//        }
+//
+//        // Obtener el usuario correcto considerando impersonación usando BaseController
+//        Usuario usuario = getCurrentUser(auth, session);
+//        model.addAttribute("usuario", usuario);
+//
+//        // Agregar información de impersonación al modelo usando BaseController
+//        addImpersonationAttributes(model, session);
+//
+//        return "general/docs/documentacion";
+//    }
+
+    @GetMapping("/{idApi}/docs")
     @PreAuthorize("isAuthenticated()")
-    public String detalleApi(@PathVariable Integer id,
-                             Model model, Authentication auth, HttpSession session) {
+    public String verDocsApi(@PathVariable Integer idApi,
+                             Model model, Authentication auth, HttpSession session) throws IOException {
 
-        boolean apiExists = apiRepository.existsById(id);
-        if (apiExists) {
+        Optional<Api> apiX = apiRepository.findById(idApi);
+        if (apiX.isPresent()) {
+            Api api = apiX.get();
+            model.addAttribute("api", api);
+        } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No existe el api");
 
-            List<Documentacion> docs = documentacionRepository.findByApi_IdApiOrderByFechaCreacionDesc(id);
-            model.addAttribute("docs", docs);
-        }
+        List<String> nombresSecs = docMDService.nombresSecsDoc(idApi);
+        model.addAttribute("nombresSecs", nombresSecs);
 
         // Obtener el usuario correcto considerando impersonación usando BaseController
         Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
-        
+
         // Agregar información de impersonación al modelo usando BaseController
         addImpersonationAttributes(model, session);
 
-        return "general/docs/documentacion";
+        return "general/docs/apiDoc";
     }
 
 
