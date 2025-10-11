@@ -94,7 +94,7 @@ public class SecurityConfig {
 //                        .accessDeniedPage("/acceso-denegado")
 //                )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/qa/**")
+                        .ignoringRequestMatchers("/qa/**","/api/onboarding/**")
                 )
                 // Control de sesiones concurrentes y seguridad de sesión
                 .sessionManagement(session -> session
