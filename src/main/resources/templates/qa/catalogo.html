@@ -380,12 +380,15 @@
                 </div>
 
                 <div class="search-filters">
-                    <form method="GET" th:action="@{/qa/catalogo}" id="searchForm">
+                    <form method="get" th:action="@{/qa/catalogo}" class="d-flex w-100 gap-2" id="searchForm">
                         <div class="search-box">
                             <i class="fas fa-search search-icon"></i>
-                            <input type="text" class="search-input" id="search" name="nombre"
-                                   th:value="${nombre}" placeholder="Buscar APIs por nombre">
+                            <input type="text" class="search-input" name="nombre"
+                                   placeholder="Buscar APIs por nombre" th:value="${nombre}">
                         </div>
+                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
+                            <i class="fas fa-filter"></i> Buscar
+                        </button>
                     </form>
                 </div>
 
@@ -450,6 +453,7 @@
                                 </div>
 
                                 <p class="api-description" th:text="${api.descripcion}"></p>
+                                <!--<span th:text="${api.idApi}"></span>-->
 
                                 <div class="api-actions">
                                     <a th:href="@{/qa/apiDetalle}" class="btn-api btn-primary">
@@ -527,7 +531,7 @@
         </div>
     </div>
 
-    <div id="footer-placeholder"></div>
+    <div th:replace="qa/footer.html :: footer"></div>
 </div>
 
 <script>

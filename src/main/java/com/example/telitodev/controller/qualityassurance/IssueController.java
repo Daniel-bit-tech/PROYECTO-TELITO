@@ -4,6 +4,8 @@ import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -12,8 +14,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpSession;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -34,16 +39,46 @@ public class IssueController extends BaseController {
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
     @GetMapping("/issues")
-    public String showIssueView(Model model, Authentication auth, HttpSession session) {
+    public String showIssueView(Model model,
+                                Authentication auth,
+                                HttpSession session,
+                                @RequestParam(value = "tags", required = false) List<String> estados,
+                                @RequestParam(value = "fechaInicio", required = false) String fechaInicio,
+                                @RequestParam(value = "fechaFin", required = false) String fechaFin,
+                                @RequestParam(value = "nombre", required = false) String nombre,
+                                @RequestParam(defaultValue = "0") int page,
+                                @RequestParam(defaultValue = "10") int size) { // 6 issues por página
+
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        
-        // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
-        
         model.addAttribute("usuario", usuario);
 
-        List<Issue> issues = issueRepository.findAll();
-        model.addAttribute("issues", issues);
+        Timestamp inicio = null;
+        Timestamp fin = null;
+        try {
+            if (fechaInicio != null && !fechaInicio.isEmpty()) inicio = Timestamp.valueOf(fechaInicio + " 00:00:00");
+            if (fechaFin != null && !fechaFin.isEmpty()) fin = Timestamp.valueOf(fechaFin + " 23:59:59");
+        } catch (Exception e) { e.printStackTrace(); }
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
+        Page<Issue> issuesPage = issueRepository.findByFilters(estados, inicio, fin, nombre, pageable);
+
+        // 🔹 Si el usuario pide una página mayor al total, regresar a la última válida
+        if (page >= issuesPage.getTotalPages() && issuesPage.getTotalPages() > 0) {
+            pageable = PageRequest.of(issuesPage.getTotalPages() - 1, size);
+            issuesPage = issueRepository.findByFilters(estados, inicio, fin, nombre, pageable);
+            page = issuesPage.getTotalPages() - 1;
+        }
+
+        model.addAttribute("issues", issuesPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", issuesPage.getTotalPages());
+        model.addAttribute("selectedEstados", estados);
+        model.addAttribute("fechaInicio", fechaInicio);
+        model.addAttribute("fechaFin", fechaFin);
+        model.addAttribute("nombre", nombre);
+        model.addAttribute("pageSize", size);
+
         return "qa/issues";
     }
 
@@ -51,10 +86,10 @@ public class IssueController extends BaseController {
     public String showIssueDetalleView(Model model, Authentication auth, HttpSession session,
                                        @PathVariable Integer idIssue, @PathVariable Integer idReporte) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        
+
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
-        
+
         model.addAttribute("usuario", usuario);
 
         // Crear el IssueId usando los dos parámetros de la URL
@@ -82,10 +117,10 @@ public class IssueController extends BaseController {
     public String madeIssue(Model model, Authentication auth, HttpSession session,
                             @RequestParam("idReporte") Integer idReporte) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        
+
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
-        
+
         model.addAttribute("usuario", usuario);
 
         // Obtener el reporte por id
@@ -141,70 +176,80 @@ public class IssueController extends BaseController {
     }
 
     @PostMapping("/crearComentario")
-    public String guardarComentario(
-            @RequestParam("comentario") String comentario,
-            @RequestParam(value = "archivo", required = false) MultipartFile archivo,
-            @RequestParam("idIssue") Integer idIssue,
-            @RequestParam("idReporte") Integer idReporte,
-            Authentication auth) {
+    public String guardarComentario(@RequestParam("comentario") String comentario,
+                                    @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
+                                    @RequestParam("idIssue") Integer idIssue,
+                                    @RequestParam("idReporte") Integer idReporte,
+                                    Authentication auth, RedirectAttributes redirectAttributes) {
 
-        // Obtener el usuario actual
+        // Obtener el usuario
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
         // Buscar el Issue y Reporte por sus ID
         IssueId issueId = new IssueId(idIssue, idReporte);
         Issue issue = issueRepository.findById(issueId).orElse(null);
         if (issue == null) {
-            return "redirect:/qa/issues?error=Issue no encontrado";
+            redirectAttributes.addFlashAttribute("error", "Issue no encontrado");
+            return "redirect:/qa/issues";
         }
 
-        // Crear un nuevo comentario
+        // Crear comentario
         Comentario newComentario = new Comentario();
         newComentario.setComentario(comentario);
         newComentario.setFecha(new Timestamp(System.currentTimeMillis()));
         newComentario.setIssue(issue);
         newComentario.setUsuario(usuario);
 
-        // Si hay archivo adjunto, guardarlo
-        // Si hay archivo adjunto, guardarlo
-        if (!archivo.isEmpty()) {
-            // Validar el tamaño del archivo (máximo 5 MB, por ejemplo)
+        System.out.println("------------------");
+        System.out.println(archivos.length);
+        System.out.println("------------------");
+
+        if (archivos != null && archivos.length > 0) {
+            archivos = Arrays.stream(archivos)
+                    .filter(file -> !file.isEmpty()) // Filtramos los archivos vacíos
+                    .toArray(MultipartFile[]::new);
+        }
+
+        // Validaciones de archivos
+        if (archivos != null && archivos.length > 5) {
+            redirectAttributes.addFlashAttribute("error", "Máximo 5 archivos permitidos");
+            return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+        }
+
+        for (MultipartFile archivo : archivos) {
             if (archivo.getSize() > MAX_FILE_SIZE) {
-                return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte + "?error=El archivo es demasiado grande";
+                redirectAttributes.addFlashAttribute("error", "El archivo es demasiado grande");
+                return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+            }
+
+            // Validar tipo de archivo (solo imágenes y logs)
+            String contentType = archivo.getContentType();
+            if (!contentType.equals("image/png") && !contentType.equals("image/jpeg") && !contentType.equals("text/plain")) {
+                redirectAttributes.addFlashAttribute("error", "Solo se permiten archivos de tipo .png, .jpg o .log");
+                return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
             }
 
             try {
-                // Crear un nuevo adjunto
+                // Guardar archivo adjunto
                 Adjunto adjunto = new Adjunto();
                 adjunto.setNombre(archivo.getOriginalFilename());
-                adjunto.setComentario(newComentario);  // Asociar el adjunto con el comentario
-
-                // Determinar si el archivo es un log o una imagen (basado en el tipo MIME)
-                if ("text/plain".equals(archivo.getContentType())) {
-                    // Si es un log (archivo de texto), lo almacenamos como binario en LONGBLOB
-                    adjunto.setArchivo(archivo.getBytes());  // Almacenamos el archivo binario
-                } else {
-                    // Si es una imagen u otro archivo binario, lo almacenamos también en LONGBLOB
-                    adjunto.setArchivo(archivo.getBytes());  // Almacenamos la imagen u otro archivo binario
-                }
-
-                // Guardamos el adjunto en la base de datos
+                adjunto.setComentario(newComentario);
+                adjunto.setArchivo(archivo.getBytes());
                 adjuntoRepository.save(adjunto);
 
             } catch (IOException e) {
                 e.printStackTrace();
-                return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte + "?error=Error al guardar el archivo";
+                redirectAttributes.addFlashAttribute("error", "Error al guardar el archivo");
+                return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
             }
         }
 
-        // Guardar el comentario en la base de datos
+        // Guardar el comentario
         comentarioRepository.save(newComentario);
 
         // Redirigir de nuevo al detalle del Issue
         return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
     }
-
-
 
 
 }

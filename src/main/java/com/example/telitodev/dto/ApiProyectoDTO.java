@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 
 public class ApiProyectoDTO {
 
+    private Integer idApi;
     private String nombreApi;
     private String nombreProyecto;
     private String descripcion;
@@ -13,8 +14,9 @@ public class ApiProyectoDTO {
     private Timestamp fechaCreacion;
 
     // Constructor con parámetros
-    public ApiProyectoDTO(String nombreApi, String nombreProyecto, String descripcion, String endpointUrl,
+    public ApiProyectoDTO(Integer idApi, String nombreApi, String nombreProyecto, String descripcion, String endpointUrl,
                           String nombreDominio, String nombreTag, Timestamp fechaCreacion) {
+        this.idApi = idApi;
         this.nombreApi = nombreApi;
         this.nombreProyecto = nombreProyecto;
         this.descripcion = descripcion;
@@ -79,5 +81,14 @@ public class ApiProyectoDTO {
 
     public void setFechaCreacion(Timestamp fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
+    }
+
+
+    public Integer getIdApi() {
+        return idApi;
+    }
+
+    public void setIdApi(Integer idApi) {
+        this.idApi = idApi;
     }
 }
