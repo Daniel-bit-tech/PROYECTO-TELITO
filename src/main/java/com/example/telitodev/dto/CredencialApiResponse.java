@@ -10,13 +10,14 @@ public class CredencialApiResponse {
     private Integer apiId;
     private Timestamp fechaCreacion;
     private Boolean estado;
-    private String estadoTexto; // "Activa", "Inactiva", "Revocada"
+    private String estadoTexto;
+    private String entorno;
     
-    // Constructores
+
     public CredencialApiResponse() {}
     
     public CredencialApiResponse(Integer idCredencialApi, String apiKey, String nombreApi, 
-                               Integer apiId, Timestamp fechaCreacion, Boolean estado, String estadoTexto) {
+                               Integer apiId, Timestamp fechaCreacion, Boolean estado, String estadoTexto,String entorno) {
         this.idCredencialApi = idCredencialApi;
         this.apiKey = apiKey;
         this.nombreApi = nombreApi;
@@ -24,9 +25,9 @@ public class CredencialApiResponse {
         this.fechaCreacion = fechaCreacion;
         this.estado = estado;
         this.estadoTexto = estadoTexto;
+        this.entorno = entorno;
     }
     
-    // Getters y Setters
     public Integer getIdCredencialApi() {
         return idCredencialApi;
     }

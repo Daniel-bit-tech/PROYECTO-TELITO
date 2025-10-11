@@ -47,6 +47,11 @@ public class SecurityConfig {
                         .requestMatchers("/error", "/acceso-denegado").permitAll()
 
                         .requestMatchers("/cat").permitAll()
+                        .requestMatchers("/api/apis/**").authenticated()
+
+                        //  la página y la API del Sandbox
+                        .requestMatchers("/sandbox", "/qa/api/sandbox/**").hasAnyRole("DEV", "QA", "SUPERADMIN")
+
 
                         // API endpoints - requieren autenticación pero sin CSRF
                         .requestMatchers("/api/onboarding/**").authenticated()
@@ -89,7 +94,7 @@ public class SecurityConfig {
 //                        .accessDeniedPage("/acceso-denegado")
 //                )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/api/**","/po/**") // Deshabilitar CSRF para endpoints API
+                        .ignoringRequestMatchers("/qa/**")
                 )
                 // Control de sesiones concurrentes y seguridad de sesión
                 .sessionManagement(session -> session
@@ -98,7 +103,7 @@ public class SecurityConfig {
                         .sessionRegistry(sessionRegistry)
                         .expiredUrl("/login?expired=true")
                         .and()
-                        .sessionFixation().migrateSession() // Prevenir session fixation attacks
+                        .sessionFixation().none() // Prevenir session fixation attacks
                         .invalidSessionUrl("/login?invalid=true")
                 )
                 // Agregar filtro personalizado para verificar usuarios activos en tiempo real

@@ -1,5 +1,6 @@
 package com.example.telitodev.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import java.util.List;
 
@@ -19,12 +20,13 @@ public class Entorno {
     private String descripcion;
     
     @OneToMany(mappedBy = "entorno", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonBackReference("entorno-api")
     private List<ApiHasEntorno> apiHasEntornos;
     
     @OneToMany(mappedBy = "entorno", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<MetricaApi> metricasApi;
     
-    // Constructores
+
     public Entorno() {}
     
     public Entorno(String nombre, String descripcion) {
@@ -32,7 +34,7 @@ public class Entorno {
         this.descripcion = descripcion;
     }
     
-    // Getters y Setters
+
     public Integer getIdEntorno() {
         return idEntorno;
     }

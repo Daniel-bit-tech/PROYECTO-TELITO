@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>TELITO DEVELOPER PORTAL | QA Testing </title>
+
+    <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
+    <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        .qa-container { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
+        @media (max-width: 992px) { .qa-container { grid-template-columns: 1fr; } }
+
+        .test-case { border: 1px solid var(--tblr-border-color); border-radius: 8px; margin-bottom: 1rem; }
+        .test-case-header { padding: 1rem; background: var(--tblr-bg-surface-secondary); border-bottom: 1px solid var(--tblr-border-color); cursor: pointer; }
+        .test-case-body { padding: 1rem; display: none; }
+        .test-case.expanded .test-case-body { display: block; }
+
+        .test-status { padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .status-passed { background: var(--tblr-success-lt); color: var(--tblr-success); }
+        .status-failed { background: var(--tblr-danger-lt); color: var(--tblr-danger); }
+        .status-pending { background: var(--tblr-warning-lt); color: var(--tblr-warning); }
+
+        .test-step { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-bottom: 1px solid var(--tblr-border-color-translucent); }
+        .test-step:last-child { border-bottom: none; }
+        .test-step-icon { width: 24px; text-align: center; }
+        .test-step-content { flex: 1; }
+
+        .collection-card { border: 1px solid var(--tblr-border-color); border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; }
+        .collection-card:hover { border-color: var(--tblr-primary); }
+
+        .environment-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+        .env-qa { background: var(--tblr-warning-lt); color: var(--tblr-warning); }
+        .env-staging { background: var(--tblr-cyan-lt); color: var(--tblr-cyan); }
+        .env-preprod { background: var(--tblr-purple-lt); color: var(--tblr-purple); }
+
+        /* Estilos del Playground Manual (tomados del primer HTML) */
+        .sandbox-container { display: grid; grid-template-columns: 350px 1fr; gap: 1.5rem; align-items: flex-start; }
+        @media (max-width: 992px) { .sandbox-container { grid-template-columns: 1fr; } }
+        .endpoints-list .list-group-item { cursor: pointer; }
+        .endpoints-list .list-group-item:hover { background-color: var(--tblr-bg-surface-secondary); }
+        .endpoint-method { font-weight: 600; width: 70px; text-align: right; margin-right: 0.5rem; }
+        .method-get { color: var(--tblr-green); }
+        .method-post { color: var(--tblr-orange); }
+        .method-put { color: var(--tblr-blue); }
+        .method-delete { color: var(--tblr-red); }
+        #playground-response-body { background-color: #f5f7fb; border: 1px solid var(--tblr-border-color); padding: 1rem; border-radius: 4px; white-space: pre-wrap; word-break: break-all; max-height: 500px; overflow-y: auto; }
+        #playground-request-body{ min-height: 200px; }
+    </style>
+</head>
+
+<body>
+<script src="/tabler/dist/js/tabler-theme.min.js"></script>
+
+<div class="page">
+    <div th:replace="qa/header_qa.html :: header"></div>
+
+    <div class="page-wrapper">
+        <div class="page-header d-print-none">
+            <div class="container-xl">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2 class="page-title">QA Testing & Automation</h2>
+                        <div class="text-muted mt-1">Pruebas automatizadas y validación de APIs</div>
+                    </div>
+                    <div class="col-auto">
+                        <button id="generate-qa-token"
+                                class="btn btn-primary"
+                                data-bs-toggle="modal"           data-bs-target="#qa-token-modal"> <i class="fas fa-key me-2"></i>Generar Token QA
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-body">
+            <div class="container-xl">
+                <div class="alert alert-info">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3">
+                            <i class="fas fa-info-circle fa-2x"></i>
+                        </div>
+                        <div>
+                            <h4 class="alert-title">Entorno de Calidad</h4>
+                            <div class="text-muted">
+                                Tokens temporales con límites de uso. Ideal para pruebas automatizadas y validación.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="qa-container">
+                    <div>
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h3 class="card-title">Credenciales QA</h3>
+                            </div>
+                            <div class="card-body">
+                                <div id="qa-token-info" class="text-center">
+                                    <div class="text-muted mb-2">No hay token activo</div>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="generateQAToken()">
+                                        Generar Token
+                                    </button>
+                                </div>
+                                <div id="active-qa-token" style="display: none;">
+                                    <div class="mb-3">
+                                        <label class="form-label">QA Token</label>
+                                        <div class="input-group">
+                                            <input type="text" id="qa-token-value" class="form-control" readonly>
+                                            <button class="btn btn-outline-secondary" onclick="copyQAToken()">
+                                                <i class="fas fa-copy"></i>
+                                            </button>
+                                        </div>
+                                        <div class="form-text text-warning">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Expira en: <span id="token-expiry">--:--:--</span>
+                                        </div>
+                                    </div>
+                                    <div class="row text-center">
+                                        <div class="col">
+                                            <small class="text-muted">Límites</small>
+                                            <div class="fw-bold" id="request-limit">0/1000</div>
+                                        </div>
+                                        <div class="col">
+                                            <small class="text-muted">Usado</small>
+                                            <div class="fw-bold text-warning" id="request-used">0</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">APIs para Testing</h3>
+                            </div>
+                            <div class="list-group list-group-flush" id="qa-apis-list">
+                                <div class="list-group-item text-muted text-center">
+                                    <i class="fas fa-spinner fa-spin me-2"></i>Cargando APIs...
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <div>
+                        <ul class="nav nav-tabs" data-bs-toggle="tabs">
+                            <li class="nav-item">
+                                <a href="#tabs-automated" class="nav-link active" data-bs-toggle="tab">
+                                    <i class="fas fa-robot me-2"></i> Pruebas Automatizadas
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#tabs-playground" class="nav-link" data-bs-toggle="tab">
+                                    <i class="fas fa-hand-pointer me-2"></i> Playground Manual
+                                </a>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content">
+                            <div class="tab-pane active show" id="tabs-automated">
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Suite de Pruebas Automatizadas</h3>
+                                        <div class="card-actions">
+                                            <button class="btn btn-primary btn-sm" onclick="runAllTests()">
+                                                <i class="fas fa-play me-1"></i>Ejecutar Todas
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="test-suites-container">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-4">
+                                    <div class="card-header">
+                                        <h3 class="card-title">
+                                            <i class="fas fa-chart-bar me-2"></i>Resultados en Tiempo Real
+                                        </h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="card bg-primary-lt">
+                                                    <div class="card-body text-center">
+                                                        <div class="h1 mb-1" id="total-tests">0</div>
+                                                        <div class="text-muted">Total Pruebas</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-success-lt">
+                                                    <div class="card-body text-center">
+                                                        <div class="h1 mb-1" id="passed-tests">0</div>
+                                                        <div class="text-muted">Exitosas</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-danger-lt">
+                                                    <div class="card-body text-center">
+                                                        <div class="h1 mb-1" id="failed-tests">0</div>
+                                                        <div class="text-muted">Fallidas</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="card bg-warning-lt">
+                                                    <div class="card-body text-center">
+                                                        <div class="h1 mb-1" id="coverage-percent">0%</div>
+                                                        <div class="text-muted">Cobertura</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="mt-4">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h5>Log de Ejecución</h5>
+                                                <button class="btn btn-sm btn-outline-secondary" onclick="clearTestLog()">
+                                                    <i class="fas fa-trash me-1"></i>Limpiar
+                                                </button>
+                                            </div>
+                                            <div id="test-execution-log" class="bg-dark text-light p-3 rounded" style="height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.875rem;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card mt-4">
+                                    <div class="card-header">
+                                        <h3 class="card-title">Configuración de Entornos</h3>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Entorno de Pruebas</label>
+                                                    <select class="form-select" id="qa-environment">
+                                                        <option value="qa">QA - Control de Calidad</option>
+                                                        <option value="staging">Staging - Preproducción</option>
+                                                        <option value="preprod">Preprod - Validación Final</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label class="form-label">Timeout (ms)</label>
+                                                    <input type="number" class="form-control" id="request-timeout" value="30000">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Headers Personalizados</label>
+                                            <textarea class="form-control" id="custom-headers" rows="3" placeholder='{"X-Custom-Header": "value"}'></textarea>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="auto-retry-failed">
+                                            <label class="form-check-label" for="auto-retry-failed">
+                                                Reintentar automáticamente pruebas fallidas
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane" id="tabs-playground">
+                                <div class="sandbox-container mt-3">
+                                    <div>
+                                        <div class="card mb-3">
+                                            <div class="card-header"><h3 class="card-title">API y Entorno</h3></div>
+                                            <div class="card-body">
+                                                <div class="mb-3">
+                                                    <label class="form-label">API Seleccionada</label>
+                                                    <select id="playground-api-select" class="form-select"></select>
+                                                </div>
+                                                <div>
+                                                    <label class="form-label">Entorno de Prueba</label>
+                                                    <select id="playground-environment-select" class="form-select"></select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card">
+                                            <div class="card-header"><h3 class="card-title">Endpoints</h3></div>
+                                            <div id="playground-endpoints-list" class="list-group list-group-flush"><div class="p-3 text-muted">Selecciona una API.</div></div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <div id="playground-request-response-container" style="display: none;">
+                                            <div class="card">
+                                                <div class="card-header"><h3 class="card-title">Petición (Request)</h3></div>
+                                                <div class="card-body">
+                                                    <div class="input-group mb-3">
+                                                        <span id="playground-request-method" class="input-group-text">GET</span>
+                                                        <input type="text" id="playground-request-url" class="form-control" readonly>
+                                                    </div>
+                                                    <ul class="nav nav-tabs" data-bs-toggle="tabs">
+                                                        <li class="nav-item"><a href="#playground-tabs-params" class="nav-link active" data-bs-toggle="tab">Params</a></li>
+                                                        <li class="nav-item"><a href="#playground-tabs-headers" class="nav-link" data-bs-toggle="tab">Headers</a></li>
+                                                        <li class="nav-item"><a href="#playground-tabs-body" class="nav-link" data-bs-toggle="tab">Body</a></li>
+                                                    </ul>
+                                                    <div class="tab-content">
+                                                        <div class="tab-pane active show" id="playground-tabs-params"><div id="playground-params-container" class="p-3"></div></div>
+                                                        <div class="tab-pane" id="playground-tabs-headers"><div id="playground-headers-container" class="p-3"></div></div>
+                                                        <div class="tab-pane" id="playground-tabs-body"><textarea id="playground-request-body" class="form-control mt-3" rows="8"></textarea></div>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer text-end">
+                                                    <button id="playground-send-request-btn" class="btn btn-primary">
+                                                        <i class="fas fa-paper-plane me-2"></i>Enviar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div id="playground-response-panel" class="card mt-3" style="display: none;">
+                                                <div class="card-header">
+                                                    <h3 class="card-title">Respuesta (Response)</h3>
+                                                    <div class="ms-auto">
+                                                        <span class="badge" id="playground-response-status"></span>
+                                                        <span class="ms-2 text-muted" id="playground-response-time"></span>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body"><pre><code id="playground-response-body"></code></pre></div>
+                                            </div>
+                                        </div>
+                                        <div id="playground-welcome-message" class="card card-body text-center">
+                                            <p class="h3">Playground de API</p>
+                                            <p class="text-muted">Selecciona una API y un endpoint para comenzar.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal modal-blur fade" id="qa-token-modal" tabindex="-1" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generar Token de QA</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Duración</label>
+                            <select class="form-select" id="token-duration">
+                                <option value="1">1 hora</option>
+                                <option value="4" selected>4 horas</option>
+                                <option value="8">8 horas</option>
+                                <option value="24">24 horas</option>
+                                <option value="168">1 semana</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Límite de Requests</label>
+                            <select class="form-select" id="token-limit">
+                                <option value="100">100 requests</option>
+                                <option value="500">500 requests</option>
+                                <option value="1000" selected>1,000 requests</option>
+                                <option value="5000">5,000 requests</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Propósito de las Pruebas</label>
+                    <textarea class="form-control" id="token-purpose" rows="3" placeholder="Describe el propósito de estas pruebas..."></textarea>
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Los tokens de QA son temporales y tienen límites estrictos. No los uses en producción.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmGenerateToken()">Generar Token</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/tabler/dist/js/tabler.min.js"></script>
+
+<script>
+
+    let qaState = {
+        activeToken: null,
+        testSuites: [],
+        executionLog: [],
+        currentEnvironment: 'qa',
+        availableApis: [],
+        currentApiSpec: null,
+        selectedEndpoint: {}
+    };
+    let tokenInterval;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        qaState.currentEnvironment = document.getElementById('qa-environment').value;
+        loadQAData();
+        setupEventListeners();
+    });
+
+    function setupEventListeners() {
+        document.getElementById('qa-environment').addEventListener('change', function() {
+            qaState.currentEnvironment = this.value;
+            updateEnvironmentBadges();
+
+            const playgroundEnvSelect = document.getElementById('playground-environment-select');
+            if (qaState.currentApiSpec && playgroundEnvSelect.options.length > 0) {
+                const optionToSelect = Array.from(playgroundEnvSelect.options).find(opt => opt.text.toLowerCase().includes(qaState.currentEnvironment));
+                if (optionToSelect) {
+                    playgroundEnvSelect.value = optionToSelect.value;
+                }
+            }
+        });
+
+        document.getElementById('playground-api-select').addEventListener('change', async function() {
+            const apiId = this.value;
+            if (apiId) {
+                await loadApiDetails(apiId);
+            } else {
+                document.getElementById('playground-endpoints-list').innerHTML = '<div class="p-3 text-muted">Selecciona una API.</div>';
+                document.getElementById('playground-request-response-container').style.display = 'none';
+                document.getElementById('playground-welcome-message').style.display = 'block';
+            }
+        });
+
+        document.getElementById('playground-send-request-btn').addEventListener('click', sendPlaygroundRequest);
+    }
+
+    async function loadQAData() {
+        try {
+            await loadAvailableAPIs();
+            await loadTestSuites();
+            await checkActiveToken();
+        } catch (error) {
+            console.error('Error loading QA data:', error);
+            addToLog('ERROR', `Error al cargar datos: ${error.message}`);
+        }
+    }
+
+    async function loadAvailableAPIs() {
+        const response = await fetch('/qa/api/sandbox/available-apis');
+        qaState.availableApis = await response.json();
+
+        const container = document.getElementById('qa-apis-list');
+        container.innerHTML = '';
+        const playgroundApiSelect = document.getElementById('playground-api-select');
+        playgroundApiSelect.innerHTML = '<option value="">Seleccionar una API...</option>';
+
+        qaState.availableApis.forEach(api => {
+            const apiItem = document.createElement('div');
+            apiItem.className = 'list-group-item';
+            apiItem.innerHTML = `
+                <div class="d-flex align-items-center">
+                    <div class="flex-fill">
+                        <div class="fw-bold">${api.nombre}</div>
+                        <div class="text-muted small">${api.descripcion}</div>
+                    </div>
+                    <span class="environment-badge env-${qaState.currentEnvironment}">
+                        ${qaState.currentEnvironment.toUpperCase()}
+                    </span>
+                </div>
+            `;
+            container.appendChild(apiItem);
+
+            const option = new Option(api.nombre, api.id);
+            playgroundApiSelect.appendChild(option);
+        });
+    }
+
+
+    async function loadApiDetails(apiId) {
+        try {
+            const response = await fetch(`/qa/api/sandbox/api-details/${apiId}`);
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'No se pudo cargar la especificación de la API.');
+            }
+            const apiData = await response.json();
+
+            qaState.currentApiSpec = apiData.spec;
+
+            const envSelect = document.getElementById('playground-environment-select');
+            envSelect.innerHTML = '';
+            apiData.entornos.forEach(env => {
+                const option = new Option(env.nombre, env.url_base);
+                envSelect.appendChild(option);
+                // Seleccionar el entorno de QA actual por defecto
+                if (env.nombre.toLowerCase().includes(qaState.currentEnvironment)) {
+                    envSelect.value = env.url_base;
+                }
+            });
+
+            renderPlaygroundEndpointsList(qaState.currentApiSpec);
+            document.getElementById('playground-welcome-message').style.display = 'block';
+            document.getElementById('playground-request-response-container').style.display = 'none';
+        } catch (error) {
+            addToLog('ERROR', `Error cargando detalles de API: ${error.message}`);
+        }
+    }
+
+    function renderPlaygroundEndpointsList(spec) {
+        const container = document.getElementById('playground-endpoints-list');
+        container.innerHTML = '';
+        if (!spec || !spec.paths) {
+            container.innerHTML = '<div class="p-3 text-muted">No hay endpoints definidos para esta API.</div>';
+            return;
+        }
+
+        for (const path in spec.paths) {
+            for (const method in spec.paths[path]) {
+                const endpointDiv = document.createElement('div');
+                endpointDiv.className = 'list-group-item endpoints-list';
+                endpointDiv.onclick = () => selectPlaygroundEndpoint(path, method);
+                endpointDiv.innerHTML = `<div class="d-flex align-items-center"><span class="endpoint-method method-${method}">${method.toUpperCase()}</span><span class="flex-fill">${path}</span></div>`;
+                container.appendChild(endpointDiv);
+            }
+        }
+    }
+
+    function selectPlaygroundEndpoint(path, method) {
+        document.getElementById('playground-welcome-message').style.display = 'none';
+        document.getElementById('playground-request-response-container').style.display = 'block';
+        document.getElementById('playground-response-panel').style.display = 'none';
+
+        qaState.selectedEndpoint = { path, method, details: qaState.currentApiSpec.paths[path][method] };
+
+        const methodBadge = document.getElementById('playground-request-method');
+        methodBadge.textContent = method.toUpperCase();
+        methodBadge.className = `input-group-text method-${method}`;
+        document.getElementById('playground-request-url').value = path;
+
+        // Renderizar Parámetros
+        const paramsContainer = document.getElementById('playground-params-container');
+        paramsContainer.innerHTML = '<h5>Parámetros</h5>';
+        const params = qaState.selectedEndpoint.details.parameters;
+        if (params && params.length > 0) {
+            params.forEach(p => {
+                const required = p.required ? '<span class="text-danger">*</span>' : '';
+                paramsContainer.innerHTML += `<div class="mb-2">
+                    <label class="form-label">${p.name} ${required} <span class="badge bg-secondary-lt">${p.in}</span></label>
+                    <input type="text" class="form-control" data-param-name="${p.name}" data-param-in="${p.in}" placeholder="${p.description || p.schema.type || ''}">
+                </div>`;
+            });
+        } else {
+            paramsContainer.innerHTML += '<p class="text-muted">Este endpoint no tiene parámetros.</p>';
+        }
+
+        const bodyTextarea = document.getElementById('playground-request-body');
+        const hasBody = qaState.selectedEndpoint.details.requestBody;
+        bodyTextarea.disabled = !hasBody;
+        bodyTextarea.value = hasBody ? JSON.stringify({}, null, 2) : '';
+
+        const headersContainer = document.getElementById('playground-headers-container');
+        headersContainer.innerHTML = '<h5>Cabeceras (Headers)</h5>';
+        headersContainer.innerHTML += `
+            <div class="mb-2">
+                <label class="form-label">Content-Type</label>
+                <input type="text" class="form-control" value="application/json" data-header-name="Content-Type">
+            </div>
+        `;
+        headersContainer.innerHTML += `
+            <div class="mb-2">
+                <label class="form-label">Authorization</label>
+                <input type="text" class="form-control" data-header-name="Authorization" placeholder="Bearer Token de QA (Se añade automáticamente si está activo)">
+            </div>
+        `;
+    }
+
+    async function sendPlaygroundRequest() {
+        if (!qaState.activeToken) {
+            alert('Necesitas generar un Token de QA para enviar peticiones en el Playground.');
+            return;
+        }
+
+        const btn = document.getElementById('playground-send-request-btn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+
+        const baseUrl = document.getElementById('playground-environment-select').value;
+        let finalUrl = baseUrl + qaState.selectedEndpoint.path;
+        const urlParams = new URLSearchParams();
+
+        document.querySelectorAll('#playground-params-container input').forEach(input => {
+            if (input.value) {
+                if (input.dataset.paramIn === 'path') {
+                    finalUrl = finalUrl.replace(`{${input.dataset.paramName}}`, encodeURIComponent(input.value));
+                } else if (input.dataset.paramIn === 'query') {
+                    urlParams.append(input.dataset.paramName, input.value);
+                }
+            }
+        });
+
+        const queryString = urlParams.toString();
+        if (queryString) {
+            finalUrl += '?' + queryString;
+        }
+
+        const customHeaders = {};
+        document.querySelectorAll('#playground-headers-container input').forEach(input => {
+            if (input.value) {
+                customHeaders[input.dataset.headerName] = input.value;
+            }
+        });
+
+        const headers = {
+            'Content-Type': customHeaders['Content-Type'] || 'application/json',
+            ...customHeaders,
+            'Authorization': `Bearer ${qaState.activeToken}`
+        };
+        if (customHeaders['Content-Type']) delete headers['Content-Type'];
+
+
+        let requestBody = null;
+        if (qaState.selectedEndpoint.details.requestBody) {
+            requestBody = document.getElementById('playground-request-body').value;
+        }
+
+        const requestData = {
+            apiId: document.getElementById('playground-api-select').value,
+            method: qaState.selectedEndpoint.method.toUpperCase(),
+            targetUrl: finalUrl,
+            headers: headers,
+            body: requestBody
+        };
+
+        try {
+            const response = await fetch('/qa/api/sandbox/execute', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+
+            const result = await response.json();
+            displayPlaygroundResponse(result);
+        } catch (error) {
+            displayPlaygroundResponse({ status: 'ERROR', time: 0, body: JSON.stringify({ error: error.message }, null, 2) });
+            addToLog('ERROR', `Error de ejecución: ${error.message}`);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Enviar';
+        }
+    }
+
+    function displayPlaygroundResponse(result) {
+        const responsePanel = document.getElementById('playground-response-panel');
+        responsePanel.style.display = 'block';
+        const statusBadge = document.getElementById('playground-response-status');
+        statusBadge.textContent = `Status: ${result.status}`;
+        statusBadge.className = `badge ${result.status >= 200 && result.status < 300 ? 'bg-success' : 'bg-danger'}`;
+        document.getElementById('playground-response-time').textContent = `${result.time || 0} ms`;
+
+        let formattedBody = result.body;
+        try {
+            formattedBody = JSON.stringify(JSON.parse(result.body), null, 2);
+        } catch (e) {
+        }
+        document.getElementById('playground-response-body').textContent = formattedBody;
+    }
+    // =================================================================
+
+
+    async function loadTestSuites() {
+        const response = await fetch('/qa/api/sandbox/test-suites');
+        qaState.testSuites = await response.json();
+        renderTestSuites();
+    }
+
+    function renderTestSuites() {
+        const container = document.getElementById('test-suites-container');
+
+        container.innerHTML = qaState.testSuites.map(suite => `
+            <div class="test-case" id="test-suite-${suite.id}">
+                <div class="test-case-header" onclick="toggleTestSuite(${suite.id})">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <i class="fas fa-folder me-2 text-warning"></i>
+                            <strong>${suite.nombre}</strong>
+                            <span class="text-muted ms-2">${suite.descripcion}</span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge bg-secondary">${suite.tests.length} tests</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="test-case-body">
+                    ${suite.tests.map(test => `
+                        <div class="test-step">
+                            <div class="test-step-icon">
+                                <i class="fas fa-play-circle text-muted"></i>
+                            </div>
+                            <div class="test-step-content">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>${test.nombre}</strong>
+                                        <div class="text-muted small">${test.descripcion}</div>
+                                    </div>
+                                    <div>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="runSingleTest(${suite.id}, ${test.id})">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('')}
+                    <div class="text-center mt-2">
+                        <button class="btn btn-sm btn-primary" onclick="runTestSuite(${suite.id})">
+                            <i class="fas fa-play me-1"></i>Ejecutar Suite Completa
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function toggleTestSuite(suiteId) {
+        const suite = document.getElementById(`test-suite-${suiteId}`);
+        suite.classList.toggle('expanded');
+    }
+
+    async function runTestSuite(suiteId) {
+        if (!qaState.activeToken) {
+            alert('Necesitas un token de QA activo para ejecutar pruebas');
+            return;
+        }
+
+        const suite = qaState.testSuites.find(s => s.id === suiteId);
+        addToLog('INFO', `Iniciando suite: ${suite.nombre}`);
+
+        for (const test of suite.tests) {
+            await executeTest(test);
+        }
+
+        addToLog('SUCCESS', `Suite ${suite.nombre} completada`);
+        updateTestStats();
+    }
+
+    async function runSingleTest(suiteId, testId) {
+        if (!qaState.activeToken) {
+            alert('Necesitas un token de QA activo para ejecutar pruebas');
+            return;
+        }
+
+        const suite = qaState.testSuites.find(s => s.id === suiteId);
+        const test = suite.tests.find(t => t.id === testId);
+
+        await executeTest(test);
+        updateTestStats();
+    }
+
+    async function executeTest(test) {
+        addToLog('INFO', `Ejecutando: ${test.nombre}`);
+
+        try {
+            const response = await fetch('/qa/api/sandbox/execute-test', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${qaState.activeToken}`
+                },
+                body: JSON.stringify({
+                    testId: test.id,
+                    environment: qaState.currentEnvironment,
+                    timeout: document.getElementById('request-timeout').value
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                addToLog('SUCCESS', `✓ ${test.nombre} - ${result.duration}ms`);
+            } else {
+                addToLog('ERROR', `✗ ${test.nombre} - ${result.error}`);
+            }
+        } catch (error) {
+            addToLog('ERROR', `✗ ${test.nombre} - Error: ${error.message}`);
+        }
+    }
+
+    function runAllTests() {
+        if (!qaState.activeToken) {
+            alert('Necesitas un token de QA activo para ejecutar pruebas');
+            return;
+        }
+
+        addToLog('INFO', 'Iniciando ejecución de todas las suites de prueba');
+
+        qaState.testSuites.forEach(suite => {
+            runTestSuite(suite.id);
+        });
+    }
+
+    function addToLog(type, message) {
+        const timestamp = new Date().toLocaleTimeString();
+        const logEntry = `[${timestamp}] ${message}`;
+
+        qaState.executionLog.push({ type, message: logEntry });
+
+        const logContainer = document.getElementById('test-execution-log');
+        const logElement = document.createElement('div');
+
+        logElement.className = type.toLowerCase();
+        logElement.textContent = logEntry;
+
+        if (type === 'ERROR') logElement.style.color = '#ff6b6b';
+        if (type === 'SUCCESS') logElement.style.color = '#51cf66';
+        if (type === 'INFO') logElement.style.color = '#339af0';
+
+        logContainer.appendChild(logElement);
+        logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    function clearTestLog() {
+        const logContainer = document.getElementById('test-execution-log');
+        logContainer.innerHTML = '';
+        qaState.executionLog = [];
+    }
+
+    function updateTestStats() {
+    }
+
+
+    async function generateQAToken() {
+        new bootstrap.Modal(document.getElementById('qa-token-modal')).show();
+    }
+
+    async function confirmGenerateToken() {
+        const tokenData = {
+            duration: document.getElementById('token-duration').value,
+            limit: document.getElementById('token-limit').value,
+            purpose: document.getElementById('token-purpose').value,
+            environment: qaState.currentEnvironment
+        };
+
+        try {
+            const response = await fetch('/qa/api/sandbox/generate-token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(tokenData)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                qaState.activeToken = result.token;
+                displayActiveToken(result);
+                bootstrap.Modal.getInstance(document.getElementById('qa-token-modal')).hide();
+                addToLog('SUCCESS', 'Token de QA generado exitosamente');
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            addToLog('ERROR', `Error generando token: ${error.message}`);
+        }
+    }
+
+    function displayActiveToken(tokenData) {
+        document.getElementById('qa-token-info').style.display = 'none';
+        document.getElementById('active-qa-token').style.display = 'block';
+
+        document.getElementById('qa-token-value').value = tokenData.token;
+        document.getElementById('request-limit').textContent = `0/${tokenData.limit}`;
+        document.getElementById('request-used').textContent = '0';
+
+        startTokenTimer(tokenData.expiresAt);
+    }
+
+    function startTokenTimer(expiresAt) {
+        if (tokenInterval) clearInterval(tokenInterval);
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const distance = expiresAt - now;
+
+            if (distance < 0) {
+                clearInterval(tokenInterval);
+                document.getElementById('token-expiry').textContent = 'EXPIRADO';
+                document.getElementById('token-expiry').className = 'text-danger';
+                qaState.activeToken = null;
+                return;
+            }
+
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById('token-expiry').textContent =
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        updateTimer();
+        tokenInterval = setInterval(updateTimer, 1000);
+    }
+
+
+    function copyQAToken() {
+        navigator.clipboard.writeText(qaState.activeToken).then(() => {
+            addToLog('INFO', 'Token copiado al portapapeles');
+        });
+    }
+
+    async function checkActiveToken() {
+        try {
+            const response = await fetch('/qa/api/sandbox/active-token');
+            const result = await response.json();
+
+            if (result.active) {
+                qaState.activeToken = result.token;
+                displayActiveToken(result);
+            }
+        } catch (error) {
+            console.log('No hay token activo');
+        }
+    }
+
+    function downloadPostmanCollection() {
+        addToLog('INFO', 'Descargando colección Postman...');
+        window.open(`/qa/api/sandbox/postman-collection?env=${qaState.currentEnvironment}`, '_blank');
+    }
+
+    function downloadEnvironmentVars() {
+        addToLog('INFO', 'Descargando variables de entorno...');
+        window.open(`/qa/api/sandbox/environment-vars?env=${qaState.currentEnvironment}`, '_blank');
+    }
+
+    function showTestAutomationDocs() {
+        addToLog('INFO', 'Abriendo documentación de QA...');
+        window.open('/docs/qa-automation', '_blank');
+    }
+
+    function updateEnvironmentBadges() {
+        document.querySelectorAll('.environment-badge').forEach(badge => {
+            badge.className = `environment-badge env-${qaState.currentEnvironment}`;
+            badge.textContent = qaState.currentEnvironment.toUpperCase();
+        });
+    }
+</script>
+</body>
+</html>

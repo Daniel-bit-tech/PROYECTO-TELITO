@@ -1,5 +1,8 @@
 package com.example.telitodev.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
@@ -24,12 +27,14 @@ public class Api {
 
 //    @Column(name = "dominio", length = 50)
 //    private String dominio;
+
     @ManyToOne
     @JoinColumn(name = "idDominio", nullable = false)
     private Dominio dominio;
 
 //    @Column(name = "tag", length = 45)
 //    private String tag;
+
     @ManyToOne
     @JoinColumn(name = "idTag", nullable = false)
     private Tag tag;
@@ -39,12 +44,15 @@ public class Api {
     
     // Relaciones
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference("api-entorno")
     private List<ApiHasEntorno> apiHasEntornos;
     
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ContratoApi> contratosApi;
-    
+
+
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<CredencialApi> credencialesApi;
     
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -69,6 +77,7 @@ public class Api {
     private List<Sdk> sdks;
     
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private List<SolicitudAcceso> solicitudesAcceso;
     
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

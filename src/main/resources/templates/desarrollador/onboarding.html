@@ -582,9 +582,8 @@
 
                         <div class="form-group">
                             <label class="form-label">Entorno</label>
-                            <select class="form-select" id="environment-select" required>
-                                <option value="sandbox">Sandbox (Pruebas)</option>
-                                <option value="production">Producción</option>
+                            <select class="form-select" id="environment-select" required disabled>
+                                <option value="">Selecciona una API primero</option>
                             </select>
                             <div class="form-text">Seleccione el entorno donde utilizará esta API</div>
                         </div>
@@ -646,7 +645,7 @@
                     <h3 class="card-title"><i class="fas fa-cube"></i> APIs Disponibles</h3>
                 </div>
 
-                <ul class="api-list">
+                <ul class="api-list" id="apis-container">
                     <li class="api-item">
                         <div class="api-icon" style="background-color: rgba(66, 153, 225, 0.1); color: #4299e1;">
                             <i class="fas fa-user-circle"></i>
@@ -746,6 +745,8 @@
         cargarApisDisponibles();
         cargarMisCredenciales();
         cargarSolicitudesPendientes();
+        document.getElementById('api-select').addEventListener('change', cargarEntornosParaApi);
+
     });
 
     // Manejar el envío de solicitudes
@@ -793,6 +794,57 @@
         // Enviar solicitud
         enviarSolicitudAcceso(solicitudData);
     });
+
+    function cargarEntornosParaApi() {
+        const apiSelect = document.getElementById('api-select');
+        const apiId = apiSelect.value;
+        const entornoSelect = document.getElementById('environment-select');
+
+        // Si no hay API seleccionada, vaciar y deshabilitar el select de entornos
+        if (!apiId) {
+            entornoSelect.innerHTML = '<option value="">Selecciona una API primero</option>';
+            entornoSelect.disabled = true;
+            return;
+        }
+
+        // Mostrar un estado de "cargando"
+        entornoSelect.innerHTML = '<option value="">Cargando entornos...</option>';
+        entornoSelect.disabled = true;
+
+        // Llamar al nuevo endpoint del backend
+        fetch(`/api/apis/${apiId}/entornos`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar los entornos.');
+                }
+                return response.json();
+            })
+            .then(entornos => {
+                // Limpiar el select y habilitarlo
+                entornoSelect.innerHTML = '';
+                entornoSelect.disabled = false;
+
+                if (entornos.length === 0) {
+                    entornoSelect.innerHTML = '<option value="">No hay entornos disponibles</option>';
+                    entornoSelect.disabled = true;
+                    return;
+                }
+
+                // Llenar el select con los entornos recibidos
+                entornos.forEach(entorno => {
+                    const option = document.createElement('option');
+                    // Usamos el nombre del entorno como valor y texto
+                    option.value = entorno.nombre.toLowerCase();
+                    option.textContent = entorno.nombre;
+                    entornoSelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                entornoSelect.innerHTML = `<option value="">${error.message}</option>`;
+                entornoSelect.disabled = true;
+            });
+    }
 
     // Función para cargar APIs disponibles
     function cargarApisDisponibles() {
@@ -976,7 +1028,14 @@
                         </div>
                     </div>
                     ${credencial.estado ? `
+
                     <div class="key-actions">
+
+                        <button class="key-btn" style="color: var(--tblr-azure);" onclick="irAlSandbox(${credencial.apiId}, '${credencial.entorno || 'development'}')">
+                             <i class="fas fa-play-circle"></i> Probar en Sandbox
+                        </button
+
+
                         <button class="key-btn revoke" onclick="revocarCredencial(${credencial.idCredencialApi})">
                             <i class="fas fa-ban"></i> Revocar
                         </button>
@@ -986,11 +1045,9 @@
             `;
         }).join('');
 
-        // Actualizar controles de paginación
         actualizarPaginacionKeys();
     }
 
-    // Función para actualizar los controles de paginación
     function actualizarPaginacionKeys() {
         const totalPaginas = Math.ceil(todasLasCredenciales.length / credencialesPorPagina);
         const paginationContainer = document.getElementById('keys-pagination');
@@ -1022,7 +1079,6 @@
         }
     }
 
-    // Función para cambiar de página en las API Keys
     function cambiarPaginaKeys(direccion) {
         const totalPaginas = Math.ceil(todasLasCredenciales.length / credencialesPorPagina);
         const nuevaPagina = paginaActualKeys + direccion;
@@ -1033,7 +1089,6 @@
         }
     }
 
-    // Función para mostrar solicitudes pendientes del usuario
     function mostrarSolicitudesPendientes(solicitudes) {
         const container = document.getElementById('requests-container');
 
@@ -1249,7 +1304,7 @@
     }
 
     function mostrarNotificacion(mensaje) {
-        // Crear elemento de notificación
+
         const notification = document.createElement('div');
         notification.style.cssText = `
             position: fixed;
@@ -1282,17 +1337,15 @@
         document.getElementById('confirmation-modal').style.display = 'none';
     }
 
-    // Funciones para el modal de error
     function showErrorModal(message) {
         console.log('Mostrando modal de error con mensaje:', message);
 
-        // Cambiar el icono y título para errores
         const modalTitle = document.querySelector('#error-modal .modal-title');
         const modalContent = document.querySelector('#error-modal .modal-content');
         const errorMessage = document.getElementById('error-message');
         const modal = document.getElementById('error-modal');
 
-        if (modalTitle) modalTitle.innerHTML = '❌ Error';
+        if (modalTitle) modalTitle.innerHTML = ' Error';
         if (modalContent) modalContent.style.borderLeft = '5px solid #dc3545';
         if (errorMessage) errorMessage.textContent = message || 'Ha ocurrido un error';
         if (modal) modal.style.display = 'flex';
@@ -1303,7 +1356,6 @@
     function showInfoModal(message) {
         console.log('Mostrando modal de información con mensaje:', message);
 
-        // Cambiar el icono y título para información
         const modalTitle = document.querySelector('#error-modal .modal-title');
         const modalContent = document.querySelector('#error-modal .modal-content');
         const errorMessage = document.getElementById('error-message');
@@ -1321,7 +1373,7 @@
         document.getElementById('error-modal').style.display = 'none';
     }
 
-    // Cerrar modal al hacer clic fuera
+
     window.addEventListener('click', function(e) {
         const modal = document.getElementById('confirmation-modal');
         if (e.target === modal) {
@@ -1339,7 +1391,7 @@
         }
     });
 
-    // CSS para animación
+
     const style = document.createElement('style');
     style.textContent = `
         @keyframes slideIn {
@@ -1354,6 +1406,31 @@
         }
     `;
     document.head.appendChild(style);
+
+    /**
+     * .
+     * @param {number} apiId
+     */
+    function irAlSandbox(apiId, entorno) {
+        if (!apiId) {
+            alert('Error: No se pudo identificar la API.');
+            return;
+        }
+
+
+        let entornoValidado = entorno;
+
+        if (!entorno || entorno === 'undefined' || entorno === 'null') {
+            console.warn('Entorno no definido, usando valor por defecto "development"');
+            entornoValidado = 'development';
+        }
+
+        const url = `/dev/sandbox?api=${encodeURIComponent(apiId)}&env=${encodeURIComponent(entornoValidado)}`;
+        console.log('Navegando a sandbox:', url);
+        window.location.href = url;
+    }
+
+
 </script>
 
 <script src="tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
