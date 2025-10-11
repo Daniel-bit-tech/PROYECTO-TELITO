@@ -483,21 +483,11 @@
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
 
-    <!-- Header condicional simplificado -->
-    <div th:if="${isImpersonating}">
-        <!-- Durante impersonación, usar rol impersonado -->
-        <div th:if="${impersonatedUserRole == 'DEV'}" th:replace="desarrollador/header :: header"></div>
-        <div th:if="${impersonatedUserRole == 'PO'}" th:replace="po/header_po :: header"></div>
-        <div th:if="${impersonatedUserRole == 'QA'}" th:replace="qa/header_qa :: header"></div>
-        <div th:if="${impersonatedUserRole == 'SUPERADMIN'}" th:replace="admin/header :: header"></div>
-    </div>
-    <div th:unless="${isImpersonating}">
-        <!-- Sin impersonación, usar rol real -->
-        <div th:if="${#authorization.hasRole('DEV')}" th:replace="desarrollador/header :: header"></div>
-        <div th:if="${#authorization.hasRole('PO')}" th:replace="po/header_po :: header"></div>
-        <div th:if="${#authorization.hasRole('QA')}" th:replace="qa/header_qa :: header"></div>
-        <div th:if="${#authorization.hasRole('SUPERADMIN')}" th:replace="admin/header :: header"></div>
-    </div>
+    <!-- Header dinámico basado en el portal de origen -->
+    <div th:if="${portalOrigen == 'DEV'}" th:replace="desarrollador/header.html :: header"></div>
+    <div th:if="${portalOrigen == 'QA'}" th:replace="qa/header_qa.html :: header"></div>
+    <div th:if="${portalOrigen == 'ADMIN'}" th:replace="admin/header.html :: header"></div>
+    <div th:if="${portalOrigen == 'PO' or portalOrigen == null}" th:replace="po/header_po.html :: header"></div>
 
   <div class="content">
     <div class="projects-container">

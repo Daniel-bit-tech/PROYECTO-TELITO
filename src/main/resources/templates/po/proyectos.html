@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta th:name="_csrf" th:content="${_csrf.token}"/>
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>TELITO PO PORTAL | Proyectos</title>
+    <link th:href="@{/tabler/dist/css/tabler.css}" rel="stylesheet"/>
+    <link th:href="@{/tabler/dist/css/tabler-flags.css}" rel="stylesheet"/>
+    <link th:href="@{/tabler/dist/css/tabler-payments.css}" rel="stylesheet"/>
+    <link th:href="@{/tabler/dist/css/tabler-vendors.css}" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url("https://rsms.me/inter/inter.css");
+        
+        .project-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .project-status {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+        }
+        
+        .status-active {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .status-inactive {
+            background-color: #6c757d;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <script th:src="@{/tabler/dist/js/tabler-theme.min.js}"></script>
+    
+    <div class="page">
+        <!-- Banner de impersonación -->
+        <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+        
+        <!-- Header específico del PO -->
+        <div th:replace="~{po/header_po :: header}"></div>
+        
+        <div class="page-wrapper">
+            <div class="page-header d-print-none">
+                <div class="container-xl">
+                    <div class="row g-2 align-items-center">
+                        <div class="col">
+                            <h2 class="page-title">
+                                Gestión de Proyectos
+                            </h2>
+                            <div class="text-secondary mt-1">
+                                Mira los proyectos de tu organización y sus APIs asociados
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="page-body">
+                <div class="container-xl">
+                    <div class="row row-deck row-cards">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">Proyectos</h3>
+                                    <div class="card-actions">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" placeholder="Buscar proyectos...">
+                                            <button class="btn btn-outline-primary" type="button">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <a th:href="@{/po/proyectos}" class="btn btn-primary me-2">
+                                            <i class="fas fa-list"></i> Todos
+                                        </a>
+                                        <a th:href="@{/po/proyectos?filter=activos}" class="btn btn-outline-success me-2">
+                                            <i class="fas fa-check-circle"></i> Activos
+                                        </a>
+                                        <a th:href="@{/po/proyectos?filter=ocultos}" class="btn btn-outline-secondary">
+                                            <i class="fas fa-eye-slash"></i> Ocultos
+                                        </a>
+                                    </div>
+                                    
+                                    <div class="row row-cards" th:if="${listaProyectos != null and !listaProyectos.isEmpty()}">
+                                        <div class="col-md-6 col-lg-4" th:each="proyecto : ${listaProyectos}">
+                                            <div class="card project-card h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-center mb-3">
+                                                        <div class="avatar avatar-sm me-3" style="background-color: #1f2937">
+                                                            <span th:text="${proyecto.nombre.substring(0,1).toUpperCase()}" class="text-white"></span>
+                                                        </div>
+                                                        <div class="flex-fill">
+                                                            <h4 class="card-title mb-1" th:text="${proyecto.nombre}">Nombre del Proyecto</h4>
+                                                            <div class="text-secondary" th:text="${proyecto.descripcion}">Descripción del proyecto</div>
+                                                        </div>
+                                                        <span th:class="${proyecto.activo ? 'project-status status-active' : 'project-status status-inactive'}"
+                                                              th:text="${proyecto.activo ? 'Activo' : 'Inactivo'}">Estado</span>
+                                                    </div>
+                                                    
+                                                    <div class="row">
+                                                        <div class="col-6">
+                                                            <div class="text-secondary">Visibilidad</div>
+                                                            <div th:text="${proyecto.publico ? 'Público' : 'Privado'}">Tipo</div>
+                                                        </div>
+                                                        <div class="col-6">
+                                                            <div class="text-secondary">Fecha de Inicio</div>
+                                                            <div th:text="${proyecto.fechaInicio}">Fecha de inicio</div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="mt-3">
+                                                        <a th:href="@{/po/proyectos/{id}(id=${proyecto.idProyecto})}" class="btn btn-primary btn-sm">
+                                                            <i class="fas fa-eye"></i> Ver Detalles
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div th:if="${listaProyectos == null or listaProyectos.isEmpty()}" class="text-center py-5">
+                                        <div class="text-secondary">
+                                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                                            <h3>No hay proyectos disponibles</h3>
+                                            <p>No se encontraron proyectos con los filtros aplicados.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div th:replace="~{po/footer :: footer}"></div>
+        </div>
+    </div>
+    
+    <!-- Scripts -->
+    <script th:src="@{/tabler/dist/js/tabler.min.js}"></script>
+</body>
+</html>

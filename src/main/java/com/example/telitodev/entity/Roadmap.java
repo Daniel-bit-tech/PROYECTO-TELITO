@@ -24,7 +24,7 @@ public class Roadmap {
         
         @Override
         public String toString() {
-            return displayName;
+            return name(); // Devuelve el nombre del enum (En_desarrollo)
         }
     }
 
@@ -38,7 +38,7 @@ public class Roadmap {
     private Api api;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false, columnDefinition = "ENUM('Nueva','En desarrollo','Próxima')")
+    @Column(name = "estado", nullable = false, columnDefinition = "ENUM('Nueva','En_desarrollo','Próxima')")
     private EstadoRoadmap estado;
 
     @Column(name = "fecha_inicio", nullable = false)

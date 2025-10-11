@@ -23,7 +23,6 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin")
-@PreAuthorize("hasRole('SUPERADMIN')")
 public class AdminController extends BaseController {
 
     @Autowired
@@ -34,10 +33,6 @@ public class AdminController extends BaseController {
 
     @GetMapping("/home")
     public String showAdminHome(Model model, Authentication authentication, HttpSession session) {
-        System.out.println("=== ADMIN HOME ACCESS ===");
-        System.out.println("Usuario: " + authentication.getName());
-        System.out.println("Roles: " + authentication.getAuthorities());
-        
         // Registrar acceso al dashboard en auditoría
         try {
             auditoriaService.registrarActividad(

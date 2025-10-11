@@ -40,12 +40,17 @@ public class ProyectosController extends BaseController {
 
     @GetMapping()
     public String mostrarListaProyectos(@RequestParam(value = "filter", required = false) String filtro,
+                           @RequestHeader(value = "referer", required = false) String referer,
                            Model model, Authentication auth, HttpSession session) {
 
         Usuario usuario = getCurrentUser(auth, session);
         
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
+
+        // Detectar el portal de origen basado en el referer o el rol del usuario
+        String portalOrigen = detectarPortalOrigen(referer, usuario);
+        model.addAttribute("portalOrigen", portalOrigen);
 
         List<Proyecto> listaProyectos = null;
         if (usuario.getRol().getNombreRol().equals("SUPERADMIN")) {
@@ -72,6 +77,26 @@ public class ProyectosController extends BaseController {
         model.addAttribute("usuario", usuario);
 
         return "general/proyectos";
+    }
+
+    private String detectarPortalOrigen(String referer, Usuario usuario) {
+        // Si hay referer, usamos eso para detectar el portal
+        if (referer != null) {
+            if (referer.contains("/dev/")) return "DEV";
+            if (referer.contains("/qa/")) return "QA";
+            if (referer.contains("/po/")) return "PO";
+            if (referer.contains("/admin/")) return "ADMIN";
+        }
+        
+        // Si no hay referer, usamos el rol del usuario (considerando impersonación)
+        String rol = usuario.getRol().getNombreRol();
+        switch (rol) {
+            case "DEV": return "DEV";
+            case "QA": return "QA";
+            case "PO": return "PO";
+            case "SUPERADMIN": return "ADMIN";
+            default: return "PO"; // Por defecto
+        }
     }
 
 
