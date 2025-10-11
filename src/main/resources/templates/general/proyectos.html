@@ -529,11 +529,14 @@
 <!--        <button class="btn-new-project" id="new-project-btn">-->
 <!--          <i class="fas fa-plus"></i> Nuevo Proyecto-->
 <!--        </button>-->
-        <a class="btn-new-project" th:href="@{/proyectos/nuevo}" sec:authorize="hasRole('PO')">
+        <a class="btn-new-project" th:href="@{/proyectos/nuevo}" sec:authorize="hasRole('PO')" th:if="${usuario.organizacion!=null}">
           <i class="fas fa-plus"></i> Nuevo Proyecto
         </a>
       </div>
 
+        <div th:if="${msg}" class="alert alert-success" role="alert" th:text="${msg}">
+            Mensaje
+        </div>
       <div class="projects-grid">
         <div class="project-card" th:each="proyecto : ${listaProyectos}">
 
