@@ -90,6 +90,9 @@
     document.addEventListener('DOMContentLoaded', function() {
         console.log('🎭 Banner de impersonación cargado');
         
+        // Prevenir navegación hacia atrás durante impersonación
+        preventBackNavigationDuringImpersonation();
+        
         // Debug inmediato de tokens CSRF
         console.log('🔍 Verificación inicial de tokens CSRF:');
         const initialCsrfToken = document.querySelector('meta[name="_csrf"]');
@@ -153,6 +156,65 @@
             });
         }
         
+        function preventBackNavigationDuringImpersonation() {
+            console.log('🛡️ Configurando protección contra navegación hacia atrás durante impersonación');
+            
+            // Agregar una entrada al historial para "atrapar" el botón atrás
+            if (window.history && window.history.pushState) {
+                // Agregar un estado al historial
+                window.history.pushState({ impersonationActive: true }, '', window.location.href);
+                
+                // Escuchar eventos de popstate (botón atrás/adelante)
+                window.addEventListener('popstate', function(event) {
+                    console.log('🔙 Detectada navegación hacia atrás durante impersonación');
+                    console.log('   Estado:', event.state);
+                    
+                    // Si estamos en impersonación y el usuario intenta ir atrás
+                    if (window.location.pathname.includes('/admin/')) {
+                        console.log('🚫 Bloqueando acceso a admin durante impersonación');
+                        
+                        // Redirigir al portal correcto (obtenido del banner)
+                        const currentUrl = window.location.href;
+                        if (currentUrl.includes('/po/')) {
+                            window.location.replace('/po/');
+                        } else if (currentUrl.includes('/dev/')) {
+                            window.location.replace('/dev/');
+                        } else if (currentUrl.includes('/qa/')) {
+                            window.location.replace('/qa/');
+                        } else {
+                            // Por defecto, mantener en la página actual
+                            window.history.pushState({ impersonationActive: true }, '', window.location.href);
+                        }
+                    } else {
+                        // Mantener la protección agregando otra entrada al historial
+                        window.history.pushState({ impersonationActive: true }, '', window.location.href);
+                    }
+                });
+            }
+        }
+        
+        function clearHistoryAndRedirect(redirectUrl) {
+            console.log('🧹 Limpiando historial y redirigiendo...');
+            
+            // Método 1: Usar replace para no agregar al historial
+            try {
+                // Intentar limpiar el historial usando history.pushState
+                if (window.history && window.history.pushState) {
+                    // Reemplazar la entrada actual del historial
+                    window.history.replaceState(null, null, redirectUrl);
+                    
+                    // Forzar la navegación
+                    window.location.replace(redirectUrl);
+                } else {
+                    // Fallback para navegadores más antiguos
+                    window.location.replace(redirectUrl);
+                }
+            } catch (error) {
+                console.warn('⚠️ Error al limpiar historial, usando replace simple:', error);
+                window.location.replace(redirectUrl);
+            }
+        }
+        
         function stopImpersonation() {
             console.log('🚪 Deteniendo impersonación...');
             
@@ -209,10 +271,12 @@
                 console.log('✅ Impersonación detenida:', data);
                 alert('✅ ' + data.mensaje);
                 
-                // Redirigir a gestión de usuarios
+                // Redirigir a gestión de usuarios SIN crear entrada en el historial
                 const redirectUrl = data.redirectUrl || '/admin/gestion-usuarios';
                 console.log('🔄 Redirigiendo a:', redirectUrl);
-                window.location.href = redirectUrl;
+                
+                // Limpiar historial agresivamente y redirigir
+                clearHistoryAndRedirect(redirectUrl);
             })
             .catch(error => {
                 console.error('❌ Error completo:', error);

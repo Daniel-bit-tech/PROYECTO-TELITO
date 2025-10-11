@@ -33,47 +33,75 @@ public class RoadmapController extends BaseController {
 
     @GetMapping("/roadmap")
     public String showRoadmapView(Model model , Authentication auth, HttpSession session) {
-
-        // Obtener todos los roadmaps desde el repository
-        List<Roadmap> roadmapList = roadmapRepository.findAll();
-
-        if (auth != null && auth.isAuthenticated()) {
-            // Obtener el usuario correcto considerando impersonación
-            Usuario usuario = getCurrentUser(auth, session);
-            
-            // Agregar atributos de impersonación
-            addImpersonationAttributes(model, session);
-            
-            model.addAttribute("usuario", usuario);
-        }
-
-        List<Map<String,Object>> roadmapMAP = new ArrayList<>();
-
-        // Verificación de datos antes de pasarlos a la vista
-        if (roadmapList == null || roadmapList.isEmpty()) {
-            System.out.println("No hay roadmaps disponibles.");
-        } else {
-            for (Roadmap roadmap : roadmapList) {
-                System.out.println("Roadmap - API: " + roadmap.getApi() + ", Estado: " + roadmap.getEstado() + ", Fecha Inicio: " + roadmap.getFechaInicio() + ", Fecha Fin: " + roadmap.getFechaFin());
+        try {
+            if (auth != null && auth.isAuthenticated()) {
+                // Obtener el usuario correcto considerando impersonación
+                Usuario usuario = getCurrentUser(auth, session);
+                
+                // Agregar atributos de impersonación
+                addImpersonationAttributes(model, session);
+                
+                model.addAttribute("usuario", usuario);
             }
-            roadmapMAP = roadmapList.stream().map(r -> {
-                Map<String, Object> m = new HashMap<>();
-                m.put("api", r.getApi().getNombre());
-                m.put("start", r.getFechaInicio().toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate().toString());
-                m.put("end", r.getFechaFin() != null
-                        ? r.getFechaFin().toInstant()
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate().toString()
-                        : null);
-                m.put("estado", r.getEstado().getDisplayName());
-                return m;
-            }).toList();
-        }
 
-        model.addAttribute("roadmapData", roadmapMAP); // Pasar los datos al modelo
-        return "po/roadmap"; // Vista donde se muestra el roadmap
+            // Obtener todos los roadmaps desde el repository
+            List<Roadmap> roadmapList = roadmapRepository.findAll();
+            
+            // Crear una lista simple para evitar problemas con el enum
+            List<Map<String,Object>> roadmapMAP = new ArrayList<>();
+
+            if (roadmapList != null && !roadmapList.isEmpty()) {
+                for (Roadmap roadmap : roadmapList) {
+                    try {
+                        Map<String, Object> m = new HashMap<>();
+                        
+                        // Usar valores seguros
+                        m.put("api", roadmap.getApi() != null ? roadmap.getApi().getNombre() : "Sin API");
+                        
+                        if (roadmap.getFechaInicio() != null) {
+                            m.put("start", roadmap.getFechaInicio().toInstant()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate().toString());
+                        } else {
+                            m.put("start", "");
+                        }
+                        
+                        if (roadmap.getFechaFin() != null) {
+                            m.put("end", roadmap.getFechaFin().toInstant()
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDate().toString());
+                        } else {
+                            m.put("end", "");
+                        }
+                        
+                        // Manejo seguro del estado - usar un valor por defecto si hay problemas
+                        try {
+                            m.put("estado", roadmap.getEstado() != null ? roadmap.getEstado().getDisplayName() : "Sin estado");
+                        } catch (Exception e) {
+                            m.put("estado", "Estado desconocido");
+                            System.err.println("Error al obtener estado del roadmap: " + e.getMessage());
+                        }
+                        
+                        roadmapMAP.add(m);
+                    } catch (Exception e) {
+                        System.err.println("Error procesando roadmap individual: " + e.getMessage());
+                        // Continuar con el siguiente roadmap
+                    }
+                }
+            }
+
+            model.addAttribute("roadmapData", roadmapMAP);
+            return "po/roadmap";
+            
+        } catch (Exception e) {
+            System.err.println("Error en showRoadmapView: " + e.getMessage());
+            e.printStackTrace();
+            
+            // En caso de error, mostrar una vista vacía
+            model.addAttribute("roadmapData", new ArrayList<>());
+            model.addAttribute("error", "Error al cargar el roadmap: " + e.getMessage());
+            return "po/roadmap";
+        }
     }
 
 

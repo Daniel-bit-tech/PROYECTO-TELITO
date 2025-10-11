@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import jakarta.servlet.http.HttpSession;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Servicio para manejar la impersonación de usuarios
@@ -195,6 +194,20 @@ public class ImpersonationService {
     }
 
     /**
+     * Obtiene el rol del usuario que está siendo impersonado
+     */
+    public String getImpersonatedUserRole(HttpSession session) {
+        return (String) session.getAttribute("IMPERSONATED_USER_ROLE");
+    }
+
+    /**
+     * Obtiene el email del usuario que está siendo impersonado
+     */
+    public String getImpersonatedUserEmail(HttpSession session) {
+        return (String) session.getAttribute("IMPERSONATED_USER_EMAIL");
+    }
+
+    /**
      * Verifica si un usuario es SuperAdmin
      */
     private boolean isSuperAdmin(Usuario usuario) {
@@ -207,37 +220,37 @@ public class ImpersonationService {
      * Si no hay impersonación, devuelve el usuario autenticado
      */
     public Usuario getCurrentUser(Authentication auth, HttpSession session) {
-        System.out.println("🔍 ImpersonationService.getCurrentUser():");
-        System.out.println("  - Auth name: " + auth.getName());
-        
+        Usuario usuario = null;
+
         if (isImpersonating(session)) {
             String impersonatedDni = getImpersonatedUserDni(session);
-            System.out.println("  - Impersonating: " + impersonatedDni);
             if (impersonatedDni != null) {
-                Usuario impersonatedUser = usuarioRepository.findByDni(impersonatedDni);
-                if (impersonatedUser != null) {
-                    System.out.println("  - Returning impersonated user: " + impersonatedUser.getCorreo());
-                    return impersonatedUser;
+                usuario = usuarioRepository.findByDni(impersonatedDni);
+                if (usuario != null) {
+                    System.out.println("👤 Usuario impersonado obtenido: " + usuario.getDni() + " - " + usuario.getNombre());
+                } else {
+                    System.err.println("❌ No se encontró usuario impersonado con DNI: " + impersonatedDni);
                 }
             }
         }
         
         // Sin impersonación o si falla, usar usuario autenticado normal
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        
-        // Si no se encuentra por correo, intentar buscar por OAuth provider ID
         if (usuario == null) {
-            System.out.println("  - No encontrado por correo, buscando por OAuth provider ID: " + auth.getName());
-            Optional<Usuario> usuarioOptional = usuarioRepository.findByOauthProviderIdAndOauthProvider(auth.getName(), "google");
-            usuario = usuarioOptional.orElse(null);
+            usuario = usuarioRepository.findByCorreo(auth.getName());
+            if (usuario != null) {
+                System.out.println("👤 Usuario autenticado obtenido: " + usuario.getDni() + " - " + usuario.getNombre());
+            } else {
+                System.err.println("❌ No se encontró usuario autenticado con correo: " + auth.getName());
+            }
         }
-        
-        System.out.println("  - Returning authenticated user: " + (usuario != null ? usuario.getCorreo() : "null"));
-        
-        if (usuario == null) {
-            throw new RuntimeException("Usuario no encontrado en la base de datos: " + auth.getName());
+
+        // Verificar si el usuario tiene organización
+        if (usuario != null && usuario.getOrganizacion() == null) {
+            System.err.println("⚠️ ADVERTENCIA: El usuario " + usuario.getDni() + " (" + usuario.getNombre() + ") no tiene organización asignada");
+        } else if (usuario != null) {
+            System.out.println("🏢 Organización del usuario: " + usuario.getOrganizacion().getNombre() + " (ID: " + usuario.getOrganizacion().getIdOrganizacion() + ")");
         }
-        
+
         return usuario;
     }
 }
