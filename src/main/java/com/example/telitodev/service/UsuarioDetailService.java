@@ -31,6 +31,12 @@ public class UsuarioDetailService implements UserDetailsService {
             throw new UsernameNotFoundException("Credenciales inválidas");
         }
         
+        // Verificar si es usuario interno (debe tener contraseña)
+        if (usuario.isUsuarioInterno() && !usuario.hasPassword()) {
+            System.err.println("Usuario interno sin contraseña: " + correo);
+            throw new UsernameNotFoundException("Credenciales inválidas");
+        }
+        
         // Verificar si el usuario está desactivado
         if (!usuario.getEstado()) {
             System.err.println("🚫 USUARIO DESACTIVADO DETECTADO:");

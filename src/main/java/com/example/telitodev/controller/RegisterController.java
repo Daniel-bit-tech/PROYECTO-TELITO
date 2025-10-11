@@ -13,6 +13,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -109,11 +111,41 @@ public class RegisterController {
             // Determinar rol ID basado en la selección
             Integer idRol;
             if ("desarrollador".equals(rol)) {
-                Optional<Rol> rolDev = rolRepository.findByNombreRol("DEVELOPER");
-                idRol = rolDev.map(Rol::getIdRol).orElse(2); // ID 2 por defecto para developer
+                // Buscar rol DEVELOPER, si hay duplicados usar el primer resultado
+                try {
+                    List<Rol> rolesDev = rolRepository.findAll().stream()
+                        .filter(r -> "DEVELOPER".equals(r.getNombreRol()))
+                        .collect(java.util.stream.Collectors.toList());
+                    
+                    if (!rolesDev.isEmpty()) {
+                        idRol = rolesDev.get(0).getIdRol(); // Usar el primer DEVELOPER encontrado
+                        System.out.println("✅ Rol DEVELOPER encontrado con ID: " + idRol);
+                    } else {
+                        idRol = 2; // Fallback al rol DEV
+                        System.out.println("⚠️ No se encontró rol DEVELOPER, usando DEV (ID: 2)");
+                    }
+                } catch (Exception e) {
+                    System.err.println("❌ Error buscando rol DEVELOPER: " + e.getMessage());
+                    idRol = 2; // Fallback seguro
+                }
             } else if ("qa".equals(rol)) {
-                Optional<Rol> rolQa = rolRepository.findByNombreRol("QA");
-                idRol = rolQa.map(Rol::getIdRol).orElse(3); // ID 3 por defecto para QA
+                // Buscar rol QA de forma similar
+                try {
+                    List<Rol> rolesQa = rolRepository.findAll().stream()
+                        .filter(r -> "QA".equals(r.getNombreRol()))
+                        .collect(java.util.stream.Collectors.toList());
+                    
+                    if (!rolesQa.isEmpty()) {
+                        idRol = rolesQa.get(0).getIdRol();
+                        System.out.println("✅ Rol QA encontrado con ID: " + idRol);
+                    } else {
+                        idRol = 3; // Fallback
+                        System.out.println("⚠️ No se encontró rol QA, usando ID: 3");
+                    }
+                } catch (Exception e) {
+                    System.err.println("❌ Error buscando rol QA: " + e.getMessage());
+                    idRol = 3; // Fallback seguro
+                }
             } else {
                 model.addAttribute("error", "Rol no válido seleccionado");
                 return "sesion/register";

@@ -46,14 +46,34 @@ public class UsuarioActivoFilter extends OncePerRequestFilter {
             }
             
             try {
-                // Verificar el estado actual del usuario en la base de datos
-                Usuario usuario = usuarioRepository.findByCorreo(correoUsuario);
+                // Detectar si es un usuario OAuth2 (Google ID son números largos)
+                boolean isOAuth2User = correoUsuario.matches("\\d{15,}"); // Google IDs son números largos
+                
+                Usuario usuario = null;
+                
+                if (isOAuth2User) {
+                    // Buscar usuario OAuth2 por provider ID
+                    usuario = usuarioRepository.findByOauthProviderIdAndOauthProvider(correoUsuario, "google").orElse(null);
+                    
+                    if (usuario == null) {
+                        // Usuario OAuth2 nuevo - permitir que OAuth2UserService lo procese
+                        System.out.println("🔄 USUARIO OAUTH2 NUEVO DETECTADO - PERMITIENDO PROCESAMIENTO:");
+                        System.out.println("   - Google ID: " + correoUsuario);
+                        System.out.println("   - URI: " + requestURI);
+                        filterChain.doFilter(request, response);
+                        return;
+                    }
+                } else {
+                    // Usuario tradicional - buscar por email
+                    usuario = usuarioRepository.findByCorreo(correoUsuario);
+                }
                 
                 if (usuario == null || !usuario.getEstado()) {
                     // Usuario no existe o está desactivado - forzar logout
                     System.out.println("🚫 USUARIO DESACTIVADO DETECTADO EN TIEMPO REAL:");
-                    System.out.println("   - Email: " + correoUsuario);
+                    System.out.println("   - Email/ID: " + correoUsuario);
                     System.out.println("   - URI: " + requestURI);
+                    System.out.println("   - Es OAuth2: " + isOAuth2User);
                     System.out.println("   - Usuario existe: " + (usuario != null));
                     if (usuario != null) {
                         System.out.println("   - Estado: " + usuario.getEstado());
@@ -92,6 +112,8 @@ public class UsuarioActivoFilter extends OncePerRequestFilter {
     private boolean shouldSkipFilter(String requestURI) {
         return requestURI.startsWith("/login") ||
                requestURI.startsWith("/logout") ||
+               requestURI.startsWith("/oauth2") ||        // ⚡ EXCLUIR OAUTH2
+               requestURI.contains("/oauth2/") ||         // ⚡ EXCLUIR OAUTH2 PATHS  
                requestURI.startsWith("/css") ||
                requestURI.startsWith("/js") ||
                requestURI.startsWith("/img") ||

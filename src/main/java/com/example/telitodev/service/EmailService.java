@@ -178,16 +178,19 @@ public class EmailService {
                             <div class=\"expiration\">⏰ Expira el FECHA_PLACEHOLDER</div>
                         </div>
                         <div style=\"text-align:center; margin: 30px 0;\">
-                            <a class=\"button\" href=\"APP_URL_PLACEHOLDER/admin/gestion-usuarios/confirmar-cuenta?email=EMAIL_PLACEHOLDER&token=TOKEN_PLACEHOLDER\" target=\"_blank\">Confirmar mi cuenta</a>
+                            <a class=\"button\" href=\"APP_URL_PLACEHOLDER/confirmar-cuenta?email=EMAIL_PLACEHOLDER&token=TOKEN_PLACEHOLDER\" target=\"_blank\">Confirmar mi cuenta</a>
                         </div>
                         <div class=\"instructions\">
                             <h3>📋 Instrucciones:</h3>
                             <ol>
-                                <li>Haz clic en el botón "Confirmar mi cuenta" o ve a la página de confirmación en el sistema</li>
-                                <li>Ingresa tu email y el código de 6 dígitos</li>
-                                <li>Establece tu nueva contraseña</li>
-                                <li>¡Listo! Podrás acceder con tus credenciales</li>
+                                <li><strong>Haz clic en el botón "Confirmar mi cuenta"</strong> para ir directamente al formulario</li>
+                                <li>Se abrirá una página con tus datos pre-cargados</li>
+                                <li>Ingresa tu código de 6 dígitos y establece tu contraseña</li>
+                                <li>¡Listo! Podrás acceder al sistema con tu email y contraseña</li>
                             </ol>
+                            <p style="background-color: #fff3cd; padding: 10px; border-radius: 5px; border-left: 4px solid #ffc107;">
+                                💡 <strong>Tip:</strong> Si el botón no funciona, ve manualmente a <strong>APP_URL_PLACEHOLDER/confirmar-cuenta</strong> e ingresa tu email y código.
+                            </p>
                         </div>
                         
                         <p><strong>⚠️ Importante:</strong></p>
