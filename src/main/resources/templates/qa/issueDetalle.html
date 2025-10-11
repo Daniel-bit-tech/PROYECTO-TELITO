@@ -317,9 +317,6 @@
     <!-- END CUSTOM FONT -->
 </head>
 <body>
-<!-- Banner de impersonación -->
-<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
-
 <!-- BEGIN GLOBAL THEME SCRIPT -->
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307617"></script>
 <!-- END GLOBAL THEME SCRIPT -->
@@ -435,9 +432,7 @@
                                     <div class="empty-icon"><i class="fas fa-inbox"></i></div>
                                     <h4 class="empty-title">Aún no hay comentarios</h4>
                                     <p class="empty-description">Sé el primero en dejar un comentario sobre este issue.</p>
-                                    <a href="#" class="btn-primary switch-tab" data-tab="leave-comment-btn">
-                                        <i class="fas fa-comment"></i> Deja tu comentario
-                                    </a>
+
                                 </div>
 
                                 <!-- Si hay comentarios, mostrarlos -->
@@ -452,9 +447,12 @@
                                             </div>
                                             <div class="feedback-content">
                                                 <div class="feedback-message" th:text="${comentario.comentario}"></div>
-                                                <div th:if="${comentario.adjuntos.size() > 0}">
-                                                    <a th:each="adjunto : ${comentario.adjuntos}" href="@{/qa/verAdjunto/{idAdjunto}(idAdjunto=${adjunto.idAdjunto})}" class="btn btn-link">
-                                                        Ver adjunto
+                                                <span th:text="${comentario.adjuntos.size()}"></span>
+                                                <div th:if="${comentario.adjuntos != null && comentario.adjuntos.size() > 0}">
+                                                    <a th:each="adjunto : ${comentario.adjuntos}"
+                                                       th:href="@{/qa/archivos/verAdjunto/{idAdjunto}(idAdjunto=${adjunto.idAdjunto})}"
+                                                       class="btn btn-link">
+                                                        <span th:text="${adjunto.nombre}"></span>
                                                     </a>
                                                 </div>
                                             </div>
@@ -482,9 +480,11 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="archivo" class="form-label">Adjuntar archivo (opcional):</label>
-                                    <input type="file" id="archivo" name="archivo" class="form-control" />
+                                    <input type="file" id="archivo" name="archivos" class="form-control" accept=".png, .jpg, .jpeg, .log" multiple />
+                                    <small>Máximo 5 archivos</small>
                                 </div>
-                                <button type="submit" class="btn btn-primary mt-3">Enviar Comentario</button>
+                                <div id="error-message" style="color: red; display: none;">Solo se permiten archivos de tipo .png, .jpg, .jpeg o .log</div>
+                                <button type="submit" onclick="return validateFiles()" class="btn btn-primary mt-3">Enviar Comentario</button>
                             </form>
                         </div>
                     </div>
@@ -493,7 +493,7 @@
             </div>
             <!-- END PAGE BODY -->
             <!--  BEGIN FOOTER  -->
-
+            <div th:replace="qa/footer.html :: footer"></div>
             <!--  END FOOTER  -->
         </div>
     </div>
@@ -658,6 +658,26 @@
             }
         });
 
+    </script>
+    <script>
+        function validateFiles() {
+            const fileInput = document.getElementById("archivo");
+            const files = fileInput.files;
+            const allowedTypes = ["image/png", "image/jpeg", "text/plain"]; // Tipos de archivo permitidos
+
+            // Limpiar cualquier mensaje de error previo
+            document.getElementById("error-message").style.display = "none";
+
+            for (let i = 0; i < files.length; i++) {
+                if (!allowedTypes.includes(files[i].type)) {
+                    // Si el archivo no tiene un tipo permitido, mostramos un mensaje de error
+                    document.getElementById("error-message").style.display = "block";
+                    return false; // Evita que el formulario se envíe
+                }
+            }
+
+            return true; // Si todos los archivos son válidos, el formulario se envía
+        }
     </script>
     <!-- END PAGE SCRIPTS -->
 </body>
