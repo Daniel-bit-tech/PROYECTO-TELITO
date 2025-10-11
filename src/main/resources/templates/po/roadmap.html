@@ -3,7 +3,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>TELITO DEVELOPER PORTAL | Sistema de Reservas Deportivas</title>
+    <title>TELITO DEVELOPER PORTAL | Roadmap de APIs</title>
 
     <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet">
     <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet">
@@ -67,6 +67,106 @@
             text-align: center;
             margin-bottom: 30px;
         }
+
+        .status-controls {
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .status-line {
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 0.5rem;
+        }
+
+        .status-proxima {
+            background-color: #94d82d;
+        }
+
+        .status-desarrollo {
+            background-color: #22b8cf;
+        }
+
+        .status-nueva {
+            background-color: #f59f00;
+        }
+
+        .status-sin-estado {
+            background: repeating-linear-gradient(
+                    45deg,
+                    #adb5bd,
+                    #adb5bd 5px,
+                    transparent 5px,
+                    transparent 10px
+            );
+        }
+
+        .badge-proxima {
+            background-color: #94d82d;
+            color: white;
+        }
+
+        .badge-desarrollo {
+            background-color: #22b8cf;
+            color: white;
+        }
+
+        .badge-nueva {
+            background-color: #f59f00;
+            color: white;
+        }
+
+        .badge-sin-estado {
+            background-color: #adb5bd;
+            color: white;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 1rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 4px;
+            margin-right: 0.5rem;
+        }
+
+        .api-control-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: rgba(255,255,255,0.05);
+        }
+
+        .api-control-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .api-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 
@@ -99,7 +199,39 @@
                                 <h3 class="card-title">Roadmap de APIs</h3>
                                 <!-- Roadmap Chart Placeholder -->
                                 <div id="roadmap-chart"></div>
-                                <div id="roadmap-controls" class="mt-4"></div>
+
+                                <!-- Controles de Estado -->
+                                <div class="status-controls mt-4">
+                                    <h4 class="mb-3">Control de Estados de APIs</h4>
+
+                                    <!-- Lista de APIs con controles individuales -->
+                                    <div id="api-controls-list" class="mb-3">
+                                        <div class="text-center">
+                                            <div class="loading-spinner"></div>
+                                            <span class="ms-2">Cargando APIs...</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Leyenda -->
+                                    <div class="d-flex flex-wrap">
+                                        <div class="legend-item me-4 mb-2">
+                                            <div class="legend-color status-proxima"></div>
+                                            <span>Próxima</span>
+                                        </div>
+                                        <div class="legend-item me-4 mb-2">
+                                            <div class="legend-color status-desarrollo"></div>
+                                            <span>En Desarrollo</span>
+                                        </div>
+                                        <div class="legend-item me-4 mb-2">
+                                            <div class="legend-color status-nueva"></div>
+                                            <span>Nueva</span>
+                                        </div>
+                                        <div class="legend-item me-4 mb-2">
+                                            <div class="legend-color status-sin-estado"></div>
+                                            <span>Sin Estado</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -134,205 +266,242 @@
 
 <script th:inline="javascript">
     /*<![CDATA[*/
-    let roadmapData = [[${roadmapData}]];
-    let roadmapControls = [[${roadmapControls}]];
-    /*]]>*/
+    // Variables globales
+    let roadmapChart = null;
 
-    // =========================
-    // 1) GRÁFICA (sin cambios)
-    // =========================
-    const colorPorEstado = {
-        'Nueva': '#f59f00',
-        'En desarrollo': '#22b8cf',
-        'Próxima': '#94d82d',
-        'OLD': 'transparent'  // Sin color para el estado "OLD" (pausa)
-    };
+    // Cargar datos desde Thymeleaf - ESTO ES CLAVE
+    const roadmapData = /*[[${roadmapData}]]*/ [];
+    const roadmapControls = /*[[${roadmapControls}]]*/ [];
 
-    const seriesData = (roadmapData || []).map(item => ({
-        x: item.api,
-        y: [new Date(item.start).getTime(), new Date(item.end).getTime()],
-        fillColor: colorPorEstado[item.estado] || 'transparent', // Si es "OLD", no tendrá color
-        estado: item.estado
-    }));
+    console.log('📊 roadmapData:', roadmapData);
+    console.log('🎮 roadmapControls:', roadmapControls);
 
-    const options = {
-        chart: { type: 'rangeBar', height: 460 },
-        plotOptions: { bar: { horizontal: true, barHeight: '60%', distributed: true } },
-        series: [{ name: 'Fase', data: seriesData }],
-        xaxis: { type: 'datetime', labels: { datetimeUTC: false } },
-        tooltip: {
-            y: {
-                formatter: (val, opts) => {
-                    const item = opts.w.config.series[0].data[opts.dataPointIndex];
-                    const start = new Date(item.y[0]).toLocaleDateString();
-                    const end = new Date(item.y[1]).toLocaleDateString();
-                    return `${item.estado} · ${start} → ${end}`;
-                }
-            }
-        },
-        legend: { show: false },
-        dataLabels: {
-            enabled: true,
-            formatter: (_, opts) => {
-                const item = opts.w.config.series[0].data[opts.dataPointIndex];
-                return item.estado;
-            }
-        },
-        grid: { strokeDashArray: 3 }
-    };
-
-    new ApexCharts(document.querySelector("#roadmap-chart"), options).render();
-
-    // ==================================================
-    // 2) CONTROLES (Desplegable + Terminar/OLD + Reanudar)
-    // ==================================================
-
-    // Si no existe contenedor para controles, créalo debajo del chart
-    (function ensureControlsContainer(){
-        if (!document.getElementById('roadmap-controls')) {
-            const chartEl = document.getElementById('roadmap-chart');
-            if (chartEl && chartEl.parentElement) {
-                const div = document.createElement('div');
-                div.id = 'roadmap-controls';
-                div.className = 'mt-4';
-                chartEl.parentElement.appendChild(div);
-            }
+    // Función para obtener el siguiente estado
+    function getNextStatus(currentStatus) {
+        switch(currentStatus) {
+            case 'Próxima': return 'En desarrollo';
+            case 'En desarrollo': return 'Nueva';
+            case 'Nueva': return 'Sin estado';
+            case 'Sin estado': return 'Próxima';
+            default: return 'Próxima';
         }
-    })();
-
-    // Flujo estricto y etiquetas
-    const FLOW = {
-        PROXIMA:        ['EN_DESARROLLO', 'OLD'],
-        EN_DESARROLLO:  ['NUEVA', 'OLD'],
-        NUEVA:          ['OLD'],
-        OLD:            ['PROXIMA'] // reanudar (nuevo tramo)
-    };
-
-    const LABEL = {
-        PROXIMA:        'Próxima',
-        EN_DESARROLLO:  'En desarrollo',
-        NUEVA:          'Nueva',
-        OLD:            'OLD (pausar)'
-    };
-
-    // Normalizador etiqueta->enum
-    function toEnum(etiqueta){
-        if(!etiqueta) return 'PROXIMA';
-        const s = etiqueta.toString().toLowerCase();
-        if (s.includes('en desarrollo')) return 'EN_DESARROLLO';
-        if (s.includes('nueva'))         return 'NUEVA';
-        if (s.includes('próxima') || s.includes('proxima')) return 'PROXIMA';
-        if (s.includes('old')) return 'OLD';
-        return 'PROXIMA';
     }
 
-    // Construir fuente para controles:
-    const controlsByApi = {}; // { apiId, apiNombre, open, closed[], currentEstado, lastClosedEstado }
-
-    if (Array.isArray(roadmapControls) && roadmapControls.length) {
-        roadmapControls.forEach(c => {
-            controlsByApi[c.apiId] = {
-                apiId: c.apiId,
-                apiNombre: c.apiNombre,
-                open: (c.currentEstado && c.currentEstado !== 'OLD') ? c.currentEstado : null,
-                closed: [],
-                currentEstado: (c.currentEstado || 'OLD')
-            };
-        });
-    } else {
-        (roadmapData || []).forEach(seg => {
-            const apiId = seg.apiId;
-            if (!apiId) return;
-            const apiNombre = seg.api;
-            const estadoEnum = toEnum(seg.estado);
-
-            controlsByApi[apiId] ??= { apiId, apiNombre, open: null, closed: [] };
-
-            if (!seg.end) {
-                controlsByApi[apiId].open = estadoEnum;
-            } else {
-                controlsByApi[apiId].closed.push({ estado: estadoEnum, fin: new Date(seg.end) });
-            }
-        });
-
-        Object.values(controlsByApi).forEach(it => {
-            if (it.open) {
-                it.currentEstado = it.open;
-            } else {
-                it.currentEstado = 'OLD';
-                it.lastClosedEstado = it.closed.sort((a,b)=>b.fin-a.fin)[0]?.estado || null;
-            }
-        });
+    // Función para obtener clases CSS
+    function getStatusClass(status, type) {
+        const statusMap = {
+            'Próxima': type === 'badge' ? 'badge-proxima' : 'status-proxima',
+            'En desarrollo': type === 'badge' ? 'badge-desarrollo' : 'status-desarrollo',
+            'Nueva': type === 'badge' ? 'badge-nueva' : 'status-nueva',
+            'Sin estado': type === 'badge' ? 'badge-sin-estado' : 'status-sin-estado'
+        };
+        return statusMap[status] || statusMap['Sin estado'];
     }
 
-    // Render de controles
-    function renderControles(){
-        const cont = document.getElementById('roadmap-controls');
-        if (!cont) return;
-        cont.innerHTML = '';
+    // Función principal de inicialización
+    function initializeRoadmap() {
+        console.log('🚀 Inicializando roadmap...');
 
-        const items = Object.values(controlsByApi).sort((a,b)=> a.apiNombre.localeCompare(b.apiNombre));
+        // 1. Renderizar controles de API
+        renderApiControls();
 
-        items.forEach(item => {
-            let opciones;
-            if (item.currentEstado === 'OLD' && item.lastClosedEstado) {
-                const next = (FLOW[item.lastClosedEstado] || []).filter(x => x !== 'OLD');
-                opciones = next.length ? next : ['PROXIMA'];
-            } else if (item.currentEstado === 'OLD' && !item.lastClosedEstado) {
-                opciones = ['PROXIMA'];
-            } else {
-                opciones = FLOW[item.currentEstado] || [];
-            }
+        // 2. Inicializar gráfica
+        initializeRoadmapChart();
 
-            const row = document.createElement('div');
-            row.className = 'd-flex align-items-center gap-2 mb-2';
-
-            row.innerHTML = `
-        <strong style="min-width:220px">${item.apiNombre}</strong>
-        <span style="min-width:180px">Actual: <em>${LABEL[item.currentEstado] || 'OLD'}</em></span>
-        <select id="sel-${item.apiId}" class="form-select" style="width:240px;display:inline-block">
-          ${opciones.map(opt => `<option value="${opt}">${LABEL[opt]}</option>`).join('')}
-        </select>
-        <input type="date" id="fec-${item.apiId}" class="form-control" style="width:160px;display:inline-block">
-        <button class="btn ${opciones.length === 1 && opciones[0] === 'OLD' ? 'btn-warning' : 'btn-primary'}"
-                onclick="aplicarCambio(${item.apiId})">
-          ${opciones.length === 1 && opciones[0] === 'OLD' ? 'Terminar (OLD)' : 'Guardar'}
-        </button>
-      `;
-            cont.appendChild(row);
-        });
+        // 3. Ocultar spinner de carga
+        document.querySelector('#api-controls-list .loading-spinner')?.remove();
     }
-    renderControles();
 
-    // Acciones contra el backend
-    async function aplicarCambio(apiId){
-        const sel   = document.getElementById(`sel-${apiId}`);
-        const fecha = document.getElementById(`fec-${apiId}`).value || '';
-        const nuevo = sel.value;
+    // Renderizar controles de API
+    function renderApiControls() {
+        const controlsList = document.getElementById('api-controls-list');
 
-        if (nuevo === 'OLD') {
-            if(!confirm('¿Confirmas terminar esta API? Pasará a OLD y se dejará de monitorear.')) return;
-            const qs = new URLSearchParams();
-            if (fecha) qs.set('fecha', fecha);
-            const res = await fetch(`/po/roadmap/${apiId}/terminar?${qs.toString()}`, { method:'POST' });
-            if (!res.ok) { alert('No se pudo terminar'); return; }
-        } else {
-            const res = await fetch(`/po/roadmap/${apiId}/estado`, {
-                method: 'PATCH',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({ nuevoEstado: nuevo, fecha })
+        if (!roadmapControls || roadmapControls.length === 0) {
+            controlsList.innerHTML = '<div class="text-center text-muted">No hay APIs disponibles</div>';
+            return;
+        }
+
+        let html = '';
+        roadmapControls.forEach(control => {
+            html += `
+                <div class="api-control-item" data-id="${control.apiId}">
+                    <div class="flex-fill">
+                        <div class="d-flex align-items-center">
+                            <div class="me-3" style="min-width: 200px;">
+                                <strong>${control.apiNombre}</strong>
+                            </div>
+                            <div class="me-3">
+                                <span class="badge ${getStatusClass(control.currentEstado, 'badge')}">
+                                    ${control.currentEstado}
+                                </span>
+                            </div>
+                            <div class="status-line ${getStatusClass(control.currentEstado, 'line')}" style="width: 100px;"></div>
+                        </div>
+                    </div>
+                    <div class="ms-3 api-buttons">
+                        <button class="btn btn-sm btn-primary change-status-btn" data-api-id="${control.apiId}">
+                            Cambiar Estado
+                        </button>
+                        ${control.currentEstado !== 'Sin estado' ?
+                `<button class="btn btn-sm btn-secondary reset-status-btn" data-api-id="${control.apiId}">
+                                Restablecer
+                            </button>` : ''
+            }
+                    </div>
+                </div>
+            `;
+        });
+
+        controlsList.innerHTML = html;
+        attachEventListeners();
+    }
+
+    // Adjuntar event listeners
+    function attachEventListeners() {
+        // Botones de cambiar estado
+        document.querySelectorAll('.change-status-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const apiId = this.getAttribute('data-api-id');
+                cambiarEstadoApi(apiId);
             });
-            if (!res.ok) {
-                const msg = await res.text().catch(()=> '');
-                alert('No se pudo cambiar el estado. ' + msg);
-                return;
-            }
-        }
-        location.reload();
+        });
+
+        // Botones de restablecer
+        document.querySelectorAll('.reset-status-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const apiId = this.getAttribute('data-api-id');
+                restablecerApi(apiId);
+            });
+        });
     }
+
+    // Cambiar estado de API
+    function cambiarEstadoApi(apiId) {
+        const control = roadmapControls.find(c => c.apiId == apiId);
+        if (!control) return;
+
+        const nextStatus = getNextStatus(control.currentEstado);
+
+        fetch(`/po/roadmap/${apiId}/estado`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ nuevoEstado: nextStatus })
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Error en la respuesta');
+                return response.json();
+            })
+            .then(data => {
+                console.log('✅ Estado cambiado:', data);
+                // Recargar para ver cambios
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('❌ Error:', error);
+                alert('Error al cambiar el estado');
+            });
+    }
+
+    // Restablecer API
+    function restablecerApi(apiId) {
+        fetch(`/po/roadmap/${apiId}/restablecer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Error en la respuesta');
+                return response.json();
+            })
+            .then(data => {
+                console.log('✅ API restablecida:', data);
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('❌ Error:', error);
+                alert('Error al restablecer la API');
+            });
+    }
+
+    // Inicializar gráfica de roadmap
+    function initializeRoadmapChart() {
+        const chartElement = document.querySelector("#roadmap-chart");
+        if (!chartElement || !roadmapData || roadmapData.length === 0) {
+            chartElement.innerHTML = '<div class="text-center text-muted p-4">No hay datos para mostrar en el roadmap. Cambia algunos estados de API para verlos aquí.</div>';
+            return;
+        }
+
+        // Colores por estado
+        const colorPorEstado = {
+            'Próxima': '#94d82d',
+            'En desarrollo': '#22b8cf',
+            'Nueva': '#f59f00'
+        };
+
+        // Preparar datos para ApexCharts
+        const seriesData = roadmapData.map(item => ({
+            x: item.api,
+            y: [
+                new Date(item.start).getTime(),
+                new Date(item.end).getTime()
+            ],
+            fillColor: colorPorEstado[item.estado] || '#adb5bd'
+        }));
+
+        const options = {
+            series: [{
+                name: 'Roadmap',
+                data: seriesData
+            }],
+            chart: {
+                height: 400,
+                type: 'rangeBar',
+                toolbar: { show: true }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: true,
+                    barHeight: '60%',
+                    borderRadius: 4
+                }
+            },
+            xaxis: {
+                type: 'datetime'
+            },
+            tooltip: {
+                custom: function({ series, seriesIndex, dataPointIndex, w }) {
+                    const data = w.config.series[seriesIndex].data[dataPointIndex];
+                    const start = new Date(data.y[0]).toLocaleDateString();
+                    const end = new Date(data.y[1]).toLocaleDateString();
+                    return `
+                        <div class="apexcharts-tooltip-title">${data.x}</div>
+                        <div class="apexcharts-tooltip-series-group">
+                            <div class="apexcharts-tooltip-text">
+                                <div class="apexcharts-tooltip-y-group">
+                                    <span class="apexcharts-tooltip-text-label">Estado: </span>
+                                    <span class="apexcharts-tooltip-text-value">${roadmapData[dataPointIndex].estado}</span>
+                                </div>
+                                <div class="apexcharts-tooltip-text-label">Período: ${start} - ${end}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            },
+            colors: ['#94d82d', '#22b8cf', '#f59f00']
+        };
+
+        roadmapChart = new ApexCharts(chartElement, options);
+        roadmapChart.render();
+    }
+
+    // Inicializar cuando el DOM esté listo
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeRoadmap();
+    });
+    /*]]>*/
 </script>
-
-
-
 </body>
 </html>

@@ -1,52 +1,48 @@
 package com.example.telitodev.repository;
 
 import com.example.telitodev.entity.Roadmap;
-import com.example.telitodev.entity.Roadmap.EstadoEvolucion;
-import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface RoadmapRepository extends JpaRepository<Roadmap, Long> {
+public interface RoadmapRepository extends JpaRepository<Roadmap, Integer> {
 
-    /* ========= CONSULTAS PARA EL TIMELINE ========= */
+    // Encontrar roadmap por API ID
+    Optional<Roadmap> findByApiIdApi(Integer apiId);
 
-    // Todos los tramos de una API, ordenados cronológicamente (para la gráfica)
-    List<Roadmap> findByApi_IdApiOrderByInicioAsc(Integer apiId);
+    // Encontrar todos los roadmaps ordenados por fecha de modificación descendente
+    List<Roadmap> findAllByOrderByFechaModificacionDesc();
 
-    // Tramo ABIERTO (estado vigente) de una API, si existe
-    Optional<Roadmap> findByApi_IdApiAndFinIsNull(Integer apiId);
+    // Encontrar roadmaps por estado
+    List<Roadmap> findByEstado(String estado);
 
-    // Último tramo CERRADO (para reanudar desde el "siguiente" del flujo)
-    Optional<Roadmap> findTopByApi_IdApiAndFinIsNotNullOrderByFinDesc(Integer apiId);
+    // Encontrar roadmaps por estado ordenados por fecha de modificación
+    List<Roadmap> findByEstadoOrderByFechaModificacionDesc(String estado);
 
+    // Verificar si existe un roadmap para una API específica
+    boolean existsByApiIdApi(Integer apiId);
 
-    /* ========= UPDATES PARA CERRAR/ABRIR TRAMOS ========= */
+    // Actualizar estado de una API específica
+    @Modifying
+    @Transactional
+    @Query("UPDATE Roadmap r SET r.estado = :estado, r.fechaModificacion = CURRENT_TIMESTAMP WHERE r.api.idApi = :apiId")
+    void updateEstadoByApiId(@Param("apiId") Integer apiId, @Param("estado") String estado);
 
-    // Cerrar el tramo abierto (fin = :hoy). Devuelve nº de filas afectadas (0 o 1).
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("update Roadmap r set r.fin = :hoy where r.api.idApi = :apiId and r.fin is null")
-    int cerrarTramoAbierto(@Param("apiId") Integer apiId, @Param("hoy") LocalDate hoy);
+    // Contar APIs por estado
+    @Query("SELECT r.estado, COUNT(r) FROM Roadmap r GROUP BY r.estado")
+    List<Object[]> countByEstado();
 
-    // Abrir un nuevo tramo (insert lo haces con save(new Roadmap(...)))
-    // TIP: crea el objeto en tu Service y llama a save(r).
-
-
-    /* ========= CONSULTAS ÚTILES (opcionales) ========= */
-
-    // ¿Existe tramo abierto para esta API?
-    boolean existsByApi_IdApiAndFinIsNull(Integer apiId);
-
-    // ¿Hay algún tramo en cierto estado?
-    boolean existsByApi_IdApiAndEstado(Integer apiId, EstadoEvolucion estado);
-
-    // Visión "vigente" (todas las APIs con tramo abierto)
-    List<Roadmap> findByFinIsNull();
-
-    // Segmentos por estado (para filtrar colores, reportes, etc.)
-    List<Roadmap> findByApi_IdApiAndEstadoOrderByInicioAsc(Integer apiId, EstadoEvolucion estado);
+    // Encontrar todas las APIs con su estado (incluso las que no tienen roadmap)
+    @Query("SELECT a.idApi, a.nombre, COALESCE(r.estado, 'Sin estado') as estado, " +
+            "COALESCE(r.fechaModificacion, CURRENT_TIMESTAMP) as fechaModificacion " +
+            "FROM Api a LEFT JOIN Roadmap r ON a.idApi = r.api.idApi " +
+            "ORDER BY a.nombre")
+    List<Object[]> findAllApisWithEstado();
 }
