@@ -220,17 +220,37 @@ public class ImpersonationService {
      * Si no hay impersonación, devuelve el usuario autenticado
      */
     public Usuario getCurrentUser(Authentication auth, HttpSession session) {
+        Usuario usuario = null;
+        
         if (isImpersonating(session)) {
             String impersonatedDni = getImpersonatedUserDni(session);
             if (impersonatedDni != null) {
-                Usuario impersonatedUser = usuarioRepository.findByDni(impersonatedDni);
-                if (impersonatedUser != null) {
-                    return impersonatedUser;
+                usuario = usuarioRepository.findByDni(impersonatedDni);
+                if (usuario != null) {
+                    System.out.println("👤 Usuario impersonado obtenido: " + usuario.getDni() + " - " + usuario.getNombre());
+                } else {
+                    System.err.println("❌ No se encontró usuario impersonado con DNI: " + impersonatedDni);
                 }
             }
         }
         
         // Sin impersonación o si falla, usar usuario autenticado normal
-        return usuarioRepository.findByCorreo(auth.getName());
+        if (usuario == null) {
+            usuario = usuarioRepository.findByCorreo(auth.getName());
+            if (usuario != null) {
+                System.out.println("👤 Usuario autenticado obtenido: " + usuario.getDni() + " - " + usuario.getNombre());
+            } else {
+                System.err.println("❌ No se encontró usuario autenticado con correo: " + auth.getName());
+            }
+        }
+        
+        // Verificar si el usuario tiene organización
+        if (usuario != null && usuario.getOrganizacion() == null) {
+            System.err.println("⚠️ ADVERTENCIA: El usuario " + usuario.getDni() + " (" + usuario.getNombre() + ") no tiene organización asignada");
+        } else if (usuario != null) {
+            System.out.println("🏢 Organización del usuario: " + usuario.getOrganizacion().getNombre() + " (ID: " + usuario.getOrganizacion().getIdOrganizacion() + ")");
+        }
+        
+        return usuario;
     }
 }

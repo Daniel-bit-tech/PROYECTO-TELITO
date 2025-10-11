@@ -58,12 +58,24 @@ public class ProyectosDevController extends BaseController {
                 listaProyectos = proyectoRepository.findAll();
             }
         } else {
+            // Para usuarios no-SuperAdmin, verificar que tengan organización asignada
+            if (usuario.getOrganizacion() == null) {
+                System.err.println("ERROR: Usuario " + usuario.getDni() + " no tiene organización asignada");
+                model.addAttribute("error", "Usuario sin organización asignada. Contacte al administrador.");
+                model.addAttribute("listaProyectos", List.of()); // Lista vacía para evitar errores en el template
+                model.addAttribute("usuario", usuario);
+                model.addAttribute("currentPortal", "dev");
+                return "desarrollador/proyectos";
+            }
+            
+            // Mostrar proyectos de su organización
+            Integer organizacionId = usuario.getOrganizacion().getIdOrganizacion();
             if (filtro != null && filtro.equals("activos")) {
-                listaProyectos = proyectoRepository.findByActivoAndOrganizacion_Usuarios_Dni(true, usuario.getDni());
+                listaProyectos = proyectoRepository.findByActivoAndOrganizacion_IdOrganizacion(true, organizacionId);
             } else if (filtro != null && filtro.equals("privados")) {
-                listaProyectos = proyectoRepository.findByPublicoAndOrganizacion_Usuarios_Dni(false, usuario.getDni());
+                listaProyectos = proyectoRepository.findByPublicoAndOrganizacion_IdOrganizacion(false, organizacionId);
             } else {
-                listaProyectos = proyectoRepository.findByOrganizacion_Usuarios_Dni(usuario.getDni());
+                listaProyectos = proyectoRepository.findByOrganizacion_IdOrganizacion(organizacionId);
             }
         }
 

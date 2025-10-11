@@ -77,8 +77,8 @@
                                     <h3 class="card-title">Proyectos</h3>
                                     <div class="card-actions">
                                         <div class="input-group">
-                                            <input type="text" class="form-control" placeholder="Buscar proyectos...">
-                                            <button class="btn btn-outline-primary" type="button">
+                                            <input type="text" id="searchInput" class="form-control" placeholder="Buscar proyectos...">
+                                            <button class="btn btn-outline-primary" type="button" onclick="searchProjects()">
                                                 <i class="fas fa-search"></i>
                                             </button>
                                         </div>
@@ -97,8 +97,10 @@
                                         </a>
                                     </div>
                                     
-                                    <div class="row row-cards" th:if="${listaProyectos != null and !listaProyectos.isEmpty()}">
-                                        <div class="col-md-6 col-lg-4" th:each="proyecto : ${listaProyectos}">
+                                    <div class="row row-cards" id="projectsContainer" th:if="${listaProyectos != null and !listaProyectos.isEmpty()}">
+                                        <div class="col-md-6 col-lg-4 project-item" th:each="proyecto : ${listaProyectos}"
+                                             th:data-name="${proyecto.nombre.toLowerCase()}" 
+                                             th:data-description="${proyecto.descripcion.toLowerCase()}">
                                             <div class="card project-card h-100">
                                                 <div class="card-body">
                                                     <div class="d-flex align-items-center mb-3">
@@ -154,5 +156,77 @@
     
     <!-- Scripts -->
     <script th:src="@{/tabler/dist/js/tabler.min.js}"></script>
+    
+    <script>
+        // Función de búsqueda de proyectos
+        function searchProjects() {
+            const searchInput = document.getElementById('searchInput');
+            const filter = searchInput.value.toLowerCase();
+            const projectItems = document.querySelectorAll('.project-item');
+            const projectsContainer = document.getElementById('projectsContainer');
+            let visibleCount = 0;
+
+            projectItems.forEach(function(item) {
+                const name = item.getAttribute('data-name') || '';
+                const description = item.getAttribute('data-description') || '';
+                
+                if (name.includes(filter) || description.includes(filter)) {
+                    item.style.display = '';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            // Mostrar mensaje si no hay resultados
+            let noResultsMsg = document.getElementById('noResultsMessage');
+            if (visibleCount === 0 && filter !== '') {
+                if (!noResultsMsg) {
+                    noResultsMsg = document.createElement('div');
+                    noResultsMsg.id = 'noResultsMessage';
+                    noResultsMsg.className = 'col-12 text-center py-5';
+                    noResultsMsg.innerHTML = `
+                        <div class="text-secondary">
+                            <i class="fas fa-search fa-3x mb-3"></i>
+                            <h3>No se encontraron proyectos</h3>
+                            <p>No hay proyectos que coincidan con "<strong>${filter}</strong>"</p>
+                            <button class="btn btn-secondary mt-3" onclick="clearSearch()">
+                                <i class="fas fa-times"></i> Limpiar búsqueda
+                            </button>
+                        </div>
+                    `;
+                    projectsContainer.appendChild(noResultsMsg);
+                }
+                noResultsMsg.style.display = '';
+            } else if (noResultsMsg) {
+                noResultsMsg.style.display = 'none';
+            }
+        }
+
+        // Función para limpiar la búsqueda
+        function clearSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.value = '';
+            searchProjects();
+        }
+
+        // Búsqueda en tiempo real
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            
+            // Búsqueda al escribir
+            searchInput.addEventListener('input', function() {
+                searchProjects();
+            });
+            
+            // Búsqueda al presionar Enter
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    searchProjects();
+                }
+            });
+        });
+    </script>
 </body>
 </html>

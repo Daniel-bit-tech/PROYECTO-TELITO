@@ -44,7 +44,20 @@ public class ImpersonationAuthorizationFilter extends OncePerRequestFilter {
                 boolean isImpersonating = impersonationService.isImpersonating(request.getSession());
                 
                 if (isImpersonating) {
-                    // Si hay impersonación, verificar el rol impersonado
+                    // SEGURIDAD: Si hay impersonación activa, NO permitir acceso a /admin/
+                    if (requestURI.startsWith("/admin/")) {
+                        System.out.println("🚫 ACCESO DENEGADO: Intento de acceder a /admin/ durante impersonación");
+                        System.out.println("   URI solicitada: " + requestURI);
+                        
+                        // Redirigir al portal del usuario impersonado
+                        String impersonatedRole = impersonationService.getImpersonatedUserRole(request.getSession());
+                        String redirectUrl = getRedirectUrlForRole(impersonatedRole);
+                        System.out.println("   Redirigiendo a: " + redirectUrl);
+                        response.sendRedirect(redirectUrl);
+                        return;
+                    }
+                    
+                    // Si hay impersonación, verificar el rol impersonado para otros portales
                     String impersonatedRole = impersonationService.getImpersonatedUserRole(request.getSession());
                     if (!hasAccessToPath(requestURI, impersonatedRole)) {
                         // Redirigir al portal correcto basado en el rol impersonado
