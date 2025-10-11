@@ -2,7 +2,8 @@ package com.example.telitodev.controller.desarrollador;
 
 import com.example.telitodev.controller.BaseController;
 import java.util.List;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -110,29 +111,28 @@ public class OnboardingController extends BaseController {
     /**
      * Endpoint REST para obtener credenciales del usuario (consumido por JavaScript)
      */
-    @GetMapping("/api/onboarding/mis-credenciales")
+    @GetMapping(value = "/api/onboarding/mis-credenciales", produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public ResponseEntity<List<CredencialApiResponse>> getMisCredenciales(Authentication auth) {
+    public String getMisCredenciales(Authentication auth) throws Exception {
         try {
             Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-
             if (usuario == null) {
-                return ResponseEntity.status(401).build();
-            }
-
-            // Validar que el usuario tenga rol DEV
-            if (usuario.getRol().getIdRol() != 2) {
-                return ResponseEntity.status(403).build();
+                return "{\"error\":\"Usuario no autorizado\"}";
             }
 
             List<CredencialApiResponse> misCredenciales = onboardingService.obtenerCredencialesUsuario(usuario.getDni());
-            return ResponseEntity.ok(misCredenciales);
+
+            // --- CONVERSIÓN MANUAL A JSON ---
+            ObjectMapper mapper = new ObjectMapper();
+            return mapper.writeValueAsString(misCredenciales);
+            // --------------------------------
 
         } catch (Exception e) {
             System.err.println("Error al obtener credenciales del usuario: " + e.getMessage());
-            return ResponseEntity.status(500).build();
+            return "{\"error\":\"Error interno del servidor\"}";
         }
     }
+
 
     /**
      * Endpoint REST para revocar una credencial (consumido por JavaScript)
@@ -208,9 +208,7 @@ public class OnboardingController extends BaseController {
         }
     }
 
-    /**
-     * Endpoint REST para obtener las solicitudes pendientes del desarrollador (consumido por JavaScript)
-     */
+
     @GetMapping("/api/onboarding/solicitudes-pendientes")
     @ResponseBody
     public ResponseEntity<List<SolicitudAccesoResponse>> getSolicitudesPendientes(Authentication auth) {
@@ -221,7 +219,7 @@ public class OnboardingController extends BaseController {
                 return ResponseEntity.status(401).build();
             }
 
-            // Validar que el usuario tenga rol DEV
+
             if (usuario.getRol().getIdRol() != 2) {
                 return ResponseEntity.status(403).build();
             }
@@ -235,9 +233,7 @@ public class OnboardingController extends BaseController {
         }
     }
 
-    /**
-     * Endpoint REST para obtener TODAS las solicitudes del desarrollador (llamado por JavaScript)
-     */
+
     @GetMapping("/api/onboarding/mis-solicitudes")
     @ResponseBody
     public ResponseEntity<List<SolicitudAccesoResponse>> getMisSolicitudes(Authentication auth) {
@@ -248,7 +244,7 @@ public class OnboardingController extends BaseController {
                 return ResponseEntity.status(401).build();
             }
 
-            // Obtener todas las solicitudes del usuario (pendientes, aprobadas, rechazadas)
+
             List<SolicitudAccesoResponse> misSolicitudes = onboardingService.obtenerSolicitudesPorUsuario(usuario.getDni());
 
             System.out.println("ONBOARDING: Enviando " + misSolicitudes.size() + " solicitudes para " + usuario.getDni());

@@ -1,5 +1,7 @@
 package com.example.telitodev.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -18,6 +20,7 @@ public class Tag {
     private String nombre;
 
     //Relaciones
+
     @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Api> apisTag;
 

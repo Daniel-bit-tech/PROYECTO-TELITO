@@ -33,9 +33,8 @@ public class ReporteController extends BaseController {
                                   @RequestParam(required = false) String[] formType,
                                   @RequestParam(required = false) String formEstado,
                                   @RequestParam(required = false) String formFecha) {
-        // Obtén el objeto Usuario y agrégalo al modelo
-        String correo = auth.getName();
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        // Obtén el usuario correcto considerando impersonación
+        Usuario usuario = getCurrentUser(auth, session);
         
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
@@ -54,7 +53,7 @@ public class ReporteController extends BaseController {
     @GetMapping("/reporteDetalle")
     public String showReporteDetalleView(Model model, Authentication auth, HttpSession session,
                                          @RequestParam("idReporte") Integer idReporte) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
         
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);

@@ -218,6 +218,16 @@
                 margin: 0.25rem 0;
             }
         }
+
+        .qa-sandbox-badge {
+            background: linear-gradient(45deg, #ff6b6b, #ffa500);
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            margin-left: 0.5rem;
+            animation: pulse 2s infinite;
+        }
     </style>
 </head>
 <body>
@@ -259,7 +269,7 @@
 
                 <div class="nav-item dropdown" sec:authorize="isAuthenticated()">
                     <a href="#" class="nav-link d-flex lh-1 p-0 dropdown-toggle" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario">
-                        <span class="avatar avatar-sm user-avatar" th:style="'background-image: url(https://ui-avatars.com/api/?name='+${usuario.nombre}+'+'+${usuario.apellidoPaterno}+'&background=4361ee&color=fff)'"> </span>
+                        <span class="avatar avatar-sm user-avatar" th:style="'background-image: url(https://ui-avatars.com/api/?name='+(${isImpersonating ? impersonatedUserName : (usuario.nombre+'+'+usuario.apellidoPaterno)})+'&background=4361ee&color=fff)'"> </span>
                         <div class="d-none d-xl-block ps-2 text-body">
                             <div th:text="${isImpersonating ? impersonatedUserName : usuario.nombre}">Luis Torres</div>
                             <div class="mt-1 small opacity-75" th:text="${isImpersonating ? impersonatedUserRole : usuario.rol.descripcion}">Quality Assurance</div>
@@ -323,6 +333,18 @@
                     <!--                            <span class="nav-link-title">Sandbox</span>-->
                     <!--                        </a>-->
                     <!--                    </li>-->
+
+
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/qa/sandbox}">
+                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                  <i class="fas fa-flask"></i>
+                </span>
+                            <span class="nav-link-title">Sandbox QA</span>
+                            <span class="qa-sandbox-badge">Nuevo</span>
+                        </a>
+                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/qa/soporte}">
                 <span class="nav-link-icon d-md-none d-lg-inline-block">
