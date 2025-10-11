@@ -5,6 +5,8 @@ import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -21,9 +23,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Controller
-@PreAuthorize("hasAnyRole('DEV','QA','SUPERADMIN','DEVELOPER')")
+@PreAuthorize("isAuthenticated()")
 @RequestMapping("/proyectos")
 public class ProyectosController extends BaseController {
+
+    private static final Logger logger = LoggerFactory.getLogger(ProyectosController.class);
 
     final UsuarioRepository usuarioRepository;
     final ApiRepository apiRepository;
@@ -40,12 +44,17 @@ public class ProyectosController extends BaseController {
 
     @GetMapping()
     public String mostrarListaProyectos(@RequestParam(value = "filter", required = false) String filtro,
+                           @RequestHeader(value = "referer", required = false) String referer,
                            Model model, Authentication auth, HttpSession session) {
 
         Usuario usuario = getCurrentUser(auth, session);
         
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
+
+        // Detectar el portal de origen basado en el referer o el rol del usuario
+        String portalOrigen = detectarPortalOrigen(referer, usuario);
+        model.addAttribute("portalOrigen", portalOrigen);
 
         List<Proyecto> listaProyectos = null;
         if (usuario.getRol().getNombreRol().equals("SUPERADMIN")) {
@@ -57,12 +66,26 @@ public class ProyectosController extends BaseController {
                 listaProyectos = proyectoRepository.findAll();
             }
         } else {
+
+            Integer organizacionId = usuario.getOrganizacion().getIdOrganizacion();
+            // Para usuarios no-SuperAdmin, verificar que tengan organización asignada
+            if (usuario.getOrganizacion() == null) {
+                System.err.println("ERROR: Usuario " + usuario.getDni() + " no tiene organización asignada");
+                model.addAttribute("error", "Usuario sin organización asignada. Contacte al administrador.");
+                model.addAttribute("listaProyectos", List.of()); // Lista vacía para evitar errores en el template
+                model.addAttribute("filtro", filtro);
+                model.addAttribute("usuario", usuario);
+                return "general/proyectos";
+            }
+
+            // Mostrar proyectos de su organización
+            Integer organizacionId = usuario.getOrganizacion().getIdOrganizacion();
             if (filtro != null && filtro.equals("activos")) {
-                listaProyectos = proyectoRepository.findByActivoAndOrganizacion_Usuarios_Dni(true, usuario.getDni());
+                listaProyectos = proyectoRepository.findByActivoAndOrganizacion_IdOrganizacion(true, organizacionId);
             } else if (filtro != null && filtro.equals("ocultos")) {
-                listaProyectos = proyectoRepository.findByPublicoAndOrganizacion_Usuarios_Dni(false, usuario.getDni());
+                listaProyectos = proyectoRepository.findByPublicoAndOrganizacion_IdOrganizacion(false, organizacionId);
             } else {
-                listaProyectos = proyectoRepository.findByOrganizacion_Usuarios_Dni(usuario.getDni());
+                listaProyectos = proyectoRepository.findByOrganizacion_IdOrganizacion(organizacionId);
             }
         }
 
@@ -72,6 +95,26 @@ public class ProyectosController extends BaseController {
         model.addAttribute("usuario", usuario);
 
         return "general/proyectos";
+    }
+
+    private String detectarPortalOrigen(String referer, Usuario usuario) {
+        // Si hay referer, usamos eso para detectar el portal
+        if (referer != null) {
+            if (referer.contains("/dev/")) return "DEV";
+            if (referer.contains("/qa/")) return "QA";
+            if (referer.contains("/po/")) return "PO";
+            if (referer.contains("/admin/")) return "ADMIN";
+        }
+
+        // Si no hay referer, usamos el rol del usuario (considerando impersonación)
+        String rol = usuario.getRol().getNombreRol();
+        switch (rol) {
+            case "DEV": return "DEV";
+            case "QA": return "QA";
+            case "PO": return "PO";
+            case "SUPERADMIN": return "ADMIN";
+            default: return "PO"; // Por defecto
+        }
     }
 
 
@@ -89,7 +132,7 @@ public class ProyectosController extends BaseController {
         if (proyecto.getPublico() ||
                 usuario.getRol().getNombreRol().equals("SUPERADMIN") ||
 //                (usuario.getRol().getNombreRol().equals("PO") && proyecto.getOrganizacion().equals(usuario.getOrganizacion()))) {
-                (proyecto.getOrganizacion().equals(usuario.getOrganizacion()))) {
+                (usuario.getOrganizacion() != null && proyecto.getOrganizacion().equals(usuario.getOrganizacion()))) {
             model.addAttribute("proyecto", proyecto);
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes ver los detalles de este proyecto");
@@ -107,7 +150,7 @@ public class ProyectosController extends BaseController {
     @PreAuthorize("hasRole('PO')")
     public String mostrarFormEditar(@ModelAttribute("proyecto") Proyecto proyecto, Model model, Authentication auth, HttpSession session, RedirectAttributes redirectAttributes) {
         Usuario usuario = getCurrentUser(auth, session);
-
+        
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
 
@@ -115,7 +158,7 @@ public class ProyectosController extends BaseController {
             redirectAttributes.addFlashAttribute("msg", "No puedes crear proyectos hasta pertenecer a una organización");
             return "redirect:/proyectos";
         }
-        
+
         proyecto.setUsuarioLider(usuario);
         proyecto.setOrganizacion(usuario.getOrganizacion());
         proyecto.setFechaInicio(LocalDate.now());
@@ -134,6 +177,12 @@ public class ProyectosController extends BaseController {
                                    Model model, Authentication auth, HttpSession session) {
         Usuario usuario = getCurrentUser(auth, session);
         
+        // Verificar que el usuario tenga una organización asignada
+        if (usuario.getOrganizacion() == null) {
+            logger.error("Usuario {} intenta configurar proyecto pero no tiene organización asignada", usuario.getCorreo());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes configurar proyectos porque no tienes una organización asignada. Contacta al administrador.");
+        }
+
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
         
@@ -158,6 +207,14 @@ public class ProyectosController extends BaseController {
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
+
+        // Verificar que el usuario tenga una organización asignada
+        if (usuario.getOrganizacion() == null) {
+            logger.error("Usuario {} intenta crear/editar proyecto pero no tiene organización asignada", usuario.getCorreo());
+            model.addAttribute("error", "No puedes crear o editar proyectos porque no tienes una organización asignada. Contacta al administrador.");
+            model.addAttribute("proyecto", proyecto);
+            return "po/formEditarProy";
+        }
 
         if (result.hasErrors()) {
             return "po/formEditarProy";
@@ -191,7 +248,6 @@ public class ProyectosController extends BaseController {
         }
 
         proyectoRepository.save(proyecto);
-        redirectAttributes.addFlashAttribute("msg", "Proyecto guardado exitosamente");
 
         return "redirect:/proyectos/" + proyecto.getIdProyecto();
     }
@@ -205,6 +261,13 @@ public class ProyectosController extends BaseController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no encontrado"));
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+
+        // Verificar que el usuario tenga una organización asignada
+        if (usuario.getOrganizacion() == null) {
+            logger.error("Usuario {} intenta agregar APIs a proyecto pero no tiene organización asignada", usuario.getCorreo());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes modificar proyectos porque no tienes una organización asignada. Contacta al administrador.");
+        }
+
         if (!usuario.getOrganizacion().equals(proyecto.getOrganizacion())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para modificar este proyecto");
         }

@@ -483,6 +483,12 @@
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
 
+<!--    &lt;!&ndash; Header dinámico basado en el portal de origen &ndash;&gt;-->
+<!--    <div th:if="${portalOrigen == 'DEV'}" th:replace="desarrollador/header.html :: header"></div>-->
+<!--    <div th:if="${portalOrigen == 'QA'}" th:replace="qa/header_qa.html :: header"></div>-->
+<!--    <div th:if="${portalOrigen == 'ADMIN'}" th:replace="admin/header.html :: header"></div>-->
+<!--    <div th:if="${portalOrigen == 'PO' or portalOrigen == null}" th:replace="po/header_po.html :: header"></div>-->
+
     <!-- Header condicional simplificado -->
     <div th:if="${isImpersonating}">
         <!-- Durante impersonación, usar rol impersonado -->

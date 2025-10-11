@@ -3,6 +3,8 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta th:name="_csrf" th:content="${_csrf.token}"/>
+  <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
   <title th:text="${proyecto.idProyecto == null} ? 'Nuevo Proyecto' : 'Editar Proyecto'">Formulario Proyecto</title>
   <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
   <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
@@ -15,6 +17,9 @@
 <body>
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
+  <!-- Barra de impersonación -->
+  <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+  
   <header th:replace="admin/header :: header"
           sec:authorize="hasRole('SUPERADMIN')"></header>
   <header th:replace="po/header_po :: header"
@@ -79,7 +84,10 @@
 
               </div>
               <div class="card-footer text-end">
-                <a th:href="@{/proyectos}" class="btn btn-secondary">Cancelar</a>
+                <!-- Detectar el rol del usuario para dirigir correctamente el botón cancelar -->
+                <a th:if="${usuario.rol.nombreRol == 'PO'}" th:href="@{/po/proyectos}" class="btn btn-secondary">Cancelar</a>
+                <a th:if="${usuario.rol.nombreRol == 'DEV'}" th:href="@{/dev/proyectos}" class="btn btn-secondary">Cancelar</a>
+                <a th:if="${usuario.rol.nombreRol != 'PO' and usuario.rol.nombreRol != 'DEV'}" th:href="@{/proyectos}" class="btn btn-secondary">Cancelar</a>
                 <button type="submit" class="btn btn-primary">Guardar</button>
               </div>
             </form>

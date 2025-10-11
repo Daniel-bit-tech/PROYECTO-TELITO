@@ -1598,9 +1598,9 @@ async function handleViewUser(userDni) {
             `🎭 Rol: ${data.rol}\n\n` +
             `Serás redirigido a su vista...`);
       
-      // Redirigir después de un breve delay
+      // Redirigir después de un breve delay SIN crear entrada en el historial
       setTimeout(() => {
-        window.location.href = data.redirectUrl;
+        window.location.replace(data.redirectUrl);
       }, 1000);
     } else {
       throw new Error(data.message || 'No se pudo iniciar la impersonación');
