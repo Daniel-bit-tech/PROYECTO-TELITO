@@ -74,6 +74,11 @@
             <groupId>org.thymeleaf.extras</groupId>
             <artifactId>thymeleaf-extras-springsecurity6</artifactId>
         </dependency>
+        <!-- OAuth2 Client para integración con proveedores externos -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-client</artifactId>
+        </dependency>
         <!-- Email -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

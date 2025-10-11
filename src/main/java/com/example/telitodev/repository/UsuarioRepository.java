@@ -42,6 +42,14 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
 
     // Método para verificar existencia por correo
     boolean existsByCorreo(String correo);
+    
+    // Métodos para OAuth2
+    Optional<Usuario> findByOauthProviderIdAndOauthProvider(String oauthProviderId, String oauthProvider);
+    
+    List<Usuario> findByTipoAcceso(Usuario.TipoAcceso tipoAcceso);
+    
+    // Buscar usuarios externos por proveedor
+    List<Usuario> findByOauthProvider(String oauthProvider);
 
     // Método para obtener el primer PO de una organización específica
     Usuario findFirstByRol_IdRolAndOrganizacion_IdOrganizacion(Integer idRol, Integer idOrganizacion);

@@ -4,6 +4,7 @@ import com.example.telitodev.filter.UsuarioActivoFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,9 +18,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+// import org.springframework.security.web.session.HttpSessionEventPublisher;  // COMENTADO TEMPORALMENTE
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
-import org.springframework.security.web.session.HttpSessionEventPublisher;
+import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
+import org.springframework.security.oauth2.client.web.HttpSessionOAuth2AuthorizationRequestRepository;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 
 import java.util.Collection;
 
@@ -32,17 +40,29 @@ public class SecurityConfig {
     private UsuarioDetailService usuarioDetailService;
 
     @Autowired
+    @Qualifier("oauth2UserServiceBean")
+    private org.springframework.security.oauth2.client.userinfo.OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserServiceBean;
+
+    @Autowired
     private UsuarioActivoFilter usuarioActivoFilter;
 
     @Autowired
-    private SessionRegistry sessionRegistry;
+    private OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
+
+    // COMENTADO TEMPORALMENTE PARA OAUTH2 TESTING
+    // @Autowired
+    // private SessionRegistry sessionRegistry;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        System.out.println("🔧 SECURITY CONFIG - CONFIGURANDO OAUTH2:");
+        System.out.println("   - Bean inyectado: " + (oauth2UserServiceBean != null ? oauth2UserServiceBean.getClass().getName() : "NULL"));
+
         http
                 .authorizeHttpRequests(authz -> authz
                         // Públicas
-                        .requestMatchers("/", "/login/**", "/registro", "/apis", "/tabler/**", "/forgot-password", "/register").permitAll()
+                        .requestMatchers("/", "/login/**", "/registro", "/apis", "/tabler/**", "/forgot-password", "/register", "/confirmar-cuenta", "/oauth2-test", "/oauth2-debug").permitAll()
+                        .requestMatchers("/oauth2/reset", "/oauth2/debug", "/oauth2-reset").permitAll()  // ⚡ ENDPOINTS OAUTH2 DEBUG
                         .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**", "/static/**").permitAll()
                         .requestMatchers("/error", "/acceso-denegado").permitAll()
 
@@ -58,13 +78,13 @@ public class SecurityConfig {
 
                         // De rol
                         // Endpoints de impersonación - accesibles durante impersonación
-                        .requestMatchers("/admin/gestion-usuarios/stop-impersonation").hasAnyRole("SUPERADMIN", "QA", "DEV", "PO")
-                        .requestMatchers("/admin/gestion-usuarios/impersonation-status").hasAnyRole("SUPERADMIN", "QA", "DEV", "PO")
+                        .requestMatchers("/admin/gestion-usuarios/stop-impersonation").hasAnyRole("SUPERADMIN", "QA", "DEV", "DEVELOPER", "PO")
+                        .requestMatchers("/admin/gestion-usuarios/impersonation-status").hasAnyRole("SUPERADMIN", "QA", "DEV", "DEVELOPER", "PO")
                         .requestMatchers("/admin/**").hasRole("SUPERADMIN")
-                        .requestMatchers("/dev/**").hasAnyRole("DEV", "SUPERADMIN")
+                        .requestMatchers("/dev/**").hasAnyRole("DEV", "DEVELOPER", "SUPERADMIN")
                         .requestMatchers("/qa/**").hasAnyRole("QA", "SUPERADMIN")
                         .requestMatchers("/po/**").hasAnyRole("PO", "SUPERADMIN")
-                        .requestMatchers("/qa-dev/**").hasAnyRole("QA", "DEV")
+                        .requestMatchers("/qa-dev/**").hasAnyRole("QA", "DEV", "DEVELOPER")
 
                         // Otras rutas
                         .anyRequest().authenticated()
@@ -77,6 +97,19 @@ public class SecurityConfig {
                         .successHandler(customAuthenticationSuccessHandler())
                         .failureUrl("/login?error=true")
                         .permitAll()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
+                        .authorizationEndpoint(authorization -> authorization
+                                .authorizationRequestRepository(authorizationRequestRepository())
+                        )
+                        .userInfoEndpoint(userInfo -> userInfo.userService(oauth2UserServiceBean))
+                        .successHandler(oauth2AuthenticationSuccessHandler)
+                        .failureHandler((request, response, exception) -> {
+                            // Log error y redirigir
+                            exception.printStackTrace();
+                            response.sendRedirect("/login?error=oauth2&detail=" + exception.getClass().getSimpleName());
+                        })
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
@@ -96,15 +129,14 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/qa/**","/api/onboarding/**")
                 )
-                // Control de sesiones concurrentes y seguridad de sesión
+                // Control de sesiones concurrentes y seguridad de sesión - SIMPLIFICADO PARA OAUTH2
                 .sessionManagement(session -> session
-                        .maximumSessions(2) // Máximo 2 sesiones por usuario admin
-                        .maxSessionsPreventsLogin(false) // Permitir login, expulsar sesión más antigua
-                        .sessionRegistry(sessionRegistry)
-                        .expiredUrl("/login?expired=true")
-                        .and()
-                        .sessionFixation().none() // Prevenir session fixation attacks
+                        .sessionFixation().migrateSession() // Prevenir session fixation attacks
                         .invalidSessionUrl("/login?invalid=true")
+                        .maximumSessions(5) // Aumentado para OAuth2
+                        .maxSessionsPreventsLogin(false) // Permitir login, expulsar sesión más antigua
+                        // .sessionRegistry(sessionRegistry)  // COMENTADO TEMPORALMENTE
+                        .expiredUrl("/login?expired=true")
                 )
                 // Agregar filtro personalizado para verificar usuarios activos en tiempo real
                 .addFilterBefore(usuarioActivoFilter, UsernamePasswordAuthenticationFilter.class);
@@ -147,7 +179,8 @@ public class SecurityConfig {
                             System.out.println("Redirigiendo SUPERADMIN a /admin/home");
                             return "/admin/home";
                         case "ROLE_DEV":
-                            System.out.println("Redirigiendo DEV a /dev/home");
+                        case "ROLE_DEVELOPER":
+                            System.out.println("Redirigiendo DEVELOPER a /dev/home");
                             return "/dev/home";
                         case "ROLE_QA":
                             System.out.println("Redirigiendo QA a /qa/home");
@@ -173,16 +206,47 @@ public class SecurityConfig {
     }
 
     /**
+     * Bean explícito para OAuth2UserService personalizado
+     * Forzamos que Spring use nuestro servicio en lugar del DefaultOAuth2UserService
+     * Usamos la instancia ya existente con dependencias inyectadas
+     */
+    /*
+    @Bean
+    public OAuth2UserService<OAuth2UserRequest, OAuth2User> customOAuth2UserService() {
+        System.out.println("🔧 CONFIGURANDO BEAN OAUTH2USERSERVICE - Bean creado con: " + oAuth2UserService.getClass().getName());
+
+        // Crear un proxy/wrapper para detectar cuándo se invoca
+        return new OAuth2UserService<OAuth2UserRequest, OAuth2User>() {
+            @Override
+            public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+                System.out.println("🎯 WRAPPER OAUTH2USERSERVICE - MÉTODO loadUser() INVOCADO!");
+                System.out.println("   - Request: " + userRequest.getClientRegistration().getRegistrationId());
+                return oAuth2UserService.loadUser(userRequest);
+            }
+        };
+    }
+    */
+
+    /**
      * Bean requerido para el manejo de eventos de sesión HTTP
      * Necesario para el funcionamiento correcto del SessionRegistry
+     * COMENTADO TEMPORALMENTE PARA OAUTH2 TESTING
      */
+    /*
     @Bean
     public HttpSessionEventPublisher httpSessionEventPublisher() {
         return new HttpSessionEventPublisher();
     }
+    */
 
-
-
-
+    /**
+     * Bean para manejar las solicitudes de autorización OAuth2
+     * Esto es necesario para resolver el error "authorization_request_not_found"
+     * Usa HttpSession con configuración específica para OAuth2
+     */
+    @Bean
+    public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
+        return new HttpSessionOAuth2AuthorizationRequestRepository();
+    }
 
 }

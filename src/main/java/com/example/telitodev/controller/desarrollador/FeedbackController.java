@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Controller
-@PreAuthorize("hasAnyRole('DEV', 'QA')")
+@PreAuthorize("hasAnyRole('DEV', 'DEVELOPER', 'QA')")
 public class FeedbackController {
 
     private final UsuarioRepository usuarioRepository;

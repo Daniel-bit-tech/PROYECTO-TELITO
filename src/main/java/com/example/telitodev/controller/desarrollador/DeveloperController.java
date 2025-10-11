@@ -20,7 +20,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/dev")
-@PreAuthorize("hasAnyRole('DEV', 'SUPERADMIN')")
+@PreAuthorize("hasAnyRole('DEV', 'DEVELOPER', 'SUPERADMIN')")
 public class DeveloperController extends BaseController {
 
     final UsuarioRepository usuarioRepository;
@@ -40,49 +40,65 @@ public class DeveloperController extends BaseController {
 
     @GetMapping("/home")
     public String showDeveloperView(Model model, Authentication auth, HttpSession session) {
-        // Obtener el usuario correcto considerando impersonación usando BaseController
-        Usuario usuario = getCurrentUser(auth, session);
+        System.out.println("=== DEVELOPER CONTROLLER HOME ===");
+        System.out.println("Usuario: " + auth.getName());
+        System.out.println("Autoridades: " + auth.getAuthorities());
 
-        Integer NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(),true);
-        List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
+        try {
+            // Obtener el usuario correcto considerando impersonación usando BaseController
+            Usuario usuario = getCurrentUser(auth, session);
+            System.out.println("Usuario obtenido: " + usuario.getCorreo());
 
-        List<Notificacion> notis = notificacionRepository.findByUsuario_Dni(usuario.getDni());
-        Integer Nnotis = notificacionRepository.countByUsuario_DniAndLeido(usuario.getDni(),false);
+            Integer NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(),true);
+            List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
 
-        List<Ticket> tickets = ticketRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
+            List<Notificacion> notis = notificacionRepository.findByUsuario_Dni(usuario.getDni());
+            Integer Nnotis = notificacionRepository.countByUsuario_DniAndLeido(usuario.getDni(),false);
 
-        long requestsToday = logapiRepository.countRequestsToday();
-        long errors24h = logapiRepository.countErrorsLast24Hours();
-        Optional<Double> successRateOpt = logapiRepository.calculateSuccessRateLast24Hours();
-        Optional<Double> avgLatencyOpt = logapiRepository.findAverageLatencyLast24Hours();
+            List<Ticket> tickets = ticketRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
 
-        DecimalFormat df = new DecimalFormat("#.##");
-        String formattedSuccessRate = successRateOpt.map(rate -> df.format(rate)).orElse("100");
-        String formattedAvgLatency = avgLatencyOpt.map(latency -> df.format(latency)).orElse("0");
+            long requestsToday = logapiRepository.countRequestsToday();
+            long errors24h = logapiRepository.countErrorsLast24Hours();
+            Optional<Double> successRateOpt = logapiRepository.calculateSuccessRateLast24Hours();
+            Optional<Double> avgLatencyOpt = logapiRepository.findAverageLatencyLast24Hours();
 
-        model.addAttribute("requestsToday", requestsToday);
-        model.addAttribute("successRate", formattedSuccessRate);
-        model.addAttribute("avgLatency", formattedAvgLatency);
-        model.addAttribute("errors24h", errors24h);
+            DecimalFormat df = new DecimalFormat("#.##");
+            String formattedSuccessRate = successRateOpt.map(rate -> df.format(rate)).orElse("100");
+            String formattedAvgLatency = avgLatencyOpt.map(latency -> df.format(latency)).orElse("0");
 
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("NcredActivas", NCredenciales);
-        model.addAttribute("credenciales", credenciales);
-        model.addAttribute("Nnotis", Nnotis);
-        model.addAttribute("notificaciones", notis);
-        model.addAttribute("tickets", tickets);
-        
-        addImpersonationAttributes(model, session);
+            model.addAttribute("requestsToday", requestsToday);
+            model.addAttribute("successRate", formattedSuccessRate);
+            model.addAttribute("avgLatency", formattedAvgLatency);
+            model.addAttribute("errors24h", errors24h);
 
-        return "desarrollador/developer";
+            model.addAttribute("usuario", usuario);
+            model.addAttribute("NcredActivas", NCredenciales);
+            model.addAttribute("credenciales", credenciales);
+            model.addAttribute("Nnotis", Nnotis);
+            model.addAttribute("notificaciones", notis);
+            model.addAttribute("tickets", tickets);
+
+            // Agregar información de impersonación al modelo usando BaseController
+            addImpersonationAttributes(model, session);
+
+            System.out.println("✅ Devolviendo vista: desarrollador/developer");
+            return "desarrollador/developer";
+
+        } catch (Exception e) {
+            System.err.println("❌ Error en DeveloperController: " + e.getMessage());
+            e.printStackTrace();
+            return "error/403";
+        }
     }
 
     @GetMapping("/catalogo")
     public String developerDashboard(Model model, Authentication authentication, HttpSession session) {
+        // Obtener el usuario correcto considerando impersonación usando BaseController
         Usuario usuario = getCurrentUser(authentication, session);
         model.addAttribute("usuario", usuario);
         model.addAttribute("smg", usuario.getCorreo());
 
+        // Agregar información de impersonación al modelo
         addImpersonationAttributes(model, session);
 
         return "desarrollador/apis";
