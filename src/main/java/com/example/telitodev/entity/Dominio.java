@@ -1,6 +1,7 @@
 package com.example.telitodev.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -18,6 +19,7 @@ public class Dominio {
     private String nombre;
 
     //Relaciones
+
     @OneToMany(mappedBy = "dominio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Api> apisDominio;
 
