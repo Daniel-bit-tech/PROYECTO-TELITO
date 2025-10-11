@@ -45,6 +45,11 @@
     <div class="page-wrapper">
         <div class="page-body">
             <div class="container-xl">
+
+                <div th:if="${msg}" class="alert alert-success" role="alert" th:text="${msg}">
+                    Mensaje
+                </div>
+
                 <div class="row row-deck row-cards">
 
                     <div class="col-md-4">

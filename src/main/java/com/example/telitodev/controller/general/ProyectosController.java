@@ -105,11 +105,16 @@ public class ProyectosController extends BaseController {
 
     @GetMapping("/nuevo")
     @PreAuthorize("hasRole('PO')")
-    public String mostrarFormEditar(@ModelAttribute("proyecto") Proyecto proyecto, Model model, Authentication auth, HttpSession session) {
+    public String mostrarFormEditar(@ModelAttribute("proyecto") Proyecto proyecto, Model model, Authentication auth, HttpSession session, RedirectAttributes redirectAttributes) {
         Usuario usuario = getCurrentUser(auth, session);
-        
+
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
+
+        if (usuario.getOrganizacion()==null) {
+            redirectAttributes.addFlashAttribute("msg", "No puedes crear proyectos hasta pertenecer a una organización");
+            return "redirect:/proyectos";
+        }
         
         proyecto.setUsuarioLider(usuario);
         proyecto.setOrganizacion(usuario.getOrganizacion());
@@ -158,6 +163,11 @@ public class ProyectosController extends BaseController {
             return "po/formEditarProy";
         }
 
+        if (usuario.getOrganizacion()==null) {
+            redirectAttributes.addFlashAttribute("msg", "No puedes crear proyectos hasta pertenecer a una organización");
+            return "redirect:/proyectos";
+        }
+
         if (proyecto.getIdProyecto() != null) {
             //Edición
             if (usuario.getOrganizacion().equals(proyecto.getOrganizacion()) && proyecto.getUsuarioLider().equals(usuario)) {
@@ -181,6 +191,7 @@ public class ProyectosController extends BaseController {
         }
 
         proyectoRepository.save(proyecto);
+        redirectAttributes.addFlashAttribute("msg", "Proyecto guardado exitosamente");
 
         return "redirect:/proyectos/" + proyecto.getIdProyecto();
     }
