@@ -43,6 +43,12 @@ public class QaController extends BaseController {
 
     @GetMapping("/home")
     public String showQaView(Model model, Authentication auth, HttpSession session) {
+        // Validar acceso al rol QA
+        if (!validateRoleAccess(auth, session, "QA")) {
+            String userRole = getUserRoleFromAuthentication(auth);
+            return getRedirectUrlForRole(userRole);
+        }
+
         Usuario usuario = getCurrentUser(auth, session);
         Integer NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(),true);
         List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_Dni(usuario.getDni());
@@ -62,6 +68,11 @@ public class QaController extends BaseController {
 
     @GetMapping("/perfilQa")
     public String showPerfil (Model model, Authentication auth, HttpSession session) {
+        // Validar acceso al rol QA
+        if (!validateRoleAccess(auth, session, "QA")) {
+            String userRole = getUserRoleFromAuthentication(auth);
+            return getRedirectUrlForRole(userRole);
+        }
         Usuario usuario = getCurrentUser(auth, session);
         
         // Agregar atributos de impersonación

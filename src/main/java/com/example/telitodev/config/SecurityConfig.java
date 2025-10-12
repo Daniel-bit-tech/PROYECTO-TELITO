@@ -54,6 +54,7 @@ public class SecurityConfig {
 
                         // API endpoints - requieren autenticación pero sin CSRF
                         .requestMatchers("/api/onboarding/**").authenticated()
+                        .requestMatchers("/api/validate-session").authenticated()
 
                         // Endpoints de impersonación - reglas específicas
                         .requestMatchers("/admin/gestion-usuarios/stop-impersonation").hasAnyRole("SUPERADMIN", "QA", "DEV", "PO")

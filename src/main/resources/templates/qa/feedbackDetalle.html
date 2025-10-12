@@ -4,6 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <!-- CSRF tokens necesarios para seguridad -->
+    <meta th:name="_csrf" th:content="${_csrf.token}"/>
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <!-- Control de caché y seguridad -->
+    <div th:replace="~{components/security-cache-control :: security-cache-control}"></div>
     <title>Search for Jobs - Tabler - Premium and Open Source dashboard template with responsive and high quality UI.</title>
     <!-- BEGIN GLOBAL MANDATORY STYLES -->
     <link href="/tabler/dist/libs/star-rating.js/dist/star-rating.min.css?1757307616" rel="stylesheet" />

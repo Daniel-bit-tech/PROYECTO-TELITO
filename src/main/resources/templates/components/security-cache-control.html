@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+<!-- Fragment: Control de caché y seguridad de navegación -->
+<div th:fragment="security-cache-control">
+    <!-- Meta tags para control de caché -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
+    <!-- Validación de sesión en JavaScript -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🔒 Iniciando validación de seguridad de sesión...');
+        
+        // Función para validar la sesión actual contra inconsistencias de caché
+        function validateSession() {
+            const currentPath = window.location.pathname;
+            const currentRole = getRoleFromPath(currentPath);
+            
+            console.log('🔍 Validando sesión:');
+            console.log('   Path actual:', currentPath);
+            console.log('   Rol detectado por path:', currentRole);
+            
+            // Hacer petición para validar la sesión
+            fetch('/api/validate-session', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                },
+                cache: 'no-store'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Session validation failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('✅ Validación de sesión exitosa:', data);
+                console.log('   Rol actual del usuario:', data.actualRole);
+                console.log('   ¿Impersonando?:', data.isImpersonating);
+                console.log('   Rol impersonado:', data.impersonatedRole);
+                
+                // Verificar si hay inconsistencia de rol
+                let hasInconsistency = false;
+                
+                if (data.isImpersonating) {
+                    // Durante impersonación, el rol esperado debe ser el impersonado
+                    if (currentRole && data.impersonatedRole !== currentRole) {
+                        console.log('🚨 INCONSISTENCIA EN IMPERSONACIÓN:');
+                        console.log('   Rol impersonado:', data.impersonatedRole);
+                        console.log('   Rol esperado por path:', currentRole);
+                        hasInconsistency = true;
+                    }
+                } else {
+                    // Sin impersonación, el rol debe coincidir con el del usuario real
+                    if (currentRole && data.actualRole !== currentRole) {
+                        console.log('🚨 INCONSISTENCIA DE ROL DETECTADA:');
+                        console.log('   Rol real:', data.actualRole);
+                        console.log('   Rol esperado por path:', currentRole);
+                        hasInconsistency = true;
+                    }
+                }
+                
+                if (hasInconsistency) {
+                    // Determinar a dónde redirigir
+                    let correctPath;
+                    let userDisplayRole;
+                    
+                    if (data.isImpersonating) {
+                        correctPath = getCorrectPathForRole(data.impersonatedRole);
+                        userDisplayRole = data.impersonatedRole + ' (impersonando)';
+                    } else {
+                        correctPath = getCorrectPathForRole(data.actualRole);
+                        userDisplayRole = data.actualRole;
+                    }
+                    
+                    alert('⚠️ INCONSISTENCIA DE SESIÓN DETECTADA\\n\\n' +
+                          'Tu rol actual (' + userDisplayRole + ') no coincide con esta vista.\\n' +
+                          'Esto puede ser debido a datos residuales en el caché del navegador.\\n\\n' +
+                          'Serás redirigido a tu vista correcta por seguridad.');
+                    
+                    // Limpiar historial y redirigir
+                    clearHistoryAndRedirect(correctPath);
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error en validación de sesión:', error);
+                // En caso de error, solo logear - no interrumpir la experiencia del usuario
+                // a menos que sea una ruta crítica de admin
+                if (currentPath.startsWith('/admin/') && error.message.includes('401')) {
+                    console.log('🔄 Error de autenticación en ruta admin - redirigiendo al login');
+                    window.location.replace('/login');
+                }
+            });
+        }
+        
+        // Función para obtener rol desde el path
+        function getRoleFromPath(path) {
+            if (path.startsWith('/admin/')) return 'SUPERADMIN';
+            if (path.startsWith('/po/')) return 'PO';
+            if (path.startsWith('/qa/')) return 'QA';
+            if (path.startsWith('/dev/')) return 'DESARROLLADOR';
+            return null;
+        }
+        
+        // Función para obtener path correcto para un rol
+        function getCorrectPathForRole(role) {
+            switch (role) {
+                case 'SUPERADMIN': return '/admin/home';
+                case 'PO': return '/po/home';
+                case 'QA': return '/qa/home';
+                case 'DESARROLLADOR': return '/dev/home';
+                default: return '/login';
+            }
+        }
+        
+        // Función para limpiar historial y redirigir
+        function clearHistoryAndRedirect(targetUrl) {
+            console.log('🧹 Limpiando historial y redirigiendo a:', targetUrl);
+            
+            // Limpiar cualquier protección de impersonación activa
+            if (window.impersonationNavigationHandler) {
+                window.removeEventListener('popstate', window.impersonationNavigationHandler);
+                delete window.impersonationNavigationHandler;
+            }
+            
+            if (window.impersonationPopStateHandler) {
+                window.removeEventListener('popstate', window.impersonationPopStateHandler);
+                delete window.impersonationPopStateHandler;
+            }
+            
+            // Marcar que la protección está desactivada
+            window.impersonationProtectionDisabled = true;
+            
+            // Crear estado de limpieza
+            const cleanState = {
+                securityRedirect: true,
+                timestamp: Date.now(),
+                targetRole: getRoleFromPath(targetUrl)
+            };
+            
+            // Reemplazar historial
+            if (window.history && window.history.replaceState) {
+                window.history.replaceState(cleanState, '', targetUrl);
+            }
+            
+            // Limpiar caché del navegador si está disponible
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                        console.log('🗑️ Cache eliminada:', name);
+                    });
+                });
+            }
+            
+            // Redirigir usando replace para evitar entrada en historial
+            setTimeout(() => {
+                window.location.replace(targetUrl);
+            }, 500);
+        }
+        
+        // Validar sesión inmediatamente solo si NO estamos en login
+        if (!window.location.pathname.includes('/login')) {
+            validateSession();
+        }
+        
+        // Validar sesión cada vez que la página se vuelve visible (pageshow)
+        window.addEventListener('pageshow', function(event) {
+            console.log('📄 Página mostrada - validando sesión');
+            console.log('   Desde caché:', event.persisted);
+            
+            // Si la página viene del caché, validar sesión nuevamente
+            if (event.persisted && !window.location.pathname.includes('/login')) {
+                console.log('⚠️ Página cargada desde caché - validando sesión por seguridad');
+                setTimeout(validateSession, 100);
+            }
+        });
+        
+        // Validar cuando el usuario vuelve a la pestaña (visibilitychange)
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && !window.location.pathname.includes('/login')) {
+                console.log('👁️ Pestaña visible nuevamente - validando sesión');
+                setTimeout(validateSession, 500);
+            }
+        });
+        
+        // Protección adicional contra navegación hacia atrás insegura
+        window.addEventListener('popstate', function(event) {
+            console.log('🔙 Navegación hacia atrás detectada');
+            console.log('   Estado:', event.state);
+            console.log('   Protección de impersonación desactivada:', window.impersonationProtectionDisabled);
+            
+            // Si no hay protección de impersonación activa, validar sesión
+            if (!window.impersonationProtectionDisabled && !window.location.pathname.includes('/login')) {
+                console.log('⚠️ Navegación sin protección activa - validando sesión por seguridad');
+                setTimeout(validateSession, 200);
+            }
+        });
+        
+        console.log('✅ Validación de seguridad de sesión configurada');
+    });
+    </script>
+</div>
+
+</body>
+</html>
+```

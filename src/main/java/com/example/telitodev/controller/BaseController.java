@@ -51,6 +51,83 @@ public abstract class BaseController {
     }
 
     /**
+     * Valida que el usuario actual tenga permisos para acceder al rol especificado
+     * Previene acceso de SUPERADMIN a vistas de otros roles sin impersonación
+     */
+    protected boolean validateRoleAccess(Authentication authentication, HttpSession session, String expectedRole) {
+        if (authentication == null) {
+            return false;
+        }
+
+        boolean isImpersonating = impersonationService.isImpersonating(session);
+        String userName = authentication.getName();
+
+        System.out.println("🔒 VALIDACIÓN DE ROL:");
+        System.out.println("  - Usuario: " + userName);
+        System.out.println("  - Rol esperado: " + expectedRole);
+        System.out.println("  - ¿Impersonando?: " + isImpersonating);
+
+        if (isImpersonating) {
+            // Si está impersonando, validar que el rol impersonado coincida
+            String impersonatedRole = (String) session.getAttribute("IMPERSONATED_USER_ROLE");
+            System.out.println("  - Rol impersonado: " + impersonatedRole);
+            return expectedRole.equals(impersonatedRole);
+        } else {
+            // Si NO está impersonando, validar que no sea SUPERADMIN accediendo a otros roles
+            boolean isCarlos = "Carlos".equals(userName);
+            boolean hasSuperAdminRole = authentication.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"));
+
+            if ((isCarlos || hasSuperAdminRole) && !"SUPERADMIN".equals(expectedRole)) {
+                System.out.println("  - ❌ SUPERADMIN intentando acceder a rol " + expectedRole + " sin impersonación");
+                return false;
+            }
+
+            // Para otros usuarios, verificar que tengan el rol correcto
+            String userRole = getUserRoleFromAuthentication(authentication);
+            System.out.println("  - Rol del usuario: " + userRole);
+            return expectedRole.equals(userRole);
+        }
+    }
+
+    /**
+     * Obtiene el rol del usuario desde la autenticación
+     */
+    protected String getUserRoleFromAuthentication(Authentication authentication) {
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_SUPERADMIN"))) {
+            return "SUPERADMIN";
+        }
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_QA"))) {
+            return "QA";
+        }
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_PO"))) {
+            return "PO";
+        }
+        if (authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_DEVELOPER"))) {
+            return "DEVELOPER";
+        }
+        return "UNKNOWN";
+    }
+
+    /**
+     * Obtiene la URL de redirección apropiada para un rol
+     */
+    protected String getRedirectUrlForRole(String role) {
+        switch (role) {
+            case "SUPERADMIN":
+                return "redirect:/admin/home";
+            case "QA":
+                return "redirect:/qa/home";
+            case "PO":
+                return "redirect:/po/home";
+            case "DEVELOPER":
+                return "redirect:/dev/home";
+            default:
+                return "redirect:/login";
+        }
+    }
+
+    /**
      * Obtiene el usuario correcto considerando la impersonación
      * Si hay impersonación activa, devuelve el usuario impersonado
      * Si no hay impersonación, devuelve el usuario autenticado
