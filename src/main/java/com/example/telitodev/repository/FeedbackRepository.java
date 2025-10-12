@@ -10,4 +10,5 @@ import java.util.List;
 public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
     List<Feedback> findByUsuario_Dni(String dni);
     List<Feedback> findByUsuario(Usuario usuario);
+    List<Feedback> findByApi_Usuario_Dni(String dniUsuario);
 }

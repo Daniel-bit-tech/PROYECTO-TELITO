@@ -332,7 +332,9 @@
             <div class="feedback-tabs">
                 <div class="feedback-tab active" data-tab="give-feedback">Dejar Feedback</div>
                 <div class="feedback-tab" data-tab="my-feedback">Mi Feedback</div>
+                <div class="feedback-tab" data-tab="api-feedback">Feedbacks de mis apis</div>
                 <div class="feedback-tab" data-tab="roadmap">Roadmap y Mejoras</div>
+
             </div>
 
             <div id="give-feedback" class="feedback-tab-content">
@@ -369,7 +371,7 @@
             </div>
 
             <div id="my-feedback" class="feedback-tab-content" style="display: none;">
-                <div class="feedback-list">
+                <div class="row row-cards">
                     <div th:if="${#lists.isEmpty(misFeedback)}" class="empty-state">
                         <div class="empty-icon"><i class="fas fa-inbox"></i></div>
                         <h4 class="empty-title">Aún no has enviado feedback</h4>
@@ -379,6 +381,26 @@
                         </a>
                     </div>
 
+                    <div th:each="feedback : ${misFeedback}" class="col-md-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title" th:text="${feedback.api.nombre}">API o Recurso</h3>
+                                <h3 class="card-title mt-4">Comentario</h3>
+                                <p class="card-subtitle" th:text="${feedback.comentario}"></p>
+                                <h3 class="card-title mt-4">Calificación</h3>
+                                <p class="card-subtitle">
+                                    <span th:each="i : ${#numbers.sequence(1, feedback.calificacion)}" class="text-warning"><i class="fas fa-star"></i></span>
+                                    <span th:each="i : ${#numbers.sequence(feedback.calificacion + 1, 5)}" class="text-muted"><i class="far fa-star"></i></span>
+                                </p>
+                                <h3 class="card-title mt-4">Fecha</h3>
+                                <p class="card-subtitle">
+                                    <span th:text="${#dates.format(feedback.fechaCreacion, 'dd/MM/yyyy')}"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--
                     <div th:each="feedback : ${misFeedback}" class="feedback-card">
                         <div class="feedback-header">
                             <div class="feedback-meta">
@@ -398,8 +420,44 @@
                             </div>
                         </div>
                     </div>
+                    -->
                 </div>
             </div>
+
+            <div id="api-feedback" class="feedback-tab-content" style="display: none;">
+                <div class="row row-cards">
+
+                    <div th:if="${apisFeedback == null or apisFeedback.isEmpty()}" class="empty-state">
+                        <div class="empty-icon">
+                            <i class="far fa-comments"></i>
+                        </div>
+                        <h3 class="empty-title">No hay feedback disponible</h3>
+                        <p class="empty-description">Aún no se han enviado feedbacks a tus apis</p>
+                    </div>
+
+                    <div th:each="feedback : ${apisFeedback}" class="col-md-6 col-lg-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title" th:text="${feedback.api.nombre}">API o Recurso</h3>
+                                <h3 class="card-title mt-4">Usuario-Rol</h3>
+                                <p class="card-subtitle" th:text="|${feedback.usuario.nombre} - ${feedback.usuario.rol.nombreRol}|"></p>
+                                <h3 class="card-title mt-4">Comentario</h3>
+                                <p class="card-subtitle" th:text="${feedback.comentario}"></p>
+                                <h3 class="card-title mt-4">Calificación</h3>
+                                <p class="card-subtitle">
+                                    <span th:each="i : ${#numbers.sequence(1, feedback.calificacion)}" class="text-warning"><i class="fas fa-star"></i></span>
+                                    <span th:each="i : ${#numbers.sequence(feedback.calificacion + 1, 5)}" class="text-muted"><i class="far fa-star"></i></span>
+                                </p>
+                                <h3 class="card-title mt-4">Fecha</h3>
+                                <p class="card-subtitle">
+                                    <span th:text="${#dates.format(feedback.fechaCreacion, 'dd/MM/yyyy')}"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             <div id="roadmap" class="feedback-tab-content" style="display: none;">
                 <div class="feedback-form-container">

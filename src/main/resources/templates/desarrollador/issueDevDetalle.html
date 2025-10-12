@@ -322,7 +322,7 @@
 <!-- END GLOBAL THEME SCRIPT -->
 <div class="page">
     <!-- BEGIN NAVBAR  -->
-    <div th:replace="qa/header_qa.html :: header"></div>
+    <div th:replace="desarrollador/header.html :: header"></div>
 
     <!-- END NAVBAR  -->
     <div class="page-wrapper">
@@ -333,12 +333,6 @@
 
                     <div class="col" >
                         <h2 th:text="|Issue de ${issue.reporte.api.nombre}|"></h2>
-                    </div>
-
-                    <div th:if="${issue.estado != 'Corregido'}" class="col-md-auto">
-                        <form th:action="@{/qa/issueCerrar/{idIssue}/{idReporte}(idIssue=${issue.id.idIssue}, idReporte=${issue.reporte.idReporte})}" method="post">
-                            <button type="submit" class="btn btn-danger">Cerrar Issue</button>
-                        </form>
                     </div>
                     <!-- Page title actions -->
                 </div>
@@ -491,7 +485,7 @@
                         <div class="feedback-form-container">
                             <h3 class="feedback-form-title">Foro - Deja tu Comentario</h3>
                             <div th:if="${issue.estado == 'Corregido'}" class="alert alert-success mt-3">
-                                Este issue ha sido desperado. No se pueden enviar más comentarios.
+                                Este issue ha sido cerrado. No se pueden enviar más comentarios.
                             </div>
 
                             <div th:unless="${issue.estado == 'Corregido'}">
@@ -514,7 +508,6 @@
                                     <button type="submit" onclick="return validateFiles()" class="btn btn-primary mt-3">Enviar Comentario</button>
                                 </form>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -522,7 +515,7 @@
             </div>
             <!-- END PAGE BODY -->
             <!--  BEGIN FOOTER  -->
-            <div th:replace="qa/footer.html :: footer"></div>
+            <div th:replace="desarrollador/footer.html :: footer"></div>
             <!--  END FOOTER  -->
         </div>
     </div>

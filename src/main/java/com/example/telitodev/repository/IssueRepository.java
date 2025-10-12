@@ -26,4 +26,22 @@ public interface IssueRepository extends JpaRepository<Issue, IssueId> {
                               @Param("nombre") String nombre,
                               Pageable pageable);
 
+    @Query("""
+        SELECT i 
+        FROM Issue i 
+        WHERE (:estados IS NULL OR i.estado IN :estados)
+          AND (:inicio IS NULL OR i.fechaCreacion >= :inicio)
+          AND (:fin IS NULL OR i.fechaCreacion <= :fin)
+          AND (:nombre IS NULL OR LOWER(i.descripcion) LIKE LOWER(CONCAT('%', :nombre, '%')))
+          AND i.reporte.api.usuario.dni = :dniUsuario
+    """)
+    Page<Issue> findByFiltersForDev(
+            @Param("estados") List<String> estados,
+            @Param("inicio") Timestamp inicio,
+            @Param("fin") Timestamp fin,
+            @Param("nombre") String nombre,
+            @Param("dniUsuario") String dniUsuario,
+            Pageable pageable
+    );
+
 }
