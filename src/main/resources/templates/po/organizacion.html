@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>TELITO DEVELOPER PORTAL | Organización</title>
+    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .organization-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .organization-header {
+            padding: 2rem 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .organization-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .organization-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .organization-info {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .info-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .info-section-title {
+            font-weight: 600;
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+            color: var(--tblr-primary);
+            border-bottom: 2px solid var(--tblr-border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .info-item {
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            font-weight: 500;
+            color: var(--tblr-secondary-color);
+            font-size: 0.875rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-size: 1rem;
+        }
+
+        .apis-list, .members-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .api-tag, .member-tag {
+            padding: 0.5rem 1rem;
+            background-color: var(--tblr-bg-surface-secondary);
+            border-radius: 4px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .api-tag {
+            border-left: 3px solid var(--tblr-primary);
+        }
+
+        .member-tag {
+            border-left: 3px solid var(--tblr-success);
+        }
+
+        .action-section {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .action-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .action-description {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-solicitud {
+            padding: 0.75rem 2rem;
+            background-color: var(--tblr-primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+        }
+
+        .btn-solicitud:hover {
+            background-color: var(--tblr-primary-dark);
+            color: white;
+            text-decoration: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--tblr-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--tblr-secondary-color);
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+
+<body>
+<!-- Banner de impersonación -->
+<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+
+<script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+
+    <header th:replace="desarrollador/header :: header"
+            sec:authorize="hasRole('DEV')"></header>
+    <header th:replace="admin/header :: header"
+            sec:authorize="hasRole('SUPERADMIN')"></header>
+    <header th:replace="po/header_po :: header"
+            sec:authorize="hasRole('PO')"></header>
+    <header th:replace="qa/header_qa :: header"
+            sec:authorize="hasRole('QA')"></header>
+
+    <div class="content">
+        <div class="organization-container">
+            <div class="organization-header">
+                <h1 class="organization-title">Mi Organización</h1>
+                <p class="organization-subtitle">Información general de tu organización y proyectos asociados</p>
+            </div>
+
+            <!-- Estadísticas rápidas -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${organizacion.proyectos != null ? organizacion.proyectos.size() : 0}">5</div>
+                    <div class="stat-label">Proyectos Activos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${organizacion.apis != null ? organizacion.apis.size() : 0}">12</div>
+                    <div class="stat-label">APIs Asociadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${organizacion.miembros != null ? organizacion.miembros.size() : 0}">8</div>
+                    <div class="stat-label">Miembros</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${#temporals.format(organizacion.fechaCreacion, 'dd/MM/yyyy')}">15/08/2025</div>
+                    <div class="stat-label">Fecha de Creación</div>
+                </div>
+            </div>
+
+            <!-- Información de la organización -->
+            <div class="organization-info">
+                <div class="info-grid">
+                    <div>
+                        <div class="info-section">
+                            <h3 class="info-section-title">Información General</h3>
+                            <div class="info-item">
+                                <span class="info-label">Nombre de la Organización</span>
+                                <span class="info-value" th:text="${organizacion.nombre}">Telito Development Team</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Descripción</span>
+                                <span class="info-value" th:text="${organizacion.descripcion}">Equipo de desarrollo especializado en APIs y microservicios</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Fecha de Creación</span>
+                                <span class="info-value" th:text="${#temporals.format(organizacion.fechaCreacion, 'dd/MM/yyyy')}">15/08/2025</span>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <h3 class="info-section-title">APIs de la Organización</h3>
+                            <div class="apis-list" th:if="${organizacion.apis != null and !organizacion.apis.isEmpty()}">
+                <span class="api-tag" th:each="api : ${organizacion.apis}">
+                  <i class="fas fa-code"></i>
+                  <span th:text="${api.nombre}">API Payment</span>
+                </span>
+                            </div>
+                            <div th:if="${organizacion.apis == null or organizacion.apis.isEmpty()}">
+                                <span class="text-muted">No hay APIs asociadas</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="info-section">
+                            <h3 class="info-section-title">Miembros del Equipo</h3>
+                            <div class="members-list" th:if="${organizacion.miembros != null and !organizacion.miembros.isEmpty()}">
+                <span class="member-tag" th:each="miembro : ${organizacion.miembros}">
+                  <i class="fas fa-user"></i>
+                  <span th:text="${miembro.nombre + ' ' + miembro.apellido}">Juan Pérez</span>
+                  <small class="text-muted" th:text="'(' + ${miembro.rol} + ')'">(Desarrollador)</small>
+                </span>
+                            </div>
+                            <div th:if="${organizacion.miembros == null or organizacion.miembros.isEmpty()}">
+                                <span class="text-muted">No hay miembros registrados</span>
+                            </div>
+                        </div>
+
+                        <div class="info-section">
+                            <h3 class="info-section-title">Proyectos Activos</h3>
+                            <div class="apis-list" th:if="${organizacion.proyectos != null and !organizacion.proyectos.isEmpty()}">
+                <span class="api-tag" th:each="proyecto : ${organizacion.proyectos}">
+                  <i class="fas fa-project-diagram"></i>
+                  <span th:text="${proyecto.nombre}">Portal Developer</span>
+                </span>
+                            </div>
+                            <div th:if="${organizacion.proyectos == null or organizacion.proyectos.isEmpty()}">
+                                <span class="text-muted">No hay proyectos activos</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de acción -->
+            <div class="action-section">
+                <h3 class="action-title">¿Necesitas integrar nuevos miembros a tu equipo?</h3>
+                <p class="action-description">
+                    Solicita acceso para nuevos desarrolladores o QA que necesiten trabajar en los proyectos de esta organización.
+                    El superadministrador revisará y aprobará la solicitud.
+                </p>
+                <a th:href="@{/organizacion/solicitud-acceso}" class="btn-solicitud">
+                    <i class="fas fa-user-plus"></i>
+                    Solicitar Acceso para Nuevo Miembro
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+</div>
+
+<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
+</body>
+</html>
