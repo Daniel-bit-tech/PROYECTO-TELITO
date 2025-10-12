@@ -12,19 +12,19 @@ public class Evidencia {
     @Column(name = "idEvidencia")
     private int idEvidencia;
 
-    @Column(name = "nombre", nullable = false, length = 200)
+    @Column(name = "nombre", length = 200)
     private String nombre;
 
     @Lob
-    @Column(name = "evidencia", nullable = false)
+    @Column(name = "evidencia", columnDefinition = "LONGBLOB")
     private byte[] evidencia;
 
     @Lob
-    @Column(name = "descripcion", length = 200)
+    @Column(name = "descripción", length = 200)
     private String descripcion;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idReporte", referencedColumnName = "idReporte", nullable = false)
+    @JoinColumn(name = "idReporte", referencedColumnName = "idReporte")
     private Reporte reporte;
 
 

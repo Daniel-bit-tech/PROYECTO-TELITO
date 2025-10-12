@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>TELITO DEVELOPER PORTAL | Crear feedback</title>
+    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-flags.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-socials.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-payments.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-marketing.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet" />
+    <link href="/tabler/preview/css/demo.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url("https://rsms.me/inter/inter.css");
+
+        .catalog-header {
+            padding: 2rem 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .catalog-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .catalog-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .feedback-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .feedback-header {
+            padding: 2rem 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .feedback-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .feedback-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .feedback-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--tblr-border-color);
+            margin-bottom: 2rem;
+        }
+
+        .feedback-tab {
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .feedback-tab.active {
+            color: var(--tblr-primary);
+            border-bottom-color: var(--tblr-primary);
+        }
+
+        .feedback-form-container {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .feedback-form-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+
+        .rating-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .rating-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .rating-star {
+            font-size: 1.5rem;
+            color: var(--tblr-border-color);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .rating-star.active,
+        .rating-star:hover {
+            color: #ffc107;
+        }
+
+        .feedback-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .feedback-card {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding: 0;
+        }
+
+        .feedback-meta {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feedback-author {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .feedback-date {
+            color: var(--tblr-secondary-color);
+            font-size: 0.875rem;
+        }
+
+        .feedback-rating {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .feedback-star {
+            color: #ffc107;
+            font-size: 0.875rem;
+        }
+
+        .feedback-content {
+            margin-bottom: 1rem;
+        }
+
+        .feedback-subject {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feedback-message {
+            color: var(--tblr-body-color);
+            line-height: 1.5;
+        }
+
+        .feedback-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--tblr-secondary-color);
+        }
+
+        .feedback-api {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feedback-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: rgba(var(--tblr-warning-rgb), 0.1);
+            color: var(--tblr-warning);
+        }
+
+        .status-reviewed {
+            background-color: rgba(var(--tblr-success-rgb), 0.1);
+            color: var(--tblr-success);
+        }
+
+        .status-closed {
+            background-color: rgba(var(--tblr-secondary-rgb), 0.1);
+            color: var(--tblr-secondary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-description {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-primary {
+            background-color: var(--tblr-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--tblr-primary-dark);
+        }
+
+        @media (max-width: 768px) {
+            .feedback-tabs {
+                flex-direction: column;
+            }
+
+            .feedback-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .feedback-footer {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<!-- Banner de impersonación -->
+<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+
+<script src="/tabler/dist/js/tabler-theme.min.js"></script>
+<div class="page">
+
+    <div th:replace="qa/header_qa.html :: header"></div>
+
+    <div class="content">
+        <div class="feedback-container">
+            <div class="catalog-header rounded-3 px-4">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="catalog-title">Feedback</h1>
+                        <p class="catalog-subtitle">Comparte tus comentarios, califica nuestras APIs y ayúdanos a mejorar</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+
+                    </div>
+                </div>
+            </div>
+
+            <div id="give-feedback" class="feedback-tab-content">
+                <div class="feedback-form-container">
+                    <h3 class="feedback-form-title">Comparte tu experiencia</h3>
+                    <form th:action="@{/qa/guardarFeedback}" method="POST">
+                        <input type="hidden" name="apiId" id="apiId" th:value="${api.idApi}" />
+
+                        <div class="form-group">
+                            <label class="form-label">API o recurso</label>
+                            <input type="text" class="form-control" th:value="${api.nombre}" disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Comentario</label>
+                            <textarea class="form-control form-textarea" name="comentario" placeholder="Describe tu experiencia, sugerencia o problema en detalle..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Calificación</label>
+                            <select class="form-select" name="calificacion" required>
+                                <option value="">Selecciona una calificación</option>
+                                <option th:each="i : ${#numbers.sequence(1, 5)}" th:value="${i}" th:text="${i}"></option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn-primary">
+                            <i class="fas fa-paper-plane"></i> Enviar Feedback
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:replace="qa/footer.html :: footer"></div>
+</div>
+
+<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/tabler/dist/js/tabler.min.js"></script>
+<script>
+    document.querySelectorAll('.feedback-tab').forEach(tab => {
+        tab.addEventListener('click', function() {
+            document.querySelectorAll('.feedback-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.feedback-tab-content').forEach(c => c.style.display = 'none');
+            this.classList.add('active');
+            const tabId = this.getAttribute('data-tab');
+            document.getElementById(tabId).style.display = 'block';
+        });
+    });
+
+    document.querySelectorAll('.switch-tab').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const tabId = this.getAttribute('data-tab');
+            document.querySelectorAll('.feedback-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.feedback-tab-content').forEach(c => c.style.display = 'none');
+            document.querySelector(`.feedback-tab[data-tab="${tabId}"]`).classList.add('active');
+            document.getElementById(tabId).style.display = 'block';
+        });
+    });
+</script>
+</body>
+</html>

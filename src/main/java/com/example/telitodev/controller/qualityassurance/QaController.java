@@ -93,40 +93,6 @@ public class QaController extends BaseController {
         return "qa/apiDetalle";
     }
 
-    @GetMapping("/feedback")
-    public String showFeedbackView(Model model, Authentication auth, HttpSession session) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        
-        // Agregar atributos de impersonación
-        addImpersonationAttributes(model, session);
-        
-        model.addAttribute("usuario", usuario);
-        List<Feedback> listaFeedback = feedbackRepository.findAll();
-        model.addAttribute("listaFeedback", listaFeedback);
-
-        return "qa/feedback";
-    }
-
-
-    @GetMapping("/feedbackDetalle/{id}")
-    public String showFeedbackDetalleView(Model model, @PathVariable("id") int idFeedback, Authentication auth, HttpSession session) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        
-        // Agregar atributos de impersonación
-        addImpersonationAttributes(model, session);
-        
-        model.addAttribute("usuario", usuario);
-
-        Optional<Feedback> feedbackOptional = feedbackRepository.findById(idFeedback);
-
-        if (feedbackOptional.isPresent()) {
-            model.addAttribute("feedback", feedbackOptional.get());
-            return "qa/feedbackDetalle";
-        } else {
-            return "redirect:/qa/feedback";
-        }
-    }
-
     @GetMapping("/soporte")
     public String showSoporte(Model model, Authentication auth, HttpSession session) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());

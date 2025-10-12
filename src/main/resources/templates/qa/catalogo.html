@@ -456,7 +456,7 @@
                                 <!--<span th:text="${api.idApi}"></span>-->
 
                                 <div class="api-actions">
-                                    <a th:href="@{/qa/apiDetalle}" class="btn-api btn-primary">
+                                    <a th:href="@{/apis/{idApi}/docs(idApi=${api.idApi})}" class="btn-api btn-primary">
                                         <i class="fas fa-book"></i> Documentación
                                     </a>
                                     <a href="#" class="btn-api btn-outline">
