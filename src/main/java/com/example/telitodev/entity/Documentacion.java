@@ -22,7 +22,7 @@ public class Documentacion {
     @Column(name = "contenido", columnDefinition = "JSON")
     private String contenido;
     
-    @Column(name = "fecha_creacion")
+    @Column(name = "fecha_modificacion")
     private Timestamp fechaCreacion;
     
     @ManyToOne(fetch = FetchType.LAZY)

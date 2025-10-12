@@ -1,19 +1,21 @@
 package com.example.telitodev.controller.productowner;
 
-import com.example.telitodev.entity.*;
+import com.example.telitodev.entity.Api;
+import com.example.telitodev.entity.Usuario;
+import com.example.telitodev.entity.doc_alto_nivel;
 import com.example.telitodev.repository.*;
-import com.example.telitodev.service.*; // Importa el servicio
+import com.example.telitodev.service.ApiService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam; // Importa @RequestParam
+import org.springframework.web.bind.annotation.RequestParam;
 
-import java.util.Optional;
 import java.util.List;
-import jakarta.servlet.http.HttpSession;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/po")
@@ -27,7 +29,7 @@ public class CatalogoController {
     final TagRepository tagRepository;
     final DocAltoNivelRepository docAltoNivelRepository;
 
-    public CatalogoController(DocAltoNivelRepository docAltoNivelRepository,DominioRepository dominioRepository,TagRepository tagRepository,UsuarioRepository usuarioRepository, ApiService apiService, ApiRepository apiRepository) {
+    public CatalogoController(DocAltoNivelRepository docAltoNivelRepository, DominioRepository dominioRepository, TagRepository tagRepository, UsuarioRepository usuarioRepository, ApiService apiService, ApiRepository apiRepository) {
         this.usuarioRepository = usuarioRepository;
         this.apiService = apiService;
         this.docAltoNivelRepository = docAltoNivelRepository;
