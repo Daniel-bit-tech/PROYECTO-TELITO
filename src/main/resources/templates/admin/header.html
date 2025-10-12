@@ -192,7 +192,6 @@
         }
 
         .sub-navbar .nav-link {
-            color: #495057 !important;
             padding: 1rem 1.25rem !important;
         }
 
@@ -204,6 +203,19 @@
 
         .sub-navbar .nav-link::after {
             background: var(--primary-color);
+        }
+
+        /* Estilos de tema para sub-navbar - deben estar después del CSS base */
+        [data-bs-theme="light"] .sub-navbar .nav-link,
+        html[data-bs-theme="light"] .sub-navbar .nav-link,
+        body[data-bs-theme="light"] .sub-navbar .nav-link {
+            color: #495057 !important;
+        }
+
+        [data-bs-theme="dark"] .sub-navbar .nav-link,
+        html[data-bs-theme="dark"] .sub-navbar .nav-link,
+        body[data-bs-theme="dark"] .sub-navbar .nav-link {
+            color: #f1f5f9 !important;
         }
 
         @media (max-width: 767.98px) {
@@ -219,28 +231,206 @@
             }
         }
 
-        /* Light mode text color fixes */
+        /* Estilos específicos para temas claro y oscuro */
+        
+        /* Tema claro */
+        [data-bs-theme="light"] .custom-navbar,
+        html[data-bs-theme="light"] .custom-navbar,
+        body[data-bs-theme="light"] .custom-navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+
+        /* Estilos para tema claro - texto oscuro */
         [data-bs-theme="light"] .navbar-brand,
-        [data-bs-theme="light"] .nav-link,
-        [data-bs-theme="light"] .navbar-nav .nav-link,
-        [data-bs-theme="light"] .welcome-container h1,
-        [data-bs-theme="light"] .welcome-container p,
-        [data-bs-theme="light"] .navbar-text,
-        html[data-bs-theme="light"] .custom-navbar .navbar-brand,
-        html[data-bs-theme="light"] .custom-navbar .nav-link,
-        html[data-bs-theme="light"] .custom-navbar .navbar-nav .nav-link,
-        html[data-bs-theme="light"] .custom-navbar .navbar-text,
+        [data-bs-theme="light"] .navbar-brand a,
+        [data-bs-theme="light"] .navbar-brand span,
+        html[data-bs-theme="light"] .navbar-brand,
+        html[data-bs-theme="light"] .navbar-brand a,
+        html[data-bs-theme="light"] .navbar-brand span,
         body[data-bs-theme="light"] .navbar-brand,
-        body[data-bs-theme="light"] .nav-link,
+        body[data-bs-theme="light"] .navbar-brand a,
+        body[data-bs-theme="light"] .navbar-brand span {
+            color: #212529 !important;
+            font-weight: 600 !important;
+        }
+
+        [data-bs-theme="light"] .custom-navbar .nav-link,
+        [data-bs-theme="light"] .navbar-nav .nav-link,
+        html[data-bs-theme="light"] .custom-navbar .nav-link,
+        html[data-bs-theme="light"] .navbar-nav .nav-link,
+        body[data-bs-theme="light"] .custom-navbar .nav-link,
         body[data-bs-theme="light"] .navbar-nav .nav-link {
-            color: #333 !important;
+            color: rgba(33, 37, 41, 0.85) !important;
             font-weight: 500 !important;
         }
 
-        [data-bs-theme="light"] .nav-link:hover,
+        [data-bs-theme="light"] .custom-navbar .nav-link:hover,
+        [data-bs-theme="light"] .navbar-nav .nav-link:hover,
         html[data-bs-theme="light"] .custom-navbar .nav-link:hover,
-        body[data-bs-theme="light"] .nav-link:hover {
-            color: #000 !important;
+        html[data-bs-theme="light"] .navbar-nav .nav-link:hover,
+        body[data-bs-theme="light"] .custom-navbar .nav-link:hover,
+        body[data-bs-theme="light"] .navbar-nav .nav-link:hover {
+            color: #495057 !important;
+        }
+
+        [data-bs-theme="light"] .custom-navbar .dropdown-toggle,
+        [data-bs-theme="light"] .custom-navbar .dropdown-toggle .d-none,
+        html[data-bs-theme="light"] .custom-navbar .dropdown-toggle,
+        html[data-bs-theme="light"] .custom-navbar .dropdown-toggle .d-none,
+        body[data-bs-theme="light"] .custom-navbar .dropdown-toggle,
+        body[data-bs-theme="light"] .custom-navbar .dropdown-toggle .d-none {
+            color: #212529 !important;
+        }
+
+        [data-bs-theme="light"] .user-info,
+        html[data-bs-theme="light"] .user-info,
+        body[data-bs-theme="light"] .user-info {
+            color: #333 !important;
+        }
+
+        [data-bs-theme="light"] .navbar-toggler,
+        html[data-bs-theme="light"] .navbar-toggler,
+        body[data-bs-theme="light"] .navbar-toggler {
+            color: #333 !important;
+            border-color: rgba(51, 51, 51, 0.3) !important;
+        }
+
+        /* Tema oscuro */
+        [data-bs-theme="dark"] .custom-navbar,
+        html[data-bs-theme="dark"] .custom-navbar,
+        body[data-bs-theme="dark"] .custom-navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        }
+
+        [data-bs-theme="dark"] .navbar-brand,
+        [data-bs-theme="dark"] .navbar-brand a,
+        [data-bs-theme="dark"] .navbar-brand span,
+        html[data-bs-theme="dark"] .navbar-brand,
+        html[data-bs-theme="dark"] .navbar-brand a,
+        html[data-bs-theme="dark"] .navbar-brand span,
+        body[data-bs-theme="dark"] .navbar-brand,
+        body[data-bs-theme="dark"] .navbar-brand a,
+        body[data-bs-theme="dark"] .navbar-brand span {
+            color: white !important;
+            font-weight: 600 !important;
+        }
+
+        [data-bs-theme="dark"] .custom-navbar .nav-link,
+        [data-bs-theme="dark"] .navbar-nav .nav-link,
+        html[data-bs-theme="dark"] .custom-navbar .nav-link,
+        html[data-bs-theme="dark"] .navbar-nav .nav-link,
+        body[data-bs-theme="dark"] .custom-navbar .nav-link,
+        body[data-bs-theme="dark"] .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.85) !important;
+            font-weight: 500 !important;
+        }
+
+        [data-bs-theme="dark"] .custom-navbar .nav-link:hover,
+        [data-bs-theme="dark"] .navbar-nav .nav-link:hover,
+        html[data-bs-theme="dark"] .custom-navbar .nav-link:hover,
+        html[data-bs-theme="dark"] .navbar-nav .nav-link:hover,
+        body[data-bs-theme="dark"] .custom-navbar .nav-link:hover,
+        body[data-bs-theme="dark"] .navbar-nav .nav-link:hover {
+            color: white !important;
+        }
+
+        [data-bs-theme="dark"] .text-white,
+        html[data-bs-theme="dark"] .text-white,
+        body[data-bs-theme="dark"] .text-white {
+            color: white !important;
+        }
+
+        [data-bs-theme="dark"] .custom-navbar .dropdown-toggle,
+        [data-bs-theme="dark"] .custom-navbar .dropdown-toggle .d-none,
+        html[data-bs-theme="dark"] .custom-navbar .dropdown-toggle,
+        html[data-bs-theme="dark"] .custom-navbar .dropdown-toggle .d-none,
+        body[data-bs-theme="dark"] .custom-navbar .dropdown-toggle,
+        body[data-bs-theme="dark"] .custom-navbar .dropdown-toggle .d-none {
+            color: white !important;
+        }
+
+        [data-bs-theme="dark"] .user-info,
+        [data-bs-theme="dark"] .navbar-brand-link,
+        html[data-bs-theme="dark"] .user-info,
+        html[data-bs-theme="dark"] .navbar-brand-link,
+        body[data-bs-theme="dark"] .user-info,
+        body[data-bs-theme="dark"] .navbar-brand-link {
+            color: white !important;
+        }
+
+        [data-bs-theme="dark"] .navbar-toggler,
+        html[data-bs-theme="dark"] .navbar-toggler,
+        body[data-bs-theme="dark"] .navbar-toggler {
+            color: white !important;
+            border-color: rgba(255, 255, 255, 0.3) !important;
+        }
+
+        /* Sub-navbar responsivo a temas */
+        [data-bs-theme="light"] .sub-navbar,
+        html[data-bs-theme="light"] .sub-navbar,
+        body[data-bs-theme="light"] .sub-navbar {
+            background: white !important;
+        }
+
+        [data-bs-theme="dark"] .sub-navbar,
+        html[data-bs-theme="dark"] .sub-navbar,
+        body[data-bs-theme="dark"] .sub-navbar {
+            background: #1e293b !important;
+        }
+
+        /* Estilos adicionales para navbar-brand-link y user-info */
+        .navbar-brand-link,
+        .navbar-brand-link:hover,
+        .navbar-brand-link:focus {
+            color: white !important;
+            text-decoration: none !important;
+        }
+
+        .user-info,
+        .user-info div {
+            color: white !important;
+        }
+
+        [data-bs-theme="light"] .navbar-brand-link,
+        [data-bs-theme="light"] .navbar-brand-link:hover,
+        [data-bs-theme="light"] .navbar-brand-link:focus,
+        html[data-bs-theme="light"] .navbar-brand-link,
+        html[data-bs-theme="light"] .navbar-brand-link:hover,
+        html[data-bs-theme="light"] .navbar-brand-link:focus,
+        body[data-bs-theme="light"] .navbar-brand-link,
+        body[data-bs-theme="light"] .navbar-brand-link:hover,
+        body[data-bs-theme="light"] .navbar-brand-link:focus {
+            color: #212529 !important;
+        }
+
+        [data-bs-theme="light"] .user-info,
+        [data-bs-theme="light"] .user-info div,
+        html[data-bs-theme="light"] .user-info,
+        html[data-bs-theme="light"] .user-info div,
+        body[data-bs-theme="light"] .user-info,
+        body[data-bs-theme="light"] .user-info div {
+            color: #212529 !important;
+        }
+
+        [data-bs-theme="dark"] .navbar-brand-link,
+        [data-bs-theme="dark"] .navbar-brand-link:hover,
+        [data-bs-theme="dark"] .navbar-brand-link:focus,
+        html[data-bs-theme="dark"] .navbar-brand-link,
+        html[data-bs-theme="dark"] .navbar-brand-link:hover,
+        html[data-bs-theme="dark"] .navbar-brand-link:focus,
+        body[data-bs-theme="dark"] .navbar-brand-link,
+        body[data-bs-theme="dark"] .navbar-brand-link:hover,
+        body[data-bs-theme="dark"] .navbar-brand-link:focus {
+            color: white !important;
+        }
+
+        [data-bs-theme="dark"] .user-info,
+        [data-bs-theme="dark"] .user-info div,
+        html[data-bs-theme="dark"] .user-info,
+        html[data-bs-theme="dark"] .user-info div,
+        body[data-bs-theme="dark"] .user-info,
+        body[data-bs-theme="dark"] .user-info div {
+            color: white !important;
         }
     </style>
 </head>
@@ -253,13 +443,13 @@
         </button>
 
         <div class="navbar-brand">
-            <a href="/admin/home" class="d-flex align-items-center text-decoration-none">
+            <a href="/admin/home" class="d-flex align-items-center text-decoration-none navbar-brand-link">
                 <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-shield-check me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
                     <path d="M12 3a12 12 0 0 0 8.5 3a12 12 0 0 1 -8.5 15a12 12 0 0 1 -8.5 -15a12 12 0 0 0 8.5 -3" />
                     <path d="M9 12l2 2l4 -4" />
                 </svg>
-                <span class="fw-bold text-white">TELITO</span> | Admin Portal
+                <span class="fw-bold">TELITO</span> | Admin Portal
             </a>
         </div>
 
@@ -283,19 +473,19 @@
                     <a href="#" class="nav-link d-flex lh-1 p-0 dropdown-toggle" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario">
                         <!-- Mostrar avatar del usuario impersonado si aplica, sino del usuario actual -->
                         <span class="avatar avatar-sm user-avatar" 
-                              th:style="'background-image: url(https://ui-avatars.com/api/?name='+${isImpersonating ? impersonatedUserName : usuario.nombre}+'+&background=dc3545&color=fff)'"> </span>
-                        <div class="d-none d-xl-block ps-2 text-white">
+                              th:style="'background-image: url(https://ui-avatars.com/api/?name='+${isImpersonating ? impersonatedUserName : (usuario != null ? usuario.nombre : 'Admin')}+'+&background=dc3545&color=fff)'"> </span>
+                        <div class="d-none d-xl-block ps-2 user-info">
                             <!-- Mostrar nombre del usuario impersonado si aplica, sino del usuario actual -->
-                            <div th:text="${isImpersonating ? impersonatedUserName : usuario.nombre}">Admin</div>
+                            <div th:text="${isImpersonating ? impersonatedUserName : (usuario != null ? usuario.nombre : 'Admin')}">Admin</div>
                             <div class="mt-1 small opacity-75" 
-                                 th:text="${isImpersonating ? impersonatedUserRole : usuario.rol.descripcion}">Administrador</div>
+                                 th:text="${isImpersonating ? impersonatedUserRole : (usuario != null and usuario.rol != null ? usuario.rol.descripcion : 'Administrador')}">Administrador</div>
                         </div>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
                         <a th:href="@{/admin/perfil}" class="dropdown-item d-flex align-items-center">
                             <i class="fas fa-user me-2"></i> Mi Perfil
                         </a>
-                        <a th:href="@{/admin/usuarios}" class="dropdown-item d-flex align-items-center">
+                        <a th:href="@{/admin/gestion-usuarios}" class="dropdown-item d-flex align-items-center">
                             <i class="fas fa-users me-2"></i> Gestionar Usuarios
                         </a>
                         <a th:href="@{/admin/sesiones}" class="dropdown-item d-flex align-items-center">
@@ -332,7 +522,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/admin/usuarios}">
+                        <a class="nav-link" th:href="@{/admin/gestion-usuarios}">
                 <span class="nav-link-icon d-md-none d-lg-inline-block">
                   <i class="fas fa-users"></i>
                 </span>
@@ -394,38 +584,49 @@
             document.body.setAttribute('data-bs-theme', theme);
             localStorage.setItem('theme', theme);
             
-            // Force CSS update only for light mode
+            // Apply theme-specific styles
             setTimeout(() => {
-                if (theme === 'light') {
-                    // Force dark text in light mode
-                    document.querySelectorAll('.custom-navbar .navbar-brand, .custom-navbar .nav-link, .custom-navbar .navbar-nav .nav-link, .welcome-title, .welcome-text').forEach(el => {
-                        el.style.color = '#333';
-                        el.style.fontWeight = '500';
-                    });
-                } else {
-                    // Reset to default for dark mode - remove inline styles
-                    document.querySelectorAll('.custom-navbar .navbar-brand, .custom-navbar .nav-link, .custom-navbar .navbar-nav .nav-link, .welcome-title, .welcome-text').forEach(el => {
-                        el.style.removeProperty('color');
-                        el.style.removeProperty('font-weight');
-                    });
-                }
+                applyThemeStyles(theme);
             }, 10);
         });
     });
+
+    function applyThemeStyles(theme) {
+        if (theme === 'light') {
+            // Force dark text in light mode for navbar elements
+            document.querySelectorAll('.custom-navbar .navbar-brand, .custom-navbar .nav-link, .custom-navbar .navbar-nav .nav-link, .navbar-brand-link, .user-info, .dropdown-toggle').forEach(el => {
+                el.style.color = '#333';
+                el.style.fontWeight = '500';
+            });
+            
+            // Update welcome banner text for light mode
+            document.querySelectorAll('.welcome-title, .welcome-text').forEach(el => {
+                el.style.color = '#333';
+                el.style.fontWeight = '500';
+            });
+        } else {
+            // Reset to white for dark mode
+            document.querySelectorAll('.custom-navbar .navbar-brand, .custom-navbar .nav-link, .custom-navbar .navbar-nav .nav-link, .navbar-brand-link, .user-info, .dropdown-toggle').forEach(el => {
+                el.style.color = 'white';
+                el.style.fontWeight = '500';
+            });
+            
+            // Reset welcome banner text for dark mode
+            document.querySelectorAll('.welcome-title, .welcome-text').forEach(el => {
+                el.style.removeProperty('color');
+                el.style.removeProperty('font-weight');
+            });
+        }
+    }
 
     const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-bs-theme', savedTheme);
     document.body.setAttribute('data-bs-theme', savedTheme);
     
-    // Apply theme styles on load only for light mode
-    if (savedTheme === 'light') {
-        setTimeout(() => {
-            document.querySelectorAll('.custom-navbar .navbar-brand, .custom-navbar .nav-link, .custom-navbar .navbar-nav .nav-link, .welcome-title, .welcome-text').forEach(el => {
-                el.style.color = '#333';
-                el.style.fontWeight = '500';
-            });
-        }, 100);
-    }
+    // Apply theme styles on load
+    setTimeout(() => {
+        applyThemeStyles(savedTheme);
+    }, 100);
 
     document.addEventListener("DOMContentLoaded", function() {
         let path = window.location.pathname;
@@ -447,6 +648,87 @@
                 link.classList.remove('active');
             }
         });
+    });
+
+    // Función para aplicar colores del navbar según el tema
+    function applyNavbarColors() {
+        const theme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+        const navbarBrand = document.querySelector('.navbar-brand');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const dropdownToggle = document.querySelector('.dropdown-toggle');
+        const userInfo = document.querySelector('.user-info');
+        
+        if (theme === 'light') {
+            // Modo claro - texto oscuro
+            if (navbarBrand) {
+                navbarBrand.style.color = '#212529';
+                const brandSpan = navbarBrand.querySelector('span');
+                if (brandSpan) brandSpan.style.color = '#212529';
+            }
+            
+            navLinks.forEach(link => {
+                link.style.color = 'rgba(33, 37, 41, 0.85)';
+            });
+            
+            if (dropdownToggle) {
+                dropdownToggle.style.color = '#212529';
+            }
+            
+            if (userInfo) {
+                userInfo.style.color = '#212529';
+                const userInfoDivs = userInfo.querySelectorAll('div');
+                userInfoDivs.forEach(div => {
+                    div.style.color = '#212529';
+                });
+            }
+        } else {
+            // Modo oscuro - texto blanco
+            if (navbarBrand) {
+                navbarBrand.style.color = 'white';
+                const brandSpan = navbarBrand.querySelector('span');
+                if (brandSpan) brandSpan.style.color = 'white';
+            }
+            
+            navLinks.forEach(link => {
+                link.style.color = 'rgba(255, 255, 255, 0.85)';
+            });
+            
+            if (dropdownToggle) {
+                dropdownToggle.style.color = 'white';
+            }
+            
+            if (userInfo) {
+                userInfo.style.color = 'white';
+                const userInfoDivs = userInfo.querySelectorAll('div');
+                userInfoDivs.forEach(div => {
+                    div.style.color = 'white';
+                });
+            }
+        }
+    }
+
+    // Aplicar colores inicialmente
+    applyNavbarColors();
+
+    // Observar cambios en el atributo data-bs-theme
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'data-bs-theme') {
+                setTimeout(applyNavbarColors, 50);
+            }
+        });
+    });
+
+    observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-bs-theme']
+    });
+
+    // También escuchar clicks en el botón de theme toggle
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('[data-bs-theme-value]')) {
+            setTimeout(applyNavbarColors, 100);
+        }
     });
 </script>
 </body>

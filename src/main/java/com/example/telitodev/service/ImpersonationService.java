@@ -138,7 +138,7 @@ public class ImpersonationService {
 
             SecurityContextHolder.getContext().setAuthentication(originalAuth);
 
-            // Limpiar atributos de sesión
+            // Limpiar atributos de sesión COMPLETAMENTE
             session.removeAttribute("IS_IMPERSONATING");
             session.removeAttribute("ORIGINAL_ADMIN_USERNAME");
             session.removeAttribute("ORIGINAL_ADMIN_AUTHORITIES");
@@ -146,8 +146,13 @@ public class ImpersonationService {
             session.removeAttribute("IMPERSONATED_USER_EMAIL");
             session.removeAttribute("IMPERSONATED_USER_NAME");
             session.removeAttribute("IMPERSONATED_USER_ROLE");
+            
+            // CRÍTICO: Forzar invalidación y regeneración de atributos
+            session.setAttribute("IMPERSONATION_ENDED", true);
+            session.setAttribute("FORCE_ADMIN_ACCESS", true);
 
             System.out.println("✅ Impersonación terminada. Volviendo a: " + originalUsername);
+            System.out.println("🔄 Sesión limpiada y forzando acceso admin");
             return true;
 
         } catch (Exception e) {
