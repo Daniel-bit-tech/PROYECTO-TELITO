@@ -62,5 +62,4 @@ public interface LogapiRepository extends JpaRepository<LogApi, Integer> {
             "SUM(CASE WHEN l.estadoHttp >= 400 THEN 1 ELSE 0 END) * 100.0 / COUNT(l) AS errorRate " +
             "FROM LogApi l GROUP BY l.endpoint ORDER BY totalRequests DESC")
     List<Map<String, Object>> findApiPerformanceMetrics();
-
 }

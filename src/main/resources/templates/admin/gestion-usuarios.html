@@ -7,30 +7,21 @@
     <!-- CSRF tokens for AJAX requests -->
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+    
+    <!-- Control de caché y seguridad -->
+    <div th:replace="~{components/security-cache-control :: security-cache-control}"></div>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .custom-navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-bottom: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        /* Asegurar que el dropdown funcione correctamente */
+        .dropdown-menu {
+            z-index: 1050 !important;
         }
-        .navbar-brand a {
-            color: white !important;
-            text-decoration: none;
+        .page-wrapper {
+            padding-top: 0;
         }
-        .navbar-nav .nav-link {
-            color: white !important;
-        }
-        .user-avatar {
-            border: 2px solid rgba(255,255,255,0.3);
+        .page-header {
+            margin-top: 2rem;
         }
     </style>
 </head>
@@ -39,71 +30,8 @@
     <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
 
     <div class="page">
-        <!-- Navbar estilo Tabler -->
-        <header class="navbar navbar-expand-md d-print-none custom-navbar">
-            <div class="container-xl">
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="navbar-brand">
-                    <a href="/admin/home" class="d-flex align-items-center text-decoration-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-code me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M7 8l-4 4l4 4"></path>
-                            <path d="M17 8l4 4l-4 4"></path>
-                            <path d="M14 4l-4 16"></path>
-                        </svg>
-                        <span class="fw-bold text-white">TELITO</span> | Developer Portal
-                    </a>
-                </div>
-
-                <div class="navbar-nav flex-row order-md-last ms-auto">
-                    <div class="d-none d-md-flex align-items-center">
-                        <div class="nav-item me-2">
-                            <a href="?theme=dark" class="theme-switcher nav-link px-0 hide-theme-dark" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="Modo oscuro" data-bs-original-title="Modo oscuro">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
-                                </svg>
-                            </a>
-                            <a href="?theme=light" class="theme-switcher nav-link px-0 hide-theme-light" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="Modo claro" data-bs-original-title="Modo claro">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
-                                    <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"></path>
-                                </svg>
-                            </a>
-                        </div>
-
-                        <div class="nav-item dropdown">
-                            <a href="#" class="nav-link d-flex lh-1 p-0 dropdown-toggle" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario" aria-expanded="false">
-                                <span class="avatar avatar-sm user-avatar" style="background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                                    <i class="fas fa-user-shield"></i>
-                                </span>
-                                <div class="d-none d-xl-block ps-2 text-white">
-                                    <div>Super Administrador</div>
-                                    <div class="mt-1 small opacity-75">Admin</div>
-                                </div>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                <a href="/admin/home" class="dropdown-item d-flex align-items-center">
-                                    <i class="fas fa-home me-2"></i> Dashboard
-                                </a>
-                                <a href="/admin/gestion-usuarios" class="dropdown-item d-flex align-items-center">
-                                    <i class="fas fa-users me-2"></i> Gestión de Usuarios
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <form action="/logout" method="post" style="margin: 0;">
-                                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                                    <button type="submit" class="dropdown-item d-flex align-items-center">
-                                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
+        <!-- Header compartido -->
+        <div th:replace="admin/header.html :: header"></div>
     </div>
 
     <!-- Contenido principal -->
@@ -576,14 +504,6 @@
 
         console.log('Sistema de gestión de usuarios cargado correctamente');
     </script>
-
-    <!-- Tabler Core Scripts -->
-    <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
-    <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
-    
-            </div>
-        </div>
-    </div>
 
     <!-- Script para funcionalidades de impersonación -->
     <script th:replace="~{components/impersonation-banner :: impersonation-script}"></script>

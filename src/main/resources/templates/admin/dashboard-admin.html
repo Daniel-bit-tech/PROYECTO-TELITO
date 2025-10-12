@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard Administrativo - SuperAdmin | Telito</title>
+    
+    <!-- CSS -->
+    <link href="/tabler/dist/css/tabler.min.css?1757307620" rel="stylesheet">
+    <link href="/tabler/dist/css/tabler-flags.min.css?1757307620" rel="stylesheet">
+    <link href="/tabler/dist/css/tabler-payments.min.css?1757307620" rel="stylesheet">
+    <link href="/tabler/dist/css/tabler-vendors.min.css?1757307620" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        .admin-container { max-width: 1400px; margin: 0 auto; padding: 0 1rem; }
+        .admin-header { padding: 2rem 0 1rem; margin-bottom: 1rem; }
+        .admin-title { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; color: #1a202c; }
+        .admin-subtitle { color: #718096; margin-bottom: 1.5rem; font-size: 1.1rem; }
+
+        /* Quick Actions */
+        .quick-actions { 
+            background: var(--tblr-bg-surface); 
+            border-radius: 12px; 
+            padding: 1.5rem; 
+            margin-bottom: 2rem; 
+            border: 1px solid var(--tblr-border-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .quick-actions h4 { margin-bottom: 1rem; color: var(--tblr-body-color); }
+        .action-buttons { display: flex; flex-wrap: wrap; gap: 1rem; }
+        .action-btn { 
+            flex: 1; 
+            min-width: 200px; 
+            padding: 1rem; 
+            border-radius: 8px; 
+            text-decoration: none; 
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .action-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .action-success { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; }
+        .action-warning { background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); color: white; }
+        .action-danger { background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); color: white; }
+        .action-info { background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); color: white; }
+
+        /* Admin Stats */
+        .admin-stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 1.5rem; 
+            margin-bottom: 2rem; 
+        }
+        .stat-card { 
+            background: var(--tblr-bg-surface); 
+            border-radius: 12px; 
+            padding: 1.5rem; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid var(--tblr-border-color);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+        .stat-icon { 
+            width: 48px; 
+            height: 48px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 1.2rem; 
+        }
+        .stat-icon.users { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .stat-icon.apis { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; }
+        .stat-icon.sessions { background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%); color: white; }
+        .stat-icon.security { background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); color: white; }
+        
+        .stat-value { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--tblr-body-color); }
+        .stat-label { color: #718096; margin-bottom: 0.5rem; }
+        .stat-change { font-size: 0.9rem; font-weight: 600; }
+        .change-positive { color: #48bb78; }
+        .change-negative { color: #f56565; }
+
+        /* Tables */
+        .data-section { margin-bottom: 2rem; }
+        .data-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; }
+        .data-container { 
+            background: var(--tblr-bg-surface); 
+            border-radius: 12px; 
+            overflow: hidden; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 1px solid var(--tblr-border-color);
+        }
+        .data-header { 
+            padding: 1.5rem; 
+            border-bottom: 1px solid var(--tblr-border-color); 
+            background: var(--tblr-bg-surface-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .data-title { font-size: 1.25rem; font-weight: 700; margin: 0; }
+
+        /* Activity Feed */
+        .activity-item { 
+            padding: 1rem 1.5rem; 
+            border-bottom: 1px solid var(--tblr-border-color); 
+            display: flex;
+            align-items: start;
+            gap: 1rem;
+        }
+        .activity-item:last-child { border-bottom: none; }
+        .activity-icon { 
+            width: 32px; 
+            height: 32px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+        .activity-content { flex: 1; }
+        .activity-title { font-weight: 600; margin-bottom: 0.25rem; }
+        .activity-desc { color: #718096; font-size: 0.9rem; margin-bottom: 0.25rem; }
+        .activity-time { color: #a0aec0; font-size: 0.8rem; }
+
+        /* Status indicators */
+        .status-badge { 
+            padding: 0.25rem 0.75rem; 
+            border-radius: 20px; 
+            font-size: 0.8rem; 
+            font-weight: 600; 
+        }
+        .status-active { background: #d4f4dd; color: #38a169; }
+        .status-inactive { background: #fed7d7; color: #e53e3e; }
+        .status-pending { background: #feebc8; color: #dd6b20; }
+
+        /* Charts */
+        .chart-container { height: 300px; padding: 1.5rem; }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .data-grid { grid-template-columns: 1fr; }
+            .action-buttons { flex-direction: column; }
+            .action-btn { min-width: auto; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Banner de impersonación -->
+    <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+    
+    <script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
+    <div class="page">
+        <!-- Header -->
+        <div th:replace="admin/header.html :: header"></div>
+
+        <!-- Content -->
+        <div class="page-wrapper">
+            <div class="page-body">
+                <div class="admin-container">
+                    
+                    <!-- Header -->
+                    <div class="admin-header">
+                        <h1 class="admin-title">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Dashboard Administrativo
+                        </h1>
+                        <p class="admin-subtitle">
+                            Panel de control para la gestión integral del sistema Telito
+                        </p>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <h4><i class="fas fa-bolt me-2"></i>Acciones Rápidas</h4>
+                        <div class="action-buttons">
+                            <a href="/admin/gestion-usuarios" class="action-btn action-primary">
+                                <i class="fas fa-users"></i>
+                                <div>
+                                    <div>Gestionar Usuarios</div>
+                                    <small>Crear, editar y administrar usuarios</small>
+                                </div>
+                            </a>
+                            <a href="/admin/sesiones" class="action-btn action-success">
+                                <i class="fas fa-users-cog"></i>
+                                <div>
+                                    <div>Sesiones Activas</div>
+                                    <small>Monitorear y gestionar sesiones</small>
+                                </div>
+                            </a>
+                            <a href="/admin/configuracion" class="action-btn action-warning">
+                                <i class="fas fa-cogs"></i>
+                                <div>
+                                    <div>Configuración</div>
+                                    <small>Parámetros del sistema</small>
+                                </div>
+                            </a>
+                            <a href="/admin/auditoria" class="action-btn action-danger">
+                                <i class="fas fa-shield-alt"></i>
+                                <div>
+                                    <div>Auditoría</div>
+                                    <small>Logs y actividad del sistema</small>
+                                </div>
+                            </a>
+                            <a href="/admin/backup" class="action-btn action-info">
+                                <i class="fas fa-database"></i>
+                                <div>
+                                    <div>Respaldos</div>
+                                    <small>Gestión de copias de seguridad</small>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Statistics -->
+                    <div class="admin-stats">
+                        <!-- Total Users -->
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon users">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                            </div>
+                            <div class="stat-value" th:text="${totalUsuarios ?: 0}">0</div>
+                            <div class="stat-label">Usuarios Totales</div>
+                            <div class="stat-change change-positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span th:text="${usuariosActivos ?: 0}">0</span> activos
+                            </div>
+                        </div>
+
+                        <!-- Total APIs -->
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon apis">
+                                    <i class="fas fa-code"></i>
+                                </div>
+                            </div>
+                            <div class="stat-value" th:text="${totalApis ?: 0}">0</div>
+                            <div class="stat-label">APIs Registradas</div>
+                            <div class="stat-change change-positive">
+                                <i class="fas fa-arrow-up"></i>
+                                <span th:text="${apisActivas ?: 0}">0</span> activas
+                            </div>
+                        </div>
+
+                        <!-- Active Sessions -->
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon sessions">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                            </div>
+                            <div class="stat-value" th:text="${sesionesActivas ?: 0}">0</div>
+                            <div class="stat-label">Sesiones Activas</div>
+                            <div class="stat-change">
+                                <i class="fas fa-users"></i>
+                                <span th:text="${usuariosConectados ?: 0}">0</span> usuarios
+                            </div>
+                        </div>
+
+                        <!-- Security Alerts -->
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon security">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                            </div>
+                            <div class="stat-value" th:text="${alertasSeguridad ?: 0}">0</div>
+                            <div class="stat-label">Alertas de Seguridad</div>
+                            <div class="stat-change" th:classappend="${alertasSeguridad > 0 ? 'change-negative' : 'change-positive'}">
+                                <i th:class="${alertasSeguridad > 0 ? 'fas fa-exclamation-triangle' : 'fas fa-check'}"></i>
+                                <span th:text="${alertasSeguridad > 0 ? 'Requieren atención' : 'Todo normal'}">Todo normal</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Section -->
+                    <div class="data-section">
+                        <div class="data-grid">
+                            <!-- Recent Users -->
+                            <div class="data-container">
+                                <div class="data-header">
+                                    <h3 class="data-title">Usuarios Recientes</h3>
+                                    <a href="/admin/gestion-usuarios" class="btn btn-sm btn-primary">Ver todos</a>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-vcenter">
+                                        <thead>
+                                            <tr>
+                                                <th>Usuario</th>
+                                                <th>Rol</th>
+                                                <th>Estado</th>
+                                                <th>Registro</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="usuario : ${usuariosRecientes}">
+                                                <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="avatar avatar-sm me-2 bg-primary text-white">
+                                                            <span th:text="${#strings.substring(usuario.nombre, 0, 1)}">U</span>
+                                                        </div>
+                                                        <div>
+                                                            <div th:text="${usuario.nombre + ' ' + usuario.apellido}">Usuario</div>
+                                                            <small class="text-muted" th:text="${usuario.correo}">email@example.com</small>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span th:class="|badge bg-${usuario.rol == 'SUPERADMIN' ? 'danger' : (usuario.rol == 'PO' ? 'success' : (usuario.rol == 'DEV' ? 'info' : 'warning'))}|" 
+                                                          th:text="${usuario.rol}">ROL</span>
+                                                </td>
+                                                <td>
+                                                    <span th:class="|status-badge ${usuario.estado ? 'status-active' : 'status-inactive'}|"
+                                                          th:text="${usuario.estado ? 'Activo' : 'Inactivo'}">Estado</span>
+                                                </td>
+                                                <td th:text="${#temporals.format(usuario.fechaCreacion, 'dd/MM/yyyy')}">Fecha</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Recent Activity -->
+                            <div class="data-container">
+                                <div class="data-header">
+                                    <h3 class="data-title">Actividad Reciente</h3>
+                                    <a href="/admin/auditoria" class="btn btn-sm btn-outline-primary">Ver todo</a>
+                                </div>
+                                <div style="max-height: 400px; overflow-y: auto;">
+                                    <div th:each="actividad : ${actividadesRecientes}" class="activity-item">
+                                        <div th:class="|activity-icon ${actividad.tipo == 'USUARIO_CREADO' ? 'bg-success' : (actividad.tipo == 'LOGIN' ? 'bg-info' : (actividad.tipo == 'ERROR' ? 'bg-danger' : 'bg-warning'))} text-white|">
+                                            <i th:class="${actividad.tipo == 'USUARIO_CREADO' ? 'fas fa-user-plus' : (actividad.tipo == 'LOGIN' ? 'fas fa-sign-in-alt' : (actividad.tipo == 'ERROR' ? 'fas fa-exclamation' : 'fas fa-cog'))}"></i>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-title" th:text="${actividad.titulo}">Título</div>
+                                            <div class="activity-desc" th:text="${actividad.descripcion}">Descripción</div>
+                                            <div class="activity-time" th:text="${#temporals.format(actividad.fecha, 'dd/MM/yyyy HH:mm')}">Tiempo</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Si no hay actividades -->
+                                    <div th:if="${#lists.isEmpty(actividadesRecientes)}" class="text-center py-4 text-muted">
+                                        <i class="fas fa-history fa-2x mb-2"></i>
+                                        <p>No hay actividad reciente</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Status -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="data-container">
+                                <div class="data-header">
+                                    <h3 class="data-title">Estado del Sistema</h3>
+                                    <span class="badge bg-success">Operativo</span>
+                                </div>
+                                <div class="p-3">
+                                    <div class="row text-center">
+                                        <div class="col-4">
+                                            <div class="h3 text-success" th:text="${serviciosOperativos ?: 0}">0</div>
+                                            <div class="text-muted">Servicios OK</div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="h3 text-warning" th:text="${serviciosAdvertencia ?: 0}">0</div>
+                                            <div class="text-muted">Advertencias</div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="h3 text-danger" th:text="${serviciosCriticos ?: 0}">0</div>
+                                            <div class="text-muted">Críticos</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="data-container">
+                                <div class="data-header">
+                                    <h3 class="data-title">Distribución de Usuarios</h3>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="userDistributionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
+    
+    <script>
+        // Configuración de Chart.js
+        Chart.defaults.font.family = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+        Chart.defaults.color = '#6b7280';
+        
+        // Gráfico de distribución de usuarios
+        const userDistData = {
+            labels: ['SuperAdmin', 'Product Owner', 'Developer', 'QA'],
+            datasets: [{
+                data: [
+                    /*[[${usuariosPorRol.SUPERADMIN ?: 0}]]*/ 1,
+                    /*[[${usuariosPorRol.PO ?: 0}]]*/ 5,
+                    /*[[${usuariosPorRol.DEV ?: 0}]]*/ 12,
+                    /*[[${usuariosPorRol.QA ?: 0}]]*/ 8
+                ],
+                backgroundColor: [
+                    '#f56565', // SuperAdmin - Red
+                    '#48bb78', // PO - Green  
+                    '#4299e1', // DEV - Blue
+                    '#ed8936'  // QA - Orange
+                ]
+            }]
+        };
+
+        new Chart(document.getElementById('userDistributionChart'), {
+            type: 'doughnut',
+            data: userDistData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Auto-refresh cada minuto para métricas en tiempo real
+        setInterval(() => {
+            // Aquí implementar la lógica para actualizar métricas en tiempo real
+            console.log('Actualizando métricas administrativas...');
+        }, 60000);
+    </script>
+</body>
+</html>
