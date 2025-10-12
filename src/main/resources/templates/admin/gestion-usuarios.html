@@ -7,30 +7,69 @@
     <!-- CSRF tokens for AJAX requests -->
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
-    <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+    
+    <!-- Control de caché y seguridad -->
+    <div th:replace="~{components/security-cache-control :: security-cache-control}"></div>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        .custom-navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-bottom: none;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        /* Asegurar que el dropdown funcione correctamente */
+        .dropdown-menu {
+            z-index: 1050 !important;
         }
-        .navbar-brand a {
-            color: white !important;
-            text-decoration: none;
+        .page-wrapper {
+            padding-top: 0;
         }
-        .navbar-nav .nav-link {
-            color: white !important;
+        .page-header {
+            margin-top: 2rem;
         }
+        
+        /* Estilos adicionales para asegurar funcionalidad del dropdown */
+        .nav-item.dropdown {
+            position: relative;
+        }
+        
+        .dropdown-toggle::after {
+            display: inline-block;
+            margin-left: 0.255em;
+            vertical-align: 0.255em;
+            content: "";
+            border-top: 0.3em solid;
+            border-right: 0.3em solid transparent;
+            border-bottom: 0;
+            border-left: 0.3em solid transparent;
+        }
+        
+        .dropdown-menu.show {
+            display: block !important;
+        }
+        
+        .dropdown-toggle:hover {
+            cursor: pointer;
+        }
+        
+        /* Asegurar que el avatar sea clickeable */
         .user-avatar {
-            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+        }
+        
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            display: none;
+            min-width: 10rem;
+            padding: 0.5rem 0;
+            margin: 0;
+            font-size: 1rem;
+            color: #212529;
+            text-align: left;
+            list-style: none;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid rgba(0,0,0,.15);
+            border-radius: 0.375rem;
         }
     </style>
 </head>
@@ -39,71 +78,8 @@
     <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
 
     <div class="page">
-        <!-- Navbar estilo Tabler -->
-        <header class="navbar navbar-expand-md d-print-none custom-navbar">
-            <div class="container-xl">
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="navbar-brand">
-                    <a href="/admin/home" class="d-flex align-items-center text-decoration-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-code me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-                            <path d="M7 8l-4 4l4 4"></path>
-                            <path d="M17 8l4 4l-4 4"></path>
-                            <path d="M14 4l-4 16"></path>
-                        </svg>
-                        <span class="fw-bold text-white">TELITO</span> | Developer Portal
-                    </a>
-                </div>
-
-                <div class="navbar-nav flex-row order-md-last ms-auto">
-                    <div class="d-none d-md-flex align-items-center">
-                        <div class="nav-item me-2">
-                            <a href="?theme=dark" class="theme-switcher nav-link px-0 hide-theme-dark" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="Modo oscuro" data-bs-original-title="Modo oscuro">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
-                                </svg>
-                            </a>
-                            <a href="?theme=light" class="theme-switcher nav-link px-0 hide-theme-light" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="Modo claro" data-bs-original-title="Modo claro">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
-                                    <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"></path>
-                                </svg>
-                            </a>
-                        </div>
-
-                        <div class="nav-item dropdown">
-                            <a href="#" class="nav-link d-flex lh-1 p-0 dropdown-toggle" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario" aria-expanded="false">
-                                <span class="avatar avatar-sm user-avatar" style="background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                                    <i class="fas fa-user-shield"></i>
-                                </span>
-                                <div class="d-none d-xl-block ps-2 text-white">
-                                    <div>Super Administrador</div>
-                                    <div class="mt-1 small opacity-75">Admin</div>
-                                </div>
-                            </a>
-                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-                                <a href="/admin/home" class="dropdown-item d-flex align-items-center">
-                                    <i class="fas fa-home me-2"></i> Dashboard
-                                </a>
-                                <a href="/admin/gestion-usuarios" class="dropdown-item d-flex align-items-center">
-                                    <i class="fas fa-users me-2"></i> Gestión de Usuarios
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <form action="/logout" method="post" style="margin: 0;">
-                                    <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                                    <button type="submit" class="dropdown-item d-flex align-items-center">
-                                        <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
+        <!-- Header compartido -->
+        <div th:replace="admin/header.html :: header"></div>
     </div>
 
     <!-- Contenido principal -->
@@ -136,7 +112,7 @@
                                         </span>
                                     </div>
                                     <div class="col">
-                                        <div class="font-weight-medium" th:text="${totalUsuarios}">0</div>
+                                        <div class="font-weight-medium" id="total-usuarios" th:text="${totalUsuarios}">0</div>
                                         <div class="text-muted">Total Usuarios</div>
                                     </div>
                                 </div>
@@ -153,7 +129,7 @@
                                         </span>
                                     </div>
                                     <div class="col">
-                                        <div class="font-weight-medium" th:text="${usuariosActivos}">0</div>
+                                        <div class="font-weight-medium" id="usuarios-activos" th:text="${usuariosActivos}">0</div>
                                         <div class="text-muted">Usuarios Activos</div>
                                     </div>
                                 </div>
@@ -170,7 +146,7 @@
                                         </span>
                                     </div>
                                     <div class="col">
-                                        <div class="font-weight-medium" th:text="${usuariosInactivos}">0</div>
+                                        <div class="font-weight-medium" id="usuarios-inactivos" th:text="${usuariosInactivos}">0</div>
                                         <div class="text-muted">Usuarios Inactivos</div>
                                     </div>
                                 </div>
@@ -223,10 +199,13 @@
                                 </form>
                             </div>
                             <div class="col-md-4 text-end">
+                                <button type="button" class="btn btn-warning me-2" onclick="probarConectividad()">
+                                    <i class="fas fa-wifi me-1"></i>Test Conectividad
+                                </button>
                                 <button type="button" class="btn btn-info me-2" onclick="mostrarTestEmail()">
                                     <i class="fas fa-envelope me-1"></i>Test Email
                                 </button>
-                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevoUsuarioModal">
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#nuevoUsuarioModal" onclick="console.log('Botón Nuevo Usuario clickeado')">
                                     <i class="fas fa-plus me-1"></i>Nuevo Usuario
                                 </button>
                             </div>
@@ -393,14 +372,58 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // Función para probar conectividad y permisos
+        async function probarConectividad() {
+            console.log('🔍 Probando conectividad y permisos...');
+            
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+                
+                // Test endpoint simple
+                const response = await fetch('/admin/gestion-usuarios/test', {
+                    method: 'GET',
+                    headers: {
+                        [csrfHeader]: csrfToken
+                    }
+                });
+                
+                console.log('📊 Test Response Status:', response.status);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('✅ Test exitoso:', result);
+                    alert('Conectividad OK: ' + result.mensaje);
+                } else {
+                    console.error('❌ Test falló:', response.status);
+                    if (response.status === 403) {
+                        alert('Error 403: Sin permisos de SUPERADMIN');
+                    } else if (response.status === 401) {
+                        alert('Error 401: No autenticado - redirigiendo al login');
+                        window.location.href = '/login';
+                    } else {
+                        alert('Error ' + response.status + ': ' + response.statusText);
+                    }
+                }
+            } catch (error) {
+                console.error('💥 Error de conexión:', error);
+                alert('Error de conexión: ' + error.message);
+            }
+        }
+
         // Función para guardar nuevo usuario
         async function guardarNuevoUsuario() {
+            console.log('🚀 Iniciando creación de usuario...');
+            
             const form = document.getElementById('nuevoUsuarioForm');
             const formData = new FormData(form);
             const data = Object.fromEntries(formData);
+            
+            console.log('📋 Datos del formulario:', data);
 
             // Validación básica
             if (!data.dni || !data.nombre || !data.apellidoPaterno || !data.correo || !data.contrasena || !data.idRol) {
+                console.error('❌ Faltan datos obligatorios');
                 alert('Por favor, completa todos los campos obligatorios');
                 return;
             }
@@ -409,28 +432,42 @@
                 const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
                 const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
                 
+                console.log('🔑 CSRF Token:', csrfToken);
+                console.log('🔑 CSRF Header:', csrfHeader);
+                
+                const requestBody = {
+                    ...data,
+                    idRol: parseInt(data.idRol)
+                };
+                
+                console.log('📤 Enviando request a /admin/gestion-usuarios');
+                console.log('📦 Body de la request:', requestBody);
+                
                 const response = await fetch('/admin/gestion-usuarios', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         [csrfHeader]: csrfToken
                     },
-                    body: JSON.stringify({
-                        ...data,
-                        idRol: parseInt(data.idRol)
-                    })
+                    body: JSON.stringify(requestBody)
                 });
 
+                console.log('📬 Response status:', response.status);
+                console.log('📬 Response ok:', response.ok);
+                
                 if (response.ok) {
+                    console.log('✅ Usuario creado exitosamente');
                     alert('Usuario creado exitosamente');
                     bootstrap.Modal.getInstance(document.getElementById('nuevoUsuarioModal')).hide();
                     form.reset();
                     window.location.reload();
                 } else {
                     const error = await response.text();
+                    console.error('❌ Error del servidor:', error);
                     alert('Error: ' + error);
                 }
             } catch (error) {
+                console.error('💥 Error de red:', error);
                 alert('Error al crear usuario: ' + error.message);
             }
         }
@@ -440,7 +477,104 @@
             alert('Función de editar usuario - Por implementar\nUsuario DNI: ' + dni);
         }
 
-        // Función para cambiar estado del usuario
+        // Función para actualizar las estadísticas de los cards
+        async function actualizarEstadisticas() {
+            try {
+                const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+                
+                const response = await fetch('/admin/gestion-usuarios/estadisticas', {
+                    method: 'GET',
+                    headers: {
+                        [csrfHeader]: csrfToken
+                    }
+                });
+
+                if (response.ok) {
+                    const estadisticas = await response.json();
+                    
+                    // Actualizar los valores en los cards con animación
+                    actualizarCardConAnimacion('total-usuarios', estadisticas.totalUsuarios);
+                    actualizarCardConAnimacion('usuarios-activos', estadisticas.usuariosActivos);
+                    actualizarCardConAnimacion('usuarios-inactivos', estadisticas.usuariosInactivos);
+                    
+                    console.log('📊 Estadísticas actualizadas:', estadisticas);
+                } else {
+                    console.error('❌ Error al obtener estadísticas:', response.statusText);
+                }
+            } catch (error) {
+                console.error('❌ Error de red al actualizar estadísticas:', error);
+            }
+        }
+
+        // Función para actualizar un card con animación
+        function actualizarCardConAnimacion(elementId, nuevoValor) {
+            const elemento = document.getElementById(elementId);
+            if (elemento) {
+                const valorActual = parseInt(elemento.textContent) || 0;
+                
+                if (valorActual !== nuevoValor) {
+                    // Añadir clase de animación
+                    elemento.style.transition = 'all 0.3s ease';
+                    elemento.style.transform = 'scale(1.1)';
+                    elemento.style.color = '#0066cc';
+                    
+                    // Actualizar el valor después de un pequeño delay
+                    setTimeout(() => {
+                        elemento.textContent = nuevoValor;
+                        
+                        // Restaurar el estado normal
+                        setTimeout(() => {
+                            elemento.style.transform = 'scale(1)';
+                            elemento.style.color = '';
+                        }, 150);
+                    }, 150);
+                }
+            }
+        }
+
+        // Función para actualizar el estado visual del botón en la tabla
+        function actualizarEstadoEnTabla(dni, nuevoEstado) {
+            // Buscar la fila del usuario en la tabla
+            const filas = document.querySelectorAll('tbody tr');
+            filas.forEach(fila => {
+                const botonEstado = fila.querySelector(`[data-dni="${dni}"]`);
+                if (botonEstado) {
+                    // Actualizar el badge de estado
+                    const badgeEstado = fila.querySelector('.badge');
+                    if (badgeEstado) {
+                        if (nuevoEstado) {
+                            badgeEstado.className = 'badge bg-success';
+                            badgeEstado.textContent = 'Activo';
+                        } else {
+                            badgeEstado.className = 'badge bg-danger';
+                            badgeEstado.textContent = 'Inactivo';
+                        }
+                    }
+                    
+                    // Actualizar el botón
+                    const iconoBoton = botonEstado.querySelector('i');
+                    const textoBoton = botonEstado.querySelector('span');
+                    
+                    if (iconoBoton && textoBoton) {
+                        if (nuevoEstado) {
+                            botonEstado.className = 'btn btn-sm btn-warning btn-cambiar-estado';
+                            iconoBoton.className = 'fas fa-user-slash me-1';
+                            textoBoton.textContent = 'Desactivar';
+                        } else {
+                            botonEstado.className = 'btn btn-sm btn-success btn-cambiar-estado';
+                            iconoBoton.className = 'fas fa-user-check me-1';
+                            textoBoton.textContent = 'Activar';
+                        }
+                        
+                        // Actualizar los atributos data
+                        botonEstado.setAttribute('data-estado', nuevoEstado.toString());
+                    }
+                }
+            });
+        }
+
+        // Función para cambiar estado del usuario (MEJORADA)
         async function cambiarEstado(dni, nuevoEstado) {
             const accion = nuevoEstado ? 'activar' : 'desactivar';
             
@@ -459,11 +593,18 @@
                     });
 
                     if (response.ok) {
-                        alert(`Usuario ${accion}do exitosamente`);
+                        // Mostrar mensaje de éxito
+                        mostrarNotificacion(`Usuario ${accion}do exitosamente`, 'success');
                         
                         // Obtener información del usuario para la actividad
                         const responseData = await response.json();
                         const nombreUsuario = responseData.nombreUsuario || 'Usuario';
+                        
+                        // Actualizar la tabla inmediatamente
+                        actualizarEstadoEnTabla(dni, nuevoEstado);
+                        
+                        // Actualizar las estadísticas
+                        await actualizarEstadisticas();
                         
                         // Agregar actividad al dashboard
                         const accionActividad = nuevoEstado ? 'ACTIVAR_USUARIO' : 'BANEAR_USUARIO';
@@ -492,36 +633,70 @@
                             timestamp: Date.now()
                         }));
                         
-                        window.location.reload();
+                        // YA NO RECARGAMOS LA PÁGINA - Todo se actualiza dinámicamente
+                        
                     } else {
                         const error = await response.text();
-                        alert('Error: ' + error);
+                        mostrarNotificacion('Error: ' + error, 'error');
                     }
                 } catch (error) {
-                    alert('Error al cambiar estado: ' + error.message);
+                    mostrarNotificacion('Error al cambiar estado: ' + error.message, 'error');
                 }
             }
         }
 
-        // Event listeners para los botones con data attributes
-        document.addEventListener('DOMContentLoaded', function() {
-            // Event listeners para botones de editar
-            document.querySelectorAll('.btn-editar-usuario').forEach(function(button) {
-                button.addEventListener('click', function() {
-                    const dni = this.getAttribute('data-dni');
-                    editarUsuario(dni);
-                });
-            });
+        // Función para mostrar notificaciones
+        function mostrarNotificacion(mensaje, tipo = 'info') {
+            // Crear el elemento de notificación
+            const notificacion = document.createElement('div');
+            notificacion.className = `alert alert-${tipo === 'success' ? 'success' : tipo === 'error' ? 'danger' : 'info'} alert-dismissible fade show position-fixed`;
+            notificacion.style.cssText = `
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            `;
+            
+            notificacion.innerHTML = `
+                <i class="fas fa-${tipo === 'success' ? 'check-circle' : tipo === 'error' ? 'exclamation-circle' : 'info-circle'} me-2"></i>
+                ${mensaje}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notificacion);
+            
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                if (notificacion.parentNode) {
+                    notificacion.remove();
+                }
+            }, 5000);
+        }
 
-            // Event listeners para botones de cambiar estado
-            document.querySelectorAll('.btn-cambiar-estado').forEach(function(button) {
-                button.addEventListener('click', function() {
-                    const dni = this.getAttribute('data-dni');
-                    const estadoActual = this.getAttribute('data-estado') === 'true';
+        // Event listeners para los botones con data attributes (MEJORADO con delegación de eventos)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Usar delegación de eventos para que funcione con elementos dinámicos
+            document.addEventListener('click', function(e) {
+                // Event listener para botones de editar
+                if (e.target.closest('.btn-editar-usuario')) {
+                    const button = e.target.closest('.btn-editar-usuario');
+                    const dni = button.getAttribute('data-dni');
+                    editarUsuario(dni);
+                }
+                
+                // Event listener para botones de cambiar estado
+                if (e.target.closest('.btn-cambiar-estado')) {
+                    const button = e.target.closest('.btn-cambiar-estado');
+                    const dni = button.getAttribute('data-dni');
+                    const estadoActual = button.getAttribute('data-estado') === 'true';
                     const nuevoEstado = !estadoActual;
                     cambiarEstado(dni, nuevoEstado);
-                });
+                }
             });
+            
+            // Actualizar estadísticas al cargar la página
+            actualizarEstadisticas();
         });
 
         // Función para test de email
@@ -577,13 +752,66 @@
         console.log('Sistema de gestión de usuarios cargado correctamente');
     </script>
 
-    <!-- Tabler Core Scripts -->
-    <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
-    <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
-    
-            </div>
-        </div>
-    </div>
+    <!-- Script para hacer el dropdown interactivo -->
+    <script>
+        // Función para forzar la interactividad del dropdown
+        function initializeDropdown() {
+            console.log('Inicializando dropdown del usuario...');
+            
+            // Buscar el dropdown del usuario
+            const dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
+            const dropdownMenu = document.querySelector('.dropdown-menu');
+            
+            if (dropdownToggle && dropdownMenu) {
+                console.log('Elementos del dropdown encontrados');
+                
+                // Remover cualquier evento previo
+                dropdownToggle.removeEventListener('click', handleDropdownClick);
+                
+                // Agregar evento click
+                dropdownToggle.addEventListener('click', handleDropdownClick);
+                
+                // Marcar como inicializado
+                dropdownToggle.setAttribute('data-dropdown-initialized', 'true');
+                
+                console.log('Dropdown inicializado correctamente');
+            } else {
+                console.error('No se encontraron los elementos del dropdown');
+            }
+        }
+        
+        function handleDropdownClick(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const dropdownMenu = this.nextElementSibling;
+            if (dropdownMenu) {
+                // Toggle la clase show
+                dropdownMenu.classList.toggle('show');
+                console.log('Dropdown toggled, show:', dropdownMenu.classList.contains('show'));
+            }
+        }
+        
+        // Cerrar dropdown al hacer click fuera
+        document.addEventListener('click', function(e) {
+            const dropdownMenu = document.querySelector('.dropdown-menu.show');
+            const dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
+            
+            if (dropdownMenu && dropdownToggle && !dropdownToggle.contains(e.target)) {
+                dropdownMenu.classList.remove('show');
+            }
+        });
+        
+        // Inicializar cuando el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeDropdown);
+        } else {
+            initializeDropdown();
+        }
+        
+        // Reinicializar después de un breve delay para asegurar que Bootstrap esté cargado
+        setTimeout(initializeDropdown, 1000);
+    </script>
 
     <!-- Script para funcionalidades de impersonación -->
     <script th:replace="~{components/impersonation-banner :: impersonation-script}"></script>

@@ -121,6 +121,11 @@
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
             padding: 0.5rem;
+            display: none !important; /* Asegurar que esté oculto por defecto */
+        }
+
+        .dropdown-menu.show {
+            display: block !important; /* Mostrar cuando tenga la clase show */
         }
 
         .dropdown-item {
@@ -131,6 +136,15 @@
 
         .dropdown-item:hover {
             background-color: var(--light-bg);
+        }
+
+        /* Asegurar que el dropdown toggle sea clickeable */
+        .dropdown-toggle {
+            cursor: pointer !important;
+        }
+
+        .user-avatar {
+            cursor: pointer !important;
         }
 
         .theme-switcher {
@@ -485,6 +499,9 @@
                         </div>
                     </a>
                     <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                        <a th:href="@{/admin/dashboard}" class="dropdown-item d-flex align-items-center">
+                            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+                        </a>
                         <a th:href="@{/admin/perfil}" class="dropdown-item d-flex align-items-center">
                             <i class="fas fa-user me-2"></i> Mi Perfil
                         </a>
@@ -573,6 +590,58 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // INICIALIZACIÓN FORZADA DEL DROPDOWN DE USUARIO
+    function forceDropdownInit() {
+        console.log('🔄 Inicializando dropdown de usuario...');
+        
+        // Buscar el dropdown toggle
+        const dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+        
+        if (dropdownToggle && dropdownMenu) {
+            console.log('✅ Elementos del dropdown encontrados');
+            
+            // Forzar la funcionalidad click
+            dropdownToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                console.log('🖱️ Click en dropdown detectado');
+                
+                // Toggle manual de la clase show
+                if (dropdownMenu.classList.contains('show')) {
+                    dropdownMenu.classList.remove('show');
+                    console.log('📤 Dropdown cerrado');
+                } else {
+                    dropdownMenu.classList.add('show');
+                    console.log('📥 Dropdown abierto');
+                }
+            });
+            
+            // Cerrar dropdown al hacer click fuera
+            document.addEventListener('click', function(e) {
+                if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                    dropdownMenu.classList.remove('show');
+                }
+            });
+            
+            console.log('✅ Dropdown inicializado correctamente');
+        } else {
+            console.error('❌ No se encontraron elementos del dropdown');
+        }
+    }
+    
+    // Ejecutar inmediatamente y después de cargar
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', forceDropdownInit);
+    } else {
+        forceDropdownInit();
+    }
+    
+    // Reintentar después de un delay
+    setTimeout(forceDropdownInit, 500);
+    setTimeout(forceDropdownInit, 1000);
+
     // Activar tooltips de Bootstrap
     var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {

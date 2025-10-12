@@ -41,10 +41,6 @@ public class SecurityConfig {
     private UsuarioDetailService usuarioDetailService;
 
     @Autowired
-    @Qualifier("oauth2UserServiceBean")
-    private org.springframework.security.oauth2.client.userinfo.OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserServiceBean;
-
-    @Autowired
     private UsuarioActivoFilter usuarioActivoFilter;
 
     @Autowired
@@ -65,7 +61,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authz -> authz
                         // Públicas
-                        .requestMatchers("/", "/login/**", "/registro", "/apis", "/tabler/**", "/forgot-password", "/register", "/confirmar-cuenta", "/oauth2-test", "/oauth2-debug").permitAll()
+                        .requestMatchers("/", "/login/**", "/registro", "/apis", "/tabler/**", "/forgot-password", "/register", "/confirmar-cuenta", "/confirmar-cuenta/**", "/oauth2-test", "/oauth2-debug").permitAll()
                         .requestMatchers("/oauth2/reset", "/oauth2/debug", "/oauth2-reset").permitAll()  // ⚡ ENDPOINTS OAUTH2 DEBUG
                         .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**", "/static/**").permitAll()
                         .requestMatchers("/error", "/acceso-denegado").permitAll()
@@ -85,7 +81,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/gestion-usuarios/stop-impersonation").hasAnyRole("SUPERADMIN", "QA", "DEV", "PO")
                         .requestMatchers("/admin/gestion-usuarios/impersonation-status").hasAnyRole("SUPERADMIN", "QA", "DEV", "PO")
                         .requestMatchers("/admin/gestion-usuarios/**").hasRole("SUPERADMIN")
-
+                        
                         // Portales - reglas de seguridad tradicionales (el filtro maneja la impersonación)
                         .requestMatchers("/admin/**").hasRole("SUPERADMIN")
                         .requestMatchers("/dev/**").hasAnyRole("DEV", "DEVELOPER", "SUPERADMIN")

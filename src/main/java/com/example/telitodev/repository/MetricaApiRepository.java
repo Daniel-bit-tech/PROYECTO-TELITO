@@ -75,5 +75,127 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
             @Param("start") Timestamp start,
             @Param("end")   Timestamp end
     );
+
+    /* ===== CONSULTAS ADICIONALES PARA KPIs AVANZADOS ===== */
+    
+    /**
+     * Obtiene throughput por hora en las últimas 24 horas
+     */
+    @Query(value = """
+        SELECT 
+            HOUR(m.fecha) as hora,
+            SUM(m.llamadas) as requests
+        FROM metricaapi m 
+        WHERE m.fecha >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+        GROUP BY HOUR(m.fecha)
+        ORDER BY hora
+    """, nativeQuery = true)
+    List<Object[]> getThroughputByHour();
+    
+    /**
+     * Obtiene throughput por día en los últimos 30 días
+     */
+    @Query(value = """
+        SELECT 
+            DATE(m.fecha) as fecha,
+            SUM(m.llamadas) as requests
+        FROM metricaapi m 
+        WHERE m.fecha >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        GROUP BY DATE(m.fecha)
+        ORDER BY fecha
+    """, nativeQuery = true)
+    List<Object[]> getThroughputByDay();
+    
+    /**
+     * Obtiene las 5 APIs más utilizadas
+     */
+    @Query(value = """
+        SELECT 
+            a.nombre,
+            SUM(m.llamadas) as totalRequests,
+            AVG(m.latencia_promedio) as avgLatency,
+            CASE 
+                WHEN SUM(m.llamadas) = 0 THEN 0.0
+                ELSE (SUM(m.errores) * 100.0 / SUM(m.llamadas))
+            END as errorRate
+        FROM metricaapi m 
+        JOIN api a ON m.idAPI = a.idAPI
+        GROUP BY a.nombre
+        HAVING SUM(m.llamadas) > 0
+        ORDER BY totalRequests DESC
+        LIMIT 5
+    """, nativeQuery = true)
+    List<Object[]> getTopUsedApis();
+    
+    /**
+     * Obtiene métricas de costo por API
+     */
+    @Query(value = """
+        SELECT 
+            a.nombre,
+            SUM(m.costo) as totalCost,
+            AVG(m.costo) as avgCost,
+            SUM(m.llamadas) as requests
+        FROM metricaapi m 
+        JOIN api a ON m.idAPI = a.idAPI
+        WHERE m.costo IS NOT NULL
+        GROUP BY a.nombre
+        ORDER BY totalCost DESC
+    """, nativeQuery = true)
+    List<Object[]> getCostMetricsByApi();
+    
+    /**
+     * Calcula la disponibilidad promedio (uptime) del sistema
+     */
+    @Query(value = """
+        SELECT 
+            CASE 
+                WHEN SUM(m.llamadas) = 0 THEN 100.0
+                ELSE (SUM(CASE WHEN m.errores = 0 THEN m.llamadas ELSE 0 END) * 100.0 / SUM(m.llamadas))
+            END as availability
+        FROM metricaapi m 
+        WHERE m.fecha >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
+    """, nativeQuery = true)
+    Double getSystemAvailability();
+    
+    /**
+     * Obtiene tendencia de latencia por día (últimos 7 días)
+     */
+    @Query(value = """
+        SELECT 
+            DATE(m.fecha) as fecha,
+            AVG(m.latencia_promedio) as avgLatency
+        FROM metricaapi m 
+        WHERE m.fecha >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        GROUP BY DATE(m.fecha)
+        ORDER BY fecha
+    """, nativeQuery = true)
+    List<Object[]> getLatencyTrend();
+    
+    /**
+     * Obtiene el throughput actual (requests por minuto en la última hora)
+     */
+    @Query(value = """
+        SELECT 
+            COALESCE(SUM(m.llamadas), 0) / 60.0 as requestsPerMinute
+        FROM metricaapi m 
+        WHERE m.fecha >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
+    """, nativeQuery = true)
+    Double getCurrentThroughput();
+    
+    /**
+     * Obtiene distribución de uso por entorno
+     */
+    @Query(value = """
+        SELECT 
+            e.nombre,
+            SUM(m.llamadas) as requests,
+            (SUM(m.llamadas) * 100.0 / (SELECT SUM(mm.llamadas) FROM metricaapi mm)) as percentage
+        FROM metricaapi m 
+        JOIN entorno e ON m.idEntorno = e.idEntorno
+        GROUP BY e.nombre
+        ORDER BY requests DESC
+    """, nativeQuery = true)
+    List<Object[]> getUsageByEnvironment();
 }
 
