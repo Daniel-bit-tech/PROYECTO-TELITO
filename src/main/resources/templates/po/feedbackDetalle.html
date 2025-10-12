@@ -80,10 +80,43 @@
             border-color: #059669;
             color: white;
         }
+        .btn-custom:disabled {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            cursor: not-allowed;
+        }
         /* Asegurar que el formulario no afecte el tamaño */
         .btn-form {
             display: inline-block;
             margin-right: 10px;
+        }
+        /* Estilos para el estado del botón */
+        .btn-registered {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .status-badge {
+            padding: 12px 24px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 14px;
+            height: 48px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 200px;
+            margin-right: 10px;
+        }
+        .status-registered {
+            background-color: #d1e7dd;
+            color: #0f5132;
+            border: 1px solid #badbcc;
+        }
+        .status-processing {
+            background-color: #fff3cd;
+            color: #664d03;
+            border: 1px solid #ffecb5;
         }
     </style>
 </head>
@@ -106,6 +139,9 @@
         </div>
         <div class="page-body">
             <div class="container-xl">
+                <!-- Alertas para mostrar mensajes -->
+                <div id="alertContainer"></div>
+
                 <div class="card">
                     <div class="row g-0">
                         <div class="col-12 col-md-9 d-flex flex-column">
@@ -159,7 +195,7 @@
                             <div class="card-footer bg-transparent mt-auto">
                                 <div class="btn-list justify-content-end">
                                     <!-- Formulario para registrar el Feedback en el Backlog -->
-                                    <form action="/po/registrarFeedbackEnBacklog" method="POST" class="btn-form">
+                                    <form id="backlogForm" action="/po/registrarFeedbackEnBacklog" method="POST" class="btn-form">
                                         <!-- Enviar el id del Feedback -->
                                         <input type="hidden" name="idFeedback" th:value="${feedback.idFeedback}" />
 
@@ -167,11 +203,20 @@
                                         <input type="hidden" name="asunto" value="--" />
 
                                         <!-- Botón para enviar el formulario -->
-                                        <button type="submit" class="btn btn-custom">Registrar en Backlog</button>
+                                        <button type="submit" id="backlogBtn" class="btn btn-custom">
+                                            <i class="fas fa-plus-circle"></i> Registrar en Backlog
+                                        </button>
                                     </form>
 
+                                    <!-- Estado del registro (se muestra después de registrar) -->
+                                    <div id="registeredStatus" class="status-badge status-registered" style="display: none;">
+                                        <i class="fas fa-check-circle"></i> Registrado en Backlog
+                                    </div>
+
                                     <!-- Botón para volver a la vista anterior -->
-                                    <a th:href="@{/po/feedback}" class="btn btn-custom">Volver</a>
+                                    <a th:href="@{/po/feedback}" class="btn btn-custom" style="background-color: #6c757d; border-color: #6c757d;">
+                                        <i class="fas fa-arrow-left"></i> Volver
+                                    </a>
                                 </div>
                             </div>
 
@@ -233,5 +278,85 @@
 </div>
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/tabler/dist/js/tabler.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const backlogForm = document.getElementById('backlogForm');
+        const backlogBtn = document.getElementById('backlogBtn');
+        const registeredStatus = document.getElementById('registeredStatus');
+        const alertContainer = document.getElementById('alertContainer');
+
+        // Verificar si ya fue registrado (usando localStorage)
+        const feedbackId = document.querySelector('input[name="idFeedback"]').value;
+        const storageKey = `feedback_${feedbackId}_registered`;
+
+        // Si ya estaba registrado, mostrar estado
+        if (localStorage.getItem(storageKey)) {
+            disableBacklogButton();
+        }
+
+        backlogForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Deshabilitar el botón inmediatamente
+            disableBacklogButton();
+
+            // Mostrar estado de procesando
+            showAlert('Procesando registro en backlog...', 'info');
+
+            // Crear un pequeño delay para que el usuario vea el cambio
+            setTimeout(() => {
+                // Marcar como registrado en localStorage
+                localStorage.setItem(storageKey, 'true');
+
+                // Mostrar mensaje de éxito
+                showAlert('¡Feedback registrado exitosamente en el backlog!', 'success');
+
+                // Enviar el formulario después de mostrar el feedback visual
+                backlogForm.submit();
+            }, 1500);
+        });
+
+        function disableBacklogButton() {
+            backlogBtn.disabled = true;
+            backlogBtn.innerHTML = '<i class="fas fa-ban"></i> Ya registrado';
+            backlogBtn.classList.add('btn-registered');
+            backlogForm.style.display = 'none';
+            registeredStatus.style.display = 'inline-flex';
+        }
+
+        function showAlert(message, type) {
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-info';
+            const icon = type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+            <i class="fas ${icon} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+
+            alertContainer.appendChild(alertDiv);
+
+            // Auto-remover después de 5 segundos
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Prevenir doble clic accidental
+        let isSubmitting = false;
+        backlogForm.addEventListener('submit', function(e) {
+            if (isSubmitting) {
+                e.preventDefault();
+                return;
+            }
+            isSubmitting = true;
+        });
+    });
+</script>
 </body>
 </html>

@@ -21,7 +21,6 @@
     <style>
         @import url("https://rsms.me/inter/inter.css");
 
-
         .catalog-container {
             max-width: 1400px;
             margin: 0 auto;
@@ -300,6 +299,83 @@
             border-color: var(--tblr-primary);
         }
 
+        /* Estilos mejorados para el mensaje de "no se encontraron resultados" */
+        .no-results-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+            text-align: center;
+            background-color: var(--tblr-bg-surface);
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            grid-column: 1 / -1;
+            margin: 2rem 0;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .no-results-icon {
+            margin-bottom: 1.5rem;
+            color: var(--tblr-secondary-color);
+            font-size: 4rem;
+            opacity: 0.7;
+        }
+
+        .no-results-title {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--tblr-body-color);
+        }
+
+        .no-results-message {
+            font-size: 1.1rem;
+            color: var(--tblr-secondary-color);
+            margin-bottom: 2rem;
+            max-width: 500px;
+            line-height: 1.6;
+        }
+
+        .no-results-suggestions {
+            background-color: var(--tblr-bg-surface-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            max-width: 500px;
+            margin-top: 1rem;
+        }
+
+        .no-results-suggestions h4 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            color: var(--tblr-body-color);
+        }
+
+        .no-results-suggestions ul {
+            text-align: left;
+            padding-left: 1.5rem;
+            margin-bottom: 0;
+        }
+
+        .no-results-suggestions li {
+            margin-bottom: 0.5rem;
+            color: var(--tblr-secondary-color);
+        }
+
+        .no-results-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* -------------------------------------------------------------" */
+
         @media (max-width: 1024px) {
             .catalog-content {
                 grid-template-columns: 1fr;
@@ -322,6 +398,15 @@
 
             .apis-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .no-results-actions {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .no-results-actions .btn {
+                width: 100%;
             }
         }
     </style>
@@ -350,7 +435,6 @@
                     </div>
                 </div>
 
-
                 <div class="search-filters">
                     <form method="get" action="/po/catalogo" class="d-flex w-100 gap-2">
                         <div class="search-box">
@@ -363,22 +447,6 @@
                         </button>
                     </form>
                 </div>
-
-                <!--        <div class="filter-buttons">-->
-                <!--          <button class="filter-btn active">-->
-                <!--            <i class="fas fa-layer-group"></i> Todas-->
-                <!--          </button>-->
-                <!--          <button class="filter-btn">-->
-                <!--            <i class="fas fa-check-circle"></i> Activas-->
-                <!--          </button>-->
-                <!--          <button class="filter-btn">-->
-                <!--            <i class="fas fa-star"></i> Populares-->
-                <!--          </button>-->
-                <!--          <button class="filter-btn">-->
-                <!--            <i class="fas fa-clock"></i> Recientes-->
-                <!--          </button>-->
-                <!--        </div>-->
-
 
                 <div class="catalog-content">
                     <form method="get" action="/po/catalogo" id="filterForm">
@@ -420,13 +488,12 @@
                         </div>
                     </form>
 
-
                     <div class="apis-grid">
+                        <!-- API Cards -->
                         <div class="api-card" th:each="api : ${apis}">
                             <div class="api-header">
                                 <div>
                                     <h3 class="api-title" th:text="${api.nombre}">Nombre API</h3>
-                                    <!-- Ejemplo: mostrar estado según dominio o tag -->
                                     <span class="api-status status-production"
                                           th:text="${api.dominio.nombre}">Producción</span>
                                 </div>
@@ -438,45 +505,60 @@
                             </p>
 
                             <div class="api-meta">
-                                    <span class="meta-item">
-                                        <i class="fas fa-code-branch"></i>
-                                        <span th:text="${api.versionesApi != null and !api.versionesApi.isEmpty()? api.versionesApi.get(0).version : 'Sin versión'}"></span>
-                                    </span>
-                                                        <span class="meta-item">
-                                        <i class="fas fa-bolt"></i>
-                                                            <!-- Ejemplo: uptime fijo o calculado -->
-                                        98% uptime
-                                    </span>
+                                <span class="meta-item">
+                                    <i class="fas fa-code-branch"></i>
+                                    <span th:text="${api.versionesApi != null and !api.versionesApi.isEmpty()? api.versionesApi.get(0).version : 'Sin versión'}"></span>
+                                </span>
+                                <span class="meta-item">
+                                    <i class="fas fa-bolt"></i>
+                                    98% uptime
+                                </span>
                             </div>
 
                             <div class="api-tags">
-
                                 <span class="api-tag" th:text="${api.tag.nombre}"></span>
-                                <!--              <span class="api-tag" th:each="t : ${#strings.arraySplit(api.tag, ',')}"-->
-                                <!--                    th:text="${t}"></span>-->
                             </div>
-
 
                             <div class="api-actions">
                                 <a th:href="@{'/po/documentacion?id=' + ${api.idApi}}" class="btn-api btn-primary">
                                     <i class="fas fa-book"></i> Documentación
                                 </a>
-
                             </div>
                         </div>
-                    </div>
 
-                    <!--        Falta Paginacion <div class="pagination">-->
-                    <!--          <button class="pagination-btn">-->
-                    <!--            <i class="fas fa-chevron-left"></i>-->
-                    <!--          </button>-->
-                    <!--          <button class="pagination-btn active">1</button>-->
-                    <!--          <button class="pagination-btn">2</button>-->
-                    <!--          <button class="pagination-btn">3</button>-->
-                    <!--          <button class="pagination-btn">-->
-                    <!--            <i class="fas fa-chevron-right"></i>-->
-                    <!--          </button>-->
-                    <!--        </div>-->
+                        <!-- Mensaje de "No se encontraron resultados" -->
+                        <div th:if="${#lists.isEmpty(apis)}" class="no-results-container">
+                            <div class="no-results-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h2 class="no-results-title">No se encontraron resultados</h2>
+                            <p class="no-results-message">
+                                No hay APIs que coincidan con los filtros aplicados.
+                                Intenta ajustar tus criterios de búsqueda o filtros para encontrar lo que necesitas.
+                            </p>
+
+                            <div class="no-results-suggestions">
+                                <h4>Sugerencias:</h4>
+                                <ul>
+                                    <li>Verifica que el término de búsqueda esté escrito correctamente</li>
+                                    <li>Prueba con términos de búsqueda más generales</li>
+                                    <li>Reduce la cantidad de filtros aplicados</li>
+                                    <li>Explora diferentes categorías o etiquetas</li>
+                                </ul>
+                            </div>
+
+                            <div class="no-results-actions">
+                                <button class="btn btn-primary" onclick="clearFilters()">
+                                    <i class="fas fa-times"></i> Limpiar todos los filtros
+                                </button>
+                                <a href="/po/catalogo" class="btn btn-outline">
+                                    <i class="fas fa-redo"></i> Ver todas las APIs
+                                </a>
+                            </div>
+                        </div>
+                        <!-- Mensaje de "No se encontraron resultados" -->
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -485,9 +567,22 @@
 </div>
 
 <script>
+    // Función para limpiar todos los filtros
+    function clearFilters() {
+        // Limpiar checkboxes de filtros
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.checked = false;
+        });
+
+        // Limpiar campo de búsqueda
+        document.querySelector('.search-input').value = '';
+
+        // Enviar formulario
+        document.getElementById('filterForm').submit();
+    }
 
     document.getElementById('filterForm').addEventListener('submit', function() {
-        document.getElementById('nombreHidden').value = document.getElementById('search').value;
+        document.getElementById('nombreHidden').value = document.querySelector('.search-input').value;
     });
 
     document.querySelectorAll('.filter-btn').forEach(btn => {
@@ -495,32 +590,24 @@
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             this.classList.add('active');
 
-
             const filterType = this.textContent.trim();
             console.log(`Filtrando por: ${filterType}`);
         });
     });
 
-
     const searchInput = document.querySelector('.search-input');
     searchInput.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
         console.log(`Buscando: ${searchTerm}`);
-
-
     });
-
 
     document.querySelectorAll('.filter-tag input').forEach(checkbox => {
         checkbox.addEventListener('change', function() {
-
             const filterCategory = this.parentElement.textContent.trim();
             const isChecked = this.checked;
-
             console.log(`Filtro ${filterCategory} ${isChecked ? 'activado' : 'desactivado'}`);
         });
     });
-
 
     document.querySelectorAll('.btn-api').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -528,13 +615,9 @@
             const apiName = apiCard.querySelector('.api-title').textContent;
 
             if (this.classList.contains('btn-primary')) {
-
                 console.log(`Abriendo documentación de: ${apiName}`);
-                alert(`Redirigiendo a la documentación de ${apiName}`);
             } else {
-
                 console.log(`Abriendo sandbox de: ${apiName}`);
-                alert(`Abriendo sandbox para probar ${apiName}`);
             }
         });
     });

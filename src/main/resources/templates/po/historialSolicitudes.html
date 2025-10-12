@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>TELITO DEVELOPER PORTAL | Historial de Solicitudes</title>
+    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .solicitudes-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .solicitudes-header {
+            padding: 2rem 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .solicitudes-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .solicitudes-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .filters-section {
+            background-color: var(--tblr-bg-surface-secondary);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .table-container {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .solicitudes-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .solicitudes-table th {
+            background-color: var(--tblr-bg-surface-secondary);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid var(--tblr-border-color);
+        }
+
+        .solicitudes-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--tblr-border-color);
+        }
+
+        .solicitudes-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .solicitudes-table tr:hover {
+            background-color: var(--tblr-bg-surface-secondary);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-pendiente {
+            background-color: var(--tblr-warning-lt);
+            color: var(--tblr-warning);
+        }
+
+        .status-aprobado {
+            background-color: var(--tblr-success-lt);
+            color: var(--tblr-success);
+        }
+
+        .status-rechazado {
+            background-color: var(--tblr-danger-lt);
+            color: var(--tblr-danger);
+        }
+
+        .btn-primary {
+            background-color: var(--tblr-primary);
+            color: white;
+            border-color: var(--tblr-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--tblr-primary-dark);
+            color: white;
+        }
+
+        .no-data {
+            color: var(--tblr-secondary-color);
+            font-style: italic;
+            padding: 2rem;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+<!-- Banner de impersonación -->
+<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+
+<script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
+<div class="page">
+
+    <header th:replace="~{desarrollador/header :: header}"
+            sec:authorize="hasRole('DEV')"></header>
+    <header th:replace="~{admin/header :: header}"
+            sec:authorize="hasRole('SUPERADMIN')"></header>
+    <header th:replace="~{po/header_po :: header}"
+            sec:authorize="hasRole('PO')"></header>
+    <header th:replace="~{qa/header_qa :: header}"
+            sec:authorize="hasRole('QA')"></header>
+
+    <div class="content">
+        <div class="solicitudes-container">
+            <div class="solicitudes-header">
+                <h1 class="solicitudes-title">Historial de Solicitudes</h1>
+                <p class="solicitudes-subtitle">Revisa el estado de todas tus solicitudes de acceso para nuevos miembros</p>
+            </div>
+
+            <!-- Filtros (temporalmente deshabilitados) -->
+            <div class="filters-section" style="display: none;">
+                <h3 class="filter-title">Filtrar Solicitudes</h3>
+                <div class="filter-grid">
+                    <div>
+                        <label class="form-label">Estado</label>
+                        <select class="form-select">
+                            <option value="">Todos los estados</option>
+                            <option value="pendiente">Pendientes</option>
+                            <option value="aprobado">Aprobadas</option>
+                            <option value="rechazado">Rechazadas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Fecha desde</label>
+                        <input type="date" class="form-control">
+                    </div>
+                    <div>
+                        <label class="form-label">Fecha hasta</label>
+                        <input type="date" class="form-control">
+                    </div>
+                    <div class="d-flex align-items-end">
+                        <button class="btn btn-primary w-100">
+                            <i class="fas fa-filter"></i>
+                            Aplicar Filtros
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabla de solicitudes DINÁMICA -->
+            <div class="table-container">
+                <table class="solicitudes-table">
+                    <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Solicitante</th>
+                        <th>Email</th>
+                        <th>Rol Solicitado</th>
+                        <th>Estado</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Solicitudes dinámicas desde el backend -->
+                    <tr th:each="solicitud : ${solicitudes}">
+                        <!-- Fecha - solución simplificada -->
+                        <td th:text="${solicitud.fechaSolicitud}">15/03/2024</td>
+
+                        <!-- Nombre completo del solicitado -->
+                        <td th:text="${solicitud.nombre + ' ' + solicitud.apellido}">María González</td>
+
+                        <!-- Email del solicitado -->
+                        <td th:text="${solicitud.correo}">maria.gonzalez@ejemplo.com</td>
+
+                        <!-- Rol solicitado -->
+                        <td th:text="${solicitud.detallesSolicitud != null ? solicitud.detallesSolicitud : 'No especificado'}">Desarrollador</td>
+
+                        <!-- Estado con badge dinámico SIMPLIFICADO -->
+                        <td>
+                            <span th:if="${solicitud.estado.name() == 'PENDIENTE'}"
+                                  class="status-badge status-pendiente">
+                                <i class="fas fa-clock"></i>
+                                Pendiente
+                            </span>
+                            <span th:if="${solicitud.estado.name() == 'APROBADA'}"
+                                  class="status-badge status-aprobado">
+                                <i class="fas fa-check"></i>
+                                Aprobada
+                            </span>
+                            <span th:if="${solicitud.estado.name() == 'RECHAZADA'}"
+                                  class="status-badge status-rechazado">
+                                <i class="fas fa-times"></i>
+                                Rechazada
+                            </span>
+                        </td>
+                    </tr>
+
+                    <!-- Mensaje si no hay solicitudes -->
+                    <tr th:if="${#lists.isEmpty(solicitudes)}">
+                        <td colspan="5" class="no-data">
+                            <i class="fas fa-inbox fa-2x mb-2"></i>
+                            <p>No hay solicitudes registradas</p>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Acciones adicionales -->
+            <div class="d-flex justify-content-between mt-3">
+                <div>
+                    <a th:href="@{/po/organizacion}" class="btn btn-outline">
+                        <i class="fas fa-arrow-left"></i>
+                        Atrás
+                    </a>
+                </div>
+                <div>
+                    <a th:href="@{/po/solicitudAcceso}" class="btn btn-primary">
+                        <i class="fas fa-user-plus"></i>
+                        Nueva Solicitud
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{po/footer.html :: footer}"></div>
+</div>
+
+<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+<script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
+</body>
+</html>

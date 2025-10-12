@@ -1,6 +1,5 @@
 package com.example.telitodev.controller.productowner;
 
-
 import com.example.telitodev.service.*;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
@@ -15,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/po")
@@ -52,7 +52,19 @@ public class FeedbackPoController {
         Optional<Feedback> feedbackOptional = feedbackRepository.findById(idFeedback);
 
         if (feedbackOptional.isPresent()) {
-            model.addAttribute("feedback", feedbackOptional.get());
+            Feedback feedback = feedbackOptional.get();
+            model.addAttribute("feedback", feedback);
+
+            // Verificar si ya está en backlog para controlar la vista
+            Optional<Backlog> existingBacklog = backlogRepository.findByFeedback_IdFeedback(idFeedback);
+            if (existingBacklog.isPresent()) {
+                model.addAttribute("feedbackYaRegistrado", true);
+                model.addAttribute("feedbackRegistrado", false);
+            } else {
+                model.addAttribute("feedbackYaRegistrado", false);
+                model.addAttribute("feedbackRegistrado", false);
+            }
+
             return "po/feedbackDetalle";
         } else {
             return "redirect:/po/feedback";
@@ -63,33 +75,38 @@ public class FeedbackPoController {
     public String registrarFeedbackEnBacklog(@RequestParam("idFeedback") Integer idFeedback,
                                              @RequestParam("asunto") String asunto,
                                              Model model,
-                                             Authentication auth, // Inyectamos Authentication para obtener el usuario autenticado
+                                             Authentication auth,
                                              HttpSession session) {
+
         try {
+            Usuario usuario = obtenerUsuarioActual(auth, session);
+            model.addAttribute("usuario", usuario);
 
-            if (auth != null && auth.isAuthenticated()) {
-                // Obtener el usuario correcto considerando impersonación
-                Usuario usuario = obtenerUsuarioActual(auth, session);
-                model.addAttribute("usuario", usuario);
-            }
-
-            Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-
-            // Verificar si el feedback ya está registrado en el backlog
+            // Verificar si ya existe
             Optional<Backlog> existingBacklog = backlogRepository.findByFeedback_IdFeedback(idFeedback);
 
             if (existingBacklog.isPresent()) {
-                model.addAttribute("feedbackRegistrado", true);
+                model.addAttribute("error", "Este feedback ya está registrado en el backlog");
+                model.addAttribute("feedbackYaRegistrado", true);
+                model.addAttribute("feedbackRegistrado", false);
             } else {
-                // Registrar el feedback en el backlog
                 feedbackService.registrarFeedbackEnBacklog(idFeedback, asunto, usuario);
-                model.addAttribute("feedbackRegistrado", false); // Si se registra, pasamos false para mostrar el botón de "registrar"
+                model.addAttribute("success", "Feedback registrado exitosamente en el backlog");
+                model.addAttribute("feedbackRegistrado", true);
+                model.addAttribute("feedbackYaRegistrado", false);
             }
 
-            return "redirect:/po/feedback"; // Regresar a la vista de feedback
+            // Cargar el feedback nuevamente para mostrar la página
+            Optional<Feedback> feedbackOptional = feedbackRepository.findById(idFeedback);
+            if (feedbackOptional.isPresent()) {
+                model.addAttribute("feedback", feedbackOptional.get());
+                return "po/feedbackDetalle";
+            } else {
+                return "redirect:/po/feedback";
+            }
 
         } catch (Exception e) {
-            model.addAttribute("error", "Error al registrar el backlog: " + e.getMessage());
+            model.addAttribute("error", "Error al registrar en el backlog: " + e.getMessage());
             return "po/error";
         }
     }

@@ -55,9 +55,44 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
             "(:correo IS NULL OR LOWER(u.correo) LIKE LOWER(CONCAT('%', :correo, '%'))) AND " +
             "(:nombreRol IS NULL OR u.rol.nombreRol = :nombreRol) AND " +
             "(:estado IS NULL OR u.estado = :estado)")
+
     Page<Usuario> findByFiltros(@Param("nombre") String nombre,
                                 @Param("correo") String correo,
                                 @Param("nombreRol") String nombreRol,
                                 @Param("estado") Boolean estado,
                                 Pageable pageable);
+
+    // Nuevo para la vista "organizacion" del PO
+
+        // Para obtener usuarios de una organización con sus roles cargados
+        @Query("SELECT u FROM Usuario u LEFT JOIN FETCH u.rol WHERE u.organizacion.idOrganizacion = :organizacionId")
+        List<Usuario> findByOrganizacionIdWithRol(@Param("organizacionId") Integer organizacionId);
+
+    // Nuevo esto es para obtener usuarios por rol (administradores)
+
+        // Buscar usuarios por rol específico (para encontrar administradores)
+        List<Usuario> findByRol_IdRol(Integer idRol);
+
+        // Buscar usuarios administradores (asumiendo que idRol 1 o 2 son admins)
+        List<Usuario> findByRol_IdRolIn(List<Integer> idsRoles);
+
+        // Buscar usuario con sus organizaciones (para relaciones)
+        @Query("SELECT u FROM Usuario u LEFT JOIN FETCH u.organizacion WHERE u.dni = :dni")
+        Optional<Usuario> findByDniWithOrganizacion(@Param("dni") String dni);
+
+        // Verificar si un usuario pertenece a una organización específica
+        @Query("SELECT COUNT(u) > 0 FROM Usuario u WHERE u.dni = :dni AND u.organizacion.idOrganizacion = :idOrganizacion")
+        boolean existsByDniAndOrganizacion(@Param("dni") String dni, @Param("idOrganizacion") Integer idOrganizacion);
+        // En UsuarioRepository - agregar estos métodos:
+
+        // NUEVO: Buscar por DNI que retorne Optional (sin cambiar el existente)
+        Optional<Usuario> findOptionalByDni(String dni);
+
+        // NUEVO: Buscar por DNI o Correo (para verificación flexible)
+        @Query("SELECT u FROM Usuario u WHERE u.dni = :dni OR u.correo = :correo")
+        Optional<Usuario> findByDniOrCorreo(@Param("dni") String dni, @Param("correo") String correo);
+
+        // NUEVO: Verificar si usuario tiene organización asignada
+        @Query("SELECT COUNT(u) > 0 FROM Usuario u WHERE u.dni = :dni AND u.organizacion IS NOT NULL")
+        boolean tieneOrganizacionAsignada(@Param("dni") String dni);
 }
