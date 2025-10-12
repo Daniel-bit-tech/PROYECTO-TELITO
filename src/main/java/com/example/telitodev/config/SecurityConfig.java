@@ -1,6 +1,7 @@
 package com.example.telitodev.config;
 import com.example.telitodev.service.UsuarioDetailService;
 import com.example.telitodev.filter.UsuarioActivoFilter;
+import com.example.telitodev.filter.ImpersonationAuthorizationFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +13,14 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.session.SessionRegistry;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 
 import java.util.Collection;
 
@@ -31,6 +34,12 @@ public class SecurityConfig {
 
     @Autowired
     private UsuarioActivoFilter usuarioActivoFilter;
+
+    @Autowired
+    private ImpersonationAuthorizationFilter impersonationAuthorizationFilter;
+
+    @Autowired
+    private SessionRegistry sessionRegistry;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -48,7 +57,12 @@ public class SecurityConfig {
                         // API endpoints - requieren autenticación pero sin CSRF
                         .requestMatchers("/api/onboarding/**").authenticated()
 
-                        // De rol
+                        // Endpoints de impersonación - reglas específicas
+                        .requestMatchers("/admin/gestion-usuarios/stop-impersonation").hasAnyRole("SUPERADMIN", "QA", "DEV", "PO")
+                        .requestMatchers("/admin/gestion-usuarios/impersonation-status").hasAnyRole("SUPERADMIN", "QA", "DEV", "PO")
+                        .requestMatchers("/admin/gestion-usuarios/**").hasRole("SUPERADMIN")
+                        
+                        // Portales - reglas de seguridad tradicionales (el filtro maneja la impersonación)
                         .requestMatchers("/admin/**").hasRole("SUPERADMIN")
                         .requestMatchers("/dev/**").hasAnyRole("DEV", "SUPERADMIN")
                         .requestMatchers("/qa/**").hasAnyRole("QA", "SUPERADMIN")
@@ -85,8 +99,19 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers("/api/**","/po/**") // Deshabilitar CSRF para endpoints API
                 )
-                // Agregar filtro personalizado para verificar usuarios activos en tiempo real
-                .addFilterBefore(usuarioActivoFilter, UsernamePasswordAuthenticationFilter.class);
+                // Control de sesiones concurrentes y seguridad de sesión
+                .sessionManagement(session -> session
+                        .maximumSessions(2) // Máximo 2 sesiones por usuario admin
+                        .maxSessionsPreventsLogin(false) // Permitir login, expulsar sesión más antigua
+                        .sessionRegistry(sessionRegistry)
+                        .expiredUrl("/login?expired=true")
+                        .and()
+                        .sessionFixation().migrateSession() // Prevenir session fixation attacks
+                        .invalidSessionUrl("/login?invalid=true")
+                )
+                // Agregar filtros personalizados
+                .addFilterBefore(usuarioActivoFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(impersonationAuthorizationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -149,6 +174,15 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(8);
+    }
+
+    /**
+     * Bean requerido para el manejo de eventos de sesión HTTP
+     * Necesario para el funcionamiento correcto del SessionRegistry
+     */
+    @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
     }
 
 

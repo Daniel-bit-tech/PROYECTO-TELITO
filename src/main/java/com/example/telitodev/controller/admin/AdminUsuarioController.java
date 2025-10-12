@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.admin;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.entity.Rol;
 import com.example.telitodev.entity.TokenConfirmacion;
@@ -7,6 +8,7 @@ import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.repository.RolRepository;
 import com.example.telitodev.repository.TokenConfirmacionRepository;
 import com.example.telitodev.service.EmailService;
+import com.example.telitodev.service.ImpersonationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -33,13 +36,14 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.stream.Collectors;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/admin/gestion-usuarios")
 @PreAuthorize("hasRole('SUPERADMIN')")
-public class AdminUsuarioController {
+public class AdminUsuarioController extends BaseController {
     /**
      * Vista para que el usuario confirme su cuenta y establezca su contraseña
      */
@@ -70,6 +74,9 @@ public class AdminUsuarioController {
     @Autowired
     private com.example.telitodev.service.AuditoriaService auditoriaService;
 
+    @Autowired
+    private ImpersonationService impersonationService;
+
     /**
      * Página principal de gestión de usuarios con filtros y paginación
      */
@@ -80,7 +87,9 @@ public class AdminUsuarioController {
                        @RequestParam(value = "rol", required = false) String rol,
                        @RequestParam(value = "page", defaultValue = "0") int page,
                        @RequestParam(value = "size", defaultValue = "4") int size,
-                       HttpServletRequest request) {
+                       HttpServletRequest request,
+                       Authentication auth,
+                       HttpSession session) {
         try {
             System.out.println("=== FILTROS RECIBIDOS ===");
             System.out.println("Search: '" + search + "'");
@@ -90,6 +99,10 @@ public class AdminUsuarioController {
             // Obtener usuario actual para excluirlo de la lista
             String usuarioActual = request.getUserPrincipal().getName();
             System.out.println("Usuario actual logueado: " + usuarioActual);
+            
+            // Obtener el usuario correcto considerando impersonación para el modelo
+            Usuario currentUser = getCurrentUser(auth, session);
+            model.addAttribute("usuario", currentUser);
             
             // Obtener todos los roles para el filtro
             List<Rol> roles = rolRepository.findAll();
@@ -155,11 +168,24 @@ public class AdminUsuarioController {
             System.out.println("Usuarios activos: " + usuariosActivos);
             System.out.println("Usuarios inactivos: " + usuariosInactivos);
 
+            // Agregar información de impersonación al modelo
+            addImpersonationAttributes(model, session);
+
             return "admin/gestion-usuarios-dev-style";
 
         } catch (Exception e) {
             System.err.println("Error en gestión de usuarios: " + e.getMessage());
             e.printStackTrace();
+            
+            // Obtener el usuario para el modelo incluso en caso de error
+            try {
+                Usuario currentUser = getCurrentUser(auth, session);
+                model.addAttribute("usuario", currentUser);
+            } catch (Exception userError) {
+                System.err.println("Error obteniendo usuario en catch: " + userError.getMessage());
+                // Agregar un usuario por defecto para evitar errores en la plantilla
+                model.addAttribute("usuario", null);
+            }
             
             // Modelo de emergencia
             model.addAttribute("usuarios", new ArrayList<>());
@@ -177,6 +203,9 @@ public class AdminUsuarioController {
             model.addAttribute("hasNext", false);
             model.addAttribute("hasPrevious", false);
             model.addAttribute("error", "Error al cargar usuarios: " + e.getMessage());
+            
+            // Agregar información de impersonación al modelo incluso en caso de error
+            addImpersonationAttributes(model, session);
             
             return "admin/gestion-usuarios-dev-style";
         }
@@ -872,6 +901,7 @@ public class AdminUsuarioController {
      * Verificar estado de impersonación
      */
     @GetMapping("/impersonation-status")
+    @PreAuthorize("hasRole('SUPERADMIN') or hasRole('QA') or hasRole('DEV') or hasRole('PO')")
     @ResponseBody
     public ResponseEntity<?> verificarEstadoImpersonacion(HttpSession session) {
         try {
@@ -938,26 +968,13 @@ public class AdminUsuarioController {
                 return ResponseEntity.badRequest().body("❌ Por seguridad, no se puede impersonar a otro SuperAdmin");
             }
 
-            // Obtener admin actual
-            String currentAdmin = request.getUserPrincipal().getName();
-            System.out.println("👤 Admin actual: " + currentAdmin);
-
-            // Guardar la sesión actual del admin (para poder volver)
-            session.setAttribute("IS_IMPERSONATING", true);
-            session.setAttribute("ORIGINAL_ADMIN_USERNAME", currentAdmin);
-            session.setAttribute("IMPERSONATED_USER_DNI", dni);
-            session.setAttribute("IMPERSONATED_USER_EMAIL", usuario.getCorreo());
-            session.setAttribute("IMPERSONATED_USER_NAME", usuario.getNombre() + " " + usuario.getApellidoPaterno());
-            session.setAttribute("IMPERSONATED_USER_ROLE", usuario.getRol().getNombreRol());
+            // Usar el servicio de impersonación para cambiar el SecurityContext
+            boolean impersonacionExitosa = impersonationService.startImpersonation(dni, session);
             
-            // Verificar que se guardaron
-            System.out.println("📊 Variables de sesión guardadas:");
-            System.out.println("  - IS_IMPERSONATING: " + session.getAttribute("IS_IMPERSONATING"));
-            System.out.println("  - ORIGINAL_ADMIN_USERNAME: " + session.getAttribute("ORIGINAL_ADMIN_USERNAME"));
-            System.out.println("  - IMPERSONATED_USER_DNI: " + session.getAttribute("IMPERSONATED_USER_DNI"));
-            System.out.println("  - IMPERSONATED_USER_EMAIL: " + session.getAttribute("IMPERSONATED_USER_EMAIL"));
-            System.out.println("  - IMPERSONATED_USER_NAME: " + session.getAttribute("IMPERSONATED_USER_NAME"));
-            System.out.println("  - IMPERSONATED_USER_ROLE: " + session.getAttribute("IMPERSONATED_USER_ROLE"));
+            if (!impersonacionExitosa) {
+                System.out.println("❌ Error al iniciar impersonación");
+                return ResponseEntity.badRequest().body("Error al iniciar la impersonación");
+            }
             
             String redirectUrl = getRedirectUrlForRole(usuario.getRol().getNombreRol());
             System.out.println("🔄 Redirigiendo a: " + redirectUrl);
@@ -967,7 +984,8 @@ public class AdminUsuarioController {
                 "usuarioImpersonado", usuario.getNombre() + " " + usuario.getApellidoPaterno(),
                 "rol", usuario.getRol().getNombreRol(),
                 "redirectUrl", redirectUrl,
-                "sessionId", session.getId()
+                "sessionId", session.getId(),
+                "activateBackProtection", true // Flag para activar protección en frontend
             ));
 
         } catch (Exception e) {
@@ -981,54 +999,265 @@ public class AdminUsuarioController {
      * Detener impersonación - Volver a la sesión original del admin
      */
     @PostMapping("/stop-impersonation")
+    @PreAuthorize("hasRole('SUPERADMIN') or hasRole('QA') or hasRole('DEV') or hasRole('PO')")
     @ResponseBody
-    public ResponseEntity<?> detenerImpersonacion(HttpSession session) {
+    public ResponseEntity<?> detenerImpersonacion(HttpSession session, HttpServletResponse response) {
         try {
             System.out.println("=== DETENIENDO IMPERSONACIÓN ===");
             System.out.println("Session ID: " + session.getId());
             
-            Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
-            System.out.println("IS_IMPERSONATING actual: " + isImpersonating);
-            
-            if (isImpersonating == null || !isImpersonating) {
-                System.out.println("❌ No hay impersonación activa");
-                return ResponseEntity.badRequest().body("No hay impersonación activa");
-            }
-
+            // DIAGNÓSTICO DETALLADO DE LA SESIÓN
+            System.out.println("🔍 DIAGNÓSTICO COMPLETO DE SESIÓN:");
+            Boolean isImpersonatingFlag = (Boolean) session.getAttribute("IS_IMPERSONATING");
             String originalAdmin = (String) session.getAttribute("ORIGINAL_ADMIN_USERNAME");
             String impersonatedDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
             String impersonatedName = (String) session.getAttribute("IMPERSONATED_USER_NAME");
             
-            System.out.println("📊 Datos antes de limpiar:");
+            System.out.println("   IS_IMPERSONATING: " + isImpersonatingFlag);
+            System.out.println("   ORIGINAL_ADMIN_USERNAME: " + originalAdmin);
+            System.out.println("   IMPERSONATED_USER_DNI: " + impersonatedDni);
+            System.out.println("   IMPERSONATED_USER_NAME: " + impersonatedName);
+            
+            // Agregar headers de seguridad para prevenir cache y navegación hacia atrás
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
+            response.setHeader("Pragma", "no-cache");
+            response.setHeader("Expires", "0");
+            response.setHeader("X-Frame-Options", "DENY");
+            response.setHeader("X-Content-Type-Options", "nosniff");
+            
+            // VERIFICACIÓN MÁS ROBUSTA DEL ESTADO DE IMPERSONACIÓN
+            boolean hasImpersonationFlags = (isImpersonatingFlag != null && isImpersonatingFlag) ||
+                                          (impersonatedDni != null && !impersonatedDni.trim().isEmpty()) ||
+                                          (originalAdmin != null && !originalAdmin.trim().isEmpty());
+            
+            boolean serviceDetectsImpersonation = impersonationService.isImpersonating(session);
+            
+            System.out.println("🔍 ANÁLISIS DE ESTADO:");
+            System.out.println("   ¿Flags de impersonación presentes?: " + hasImpersonationFlags);
+            System.out.println("   ¿Servicio detecta impersonación?: " + serviceDetectsImpersonation);
+            
+            // Si NO hay evidencia de impersonación en ningún lado, es un estado inconsistente
+            if (!hasImpersonationFlags && !serviceDetectsImpersonation) {
+                System.out.println("❌ ESTADO INCONSISTENTE: No hay evidencia de impersonación activa");
+                System.out.println("🧹 LIMPIANDO SESIÓN Y FORZANDO REDIRECCIÓN A ADMIN");
+                
+                // Limpiar completamente la sesión de cualquier vestigio
+                session.removeAttribute("IS_IMPERSONATING");
+                session.removeAttribute("ORIGINAL_ADMIN_USERNAME");
+                session.removeAttribute("ORIGINAL_ADMIN_AUTHORITIES");
+                session.removeAttribute("IMPERSONATED_USER_DNI");
+                session.removeAttribute("IMPERSONATED_USER_EMAIL");
+                session.removeAttribute("IMPERSONATED_USER_NAME");
+                session.removeAttribute("IMPERSONATED_USER_ROLE");
+                session.setAttribute("FORCE_ADMIN_ACCESS", true);
+                
+                return ResponseEntity.ok(Map.of(
+                    "mensaje", "Estado inconsistente detectado. Sesión limpiada y redirigiendo a SuperAdmin...",
+                    "redirectUrl", "/admin/gestion-usuarios",
+                    "originalAdmin", "SuperAdmin",
+                    "previousUser", "Estado inconsistente",
+                    "clearHistory", true,
+                    "disableProtection", true,
+                    "forceAdminRedirect", true,
+                    "stateInconsistent", true
+                ));
+            }
+            
+            // Si hay flags pero el servicio no detecta impersonación, usar los flags
+            if (hasImpersonationFlags && !serviceDetectsImpersonation) {
+                System.out.println("⚠️ INCONSISTENCIA: Flags presentes pero servicio no detecta impersonación");
+                System.out.println("🔄 Usando flags para obtener información y limpiando manualmente");
+                
+                // Limpiar manualmente usando los flags encontrados
+                session.removeAttribute("IS_IMPERSONATING");
+                session.removeAttribute("ORIGINAL_ADMIN_USERNAME");
+                session.removeAttribute("ORIGINAL_ADMIN_AUTHORITIES");
+                session.removeAttribute("IMPERSONATED_USER_DNI");
+                session.removeAttribute("IMPERSONATED_USER_EMAIL");
+                session.removeAttribute("IMPERSONATED_USER_NAME");
+                session.removeAttribute("IMPERSONATED_USER_ROLE");
+                session.setAttribute("FORCE_ADMIN_ACCESS", true);
+                
+                return ResponseEntity.ok(Map.of(
+                    "mensaje", "Impersonación terminada correctamente (limpieza manual). Redirigiendo a SuperAdmin...",
+                    "redirectUrl", "/admin/gestion-usuarios",
+                    "originalAdmin", originalAdmin != null ? originalAdmin : "SuperAdmin",
+                    "previousUser", impersonatedName != null ? impersonatedName : "Usuario desconocido",
+                    "clearHistory", true,
+                    "disableProtection", true,
+                    "forceAdminRedirect", true,
+                    "manualCleanup", true
+                ));
+            }
+            
+            // Si el servicio detecta impersonación, proceder normalmente
+            if (!serviceDetectsImpersonation) {
+                System.out.println("❌ No hay impersonación activa según el servicio");
+                return ResponseEntity.badRequest().body("No hay impersonación activa");
+            }
+
+            String impersonatedNameFromService = impersonationService.getImpersonatedUserName(session);
+            
+            System.out.println("📊 Datos antes de detener:");
             System.out.println("  - Admin original: " + originalAdmin);
-            System.out.println("  - Usuario impersonado: " + impersonatedName + " (DNI: " + impersonatedDni + ")");
+            System.out.println("  - Usuario impersonado (servicio): " + impersonatedNameFromService);
+            System.out.println("  - Usuario impersonado (sesión): " + impersonatedName);
             
-            // Limpiar atributos de impersonación
-            session.removeAttribute("IS_IMPERSONATING");
-            session.removeAttribute("ORIGINAL_ADMIN_USERNAME");
-            session.removeAttribute("IMPERSONATED_USER_DNI");
-            session.removeAttribute("IMPERSONATED_USER_EMAIL");
-            session.removeAttribute("IMPERSONATED_USER_NAME");
-            session.removeAttribute("IMPERSONATED_USER_ROLE");
+            // Usar el servicio para detener la impersonación
+            boolean detencionExitosa = impersonationService.stopImpersonation(session);
             
-            // Verificar limpieza
-            System.out.println("🧹 Después de limpiar:");
-            System.out.println("  - IS_IMPERSONATING: " + session.getAttribute("IS_IMPERSONATING"));
-            System.out.println("  - IMPERSONATED_USER_DNI: " + session.getAttribute("IMPERSONATED_USER_DNI"));
+            if (!detencionExitosa) {
+                System.out.println("❌ Error al detener impersonación vía servicio");
+                System.out.println("🔄 Intentando limpieza manual como fallback");
+                
+                // Fallback: limpieza manual
+                session.removeAttribute("IS_IMPERSONATING");
+                session.removeAttribute("ORIGINAL_ADMIN_USERNAME");
+                session.removeAttribute("ORIGINAL_ADMIN_AUTHORITIES");
+                session.removeAttribute("IMPERSONATED_USER_DNI");
+                session.removeAttribute("IMPERSONATED_USER_EMAIL");
+                session.removeAttribute("IMPERSONATED_USER_NAME");
+                session.removeAttribute("IMPERSONATED_USER_ROLE");
+                session.setAttribute("FORCE_ADMIN_ACCESS", true);
+                
+                return ResponseEntity.ok(Map.of(
+                    "mensaje", "Impersonación terminada con limpieza de emergencia. Redirigiendo a SuperAdmin...",
+                    "redirectUrl", "/admin/gestion-usuarios",
+                    "originalAdmin", originalAdmin != null ? originalAdmin : "SuperAdmin",
+                    "previousUser", impersonatedNameFromService != null ? impersonatedNameFromService : 
+                                  (impersonatedName != null ? impersonatedName : "Usuario desconocido"),
+                    "clearHistory", true,
+                    "disableProtection", true,
+                    "forceAdminRedirect", true,
+                    "emergencyCleanup", true
+                ));
+            }
             
-            System.out.println("✅ Impersonación terminada. Volviendo a: " + originalAdmin);
+            System.out.println("✅ Impersonación terminada exitosamente. Volviendo a: " + originalAdmin);
+            System.out.println("🔄 Configurando redirección FORZADA a admin");
             
             return ResponseEntity.ok(Map.of(
-                "mensaje", "Impersonación terminada correctamente",
-                "redirectUrl", "/admin/gestion-usuarios",
+                "mensaje", "Impersonación terminada correctamente. Redirigiendo a SuperAdmin...",
+                "redirectUrl", "/admin/gestion-usuarios", // FORZAR admin
                 "originalAdmin", originalAdmin != null ? originalAdmin : "SuperAdmin",
-                "previousUser", impersonatedName != null ? impersonatedName : "Usuario desconocido"
+                "previousUser", impersonatedNameFromService != null ? impersonatedNameFromService : "Usuario desconocido",
+                "clearHistory", true, // Flag para el frontend
+                "disableProtection", true, // Flag para desactivar protección de navegación
+                "forceAdminRedirect", true // Nuevo flag para forzar redirección a admin
             ));
 
         } catch (Exception e) {
             System.err.println("💥 Error al detener impersonación: " + e.getMessage());
             e.printStackTrace();
-            return ResponseEntity.badRequest().body("Error al detener impersonación: " + e.getMessage());
+            
+            // LIMPIEZA DE EMERGENCIA EN CASO DE ERROR
+            System.out.println("🆘 EJECUTANDO LIMPIEZA DE EMERGENCIA");
+            try {
+                session.removeAttribute("IS_IMPERSONATING");
+                session.removeAttribute("ORIGINAL_ADMIN_USERNAME");
+                session.removeAttribute("ORIGINAL_ADMIN_AUTHORITIES");
+                session.removeAttribute("IMPERSONATED_USER_DNI");
+                session.removeAttribute("IMPERSONATED_USER_EMAIL");
+                session.removeAttribute("IMPERSONATED_USER_NAME");
+                session.removeAttribute("IMPERSONATED_USER_ROLE");
+                session.setAttribute("FORCE_ADMIN_ACCESS", true);
+                
+                return ResponseEntity.ok(Map.of(
+                    "mensaje", "Error en terminación normal. Sesión limpiada exitosamente. Redirigiendo a SuperAdmin...",
+                    "redirectUrl", "/admin/gestion-usuarios",
+                    "originalAdmin", "SuperAdmin",
+                    "previousUser", "Error en terminación",
+                    "clearHistory", true,
+                    "disableProtection", true,
+                    "forceAdminRedirect", true,
+                    "errorRecovery", true,
+                    "originalError", e.getMessage()
+                ));
+                
+            } catch (Exception cleanupError) {
+                System.err.println("💥 Error crítico en limpieza de emergencia: " + cleanupError.getMessage());
+                return ResponseEntity.status(500).body("Error crítico al detener impersonación: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Endpoint de emergencia para limpiar completamente la sesión de impersonación
+     */
+    @PostMapping("/emergency-cleanup")
+    @PreAuthorize("hasRole('SUPERADMIN') or hasRole('QA') or hasRole('DEV') or hasRole('PO')")
+    @ResponseBody
+    public ResponseEntity<?> limpiezaEmergencia(HttpSession session, HttpServletResponse response) {
+        try {
+            System.out.println("🆘 === LIMPIEZA DE EMERGENCIA ACTIVADA ===");
+            System.out.println("Session ID: " + session.getId());
+            
+            // Headers de seguridad
+            response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate, max-age=0");
+            response.setHeader("Pragma", "no-cache");
+            response.setHeader("Expires", "0");
+            response.setHeader("X-Frame-Options", "DENY");
+            response.setHeader("X-Content-Type-Options", "nosniff");
+            
+            // Diagnóstico antes de limpiar
+            System.out.println("🔍 Estado antes de limpieza:");
+            Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
+            String originalAdmin = (String) session.getAttribute("ORIGINAL_ADMIN_USERNAME");
+            String impersonatedDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
+            String impersonatedName = (String) session.getAttribute("IMPERSONATED_USER_NAME");
+            
+            System.out.println("   IS_IMPERSONATING: " + isImpersonating);
+            System.out.println("   ORIGINAL_ADMIN: " + originalAdmin);
+            System.out.println("   IMPERSONATED_DNI: " + impersonatedDni);
+            System.out.println("   IMPERSONATED_NAME: " + impersonatedName);
+            
+            // LIMPIEZA TOTAL - Remover TODOS los atributos de impersonación
+            session.removeAttribute("IS_IMPERSONATING");
+            session.removeAttribute("ORIGINAL_ADMIN_USERNAME");
+            session.removeAttribute("ORIGINAL_ADMIN_AUTHORITIES");
+            session.removeAttribute("IMPERSONATED_USER_DNI");
+            session.removeAttribute("IMPERSONATED_USER_EMAIL");
+            session.removeAttribute("IMPERSONATED_USER_NAME");
+            session.removeAttribute("IMPERSONATED_USER_ROLE");
+            session.removeAttribute("IMPERSONATION_ENDED");
+            session.removeAttribute("FORCE_ADMIN_ACCESS");
+            
+            // Forzar flags de limpieza
+            session.setAttribute("EMERGENCY_CLEANUP_DONE", true);
+            session.setAttribute("FORCE_ADMIN_ACCESS", true);
+            
+            System.out.println("🧹 Limpieza de emergencia completada");
+            System.out.println("🔄 Forzando contexto de SuperAdmin");
+            
+            return ResponseEntity.ok(Map.of(
+                "mensaje", "Limpieza de emergencia completada exitosamente. Redirigiendo a SuperAdmin...",
+                "redirectUrl", "/admin/gestion-usuarios",
+                "originalAdmin", originalAdmin != null ? originalAdmin : "SuperAdmin",
+                "previousState", Map.of(
+                    "wasImpersonating", isImpersonating != null ? isImpersonating : false,
+                    "impersonatedUser", impersonatedName != null ? impersonatedName : "Desconocido"
+                ),
+                "clearHistory", true,
+                "disableProtection", true,
+                "forceAdminRedirect", true,
+                "emergencyCleanup", true
+            ));
+            
+        } catch (Exception e) {
+            System.err.println("💥 Error crítico en limpieza de emergencia: " + e.getMessage());
+            e.printStackTrace();
+            
+            // Último recurso: invalidar toda la sesión
+            try {
+                session.invalidate();
+                return ResponseEntity.ok(Map.of(
+                    "mensaje", "Sesión invalidada completamente. Por favor, inicia sesión nuevamente.",
+                    "redirectUrl", "/login",
+                    "sessionInvalidated", true
+                ));
+            } catch (Exception invalidateError) {
+                return ResponseEntity.status(500).body("Error crítico en limpieza de emergencia");
+            }
         }
     }
 
@@ -1418,7 +1647,9 @@ public class AdminUsuarioController {
                 System.out.println("   - Email: " + nuevoUsuario.getCorreo());
                 System.out.println("   - Alias: " + nuevoUsuario.getAlias());
                 System.out.println("   - Rol: " + nuevoUsuario.getRol().getNombreRol());
+                System.out.println("   - Rol ID: " + nuevoUsuario.getRol().getIdRol());
                 System.out.println("   - Estado: " + nuevoUsuario.getEstado());
+                System.out.println("   - Organización: " + (nuevoUsuario.getOrganizacion() != null ? nuevoUsuario.getOrganizacion().getNombre() : "null"));
                 
             } catch (Exception e) {
                 System.err.println("❌ Error configurando usuario: " + e.getMessage());
@@ -2072,6 +2303,59 @@ public class AdminUsuarioController {
                 .body(Map.of(
                     "error", true,
                     "mensaje", "Error eliminando usuario: " + e.getMessage()
+                ));
+        }
+    }
+
+    /**
+     * Endpoint de prueba para verificar configuración de email
+     */
+    @PostMapping("/test-email")
+    @PreAuthorize("hasRole('SUPERADMIN')")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> testEmail(@RequestParam String email) {
+        try {
+            System.out.println("=== INICIANDO TEST DE EMAIL ===");
+            System.out.println("Email destino: " + email);
+            
+            // Probar configuración básica
+            boolean conectividad = emailService.probarConectividad();
+            if (!conectividad) {
+                return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "mensaje", "Error de conectividad SMTP. Revisa los logs para más detalles."
+                ));
+            }
+            
+            // Enviar email de prueba
+            boolean emailEnviado = emailService.enviarTokenConfirmacion(
+                email,
+                "Usuario de Prueba", 
+                "123456",
+                LocalDateTime.now().plusMinutes(30)
+            );
+            
+            if (emailEnviado) {
+                System.out.println("✅ Email de prueba enviado exitosamente");
+                return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "mensaje", "Email de prueba enviado exitosamente a " + email
+                ));
+            } else {
+                System.out.println("❌ Falló el envío del email de prueba");
+                return ResponseEntity.ok(Map.of(
+                    "success", false,
+                    "mensaje", "Error enviando email de prueba. Revisa los logs para más detalles."
+                ));
+            }
+            
+        } catch (Exception e) {
+            System.err.println("❌ Error en test de email: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of(
+                    "error", true,
+                    "mensaje", "Error en test de email: " + e.getMessage()
                 ));
         }
     }

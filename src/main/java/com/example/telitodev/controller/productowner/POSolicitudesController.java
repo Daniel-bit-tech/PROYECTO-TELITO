@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.productowner;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.dto.SolicitudAccesoDecisionRequest;
 import com.example.telitodev.dto.SolicitudAccesoResponse;
 import com.example.telitodev.entity.Usuario;
@@ -12,11 +13,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
 @RequestMapping("/po")
-public class POSolicitudesController {
+public class POSolicitudesController extends BaseController {
 
     @Autowired
     private OnboardingService onboardingService;
@@ -28,19 +30,22 @@ public class POSolicitudesController {
      * Vista principal de solicitudes pendientes para PO
      */
     @GetMapping("/solicitudes")
-    public String mostrarSolicitudesPendientes(Model model, Authentication authentication) {
+    public String mostrarSolicitudesPendientes(Model model, Authentication authentication, HttpSession session) {
         try {
-            // Obtener el usuario autenticado
-            Usuario usuario = usuarioService.findByCorreo(authentication.getName());
+            // Obtener el usuario autenticado considerando impersonación
+            Usuario usuario = getCurrentUser(authentication, session);
             
             if (usuario == null) {
                 return "redirect:/login";
             }
 
-            // Validar que el usuario tenga rol PO
-            if (usuario.getRol().getIdRol() != 1) {
-                return "redirect:/access-denied";
+            // Validar que el usuario tenga rol PO o SUPERADMIN (para impersonación)
+            if (!usuario.getRol().getNombreRol().equals("PO") && !usuario.getRol().getNombreRol().equals("SUPERADMIN")) {
+                return "redirect:/po/home?error=access_denied";
             }
+
+            // Agregar atributos de impersonación
+            addImpersonationAttributes(model, session);
 
             model.addAttribute("usuario", usuario);
 
@@ -51,11 +56,11 @@ public class POSolicitudesController {
             model.addAttribute("solicitudesPendientes", solicitudesPendientes);
             model.addAttribute("totalSolicitudes", solicitudesPendientes.size());
 
-            return "po/solicitudes";
+            return "po/bandejaSolicitud";
             
         } catch (Exception e) {
             model.addAttribute("error", "Error al cargar las solicitudes: " + e.getMessage());
-            return "po/solicitudes";
+            return "po/bandejaSolicitud";
         }
     }
 
@@ -67,12 +72,13 @@ public class POSolicitudesController {
     public ResponseEntity<?> procesarDecision(
             @PathVariable Integer idSolicitud,
             @RequestBody SolicitudAccesoDecisionRequest decision,
-            Authentication authentication) {
+            Authentication authentication,
+            HttpSession session) {
         
         try {
             // Verificar que el usuario sea PO
-            Usuario usuario = usuarioService.findByCorreo(authentication.getName());
-            if (usuario == null || usuario.getRol().getIdRol() != 1) {
+            Usuario usuario = getCurrentUser(authentication, session);
+            if (usuario == null || (!usuario.getRol().getNombreRol().equals("PO") && !usuario.getRol().getNombreRol().equals("SUPERADMIN"))) {
                 return ResponseEntity.status(403).body("No tienes permisos para realizar esta acción");
             }
 
@@ -92,11 +98,11 @@ public class POSolicitudesController {
      */
     @GetMapping("/api/solicitudes-pendientes-all")
     @ResponseBody
-    public ResponseEntity<List<SolicitudAccesoResponse>> obtenerSolicitudesPendientes(Authentication authentication) {
+    public ResponseEntity<List<SolicitudAccesoResponse>> obtenerSolicitudesPendientes(Authentication authentication, HttpSession session) {
         try {
-            Usuario usuario = usuarioService.findByCorreo(authentication.getName());
+            Usuario usuario = getCurrentUser(authentication, session);
             
-            if (usuario == null || usuario.getRol().getIdRol() != 1) {
+            if (usuario == null || (!usuario.getRol().getNombreRol().equals("PO") && !usuario.getRol().getNombreRol().equals("SUPERADMIN"))) {
                 return ResponseEntity.status(403).build();
             }
 

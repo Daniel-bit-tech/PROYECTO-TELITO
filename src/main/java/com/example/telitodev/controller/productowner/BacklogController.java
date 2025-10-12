@@ -2,8 +2,12 @@ package com.example.telitodev.controller.productowner;
 
 import com.example.telitodev.entity.Backlog;
 import com.example.telitodev.entity.Usuario;
+import com.example.telitodev.repository.BacklogRepository;
 import com.example.telitodev.repository.UsuarioRepository;
-import com.example.telitodev.service.BacklogService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -11,60 +15,72 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 
-import org.springframework.data.domain.Page;
-
 @Controller
 @RequestMapping("/po")
 @PreAuthorize("hasAnyRole('PO', 'SUPERADMIN')")
 public class BacklogController {
 
     final UsuarioRepository usuarioRepository;
-    final BacklogService backlogService;
-
-    public BacklogController(UsuarioRepository usuarioRepository, BacklogService backlogService) {
+    final BacklogRepository backlogRepository;
+    public BacklogController(UsuarioRepository usuarioRepository, BacklogRepository backlogRepository) {
         this.usuarioRepository = usuarioRepository;
-        this.backlogService = backlogService;
+        this.backlogRepository = backlogRepository;
     }
 
     @GetMapping("/backlog")
     public String showBacklogView(Model model, Authentication auth, HttpSession session,
-                                  @RequestParam(name = "search", required = false) String search,
-                                  @RequestParam(name = "page", defaultValue = "0") int page,
-                                  @RequestParam(name = "size", defaultValue = "10") int size) {
-
+                                  @RequestParam(name = "q", required = false, defaultValue = "") String q,
+                                  @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+                                  @RequestParam(name = "size", required = false, defaultValue = "8") int size) {
         // Obtener el usuario correcto considerando impersonación
         if (auth != null && auth.isAuthenticated()) {
             Usuario usuario = obtenerUsuarioActual(auth, session);
             model.addAttribute("usuario", usuario);
         }
-
-        // ✅ CAMBIO: Usar el service para paginación y búsqueda
-        Page<Backlog> backlogPage = backlogService.getBacklogsPaginated(search, page, size);
-
-        // ✅ CAMBIO: Enviar Page en lugar de List
-        model.addAttribute("backlogPage", backlogPage);
-        model.addAttribute("search", search == null ? "" : search);
-
+        
+        // Validar parámetros
+        if (size <= 0 || size > 100) size = 8; // Límite máximo de 100 elementos por página
+        if (page < 0) page = 0;
+        
+        // Crear objeto Pageable para la paginación
+        Pageable pageable = PageRequest.of(page, size, Sort.by("idBacklog").descending());
+        
+        // Buscar con paginación
+        Page<Backlog> backlogPage;
+        if (q != null && !q.trim().isEmpty()) {
+            backlogPage = backlogRepository.findBySearchTerm(q.trim(), pageable);
+        } else {
+            backlogPage = backlogRepository.findAll(pageable);
+        }
+        
+        // Agregar atributos al modelo para la vista
+        model.addAttribute("backlogs", backlogPage.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", backlogPage.getTotalPages());
+        model.addAttribute("totalElements", backlogPage.getTotalElements());
+        model.addAttribute("size", size);
+        model.addAttribute("q", q);
+        model.addAttribute("hasNext", backlogPage.hasNext());
+        model.addAttribute("hasPrevious", backlogPage.hasPrevious());
+        
+        // Calcular rango de elementos mostrados
+        int startElement = page * size + 1;
+        int endElement = Math.min(startElement + size - 1, (int) backlogPage.getTotalElements());
+        model.addAttribute("startElement", startElement);
+        model.addAttribute("endElement", endElement);
+        
         return "po/backlog";
     }
 
     @PostMapping("/backlog/marcar-como-resuelto/{id}")
-    public String markAsResolved(@PathVariable("id") Integer id,
-                                 @RequestParam(name = "search", required = false) String search,
-                                 @RequestParam(name = "page", defaultValue = "0") int page,
-                                 @RequestParam(name = "size", defaultValue = "10") int size) {
-
-        // ✅ CAMBIO: Usar el service para marcar como resuelto
-        backlogService.marcarComoResuelto(id);
-
-        // ✅ CAMBIO: Redirigir manteniendo los parámetros de búsqueda y paginación
-        StringBuilder redirectUrl = new StringBuilder("redirect:/po/backlog?page=").append(page).append("&size=").append(size);
-        if (search != null && !search.isEmpty()) {
-            redirectUrl.append("&search=").append(search);
-        }
-
-        return redirectUrl.toString();
+    public String markAsResolved(@PathVariable("id") Integer id) {
+        Backlog backlog = backlogRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Backlog no encontrado"));
+        backlog.setEstadoBacklog("Resuelto");  // Cambia el estado a "Resuelto"
+        backlogRepository.save(backlog);        // Guarda el cambio
+        return "redirect:/po/backlog";             // Recarga la misma vista
     }
+
 
     /**
      * Método helper para obtener el usuario correcto durante impersonación
@@ -72,7 +88,7 @@ public class BacklogController {
     private Usuario obtenerUsuarioActual(Authentication auth, HttpSession session) {
         // Verificar si hay impersonación activa
         Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
-
+        
         if (isImpersonating != null && isImpersonating) {
             // Durante impersonación, obtener usuario por DNI del usuario impersonado
             String impersonatedUserDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
@@ -84,10 +100,11 @@ public class BacklogController {
                 }
             }
         }
-
+        
         // Sin impersonación, usar el usuario autenticado normal
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         System.out.println("👤 Backlog - Usando datos del usuario autenticado: " + usuario.getNombre());
         return usuario;
     }
+
 }

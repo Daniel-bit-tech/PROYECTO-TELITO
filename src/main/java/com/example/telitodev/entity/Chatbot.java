@@ -24,7 +24,7 @@ public class Chatbot {
     private String estado;
     
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idUsuario", nullable = false, referencedColumnName = "dni")
+    @JoinColumn(name = "idUsuario", nullable = false, referencedColumnName = "dni", columnDefinition = "CHAR(8)")
     private Usuario usuario;
     
     @ManyToOne(fetch = FetchType.LAZY)

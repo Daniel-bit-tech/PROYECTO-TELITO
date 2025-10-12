@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.qualityassurance;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.dto.ApiProyectoDTO;
 import com.example.telitodev.entity.Dominio;
 import com.example.telitodev.entity.Tag;
@@ -16,12 +17,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
 @RequestMapping("/qa")
 @PreAuthorize("hasAnyRole('QA', 'SADMIN')")
-public class CatalogoqaController {
+public class CatalogoqaController extends BaseController {
     final UsuarioRepository usuarioRepository;
     final ApiRepository apiRepository;
     final DominioRepository dominioRepository;
@@ -39,7 +41,7 @@ public class CatalogoqaController {
     public String showCatalogo (@RequestParam(required = false) String nombre,
                                 @RequestParam(required = false) List<String> dominios,
                                 @RequestParam(required = false) List<String> tags,
-                                Model model, Authentication auth) {
+                                Model model, Authentication auth, HttpSession session) {
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         String dni = usuario.getDni();
@@ -51,10 +53,12 @@ public class CatalogoqaController {
         // Obtener las APIs relacionadas al proyecto y la organización del usuario
         List<ApiProyectoDTO> apis = apiRepository.findApisByFilters(dni, nombre, dominios, tags);
 
-
         // Cargar listas completas para poblar checkboxes
         List<Dominio> allDominios = dominioRepository.findAll();
         List<Tag> allTags = tagRepository.findAll();
+
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("apis", apis);

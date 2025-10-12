@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.productowner;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.entity.Notificacion;
@@ -11,6 +12,7 @@ import com.example.telitodev.service.ActividadRecienteService; // Importa el ser
 import com.example.telitodev.service.OnboardingService;
 import com.example.telitodev.dto.SolicitudAccesoDecisionRequest;
 import com.example.telitodev.dto.SolicitudAccesoResponse;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -24,8 +26,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/po")
-@PreAuthorize("hasAnyRole('PO', 'SADMIN')")
-public class PoController {
+public class PoController extends BaseController {
 
     final UsuarioRepository usuarioRepository;
     final ApiService apiService;
@@ -42,21 +43,42 @@ public class PoController {
         this.actividadRecienteService = actividadRecienteService;
         this.onboardingService = onboardingService;
     }
+    
+    @GetMapping("/Dashboard")
+    public String showDashboardView(Model model, Authentication auth, HttpSession session) {
+        // Obtener el usuario correcto considerando impersonación
+        Usuario usuario = getCurrentUser(auth, session);
+        model.addAttribute("usuario", usuario);
+        
+        // Agregar información de impersonación al modelo usando BaseController
+        addImpersonationAttributes(model, session);
+        
+        return "po/home";
+    }
 
     @GetMapping("/verPerfil")
-    public String showverPerfilView(Model model, Authentication auth) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+    public String showverPerfilView(Model model, Authentication auth, HttpSession session) {
+        // Obtener el usuario correcto considerando impersonación
+        Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
+        
+        // Agregar información de impersonación al modelo
+        addImpersonationAttributes(model, session);
+        
         return "po/verPerfil";
     }
 
     @GetMapping("/home")
-    public String showHomeView(Model model, Authentication auth) {
+    public String showHomeView(Model model, Authentication auth, HttpSession session) {
         List<Api> recentApis = apiService.getRecentApis();
         model.addAttribute("recentApis", recentApis);
 
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        // Obtener el usuario correcto considerando impersonación usando BaseController
+        Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
+
+        // Agregar información de impersonación al modelo
+        addImpersonationAttributes(model, session);
 
 
         List<Notificacion> notificaciones = notificacionService.obtenerNotificacionesPorUsuario(usuario.getDni());

@@ -4,6 +4,9 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <!-- CSRF tokens para impersonación -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <title>TELITO DEVELOPER PORTAL | Inicio</title>
     <link th:href="|/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620|" rel="stylesheet" />
     <link th:href="|/tabler/dist/css/tabler.css?1757307620|" rel="stylesheet" />
@@ -399,6 +402,9 @@
 
     <div th:replace="qa/header_qa.html :: header"></div>
 
+    <!-- Banner de impersonación -->
+    <div th:replace="components/impersonation-banner.html :: impersonation-banner"></div>
+
     <!-- Main -->
     <div class="content">
         <div class="dashboard-container">
@@ -406,7 +412,7 @@
 
             <div class="welcome-banner">
                 <div class="welcome-content">
-                    <h2 class="welcome-title">¡Hola otra vez, <span th:text="${usuario.nombre}">Juan</span>!</h2>
+                    <h2 class="welcome-title">¡Hola otra vez, <span th:text="${isImpersonating ? impersonatedUserName : usuario.nombre}">Juan</span>!</h2>
                     <p class="welcome-text">Tienes <span th:text="${NcredActivas}">0</span> APIs pendientes para validar</span> notificaciones sin leer.</p>
                     <div class="welcome-actions">
                         <a th:href="@{/qa/catalogo}" class="btn btn-primary">

@@ -528,25 +528,7 @@
       }
     }
 
-    /* Custom navbar styles */
-    .custom-navbar {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      border-bottom: none;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .navbar-brand a {
-      color: white !important;
-      text-decoration: none;
-    }
-    .navbar-nav .nav-link {
-      color: white !important;
-    }
-    .user-avatar {
-      border: 2px solid rgba(255,255,255,0.3);
-    }
-    .dropdown-menu {
-      margin-top: 0.5rem;
-    }
+    /* Estilos específicos de gestión de usuarios */
 
     /* ===== CORRECCIÓN DE BADGES SECUNDARIOS ===== */
     /* Mejorar visibilidad de badges secundarios que se ven muy grises */
@@ -639,118 +621,7 @@
 <script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
 <div class="page">
 
-  <!-- Header mejorado estilo Tabler con navegación completa -->
-  <header class="navbar navbar-expand-md d-print-none custom-navbar">
-    <div class="container-xl">
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-menu">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="navbar-brand">
-        <a href="/admin/home" class="d-flex align-items-center text-decoration-none">
-          <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-shield-check me-2" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-            <path d="M11.46 20.846a12 12 0 0 1 -7.96 -14.846l8.5 -3l8.5 3a12 12 0 0 1 -7.96 14.846"></path>
-            <path d="M9 12l2 2l4 -4"></path>
-          </svg>
-          <span class="fw-bold text-white">TELITO</span> | Admin Portal
-        </a>
-      </div>
-
-      <!-- Navegación principal -->
-      <div class="collapse navbar-collapse" id="navbar-menu">
-        <div class="d-flex flex-column flex-md-row flex-fill align-items-stretch align-items-md-center">
-          <ul class="navbar-nav">
-            <li class="nav-item">
-              <a class="nav-link" href="/admin/home">
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                  <i class="fas fa-home"></i>
-                </span>
-                <span class="nav-link-title">Inicio</span>
-              </a>
-            </li>
-            <li class="nav-item active">
-              <a class="nav-link" href="/admin/gestion-usuarios">
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                  <i class="fas fa-users"></i>
-                </span>
-                <span class="nav-link-title">Usuarios</span>
-              </a>
-            </li>
-            <!--<li class="nav-item">
-              <a class="nav-link" href="/admin/reportes">
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                  <i class="fas fa-chart-line"></i>
-                </span>
-                <span class="nav-link-title">Reportes</span>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/admin/configuracion">
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                  <i class="fas fa-cogs"></i>
-                </span>
-                <span class="nav-link-title">Configuración</span>
-              </a>
-            </li>-->
-            <li class="nav-item">
-              <a class="nav-link" href="/admin/perfil">
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
-                  <i class="fas fa-user-circle"></i>
-                </span>
-                <span class="nav-link-title">Mi Perfil</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="navbar-nav flex-row order-md-last ms-auto">
-        <div class="d-none d-md-flex align-items-center">
-          <div class="nav-item me-2">
-            <a href="?theme=dark" class="theme-switcher nav-link px-0 hide-theme-dark" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="Modo oscuro" data-bs-original-title="Modo oscuro">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z"></path>
-              </svg>
-            </a>
-            <a href="?theme=light" class="theme-switcher nav-link px-0 hide-theme-light" data-bs-toggle="tooltip" data-bs-placement="bottom" aria-label="Modo claro" data-bs-original-title="Modo claro">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0"></path>
-                <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7"></path>
-              </svg>
-            </a>
-          </div>
-
-          <div class="nav-item dropdown">
-            <a href="#" class="nav-link d-flex lh-1 p-0 dropdown-toggle" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario" aria-expanded="false">
-              <span class="avatar avatar-sm user-avatar" style="background: linear-gradient(135deg, #4361ee 0%, #7209b7 100%); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">
-                CA
-              </span>
-              <div class="d-none d-xl-block ps-2 text-white">
-                <div>Carlos</div>
-                <div class="mt-1 small opacity-75">Super Admin</div>
-              </div>
-            </a>
-            <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-              <a href="/admin/home" class="dropdown-item d-flex align-items-center">
-                <i class="fas fa-home me-2"></i> Dashboard
-              </a>
-              <a href="/admin/gestion-usuarios" class="dropdown-item d-flex align-items-center">
-                <i class="fas fa-users me-2"></i> Gestión de Usuarios
-              </a>
-              <div class="dropdown-divider"></div>
-              <form action="/logout" method="post" style="margin: 0;">
-                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
-                <button type="submit" class="dropdown-item d-flex align-items-center">
-                  <i class="fas fa-sign-out-alt me-2"></i> Cerrar Sesión
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
+  <div th:replace="admin/header.html :: header"></div>
 
   <!-- Main -->
   <div class="content">
@@ -1598,9 +1469,15 @@ async function handleViewUser(userDni) {
             `🎭 Rol: ${data.rol}\n\n` +
             `Serás redirigido a su vista...`);
       
-      // Redirigir después de un breve delay
+      // Activar protección contra navegación hacia atrás si es necesario
+      if (data.activateBackProtection) {
+        console.log('🔒 Activando protección contra navegación hacia atrás durante impersonación');
+        activateImpersonationBackProtection(data.redirectUrl);
+      }
+      
+      // Redirigir después de un breve delay SIN crear entrada en el historial
       setTimeout(() => {
-        window.location.href = data.redirectUrl;
+        window.location.replace(data.redirectUrl);
       }, 1000);
     } else {
       throw new Error(data.message || 'No se pudo iniciar la impersonación');
@@ -1610,6 +1487,56 @@ async function handleViewUser(userDni) {
     console.error('Error completo en impersonación:', error);
     alert(`❌ Error al impersonar usuario: ${error.message}`);
   }
+}
+
+/**
+ * Activa protección contra navegación hacia atrás durante impersonación
+ */
+function activateImpersonationBackProtection(redirectUrl) {
+  console.log('🔒 Configurando protección contra navegación hacia atrás para impersonación');
+  
+  // Crear estado de protección
+  const protectionState = {
+    impersonationProtection: true,
+    redirectUrl: redirectUrl,
+    timestamp: Date.now(),
+    reason: 'impersonation_started'
+  };
+  
+  // Modificar el historial actual para marcar que la impersonación ha comenzado
+  if (window.history && window.history.replaceState) {
+    window.history.replaceState(protectionState, '', window.location.href);
+    
+    // Agregar una entrada adicional para asegurar que no se pueda ir hacia atrás
+    window.history.pushState(protectionState, '', window.location.href);
+  }
+  
+  // Listener para interceptar intentos de navegación hacia atrás
+  const handleImpersonationBackAttempt = (event) => {
+    if (event.state && event.state.impersonationProtection) {
+      console.log('🚫 Intento de navegación hacia atrás durante impersonación bloqueado');
+      
+      // Mostrar mensaje informativo
+      alert('⚠️ Durante la impersonación no puedes regresar a páginas de SuperAdmin usando el botón "atrás".\n\n' +
+            '✅ Para volver a SuperAdmin, usa el botón "Volver a SuperAdmin" en la barra superior.');
+      
+      // Forzar hacia adelante para mantener al usuario en la página actual
+      window.history.pushState(protectionState, '', window.location.href);
+      
+      return false;
+    }
+  };
+  
+  // Remover listener anterior si existe
+  if (window.impersonationStartProtectionHandler) {
+    window.removeEventListener('popstate', window.impersonationStartProtectionHandler);
+  }
+  
+  // Agregar nuevo listener
+  window.addEventListener('popstate', handleImpersonationBackAttempt);
+  window.impersonationStartProtectionHandler = handleImpersonationBackAttempt;
+  
+  console.log('✅ Protección contra navegación hacia atrás configurada');
 }
 
 function handleEditUser(userDni) {

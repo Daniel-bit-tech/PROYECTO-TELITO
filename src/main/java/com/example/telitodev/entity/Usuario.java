@@ -9,8 +9,7 @@ import java.util.List;
 public class Usuario {
     
     @Id
-
-    @Column(name = "dni", length = 8)
+    @Column(name = "dni", length = 8, columnDefinition = "CHAR(8)")
     private String dni;
     
     @Column(name = "nombre", nullable = false, length = 50)
@@ -38,11 +37,11 @@ public class Usuario {
     private Boolean estado;
     
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "idRol", nullable = false)
+    @JoinColumn(name = "idRol", nullable = false, insertable = true, updatable = true)
     private Rol rol;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "idOrganizacion")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idOrganizacion", nullable = true, insertable = true, updatable = true)
     private Organizacion organizacion;
 
     // Relaciones con otras entidades
@@ -76,8 +75,8 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<AuditLog> auditLogs;
 
-    @OneToOne(mappedBy = "usuarioLider",cascade = CascadeType.ALL)
-    private Proyecto proyectoAsignado;
+    @OneToMany(mappedBy = "usuarioLider", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Proyecto> proyectosLiderados;
     
     // Constructores
     public Usuario() {}
@@ -152,12 +151,12 @@ public class Usuario {
         this.alias = alias;
     }
 
-    public Proyecto getProyectoAsignado() {
-        return proyectoAsignado;
+    public List<Proyecto> getProyectosLiderados() {
+        return proyectosLiderados;
     }
 
-    public void setProyectoAsignado(Proyecto proyectoAsignado) {
-        this.proyectoAsignado = proyectoAsignado;
+    public void setProyectosLiderados(List<Proyecto> proyectosLiderados) {
+        this.proyectosLiderados = proyectosLiderados;
     }
 
     public Timestamp getFechaRegistro() {
