@@ -21,8 +21,8 @@ public class ProyectoHasApi {
     @JoinColumn(name = "idAPI")
     private Api api;
 
-    @Column(name = "fecha_asociacion")
-    private Date fechaAsociacion;
+    @Column(name = "fecha_asociacion", nullable = false)
+    private Date fechaAsociacion = new Date(System.currentTimeMillis());
 
     @Column(name = "proposito")
     private String proposito;
@@ -47,6 +47,10 @@ public class ProyectoHasApi {
         this.entorno = entorno;
     }
 
+    public ProyectoHasApi(Date fechaAsociacion, Proyecto proyecto) {
+        this.fechaAsociacion = fechaAsociacion;
+        this.proyecto = proyecto;
+    }
 
     //Get y Set
 
