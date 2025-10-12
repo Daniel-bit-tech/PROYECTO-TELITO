@@ -1,12 +1,14 @@
 package com.example.telitodev.controller.qualityassurance;
 
 import com.example.telitodev.controller.BaseController;
+import com.example.telitodev.entity.ActividadReciente;
 import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.Feedback;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.repository.ApiRepository;
 import com.example.telitodev.repository.FeedbackRepository;
 import com.example.telitodev.repository.UsuarioRepository;
+import com.example.telitodev.repository.po.ActividadRecienteRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -32,6 +34,9 @@ public class FeedbackQaController extends BaseController {
 
     @Autowired
     private FeedbackRepository feedbackRepository;
+
+    @Autowired
+    private ActividadRecienteRepository actividadRecienteRepository;
 
 
     @GetMapping("/feedback")
@@ -86,6 +91,14 @@ public class FeedbackQaController extends BaseController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("feedback", new Feedback()); // Un objeto Feedback vacío para el formulario
+
+        // Registrar la actividad reciente
+        ActividadReciente actividad = new ActividadReciente();
+        actividad.setTitulo("Nuevo Feedback");
+        actividad.setDescripcion("El QA " + usuario.getNombre() + " ha creado un feedback.");
+        actividad.setUsuario(usuario);
+        actividadRecienteRepository.save(actividad);
+
 
         return "qa/feedbackCrear"; // Vista para crear el feedback
     }

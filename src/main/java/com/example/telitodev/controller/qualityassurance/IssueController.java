@@ -3,6 +3,7 @@ package com.example.telitodev.controller.qualityassurance;
 import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
+import com.example.telitodev.repository.po.ActividadRecienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.*;
@@ -37,6 +38,10 @@ public class IssueController extends BaseController {
     private AdjuntoRepository adjuntoRepository;
     @Autowired
     private EvidenciaRepository evidenciaRepository;
+    @Autowired
+    private NotificacionRepository notificacionRepository;
+    @Autowired
+    private ActividadRecienteRepository actividadRecienteRepository;
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -177,7 +182,23 @@ public class IssueController extends BaseController {
         newIssue.setEstado("Reportado");  // Establecer el estado del Issue
         newIssue.setReporte(reporte); // Asociar el Issue con el Reporte
         newIssue.setFechaCreacion(new Timestamp(System.currentTimeMillis()));
+        newIssue.setCreador(usuario);
         issueRepository.save(newIssue); // Guardar el Issue
+
+        // Crear la notificación
+        Notificacion notif = new Notificacion();
+        notif.setMensaje("Se ha creado un nuevo issue para tu API: " + newIssue.getReporte().getApi().getNombre());
+        notif.setLeido(false);
+        notif.setFecha(new Timestamp(System.currentTimeMillis()));
+        notif.setUsuario(newIssue.getReporte().getApi().getUsuario()); // propietario de la API
+        notificacionRepository.save(notif);
+
+        ActividadReciente actividad = new ActividadReciente();
+        actividad.setTitulo("Nuevo Issue");
+        actividad.setDescripcion("Has creado un issue para la api " + newIssue.getReporte().getApi().getNombre());
+        actividad.setUsuario(usuario);
+        actividadRecienteRepository.save(actividad);
+
 
         return "redirect:/qa/issues"; // Redirigir a la lista de Issues
     }
@@ -254,13 +275,34 @@ public class IssueController extends BaseController {
         // Guardar el comentario
         comentarioRepository.save(newComentario);
 
+        // Después de guardar el comentario
+        Usuario desarrollador = issue.getReporte().getApi().getUsuario(); // propietario de la API
+
+        Notificacion notif = new Notificacion();
+        notif.setMensaje("El QA " + usuario.getNombre() +
+                " comentó en el foro del Issue de tu API: " + issue.getReporte().getApi().getNombre());
+        notif.setLeido(false);
+        notif.setFecha(new Timestamp(System.currentTimeMillis()));
+        notif.setUsuario(desarrollador); // receptor
+        notificacionRepository.save(notif);
+
+        // Registrar la actividad reciente
+        ActividadReciente actividad = new ActividadReciente();
+        actividad.setTitulo("Nuevo Comentario");
+        actividad.setDescripcion("Has dejado un comentario en el issue " + issue.getReporte().getApi().getNombre());
+        actividad.setUsuario(usuario);
+        actividadRecienteRepository.save(actividad);
+
         // Redirigir de nuevo al detalle del Issue
         return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
     }
 
     @PostMapping("/issueCerrar/{idIssue}/{idReporte}")
     public String cerrarIssue(@PathVariable Integer idIssue, @PathVariable Integer idReporte,
-                              RedirectAttributes redirectAttributes) {
+                              RedirectAttributes redirectAttributes, Authentication auth) {
+
+        // Obtener el usuario
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
         IssueId issueId = new IssueId(idIssue, idReporte);
         Issue issue = issueRepository.findById(issueId).orElse(null);
@@ -273,10 +315,25 @@ public class IssueController extends BaseController {
         issue.setEstado("Corregido");
         issueRepository.save(issue);
 
+        // Opcional: enviar notificación al desarrollador
+        Usuario dev = issue.getReporte().getApi().getUsuario();
+        if(dev != null){
+            Notificacion notif = new Notificacion();
+            notif.setMensaje("El QA cerró el Issue: " + issue.getReporte().getApi().getNombre());
+            notif.setLeido(false);
+            notif.setFecha(new Timestamp(System.currentTimeMillis()));
+            notif.setUsuario(dev);
+            notificacionRepository.save(notif);
+        }
+
+        // Registrar la actividad reciente
+        ActividadReciente actividad = new ActividadReciente();
+        actividad.setTitulo("Issue corregido");
+        actividad.setDescripcion("Has cerrado el issue de " + issue.getReporte().getApi().getNombre());
+        actividad.setUsuario(usuario);
+        actividadRecienteRepository.save(actividad);
+
         redirectAttributes.addFlashAttribute("success", "Issue cerrado correctamente");
         return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
     }
-
-
-
 }

@@ -37,6 +37,8 @@ public class IssueDevController extends BaseController{
     private AdjuntoRepository adjuntoRepository;
     @Autowired
     private EvidenciaRepository evidenciaRepository;
+    @Autowired
+    private NotificacionRepository notificacionRepository;
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -143,6 +145,7 @@ public class IssueDevController extends BaseController{
         newComentario.setIssue(issue);
         newComentario.setUsuario(usuario);
 
+
         System.out.println("------------------");
         System.out.println(archivos.length);
         System.out.println("------------------");
@@ -195,6 +198,18 @@ public class IssueDevController extends BaseController{
             issue.setEstado("En progreso");
             issueRepository.save(issue);
         }
+
+        // Obtener el QA que creó el issue (suponiendo que lo guardaste como 'creador')
+        Usuario qaCreador = issue.getCreador();  // si agregaste un campo Issue.usuarioCreador
+
+        // Crear la notificación
+        Notificacion notif = new Notificacion();
+        notif.setMensaje("El desarrollador " + usuario.getNombre() +
+                " respondió en el foro del Issue: " + issue.getReporte().getApi().getNombre());
+        notif.setLeido(false);
+        notif.setFecha(new Timestamp(System.currentTimeMillis()));
+        notif.setUsuario(qaCreador); // receptor de la notificación
+        notificacionRepository.save(notif);
 
         // Redirigir de nuevo al detalle del Issue
         return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
