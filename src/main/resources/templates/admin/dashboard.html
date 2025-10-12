@@ -659,6 +659,120 @@
         transform: translateY(0);
       }
     }
+
+    /* Estilos específicos para temas claro y oscuro */
+    
+    /* Tema claro explícito */
+    [data-bs-theme="light"] .stat-card,
+    html[data-bs-theme="light"] .stat-card {
+      background-color: #ffffff !important;
+      border: 1px solid #e9ecef !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    }
+
+    [data-bs-theme="light"] .stat-value,
+    html[data-bs-theme="light"] .stat-value {
+      color: #212529 !important;
+    }
+
+    [data-bs-theme="light"] .stat-label,
+    html[data-bs-theme="light"] .stat-label {
+      color: #6c757d !important;
+    }
+
+    /* Iconos en tema claro */
+    [data-bs-theme="light"] .stat-icon-primary,
+    html[data-bs-theme="light"] .stat-icon-primary {
+      background-color: rgba(67, 97, 238, 0.1) !important;
+      color: #4361ee !important;
+    }
+
+    [data-bs-theme="light"] .stat-icon-success,
+    html[data-bs-theme="light"] .stat-icon-success {
+      background-color: rgba(40, 167, 69, 0.1) !important;
+      color: #28a745 !important;
+    }
+
+    [data-bs-theme="light"] .stat-icon-warning,
+    html[data-bs-theme="light"] .stat-icon-warning {
+      background-color: rgba(255, 193, 7, 0.1) !important;
+      color: #ffc107 !important;
+    }
+
+    [data-bs-theme="light"] .stat-icon-danger,
+    html[data-bs-theme="light"] .stat-icon-danger {
+      background-color: rgba(220, 53, 69, 0.1) !important;
+      color: #dc3545 !important;
+    }
+
+    /* Tema oscuro */
+    [data-bs-theme="dark"] .stat-card,
+    html[data-bs-theme="dark"] .stat-card {
+      background-color: #1e293b !important;
+      border: 1px solid #334155 !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    }
+
+    [data-bs-theme="dark"] .stat-value,
+    html[data-bs-theme="dark"] .stat-value {
+      color: #f1f5f9 !important;
+    }
+
+    [data-bs-theme="dark"] .stat-label,
+    html[data-bs-theme="dark"] .stat-label {
+      color: #94a3b8 !important;
+    }
+
+    /* Iconos en tema oscuro */
+    [data-bs-theme="dark"] .stat-icon-primary,
+    html[data-bs-theme="dark"] .stat-icon-primary {
+      background-color: rgba(67, 97, 238, 0.2) !important;
+      color: #6366f1 !important;
+    }
+
+    [data-bs-theme="dark"] .stat-icon-success,
+    html[data-bs-theme="dark"] .stat-icon-success {
+      background-color: rgba(34, 197, 94, 0.2) !important;
+      color: #22c55e !important;
+    }
+
+    [data-bs-theme="dark"] .stat-icon-warning,
+    html[data-bs-theme="dark"] .stat-icon-warning {
+      background-color: rgba(251, 191, 36, 0.2) !important;
+      color: #fbbf24 !important;
+    }
+
+    [data-bs-theme="dark"] .stat-icon-danger,
+    html[data-bs-theme="dark"] .stat-icon-danger {
+      background-color: rgba(239, 68, 68, 0.2) !important;
+      color: #ef4444 !important;
+    }
+
+    /* Dashboard cards en temas */
+    [data-bs-theme="light"] .dashboard-card,
+    html[data-bs-theme="light"] .dashboard-card {
+      background-color: #ffffff !important;
+      border: 1px solid #e9ecef !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    }
+
+    [data-bs-theme="dark"] .dashboard-card,
+    html[data-bs-theme="dark"] .dashboard-card {
+      background-color: #1e293b !important;
+      border: 1px solid #334155 !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    }
+
+    /* Títulos de cards en temas */
+    [data-bs-theme="light"] .card-title,
+    html[data-bs-theme="light"] .card-title {
+      color: #212529 !important;
+    }
+
+    [data-bs-theme="dark"] .card-title,
+    html[data-bs-theme="dark"] .card-title {
+      color: #f1f5f9 !important;
+    }
   </style>
 </head>
 
@@ -703,7 +817,7 @@
       <!-- Stats Grid siguiendo el patrón de developer -->
       <div class="stats-grid">
         <div class="stat-card">
-          <div class="stat-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
+          <div class="stat-icon stat-icon-primary">
             <i class="fas fa-users"></i>
           </div>
           <div class="stat-content">
@@ -713,7 +827,7 @@
         </div>
 
         <div class="stat-card">
-          <div class="stat-icon" style="background-color: rgba(var(--tblr-success-rgb), 0.1); color: var(--tblr-success);">
+          <div class="stat-icon stat-icon-success">
             <i class="fas fa-user-check"></i>
           </div>
           <div class="stat-content">
@@ -723,7 +837,7 @@
         </div>
 
         <div class="stat-card">
-          <div class="stat-icon" style="background-color: rgba(var(--tblr-warning-rgb), 0.1); color: var(--tblr-warning);">
+          <div class="stat-icon stat-icon-warning">
             <i class="fas fa-user-times"></i>
           </div>
           <div class="stat-content">
@@ -733,7 +847,7 @@
         </div>
 
         <div class="stat-card">
-          <div class="stat-icon" style="background-color: rgba(var(--tblr-danger-rgb), 0.1); color: var(--tblr-danger);">
+          <div class="stat-icon stat-icon-danger">
             <i class="fas fa-shield-alt"></i>
           </div>
           <div class="stat-content">
