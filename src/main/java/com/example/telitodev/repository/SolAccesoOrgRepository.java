@@ -57,5 +57,10 @@ public interface SolAccesoOrgRepository extends JpaRepository<SolAccesoOrg, Inte
             "GROUP BY s.organizacionDestino.nombre, s.estado")
     List<Object[]> getEstadisticasPorOrganizacion();
 
+    // Este query es para el historial de solicitudes
+
+    // Buscar todas las solicitudes realizadas por un usuario solicitante específico (POR EL PO)
+    @Query("SELECT s FROM SolAccesoOrg s WHERE s.usuarioSolicitante.dni = :dniSolicitante ORDER BY s.fechaSolicitud DESC")
+    List<SolAccesoOrg> findByUsuarioSolicitanteDniOrderByFechaDesc(@Param("dniSolicitante") String dniSolicitante);
 
 }
