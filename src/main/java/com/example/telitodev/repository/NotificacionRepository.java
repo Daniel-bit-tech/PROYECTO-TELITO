@@ -1,6 +1,7 @@
 package com.example.telitodev.repository;
 
 import com.example.telitodev.entity.Notificacion;
+import com.example.telitodev.entity.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,5 +13,6 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Inte
     Integer countByUsuario_DniAndLeido(String dni, Boolean leido);
     List<Notificacion> findByUsuario_Dni(String dni);
     List<Notificacion> findByUsuario_DniAndLeido(String dni, Boolean leido);
+    Integer countByUsuarioAndLeido(Usuario usuario, Boolean leido);
 
 }

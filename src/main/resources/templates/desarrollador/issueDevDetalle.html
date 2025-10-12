@@ -352,8 +352,8 @@
                                     <div class="datagrid-content" th:text="|${issue.reporte.api.dominio.nombre}/${issue.reporte.api.tag.nombre}|"></div>
                                 </div>
                                 <div class="datagrid-item">
-                                    <div class="datagrid-title">Versión</div>
-                                    <div class="datagrid-content">2.1</div>
+                                    <div class="datagrid-title">Creado por:</div>
+                                    <div class="datagrid-content" th:text="${issue.creador != null ? issue.creador.nombre : 'Sin creador'}"></div>
                                 </div>
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Estado</div>
@@ -490,7 +490,7 @@
 
                             <div th:unless="${issue.estado == 'Corregido'}">
                                 <!-- Aquí va el formulario para crear comentario -->
-                                <form th:action="@{/qa/crearComentario}" method="POST" enctype="multipart/form-data">
+                                <form th:action="@{/crearComentarioDev}" method="POST" enctype="multipart/form-data">
                                     <!-- ID del Issue y Reporte -->
                                     <input type="hidden" name="idIssue" th:value="${issue.id.idIssue}" />
                                     <input type="hidden" name="idReporte" th:value="${issue.reporte.idReporte}" />

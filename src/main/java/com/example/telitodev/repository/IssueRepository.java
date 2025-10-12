@@ -3,6 +3,7 @@ package com.example.telitodev.repository;
 import com.example.telitodev.entity.Issue;
 import com.example.telitodev.entity.IssueId;
 import com.example.telitodev.entity.Reporte;
+import com.example.telitodev.entity.Usuario;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -43,5 +44,9 @@ public interface IssueRepository extends JpaRepository<Issue, IssueId> {
             @Param("dniUsuario") String dniUsuario,
             Pageable pageable
     );
+
+    Integer countByEstadoNot(String estado);
+
+    List<Issue> findTop5ByCreadorOrderByFechaCreacionDesc(Usuario creador);
 
 }

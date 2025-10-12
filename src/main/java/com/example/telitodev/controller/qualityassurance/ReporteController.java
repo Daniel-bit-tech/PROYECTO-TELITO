@@ -1,14 +1,9 @@
 package com.example.telitodev.controller.qualityassurance;
 
 import com.example.telitodev.controller.BaseController;
-import com.example.telitodev.entity.Api;
-import com.example.telitodev.entity.Evidencia;
-import com.example.telitodev.entity.Reporte;
-import com.example.telitodev.entity.Usuario; // <-- Importa la clase Usuario
-import com.example.telitodev.repository.ApiRepository;
-import com.example.telitodev.repository.EvidenciaRepository;
-import com.example.telitodev.repository.ReporteRepository;
-import com.example.telitodev.repository.UsuarioRepository; // <-- Importa el repositorio de Usuario
+import com.example.telitodev.entity.*;
+import com.example.telitodev.repository.*;
+import com.example.telitodev.repository.po.ActividadRecienteRepository;
 import com.example.telitodev.service.ApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -48,6 +43,12 @@ public class ReporteController extends BaseController {
 
     @Autowired
     private EvidenciaRepository evidenciaRepository;
+
+    @Autowired
+    private NotificacionRepository notificacionRepository;
+
+    @Autowired
+    private ActividadRecienteRepository actividadRecienteRepository;
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -232,7 +233,21 @@ public class ReporteController extends BaseController {
             }
         }
 
-            return "redirect:/qa/reportes";
+        // Crear la notificación
+        Notificacion notif = new Notificacion();
+        notif.setMensaje("Se ha creado un nuevo reporte para la API: " + reporte.getApi().getNombre());
+        notif.setLeido(false);
+        notif.setFecha(new Timestamp(System.currentTimeMillis()));
+        notif.setUsuario(usuario); // propietario de la API
+        notificacionRepository.save(notif);
+
+        ActividadReciente actividad = new ActividadReciente();
+        actividad.setTitulo("Nuevo Reporte");
+        actividad.setDescripcion("Has creado un reporte para la api " + reporte.getApi().getNombre());
+        actividad.setUsuario(usuario);
+        actividadRecienteRepository.save(actividad);
+
+        return "redirect:/qa/reportes";
     }
 
 }
