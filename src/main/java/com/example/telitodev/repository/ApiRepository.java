@@ -75,4 +75,30 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
                                            @Param("nombre") String nombre,
                                            @Param("dominios") List<String> dominios,
                                            @Param("tags") List<String> tags);
+
+    /* ===== CONSULTAS ADICIONALES PARA ADMIN DASHBOARD ===== */
+    
+    /**
+     * Cuenta APIs por entorno
+     */
+    @Query(value = "SELECT COUNT(DISTINCT a.idAPI) FROM api a JOIN apihasentorno ahe ON a.idAPI = ahe.idAPI WHERE ahe.idEntorno = :idEntorno", nativeQuery = true)
+    long countByEntorno(@Param("idEntorno") Integer idEntorno);
+    
+    /**
+     * Obtiene distribución de APIs por dominio
+     */
+    @Query("SELECT d.nombre, COUNT(a) FROM Api a JOIN a.dominio d GROUP BY d.nombre ORDER BY COUNT(a) DESC")
+    List<Object[]> getApiDistributionByDomain();
+    
+    /**
+     * Obtiene distribución de APIs por tag
+     */
+    @Query("SELECT t.nombre, COUNT(a) FROM Api a JOIN a.tag t GROUP BY t.nombre ORDER BY COUNT(a) DESC")
+    List<Object[]> getApiDistributionByTag();
+    
+    /**
+     * Obtiene APIs creadas en los últimos días
+     */
+    @Query(value = "SELECT COUNT(*) FROM api WHERE fechaCreacion >= DATE_SUB(NOW(), INTERVAL :days DAY)", nativeQuery = true)
+    long countApisCreatedInLastDays(@Param("days") int days);
 }

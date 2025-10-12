@@ -6,4 +6,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EntornoRepository extends JpaRepository<Entorno, Integer> {
+    
+    /**
+     * Encuentra entorno por nombre
+     */
+    Entorno findByNombre(String nombre);
 }
+
