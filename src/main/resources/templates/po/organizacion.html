@@ -82,14 +82,14 @@
             font-size: 1rem;
         }
 
-        .apis-list, .members-list {
+        .apis-list, .members-list, .projects-list {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
             margin-top: 0.5rem;
         }
 
-        .api-tag, .member-tag {
+        .api-tag, .member-tag, .project-tag {
             padding: 0.5rem 1rem;
             background-color: var(--tblr-bg-surface-secondary);
             border-radius: 4px;
@@ -105,6 +105,10 @@
 
         .member-tag {
             border-left: 3px solid var(--tblr-success);
+        }
+
+        .project-tag {
+            border-left: 3px solid var(--tblr-warning);
         }
 
         .action-section {
@@ -172,6 +176,19 @@
             color: var(--tblr-secondary-color);
             font-size: 0.875rem;
         }
+
+        .member-role {
+            color: var(--tblr-secondary-color);
+            font-size: 0.75rem;
+            margin-left: 0.25rem;
+        }
+
+        .no-data {
+            color: var(--tblr-secondary-color);
+            font-style: italic;
+            padding: 1rem;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -182,72 +199,53 @@
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
 
-    <header th:replace="desarrollador/header :: header"
+    <header th:replace="~{desarrollador/header :: header}"
             sec:authorize="hasRole('DEV')"></header>
-    <header th:replace="admin/header :: header"
+    <header th:replace="~{admin/header :: header}"
             sec:authorize="hasRole('SUPERADMIN')"></header>
-    <header th:replace="po/header_po :: header"
+    <header th:replace="~{po/header_po :: header}"
             sec:authorize="hasRole('PO')"></header>
-    <header th:replace="qa/header_qa :: header"
+    <header th:replace="~{qa/header_qa :: header}"
             sec:authorize="hasRole('QA')"></header>
 
     <div class="content">
         <div class="organization-container">
             <div class="organization-header">
-                <h1 class="organization-title">Mi Organización</h1>
-                <p class="organization-subtitle">Información general de tu organización y proyectos asociados</p>
-            </div>
-
-            <!-- Estadísticas rápidas -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-number" th:text="${organizacion.proyectos != null ? organizacion.proyectos.size() : 0}">5</div>
-                    <div class="stat-label">Proyectos Activos</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" th:text="${organizacion.apis != null ? organizacion.apis.size() : 0}">12</div>
-                    <div class="stat-label">APIs Asociadas</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" th:text="${organizacion.miembros != null ? organizacion.miembros.size() : 0}">8</div>
-                    <div class="stat-label">Miembros</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" th:text="${#temporals.format(organizacion.fechaCreacion, 'dd/MM/yyyy')}">15/08/2025</div>
-                    <div class="stat-label">Fecha de Creación</div>
-                </div>
+                <h1 class="organization-title">MI Organización</h1>
+                <p class="organization-subtitle">Información general de la organización y proyectos asociados</p>
             </div>
 
             <!-- Información de la organización -->
-            <div class="organization-info">
+            <div class="organization-info" th:if="${organizacion != null}">
                 <div class="info-grid">
                     <div>
                         <div class="info-section">
                             <h3 class="info-section-title">Información General</h3>
                             <div class="info-item">
-                                <span class="info-label">Nombre de la Organización</span>
+                                <span class="info-label">Nombre de la Organización:</span>
                                 <span class="info-value" th:text="${organizacion.nombre}">Telito Development Team</span>
                             </div>
                             <div class="info-item">
-                                <span class="info-label">Descripción</span>
+                                <span class="info-label">Descripción:</span>
                                 <span class="info-value" th:text="${organizacion.descripcion}">Equipo de desarrollo especializado en APIs y microservicios</span>
                             </div>
                             <div class="info-item">
-                                <span class="info-label">Fecha de Creación</span>
-                                <span class="info-value" th:text="${#temporals.format(organizacion.fechaCreacion, 'dd/MM/yyyy')}">15/08/2025</span>
+                                <span class="info-label">Fecha de Creación:</span>
+                                <!-- CORREGIDO: Formato simple para java.sql.Date -->
+                                <span class="info-value" th:text="${organizacion.fechaCreacion}">15/08/2025</span>
                             </div>
                         </div>
 
                         <div class="info-section">
                             <h3 class="info-section-title">APIs de la Organización</h3>
-                            <div class="apis-list" th:if="${organizacion.apis != null and !organizacion.apis.isEmpty()}">
-                <span class="api-tag" th:each="api : ${organizacion.apis}">
-                  <i class="fas fa-code"></i>
-                  <span th:text="${api.nombre}">API Payment</span>
-                </span>
+                            <div class="apis-list" th:if="${not #lists.isEmpty(apis)}">
+                                <span class="api-tag" th:each="api : ${apis}">
+                                    <i class="fas fa-code"></i>
+                                    <span th:text="${api.nombre}">API Payment</span>
+                                </span>
                             </div>
-                            <div th:if="${organizacion.apis == null or organizacion.apis.isEmpty()}">
-                                <span class="text-muted">No hay APIs asociadas</span>
+                            <div class="no-data" th:if="${#lists.isEmpty(apis)}">
+                                No hay APIs asociadas a esta organización
                             </div>
                         </div>
                     </div>
@@ -255,31 +253,41 @@
                     <div>
                         <div class="info-section">
                             <h3 class="info-section-title">Miembros del Equipo</h3>
-                            <div class="members-list" th:if="${organizacion.miembros != null and !organizacion.miembros.isEmpty()}">
-                <span class="member-tag" th:each="miembro : ${organizacion.miembros}">
-                  <i class="fas fa-user"></i>
-                  <span th:text="${miembro.nombre + ' ' + miembro.apellido}">Juan Pérez</span>
-                  <small class="text-muted" th:text="'(' + ${miembro.rol} + ')'">(Desarrollador)</small>
-                </span>
+                            <div class="members-list" th:if="${not #lists.isEmpty(miembros)}">
+                                <span class="member-tag" th:each="miembro : ${miembros}">
+                                    <i class="fas fa-user"></i>
+                                    <span th:text="${miembro.nombre + ' ' + miembro.apellidoPaterno + ' ' + miembro.apellidoMaterno}">Juan Pérez</span>
+                                    <!-- CORREGIDO: Verificar si rol existe -->
+                                    <span class="member-role" th:if="${miembro.rol != null}" th:text="'(' + ${miembro.rol.nombreRol} + ')'">(Desarrollador)</span>
+                                    <span class="member-role" th:if="${miembro.rol == null}">(Sin rol)</span>
+                                </span>
                             </div>
-                            <div th:if="${organizacion.miembros == null or organizacion.miembros.isEmpty()}">
-                                <span class="text-muted">No hay miembros registrados</span>
+                            <div class="no-data" th:if="${#lists.isEmpty(miembros)}">
+                                No hay miembros en esta organización
                             </div>
                         </div>
 
                         <div class="info-section">
                             <h3 class="info-section-title">Proyectos Activos</h3>
-                            <div class="apis-list" th:if="${organizacion.proyectos != null and !organizacion.proyectos.isEmpty()}">
-                <span class="api-tag" th:each="proyecto : ${organizacion.proyectos}">
-                  <i class="fas fa-project-diagram"></i>
-                  <span th:text="${proyecto.nombre}">Portal Developer</span>
-                </span>
+                            <div class="projects-list" th:if="${not #lists.isEmpty(proyectosActivos)}">
+                                <span class="project-tag" th:each="proyecto : ${proyectosActivos}">
+                                    <i class="fas fa-project-diagram"></i>
+                                    <span th:text="${proyecto.nombre}">Portal Developer</span>
+                                </span>
                             </div>
-                            <div th:if="${organizacion.proyectos == null or organizacion.proyectos.isEmpty()}">
-                                <span class="text-muted">No hay proyectos activos</span>
+                            <div class="no-data" th:if="${#lists.isEmpty(proyectosActivos)}">
+                                No hay proyectos activos
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Mensaje si no hay organización -->
+            <div class="organization-info" th:if="${organizacion == null}">
+                <div class="text-center">
+                    <h3>No perteneces a ninguna organización</h3>
+                    <p class="text-muted">Contacta con un administrador para ser asignado a una organización.</p>
                 </div>
             </div>
 
@@ -290,7 +298,7 @@
                     Solicita acceso para nuevos desarrolladores o QA que necesiten trabajar en los proyectos de esta organización.
                     El superadministrador revisará y aprobará la solicitud.
                 </p>
-                <a th:href="@{/organizacion/solicitud-acceso}" class="btn-solicitud">
+                <a th:href="@{/po/solicitudAcceso}" class="btn-solicitud">
                     <i class="fas fa-user-plus"></i>
                     Solicitar Acceso para Nuevo Miembro
                 </a>
@@ -298,7 +306,7 @@
         </div>
     </div>
 
-    <div id="footer-placeholder"></div>
+    <div th:replace="~{po/footer.html :: footer}"></div>
 </div>
 
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>

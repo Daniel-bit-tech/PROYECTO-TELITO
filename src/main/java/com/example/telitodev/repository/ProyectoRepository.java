@@ -2,6 +2,7 @@ package com.example.telitodev.repository;
 
 import com.example.telitodev.entity.Proyecto;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -25,5 +26,14 @@ public interface ProyectoRepository extends JpaRepository<Proyecto, Integer> {
 
     List<Proyecto> findByPublico(Boolean publico);
     List<Proyecto> findByActivo(Boolean activo);
+
+
+    // Para obtener proyectos activos de una organización específica
+    @Query("SELECT p FROM Proyecto p WHERE p.organizacion.idOrganizacion = :organizacionId AND p.activo = true")
+    List<Proyecto> findProyectosActivosByOrganizacionId(@Param("organizacionId") Integer organizacionId);
+
+    // Para obtener proyectos con sus APIs cargadas
+    @Query("SELECT p FROM Proyecto p LEFT JOIN FETCH p.proyectoHasApis pha LEFT JOIN FETCH pha.api WHERE p.organizacion.idOrganizacion = :organizacionId")
+    List<Proyecto> findByOrganizacionIdWithApis(@Param("organizacionId") Integer organizacionId);
 
 }

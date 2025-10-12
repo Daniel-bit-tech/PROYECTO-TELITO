@@ -52,11 +52,17 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
             "(:correo IS NULL OR LOWER(u.correo) LIKE LOWER(CONCAT('%', :correo, '%'))) AND " +
             "(:nombreRol IS NULL OR u.rol.nombreRol = :nombreRol) AND " +
             "(:estado IS NULL OR u.estado = :estado)")
+
     Page<Usuario> findByFiltros(@Param("nombre") String nombre,
                                 @Param("correo") String correo,
                                 @Param("nombreRol") String nombreRol,
                                 @Param("estado") Boolean estado,
                                 Pageable pageable);
 
+    // Nuevo
+
+        // Para obtener usuarios de una organización con sus roles cargados
+        @Query("SELECT u FROM Usuario u LEFT JOIN FETCH u.rol WHERE u.organizacion.idOrganizacion = :organizacionId")
+        List<Usuario> findByOrganizacionIdWithRol(@Param("organizacionId") Integer organizacionId);
 
 }
