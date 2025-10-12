@@ -976,7 +976,7 @@ public class AdminUsuarioController extends BaseController {
                 return ResponseEntity.badRequest().body("Error al iniciar la impersonación");
             }
             
-            String redirectUrl = getRedirectUrlForRole(usuario.getRol().getNombreRol());
+            String redirectUrl = getRedirectUrlForRole(usuario.getRol().getNombreRol()).replace("redirect:", "");
             System.out.println("🔄 Redirigiendo a: " + redirectUrl);
             
             return ResponseEntity.ok(Map.of(
@@ -1814,26 +1814,6 @@ public class AdminUsuarioController extends BaseController {
         }
         
         return request.getRemoteAddr();
-    }
-
-    /**
-     * Obtener URL de redirección según el rol
-     */
-    private String getRedirectUrlForRole(String roleName) {
-        switch (roleName.toUpperCase()) {
-            case "SUPERADMIN":
-                return "/admin/home";
-            case "DEVELOPER":
-            case "DEV":
-                return "/dev/home";
-            case "QA":
-                return "/qa/home";
-            case "PO":
-            case "PRODUCT_OWNER":
-                return "/po/home";
-            default:
-                return "/dev/home";
-        }
     }
 
     /**

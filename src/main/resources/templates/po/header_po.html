@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telito Developer Portal</title>
+    
+    <!-- Control de caché y seguridad -->
+    <div th:replace="~{components/security-cache-control :: security-cache-control}"></div>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -299,7 +302,7 @@
 
                     <li class="nav-item">
                         <a class="nav-link" href="/po/home">
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                <span class="nav-link-icon">
                   <i class="fas fa-home"></i>
                 </span>
                             <span class="nav-link-title">Inicio</span>
@@ -308,7 +311,7 @@
 
                     <li class="nav-item">
                         <a class="nav-link" href="/po/catalogo">
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                <span class="nav-link-icon">
                   <i class="fas fa-file-alt"></i>
                 </span>
                             <span class="nav-link-title">Catalogo</span>
@@ -324,7 +327,7 @@
                     <!--                    </li>-->
                     <li class="nav-item">
                         <a class="nav-link" href="/po/KPIs">
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                <span class="nav-link-icon">
                   <i class="fas fa-chart-bar"></i>
                 </span>
                             <span class="nav-link-title">Metricas</span>
@@ -332,7 +335,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/po/solicitudes">
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                <span class="nav-link-icon">
                   <i class="fas fa-envelope"></i>
                 </span>
                             <span class="nav-link-title">Bandeja de Solicitudes</span>
@@ -341,7 +344,7 @@
 
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/po/proyectos}">
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                <span class="nav-link-icon">
                   <i class="fas fa-folder"></i>
                 </span>
                             <span class="nav-link-title">Proyectos</span>
@@ -350,7 +353,7 @@
 
                     <li class="nav-item">
                         <a class="nav-link" href="/po/backlog">
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                <span class="nav-link-icon">
                   <i class="fas fa-tasks"></i>
                 </span>
                             <span class="nav-link-title">Backlog</span>
@@ -358,7 +361,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/po/feedback">
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                <span class="nav-link-icon">
                   <i class="fas fa-comment-dots"></i>
                 </span>
                             <span class="nav-link-title">Feedback</span>
@@ -366,7 +369,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/po/roadmap">
-                <span class="nav-link-icon d-md-none d-lg-inline-block">
+                <span class="nav-link-icon">
                   <i class="fas fa-road"></i>
                 </span>
                             <span class="nav-link-title">Roadmap</span>
