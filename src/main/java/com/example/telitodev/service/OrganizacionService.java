@@ -5,6 +5,7 @@ import com.example.telitodev.entity.Organizacion;
 import com.example.telitodev.repository.OrganizacionRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -16,39 +17,30 @@ public class OrganizacionService {
         this.organizacionRepository = organizacionRepository;
     }
 
-    public Organizacion obtenerOrganizacionPorUsuario(String dniUsuario) {
-        return organizacionRepository.findByUsuarioDni(dniUsuario);
+    // Nuevo para buscar organización por ID (útil para la vista "Solicitudes de Acceso" del PO)
+
+    public Optional<Organizacion> obtenerOrganizacionPorId(Integer id) {
+        return organizacionRepository.findById(id);
     }
 
-    public OrganizacionStatsDTO obtenerEstadisticasOrganizacion(Integer idOrganizacion) {
-        Optional<Organizacion> organizacionOpt = organizacionRepository.findById(idOrganizacion);
-
-        if (organizacionOpt.isPresent()) {
-            Organizacion organizacion = organizacionOpt.get();
-
-            // Calcular estadísticas
-            Long proyectosActivos = organizacion.getProyectos().stream()
-                    .filter(proyecto -> Boolean.TRUE.equals(proyecto.getActivo()))
-                    .count();
-
-            Long miembros = (long) organizacion.getUsuarios().size();
-
-            Long apisAsociadas = organizacion.getProyectos().stream()
-                    .flatMap(proyecto -> proyecto.getProyectoHasApis().stream())
-                    .map(proyectoHasApi -> proyectoHasApi.getApi().getIdApi())
-                    .distinct()
-                    .count();
-
-            return new OrganizacionStatsDTO(
-                    organizacion.getNombre(),
-                    organizacion.getDescripcion(),
-                    organizacion.getFechaCreacion(),
-                    proyectosActivos,
-                    apisAsociadas,
-                    miembros
-            );
-        }
-
-        return null;
+    public List<Organizacion> obtenerTodasOrganizacionesOrdenadas() {
+        return organizacionRepository.findAllOrderByNombre();
     }
+
+    public Optional<Organizacion> obtenerOrganizacionPorNombre(String nombre) {
+        return organizacionRepository.findByNombre(nombre);
+    }
+
+    public boolean existeOrganizacionPorNombre(String nombre) {
+        return organizacionRepository.existsByNombre(nombre);
+    }
+
+    public List<Organizacion> obtenerOrganizacionesPorIds(List<Integer> ids) {
+        return organizacionRepository.findByIdOrganizacionIn(ids);
+    }
+
+    public List<Object[]> obtenerEstadisticasUsuariosPorOrganizacion() {
+        return organizacionRepository.countUsuariosPorOrganizacion();
+    }
+
 }

@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -16,6 +17,7 @@
     <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Tus estilos existentes se mantienen igual */
         .solicitud-container {
             max-width: 800px;
             margin: 0 auto;
@@ -146,10 +148,46 @@
             background-color: var(--tblr-bg-surface-secondary);
         }
 
+        .btn-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
         .alert {
             padding: 1rem;
             border-radius: 4px;
             margin-bottom: 1.5rem;
+        }
+
+        .alert-success {
+            background-color: rgba(40, 167, 69, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+
+        .alert-error {
+            background-color: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.2);
+            color: #856404;
         }
 
         .alert-info {
@@ -176,6 +214,57 @@
             color: var(--tblr-secondary-color);
         }
 
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--tblr-bg-surface);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            border: 1px solid var(--tblr-border-color);
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--tblr-primary);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--tblr-secondary-color);
+        }
+
+        .admin-link {
+            margin-bottom: 1.5rem;
+        }
+
+        .user-status {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .user-status.visible {
+            display: block;
+        }
+
+        .flujo-buttons {
+            display: none;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .flujo-buttons.visible {
+            display: flex;
+        }
+
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -189,6 +278,14 @@
             .btn {
                 justify-content: center;
                 width: 100%;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .flujo-buttons {
+                flex-direction: column;
             }
         }
     </style>
@@ -217,20 +314,40 @@
                 <p class="solicitud-subtitle">Completa el formulario para solicitar la integración de nuevos miembros</p>
             </div>
 
-            <!-- Información de la organización -->
-            <div class="organization-info">
-                <div class="info-row">
-                    <span class="info-label">Organización:</span>
-                    <span>Telito Development Team</span>
+            <!-- Mensajes de éxito/error -->
+            <div th:if="${success}" class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${success}">Solicitud enviada exitosamente</span>
+            </div>
+
+            <div th:if="${error}" class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}">Error al enviar solicitud</span>
+            </div>
+
+            <!-- Estadísticas del usuario -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${totalSolicitudes}">0</div>
+                    <div class="stat-label">Total Solicitudes</div>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Solicitante:</span>
-                    <span>Juan Pérez</span>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${solicitudesPendientes}">0</div>
+                    <div class="stat-label">Pendientes</div>
                 </div>
-                <div class="info-row">
-                    <span class="info-label">Fecha:</span>
-                    <span>20/11/2025</span>
+                <div class="stat-card">
+                    <div class="stat-number" th:text="${solicitudesAprobadas}">0</div>
+                    <div class="stat-label">Aprobadas</div>
                 </div>
+            </div>
+
+            <!-- Enlace para administradores -->
+            <div th:if="${esAdmin}" class="admin-link">
+                <a th:href="@{/po/gestionSolicitudes}" class="btn btn-outline">
+                    <i class="fas fa-cog"></i>
+                    Gestionar Solicitudes Pendientes
+                    <span th:if="${totalPendientesGlobal > 0}" class="badge bg-red" th:text="${totalPendientesGlobal}"></span>
+                </a>
             </div>
 
             <div class="alert alert-info">
@@ -238,41 +355,69 @@
                 La solicitud será enviada al superadministrador para su revisión y aprobación.
             </div>
 
-            <form class="solicitud-form" action="#" method="post">
+            <!-- Mensaje dinámico de estado del usuario -->
+            <div id="userStatus" class="user-status"></div>
+
+            <!-- Formulario dinámico -->
+            <form class="solicitud-form" th:action="@{/po/solicitudAcceso}" method="post" th:object="${solicitud}" id="solicitudForm">
                 <div class="form-section">
                     <h3 class="section-title">Información del Nuevo Miembro</h3>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label" for="nombres">Nombres *</label>
-                            <input type="text" class="form-control" id="nombres" name="nombres" required>
+                            <label class="form-label" for="nombre">Nombre *</label>
+                            <input type="text" class="form-control" id="nombre"
+                                   th:field="*{nombre}"
+                                   placeholder="Ingrese el nombre" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('nombre')}">
+                                <span th:errors="*{nombre}"></span>
+                            </div>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="apellidos">Apellidos *</label>
-                            <input type="text" class="form-control" id="apellidos" name="apellidos" required>
+                            <label class="form-label" for="apellido">Apellido *</label>
+                            <input type="text" class="form-control" id="apellido"
+                                   th:field="*{apellido}"
+                                   placeholder="Ingrese el apellido" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('apellido')}">
+                                <span th:errors="*{apellido}"></span>
+                            </div>
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label" for="email">Correo Electrónico *</label>
-                            <input type="email" class="form-control" id="email" name="email" required>
+                            <label class="form-label" for="correo">Correo Electrónico *</label>
+                            <input type="email" class="form-control" id="correo"
+                                   th:field="*{correo}"
+                                   placeholder="ejemplo@correo.com" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('correo')}">
+                                <span th:errors="*{correo}"></span>
+                            </div>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label" for="dni">DNI *</label>
-                            <input type="text" class="form-control" id="dni" name="dni" pattern="[0-9]{8}" maxlength="8" required>
+                            <input type="text" class="form-control" id="dni"
+                                   th:field="*{dni}"
+                                   pattern="[0-9]{8}" maxlength="8"
+                                   placeholder="12345678" required>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('dni')}">
+                                <span th:errors="*{dni}"></span>
+                            </div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="rol">Rol del Usuario *</label>
-                        <select class="form-select" id="rol" name="rol" required>
-                            <option value="">Seleccionar rol...</option>
-                            <option value="DEV">Desarrollador</option>
-                            <option value="QA">Quality Assurance</option>
-                            <option value="PO">Product Owner</option>
+                        <label class="form-label" for="idOrganizacionDestino">Organización Destino *</label>
+                        <select class="form-select" id="idOrganizacionDestino"
+                                name="idOrganizacionDestino" required>
+                            <option value="">Seleccionar organización...</option>
+                            <option th:each="org : ${organizaciones}"
+                                    th:value="${org.idOrganizacion}"
+                                    th:text="${org.nombre}">
+                                Organización
+                            </option>
                         </select>
                     </div>
                 </div>
@@ -281,41 +426,62 @@
                     <h3 class="section-title">Detalles de la Solicitud</h3>
 
                     <div class="form-group">
-                        <label class="form-label" for="proyectos">Proyectos Asociados</label>
-                        <select class="form-select" id="proyectos" name="proyectos" multiple>
-                            <option value="1">Portal Developer</option>
-                            <option value="2">Mobile App</option>
-                            <option value="3">Backend Services</option>
-                            <option value="4">API Gateway</option>
-                        </select>
-                        <small class="text-muted">Mantén presionada la tecla Ctrl para seleccionar múltiples proyectos</small>
+                        <label class="form-label" for="detallesSolicitud">Detalles Adicionales</label>
+                        <textarea class="form-control form-textarea" id="detallesSolicitud"
+                                  th:field="*{detallesSolicitud}"
+                                  placeholder="Información adicional sobre la solicitud..."></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="motivo">Motivo de la Integración *</label>
-                        <textarea class="form-control form-textarea" id="motivo" name="motivo"
-                                  placeholder="Describe por qué necesitas integrar a este nuevo miembro al equipo..." required></textarea>
+                        <label class="form-label" for="motivoIntegracion">Motivo de la Integración *</label>
+                        <textarea class="form-control form-textarea" id="motivoIntegracion"
+                                  th:field="*{motivoIntegracion}"
+                                  placeholder="Describe por qué necesitas integrar a este nuevo miembro al equipo..."
+                                  required></textarea>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('motivoIntegracion')}">
+                            <span th:errors="*{motivoIntegracion}"></span>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label" for="responsabilidades">Responsabilidades Asignadas</label>
-                        <textarea class="form-control form-textarea" id="responsabilidades" name="responsabilidades"
-                                  placeholder="Describe las responsabilidades y tareas que tendrá el nuevo miembro..."></textarea>
+                        <label class="form-label" for="responsabilidades">Responsabilidades Asignadas *</label>
+                        <textarea class="form-control form-textarea" id="responsabilidades"
+                                  th:field="*{responsabilidades}"
+                                  placeholder="Describe las responsabilidades y tareas que tendrá el nuevo miembro..."
+                                  required></textarea>
+                        <div class="invalid-feedback" th:if="${#fields.hasErrors('responsabilidades')}">
+                            <span th:errors="*{responsabilidades}"></span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Botones de acción - Izquierda: Atrás, Derecha: Enviar -->
+                <!-- Botones de acción dinámicos -->
                 <div class="form-actions">
-                    <a href="/po/organizacion" class="btn btn-outline">
+                    <a th:href="@{/po/organizacion}" class="btn btn-outline">
                         <i class="fas fa-arrow-left"></i>
                         Atrás
                     </a>
-                    <button type="submit" class="btn btn-primary">
+
+                    <!-- Botón por defecto (se oculta cuando hay verificación) -->
+                    <button type="submit" class="btn btn-primary" id="defaultSubmit">
                         <i class="fas fa-paper-plane"></i>
                         Enviar Solicitud
                     </button>
+
+                    <!-- Botones dinámicos para los 3 casos -->
+                    <div id="flujoButtons" class="flujo-buttons">
+                        <!-- Se llenará dinámicamente con JavaScript -->
+                    </div>
                 </div>
             </form>
+
+            <!-- Enlace para ver historial -->
+            <div class="text-center mt-4">
+                <a th:href="@{/po/misSolicitudes}" class="btn btn-outline">
+                    <i class="fas fa-history"></i>
+                    Ver Historial de Solicitudes
+                </a>
+            </div>
         </div>
     </div>
 
@@ -324,5 +490,158 @@
 
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
 <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
+
+<script>
+    // Elementos del DOM
+    const dniInput = document.getElementById('dni');
+    const userStatus = document.getElementById('userStatus');
+    const flujoButtons = document.getElementById('flujoButtons');
+    const defaultSubmit = document.getElementById('defaultSubmit');
+    const solicitudForm = document.getElementById('solicitudForm');
+
+    // Validación del DNI
+    dniInput.addEventListener('input', function(e) {
+        this.value = this.value.replace(/[^0-9]/g, '');
+        if (this.value.length > 8) {
+            this.value = this.value.slice(0, 8);
+        }
+
+        // Verificar usuario cuando el DNI tenga 8 dígitos
+        if (this.value.length === 8) {
+            verificarUsuario(this.value);
+        } else {
+            resetearInterfaz();
+        }
+    });
+
+    // Función para verificar usuario en tiempo real
+    async function verificarUsuario(dni) {
+        try {
+            userStatus.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i> Verificando usuario...</div>';
+            userStatus.classList.add('visible');
+
+            const response = await fetch(`/po/verificarUsuario?dni=${dni}`);
+            const data = await response.json();
+
+            mostrarResultadoVerificacion(data, dni);
+
+        } catch (error) {
+            console.error('Error al verificar usuario:', error);
+            userStatus.innerHTML = '<div class="alert alert-error"><i class="fas fa-exclamation-circle"></i> Error al verificar usuario</div>';
+        }
+    }
+
+    // Función para mostrar los 3 casos
+    function mostrarResultadoVerificacion(data, dni) {
+        if (data.existe) {
+            if (data.tieneOrganizacion) {
+                // CASO 2: Usuario EXISTE + CON organización
+                userStatus.innerHTML = `
+                    <div class="alert alert-error">
+                        <i class="fas fa-times-circle"></i>
+                        <strong>❌ Usuario ya tiene organización</strong><br>
+                        El usuario <strong>${data.nombreCompleto}</strong> ya pertenece a una organización.
+                        No puede ser agregado a otra organización.
+                    </div>
+                `;
+                mostrarBotonDeshabilitado('Usuario ya tiene organización');
+
+            } else {
+                // CASO 1: Usuario EXISTE + SIN organización
+                userStatus.innerHTML = `
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>✅ Usuario encontrado</strong><br>
+                        <strong>${data.nombreCompleto}</strong> puede ser agregado a la organización.
+                    </div>
+                `;
+                mostrarBotonSolicitarAcceso();
+            }
+        } else {
+            // CASO 3: Usuario NO EXISTE
+            userStatus.innerHTML = `
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>⚠️ Usuario no registrado</strong><br>
+                    El DNI <strong>${dni}</strong> no está registrado en el sistema.
+                    El usuario debe registrarse primero.
+                </div>
+            `;
+            mostrarBotonRegistrarUsuario();
+        }
+    }
+
+    // Funciones para mostrar botones según el caso
+    function mostrarBotonSolicitarAcceso() {
+        defaultSubmit.style.display = 'none';
+        flujoButtons.innerHTML = `
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-user-plus"></i>
+                Solicitar Acceso a Organización
+            </button>
+        `;
+        flujoButtons.classList.add('visible');
+    }
+
+    function mostrarBotonRegistrarUsuario() {
+        defaultSubmit.style.display = 'none';
+        flujoButtons.innerHTML = `
+            <a href="/admin/registrarUsuario" class="btn btn-primary">
+                <i class="fas fa-user-plus"></i>
+                Registrar Usuario Primero
+            </a>
+            <button type="button" class="btn btn-outline" onclick="resetearInterfaz()">
+                <i class="fas fa-times"></i>
+                Cancelar
+            </button>
+        `;
+        flujoButtons.classList.add('visible');
+    }
+
+    function mostrarBotonDeshabilitado(mensaje) {
+        defaultSubmit.style.display = 'none';
+        flujoButtons.innerHTML = `
+            <button type="button" class="btn btn-danger" disabled>
+                <i class="fas fa-ban"></i>
+                ${mensaje}
+            </button>
+            <button type="button" class="btn btn-outline" onclick="resetearInterfaz()">
+                <i class="fas fa-times"></i>
+                Cancelar
+            </button>
+        `;
+        flujoButtons.classList.add('visible');
+    }
+
+    function resetearInterfaz() {
+        userStatus.innerHTML = '';
+        userStatus.classList.remove('visible');
+        flujoButtons.innerHTML = '';
+        flujoButtons.classList.remove('visible');
+        defaultSubmit.style.display = 'inline-flex';
+    }
+
+    // Validación del formulario antes de enviar
+    solicitudForm.addEventListener('submit', function(e) {
+        const dni = document.getElementById('dni').value;
+        if (dni.length !== 8) {
+            e.preventDefault();
+            alert('El DNI debe tener exactamente 8 dígitos');
+            return false;
+        }
+
+        const email = document.getElementById('correo').value;
+        if (!isValidEmail(email)) {
+            e.preventDefault();
+            alert('Por favor ingrese un correo electrónico válido');
+            return false;
+        }
+    });
+
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+</script>
 </body>
 </html>

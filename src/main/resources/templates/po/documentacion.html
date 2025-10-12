@@ -95,8 +95,8 @@
                             <p class="text-white-80 mb-0" th:text="${api.descripcion}">API Description</p>
                         </div>
                         <div class="col-auto">
-                            <span th:if="${!#lists.isEmpty(api.estadosApi)}" class="sla-badge" th:text="${api.estadosApi[0].nombreEstado}">PRODUCCION</span>
-                            <span th:if="${#lists.isEmpty(api.estadosApi)}" class="sla-badge">PRODUCCION</span>
+                            <span th:if="${api.estadoApi != null}" class="sla-badge" th:text="${api.estadoApi.estado}">PRODUCCION</span>
+                            <span th:if="${api.estadoApi == null}" class="sla-badge">PRODUCCION</span>
                         </div>
                     </div>
                 </div>
