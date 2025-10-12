@@ -35,6 +35,8 @@ public class IssueController extends BaseController {
     private ComentarioRepository comentarioRepository;
     @Autowired
     private AdjuntoRepository adjuntoRepository;
+    @Autowired
+    private EvidenciaRepository evidenciaRepository;
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -102,6 +104,11 @@ public class IssueController extends BaseController {
             model.addAttribute("error", "Issue no encontrado");
             return "errorPage";  // Redirige a una página de error personalizada
         }
+
+        // Recuperar evidencias asociadas al Reporte del Issue
+        Reporte reporte = issue.getReporte();
+        List<Evidencia> evidencias = evidenciaRepository.findByReporteIdReporte(reporte.getIdReporte());
+        model.addAttribute("evidencias", evidencias);
 
         // Recuperar los comentarios relacionados con este Issue
         List<Comentario> comentarios = issue.getComentarios();

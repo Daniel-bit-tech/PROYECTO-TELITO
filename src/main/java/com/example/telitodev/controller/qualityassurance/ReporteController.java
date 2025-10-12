@@ -1,10 +1,15 @@
 package com.example.telitodev.controller.qualityassurance;
 
 import com.example.telitodev.controller.BaseController;
+import com.example.telitodev.entity.Api;
+import com.example.telitodev.entity.Evidencia;
 import com.example.telitodev.entity.Reporte;
 import com.example.telitodev.entity.Usuario; // <-- Importa la clase Usuario
+import com.example.telitodev.repository.ApiRepository;
+import com.example.telitodev.repository.EvidenciaRepository;
 import com.example.telitodev.repository.ReporteRepository;
 import com.example.telitodev.repository.UsuarioRepository; // <-- Importa el repositorio de Usuario
+import com.example.telitodev.service.ApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
@@ -12,12 +17,16 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.servlet.http.HttpSession;
 
+import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -30,6 +39,17 @@ public class ReporteController extends BaseController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private ApiService apiService;
+
+    @Autowired
+    private ApiRepository apiRepository;
+
+    @Autowired
+    private EvidenciaRepository evidenciaRepository;
+
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
     @GetMapping("/reportes")
     public String showReportesView(Model model,
@@ -103,9 +123,116 @@ public class ReporteController extends BaseController {
             return "redirect:/qa/reportes?error=Reporte no encontrado";
         }
 
+        // Obtener las evidencias asociadas al reporte
+        List<Evidencia> evidencias = evidenciaRepository.findByReporte(reporte);
+
+
         // Agregar el reporte al modelo
         model.addAttribute("reporte", reporte);
+        model.addAttribute("evidencias", evidencias);
 
         return "qa/reporteDetalle";
     }
+
+    @GetMapping("/crearReporte")
+    public String madeReport(Model model, Authentication auth, HttpSession session){
+        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+
+        List<Api> apis = apiService.getAllApis();
+        model.addAttribute("apis", apis);
+
+        // Lista de estados para el combobox
+        List<String> estados = List.of("Aprobado", "Fallido");
+        model.addAttribute("estadosReporte", estados);
+
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+
+        model.addAttribute("usuario", usuario);
+
+        return "qa/reporteRealizar";
+    }
+
+    @PostMapping("/guardarReporte")
+    public String submitReporte(@RequestParam("apiId") Integer apiId,
+                                    @RequestParam("estado") String estado,
+                                    @RequestParam("descripcion") String descripcion,
+                                    @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
+                                    Model model,
+                                    Authentication auth,
+                                    HttpSession session) {
+
+            Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+
+            // Validación de longitud de descripción
+            if (descripcion.length() > 200) {
+                model.addAttribute("errorDescripcion", "La descripción no puede superar los 200 caracteres.");
+
+                // Volvemos a cargar los atributos necesarios
+                List<Api> apis = apiService.getAllApis();
+                model.addAttribute("apis", apis);
+
+                List<String> estados = List.of("Aprobado", "Fallido");
+                model.addAttribute("estadosReporte", estados);
+
+                addImpersonationAttributes(model, session);
+                model.addAttribute("usuario", usuario);
+
+                return "qa/reporteRealizar"; // Regresamos al mismo formulario
+            }
+
+        // Crear y guardar el reporte
+        Reporte reporte = new Reporte();
+        reporte.setApi(apiRepository.findById(apiId).orElseThrow(() -> new RuntimeException("API no encontrada")));
+        reporte.setEstado(estado);
+        reporte.setDescripcion(descripcion);
+        reporte.setFechaCreacion(new Timestamp(System.currentTimeMillis()));
+
+        reporteRepository.save(reporte);
+
+        // Procesar archivos como Evidencias
+        if (archivos != null && archivos.length > 0) {
+            archivos = Arrays.stream(archivos)
+                    .filter(file -> !file.isEmpty())
+                    .toArray(MultipartFile[]::new);
+
+            if (archivos.length > 5) {
+                model.addAttribute("errorArchivos", "Máximo 5 archivos permitidos.");
+                return "qa/reporteRealizar";
+            }
+
+            for (MultipartFile archivo : archivos) {
+                if (archivo.getSize() > MAX_FILE_SIZE) {
+                    model.addAttribute("error", "El archivo es demasiado grande");
+                    return "qa/reporteRealizar";
+                }
+
+                String contentType = archivo.getContentType();
+                if (!contentType.equals("image/png") &&
+                        !contentType.equals("image/jpeg") &&
+                        !contentType.equals("text/plain")) {
+                    model.addAttribute("errorArchivos", "Solo se permiten archivos .png, .jpg, .log");
+                    return "qa/reporteRealizar";
+                }
+
+                try {
+                    Evidencia evidencia = new Evidencia();
+                    evidencia.setNombre(archivo.getOriginalFilename());
+                    evidencia.setEvidencia(archivo.getBytes());
+                    evidencia.setDescripcion("Adjunto del reporte"); // Puedes hacer un input para descripción individual
+                    evidencia.setReporte(reporte);
+
+                    evidenciaRepository.save(evidencia);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    model.addAttribute("errorArchivos", "Error al guardar el archivo: " + archivo.getOriginalFilename());
+                    return "qa/reporteRealizar";
+                }
+            }
+        }
+
+            return "redirect:/qa/reportes";
+    }
+
 }

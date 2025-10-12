@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-  <title>TELITO DEVELOPER PORTAL | Catálogo de APIs</title>
+  <title>TELITO DEVELOPER PORTAL | Crear Reporte</title>
   <!-- BEGIN GLOBAL MANDATORY STYLES -->
   <link href="/tabler/dist/css/tabler.css?1757307617" rel="stylesheet" />
   <!-- END GLOBAL MANDATORY STYLES -->
@@ -19,6 +19,7 @@
   <!-- BEGIN DEMO STYLES -->
   <link href="/tabler/preview/css/demo.css?1757307617" rel="stylesheet" />
   <link href="/tabler/preview/css/demo.css?1757307616" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <!-- END DEMO STYLES -->
   <!-- BEGIN CUSTOM FONT -->
   <style>
@@ -41,7 +42,7 @@
         <div class="row g-2 align-items-center">
 
           <div class="col" >
-            <h2>API 1</h2>
+            <h2>Crear reporte</h2>
           </div>
 
         </div>
@@ -56,56 +57,54 @@
                 <div class="col-12">
                   <div class="card">
                     <div class="card-header">
-                      <h3 class="card-title">Crear reporte</h3>
+                      <h3 class="card-title">Genera un reporte después de validar una API</h3>
                     </div>
                     <div class="card-body">
-                      <form>
+                      <form method="POST" th:action="@{/qa/guardarReporte}" enctype="multipart/form-data">
                         <div class="space-y">
-                          <div>
-                            <label class="form-label"> Versión </label>
-                            <input type="text" value="2.1" disabled class="form-control" />
+                          <!-- Campo oculto para el ID del reporte -->
+
+
+                          <div class="form-group">
+                            <label class="form-label">API o recurso</label>
+                            <select class="form-select" name="apiId" required>
+                              <option value="">Selecciona una API o recurso</option>
+                              <option th:each="api : ${apis}" th:value="${api.idApi}" th:text="${api.nombre}"></option>
+                            </select>
                           </div>
-                          <div>
-                            <label class="form-label"> Estado </label>
-                            <input type="text" value="Fallido" class="form-control" />
+
+                          <div class="form-group">
+                            <label class="form-label">Estado del reporte</label>
+                            <select class="form-select" name="estado" required>
+                              <option value="">Selecciona el estado del reporte</option>
+                              <option th:each="estado : ${estadosReporte}"
+                                      th:value="${estado}"
+                                      th:text="${estado}">
+                              </option>
+                            </select>
                           </div>
-                          <div>
+
+                          <div class="form-group">
                             <label class="form-label"> Descripción </label>
-                            <textarea placeholder="Ingresa una descripcion" rows="6" class="form-control"></textarea>
+                            <textarea name="descripcion" placeholder="Ingresa una descripcion" rows="6" class="form-control"></textarea>
+                            <div th:if="${errorDescripcion}" class="text-danger mt-1" th:text="${errorDescripcion}"></div>
                           </div>
-                          <div>
-                            <label class="form-label">Evidencia</label>
-                            <input
-                                    type="file"
-                                    name="adjuntos"
-                                    id="adjuntos"
-                                    class="form-control"
-                                    multiple
-                                    accept=".pdf,.doc,.docx,.xls,.xlsx,image/*" />
-                            <div class="form-hint">.</div>
-                            <ul id="preview" class="small mt-2 list-unstyled"></ul>
+                          <div class="form-group">
+                            <label for="archivo" class="form-label">Adjuntar archivo (opcional):</label>
+                            <input type="file" id="archivo" name="archivos" class="form-control" accept=".png, .jpg, .jpeg, .log" multiple />
+                            <small>Máximo 5 archivos</small>
                           </div>
+                          <div id="error-message" style="color: red; display: none;">Solo se permiten archivos de tipo .png, .jpg, .jpeg o .log</div>
                           <div>
-                            <a href="1-catalogo.html" class="btn btn-primary btn-4 w-100">
+                            <button type="submit" onclick="return validateFiles()" class="btn btn-primary btn-4 w-100">
                               Generar reporte
-                              <!-- Download SVG icon from http://tabler.io/icons/icon/arrow-right -->
-                              <svg
-                                      xmlns="http://www.w3.org/2000/svg"
-                                      width="24"
-                                      height="24"
-                                      viewBox="0 0 24 24"
-                                      fill="none"
-                                      stroke="currentColor"
-                                      stroke-width="2"
-                                      stroke-linecap="round"
-                                      stroke-linejoin="round"
-                                      class="icon icon-end icon-2"
-                              >
+                              <!-- Icono para el botón -->
+                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-end icon-2">
                                 <path d="M5 12l14 0" />
                                 <path d="M13 18l6 -6" />
                                 <path d="M13 6l6 6" />
                               </svg>
-                            </a>
+                            </button>
                           </div>
                         </div>
                       </form>
@@ -117,15 +116,12 @@
           </div>
         </div>
       </div>
-
-
       <!-- END PAGE BODY -->
       <!--  BEGIN FOOTER  -->
       <div th:replace="qa/footer.html :: footer"></div>
       <!--  END FOOTER  -->
     </div>
   </div>
-
   <!-- BEGIN GLOBAL MANDATORY SCRIPTS -->
   <script src="/tabler/dist/js/tabler.min.js?1757307617" defer></script>
   <!-- END GLOBAL MANDATORY SCRIPTS -->
@@ -183,6 +179,26 @@
       });
       checkItems();
     });
+  </script>
+  <script>
+    function validateFiles() {
+      const fileInput = document.getElementById("archivo");
+      const files = fileInput.files;
+      const allowedTypes = ["image/png", "image/jpeg", "text/plain"]; // Tipos de archivo permitidos
+
+      // Limpiar cualquier mensaje de error previo
+      document.getElementById("error-message").style.display = "none";
+
+      for (let i = 0; i < files.length; i++) {
+        if (!allowedTypes.includes(files[i].type)) {
+          // Si el archivo no tiene un tipo permitido, mostramos un mensaje de error
+          document.getElementById("error-message").style.display = "block";
+          return false; // Evita que el formulario se envíe
+        }
+      }
+
+      return true; // Si todos los archivos son válidos, el formulario se envía
+    }
   </script>
   <!-- END PAGE SCRIPTS -->
 </body>
