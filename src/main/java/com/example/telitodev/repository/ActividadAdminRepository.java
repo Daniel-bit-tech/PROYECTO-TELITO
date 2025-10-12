@@ -4,9 +4,11 @@ import com.example.telitodev.entity.ActividadAdmin;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -109,4 +111,29 @@ public interface ActividadAdminRepository extends JpaRepository<ActividadAdmin, 
      */
     @Query("SELECT DATE(a.fechaHora) as fecha, COUNT(a) as total FROM ActividadAdmin a WHERE a.fechaHora >= :fechaInicio GROUP BY DATE(a.fechaHora) ORDER BY fecha DESC")
     List<Object[]> getActividadesPorDia(@Param("fechaInicio") LocalDateTime fechaInicio);
+    
+    /**
+     * Elimina todas las actividades relacionadas con un usuario específico
+     * @param usuarioAfectadoDni DNI del usuario afectado
+     */
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM ActividadAdmin a WHERE a.usuarioAfectadoDni = :usuarioAfectadoDni")
+    void deleteByUsuarioAfectadoDni(@Param("usuarioAfectadoDni") String usuarioAfectadoDni);
+    
+    /**
+     * Elimina todas las actividades relacionadas con un usuario específico usando SQL nativo
+     * @param usuarioAfectadoDni DNI del usuario afectado
+     */
+    @Modifying
+    @Transactional
+    @Query(value = "DELETE FROM actividad_admin WHERE usuario_afectado_dni = :usuarioAfectadoDni", nativeQuery = true)
+    void deleteByUsuarioAfectadoDniNative(@Param("usuarioAfectadoDni") String usuarioAfectadoDni);
+    
+    /**
+     * Cuenta las actividades relacionadas con un usuario específico
+     * @param usuarioAfectadoDni DNI del usuario afectado
+     * @return número de actividades relacionadas
+     */
+    long countByUsuarioAfectadoDni(String usuarioAfectadoDni);
 }
