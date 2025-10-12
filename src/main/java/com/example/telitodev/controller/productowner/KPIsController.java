@@ -41,6 +41,16 @@ public class KPIsController extends BaseController {
         model.addAttribute("tasaExito", String.format("%.1f", metricsService.getSuccessRate()));
         model.addAttribute("tasaError", String.format("%.1f", metricsService.getErrorRate()));
 
+        // NUEVOS KPIs AVANZADOS
+        model.addAttribute("throughput", String.format("%.2f", metricsService.getCurrentThroughput()));
+        model.addAttribute("disponibilidad", String.format("%.2f", metricsService.getSystemAvailability()));
+        model.addAttribute("costoTotal", String.format("%.2f", metricsService.getTotalCost()));
+        
+        // Para tablas y listados
+        model.addAttribute("topApis", metricsService.getTopUsedApis());
+        model.addAttribute("costosApis", metricsService.getCostMetricsByApi());
+        model.addAttribute("usoEntornos", metricsService.getUsageByEnvironment());
+
         // Para tablas u otros listados (opcional)
         model.addAttribute("metricas", metricsService.getAllMetrics());
 
@@ -95,5 +105,42 @@ public class KPIsController extends BaseController {
     @ResponseBody
     public String ping() {
         return "ok";
+    }
+
+    /* ===== NUEVOS ENDPOINTS PARA KPIs AVANZADOS ===== */
+    
+    /** Throughput por hora (últimas 24h) */
+    @GetMapping("/KPIs/throughput-hour")
+    @ResponseBody
+    public MetricsService.ChartSeriesLongDTO getThroughputByHour() {
+        return metricsService.getThroughputByHour();
+    }
+    
+    /** Tendencia de latencia (últimos 7 días) */
+    @GetMapping("/KPIs/latency-trend")
+    @ResponseBody
+    public MetricsService.ChartSeriesDTO getLatencyTrend() {
+        return metricsService.getLatencyTrend();
+    }
+    
+    /** APIs más utilizadas */
+    @GetMapping("/KPIs/top-apis")
+    @ResponseBody
+    public java.util.List<MetricsService.TopApiDTO> getTopApis() {
+        return metricsService.getTopUsedApis();
+    }
+    
+    /** Métricas de costo por API */
+    @GetMapping("/KPIs/cost-metrics")
+    @ResponseBody
+    public java.util.List<MetricsService.CostApiDTO> getCostMetrics() {
+        return metricsService.getCostMetricsByApi();
+    }
+    
+    /** Distribución de uso por entorno */
+    @GetMapping("/KPIs/environment-usage")
+    @ResponseBody
+    public java.util.List<MetricsService.EnvironmentUsageDTO> getEnvironmentUsage() {
+        return metricsService.getUsageByEnvironment();
     }
 }

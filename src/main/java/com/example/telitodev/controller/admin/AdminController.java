@@ -31,6 +31,22 @@ public class AdminController extends BaseController {
     @Autowired
     private AuditoriaService auditoriaService;
 
+    /**
+     * Ruta raíz de admin - redirige al dashboard principal
+     */
+    @GetMapping("")
+    public String adminRoot() {
+        return "redirect:/admin/dashboard";
+    }
+    
+    /**
+     * Ruta alternativa - redirige al dashboard principal
+     */
+    @GetMapping("/")
+    public String adminRootSlash() {
+        return "redirect:/admin/dashboard";
+    }
+
     @GetMapping("/home")
     public String showAdminHome(Model model, Authentication authentication, HttpSession session) {
         // Registrar acceso al dashboard en auditoría

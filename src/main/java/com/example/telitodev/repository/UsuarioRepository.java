@@ -65,6 +65,4 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
                                 @Param("nombreRol") String nombreRol,
                                 @Param("estado") Boolean estado,
                                 Pageable pageable);
-
-
 }
