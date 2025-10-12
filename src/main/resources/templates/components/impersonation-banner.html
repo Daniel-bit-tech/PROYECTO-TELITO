@@ -124,50 +124,45 @@
             const pageTitle = document.title;
             const bodyText = document.body.textContent;
             
-            // Detectar múltiples señales de incongruencia
-            const isInDevPortal = currentPath.startsWith('/dev/') || pageTitle.includes('Developer Portal');
-            const isInQAPortal = currentPath.startsWith('/qa/') || pageTitle.includes('QA Portal');
-            const isInPOPortal = currentPath.startsWith('/po/') || pageTitle.includes('PO Portal');
-            const isInWrongPortal = isInDevPortal || isInQAPortal || isInPOPortal;
-            
-            // Detectar si el usuario mostrado es SuperAdmin o similar
-            const hasAdminData = bodyText.includes('SUPERADMIN') || 
-                                bodyText.includes('Super Admin') ||
-                                currentUser === 'Carlos' ||
-                                bodyText.includes('Carlos');
-            
-            // Detectar si hay un banner de impersonación visible
+            // Detectar si hay un banner de impersonación visible (esto SÍ es problemático)
             const hasVisibleImpersonationBanner = document.querySelector('.impersonation-banner') && 
                                                  !document.querySelector('.impersonation-banner').style.display === 'none';
             
-            console.log('🔍 ANÁLISIS DE INCONSISTENCIA:');
+            // NUEVA DETECCIÓN MÁS PRECISA: Solo detectar VERDADERAS incongruencias
+            // 1. Si hay banner de impersonación visible sin impersonación real
+            // 2. Si estamos en admin/* pero la sesión dice que no somos admin
+            // 3. Si hay datos explícitos de impersonación sin banner
+            
+            const isInAdminPath = currentPath.startsWith('/admin/');
+            const hasImpersonationData = bodyText.includes('MODO IMPERSONACIÓN') || 
+                                       bodyText.includes('Volver a SuperAdmin') ||
+                                       document.querySelector('[data-impersonated-user]') !== null;
+            
+            // Solo considerar problemático si hay datos de impersonación SIN el banner correspondiente
+            // O si hay banner SIN los datos correspondientes
+            const hasInconsistentImpersonationState = hasVisibleImpersonationBanner !== hasImpersonationData;
+            
+            console.log('🔍 ANÁLISIS DE INCONSISTENCIA MEJORADO:');
             console.log('   Path actual:', currentPath);
             console.log('   Usuario detectado:', currentUser);
-            console.log('   ¿En portal incorrecto?:', isInWrongPortal);
-            console.log('   ¿Datos de admin?:', hasAdminData);
-            console.log('   ¿Banner de impersonación visible?:', hasVisibleImpersonationBanner);
+            console.log('   ¿En ruta admin?:', isInAdminPath);
+            console.log('   ¿Banner impersonación visible?:', hasVisibleImpersonationBanner);
+            console.log('   ¿Datos de impersonación?:', hasImpersonationData);
+            console.log('   ¿Estado inconsistente?:', hasInconsistentImpersonationState);
             
-            // Si estamos en una vista que NO es admin pero el usuario parece ser SuperAdmin
-            // O si hay un banner de impersonación pero no debería haberlo
-            if ((isInWrongPortal && hasAdminData) || hasVisibleImpersonationBanner) {
+            // SOLO alertar si hay inconsistencias REALES de impersonación
+            if (hasVisibleImpersonationBanner && !hasImpersonationData) {
                 
-                console.log('🚨 INCONGRUENCIA DETECTADA: Vista incorrecta para SuperAdmin');
+                console.log('🚨 INCONGRUENCIA DETECTADA: Banner de impersonación sin datos');
                 console.log('   Path actual:', currentPath);
                 console.log('   Usuario:', currentUser);
-                console.log('   Banner impersonación:', hasVisibleImpersonationBanner ? 'VISIBLE' : 'No visible');
+                console.log('   Banner visible pero sin datos de impersonación');
                 
-                // Mostrar alerta específica según el tipo de incongruencia
+                // Mostrar alerta específica para este caso
                 let alertMessage = '⚠️ INCONGRUENCIA DETECTADA\\n\\n';
-                
-                if (hasVisibleImpersonationBanner) {
-                    alertMessage += '❌ Se detectó un banner de impersonación activo sin impersonación real.\\n' +
-                                  '🔧 Esto indica un estado inconsistente de la sesión.\\n\\n';
-                } else if (isInWrongPortal && hasAdminData) {
-                    alertMessage += '❌ Estás viendo una vista de usuario normal con datos de SuperAdmin.\\n' +
-                                  '🔧 Esto no debería suceder después de terminar la impersonación.\\n\\n';
-                }
-                
-                alertMessage += '🔄 Redirigiendo automáticamente a la vista de SuperAdmin...';
+                alertMessage += '❌ Se detectó un banner de impersonación activo sin impersonación real.\\n' +
+                              '🔧 Esto indica un estado inconsistente de la sesión.\\n\\n' +
+                              '🔄 Redirigiendo automáticamente a la vista de SuperAdmin...';
                 
                 alert(alertMessage);
                 
@@ -177,6 +172,11 @@
                     window.location.replace('/admin/gestion-usuarios');
                 }, 1000);
                 return;
+            }
+            
+            // Si hay datos de impersonación pero no hay banner (menos problemático, solo log)
+            if (!hasVisibleImpersonationBanner && hasImpersonationData) {
+                console.log('⚠️ Datos de impersonación detectados sin banner visible - esto puede ser normal durante transiciones');
             }
             
             // Limpiar todos los listeners de protección que puedan quedar
