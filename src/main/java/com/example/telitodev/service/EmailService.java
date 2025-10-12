@@ -178,7 +178,7 @@ public class EmailService {
                             <div class=\"expiration\">⏰ Expira el FECHA_PLACEHOLDER</div>
                         </div>
                         <div style=\"text-align:center; margin: 30px 0;\">
-                            <a class=\"button\" href=\"APP_URL_PLACEHOLDER/admin/gestion-usuarios/confirmar-cuenta?email=EMAIL_PLACEHOLDER&token=TOKEN_PLACEHOLDER\" target=\"_blank\">Confirmar mi cuenta</a>
+                            <a class=\"button\" href=\"APP_URL_PLACEHOLDER/confirmar-cuenta?email=EMAIL_PLACEHOLDER&token=TOKEN_PLACEHOLDER\" target=\"_blank\">Confirmar mi cuenta</a>
                         </div>
                         <div class=\"instructions\">
                             <h3>📋 Instrucciones:</h3>

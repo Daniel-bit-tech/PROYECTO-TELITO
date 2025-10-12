@@ -25,7 +25,7 @@
                         <i class="bi bi-check-circle-fill"></i> <span th:text="${success}"></span>
                     </div>
                     
-                    <form method="post" th:action="@{/admin/gestion-usuarios/confirmar-cuenta}" autocomplete="off" id="confirmForm">
+                    <form method="post" th:action="@{/confirmar-cuenta}" autocomplete="off" id="confirmForm">
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
                             <input type="email" class="form-control" id="email" name="email" th:value="${email}" required readonly>
@@ -109,7 +109,7 @@
                         console.log('=== ENVIANDO VIA JSON ===');
                         
                         try {
-                            const response = await fetch('/admin/gestion-usuarios/confirmar-cuenta-json', {
+                            const response = await fetch('/confirmar-cuenta-json', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json'

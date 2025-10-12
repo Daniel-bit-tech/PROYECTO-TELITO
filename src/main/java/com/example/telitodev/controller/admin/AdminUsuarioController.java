@@ -7,6 +7,7 @@ import com.example.telitodev.entity.TokenConfirmacion;
 import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.repository.RolRepository;
 import com.example.telitodev.repository.TokenConfirmacionRepository;
+import com.example.telitodev.repository.ActividadAdminRepository;
 import com.example.telitodev.service.EmailService;
 import com.example.telitodev.service.ImpersonationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +19,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -75,7 +79,13 @@ public class AdminUsuarioController extends BaseController {
     private com.example.telitodev.service.AuditoriaService auditoriaService;
 
     @Autowired
+    private ActividadAdminRepository actividadAdminRepository;
+
+    @Autowired
     private ImpersonationService impersonationService;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     /**
      * Página principal de gestión de usuarios con filtros y paginación
@@ -747,8 +757,11 @@ public class AdminUsuarioController extends BaseController {
     @ResponseBody
     public ResponseEntity<?> eliminarUsuario(@PathVariable String dni) {
         try {
+            System.out.println("🔍 Iniciando eliminación del usuario: " + dni);
+            
             Optional<Usuario> usuarioOpt = usuarioRepository.findById(dni);
             if (!usuarioOpt.isPresent()) {
+                System.out.println("❌ Usuario no encontrado: " + dni);
                 return ResponseEntity.notFound().build();
             }
 
@@ -756,22 +769,47 @@ public class AdminUsuarioController extends BaseController {
             
             // VALIDACIÓN DE SEGURIDAD: Un SuperAdmin no puede gestionar a otro SuperAdmin
             if (isSuperAdmin(usuario)) {
+                System.out.println("❌ Intento de eliminar SuperAdmin bloqueado");
                 return ResponseEntity.badRequest().body("❌ Por seguridad, no se puede eliminar a otro SuperAdmin");
             }
 
-            // Eliminar el usuario definitivamente de la base de datos
+            // Guardar información del usuario antes de eliminar
             String nombreUsuario = usuario.getNombre();
             String correoUsuario = usuario.getCorreo();
             String nombreCompleto = usuario.getNombre() + " " + usuario.getApellidoPaterno();
-            
-            // Registrar auditoría antes de eliminar (ya que después no existirá el usuario)
+
+            // PRIMERO: Registrar auditoría ANTES de eliminar registros relacionados
+            // (para evitar crear un nuevo registro que luego tengamos que eliminar)
+            System.out.println("📝 Registrando auditoría de eliminación...");
             auditoriaService.registrarActividad(
                 com.example.telitodev.service.AuditoriaService.ELIMINAR_USUARIO,
                 "Eliminó permanentemente al usuario " + nombreCompleto + " (" + correoUsuario + ")",
                 dni
             );
-            
+
+            // SEGUNDO: Eliminar TODOS los registros de auditoría relacionados (incluyendo el que acabamos de crear)
+            try {
+                System.out.println("🔍 Verificando registros de auditoría para DNI: " + dni);
+                long actividadesEliminadas = actividadAdminRepository.countByUsuarioAfectadoDni(dni);
+                System.out.println("📊 Registros de auditoría encontrados: " + actividadesEliminadas);
+                
+                if (actividadesEliminadas > 0) {
+                    System.out.println("🗑️ Eliminando " + actividadesEliminadas + " registros de auditoría relacionados");
+                    eliminarRegistrosAuditoriaDirectamente(dni);
+                    System.out.println("✅ Registros de auditoría eliminados correctamente");
+                } else {
+                    System.out.println("ℹ️ No hay registros de auditoría que eliminar");
+                }
+            } catch (Exception e) {
+                System.err.println("❌ Error al eliminar registros de auditoría: " + e.getMessage());
+                e.printStackTrace();
+                return ResponseEntity.badRequest().body("Error al eliminar registros relacionados: " + e.getMessage());
+            }
+
+            // TERCERO: Eliminar el usuario (ya sin restricciones de foreign key)
+            System.out.println("🗑️ Procediendo a eliminar usuario: " + nombreCompleto);
             usuarioRepository.delete(usuario);
+            System.out.println("✅ Usuario eliminado exitosamente");
             
             return ResponseEntity.ok(Map.of(
                 "mensaje", "Usuario eliminado permanentemente de la base de datos",
@@ -784,6 +822,8 @@ public class AdminUsuarioController extends BaseController {
             ));
 
         } catch (Exception e) {
+            System.err.println("❌ Error general al eliminar usuario: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.badRequest().body("Error al eliminar usuario: " + e.getMessage());
         }
     }
@@ -831,6 +871,32 @@ public class AdminUsuarioController extends BaseController {
             "timestamp", LocalDateTime.now().toString(),
             "endpoint", "/admin/gestion-usuarios/test"
         ));
+    }
+
+    /**
+     * Endpoint para obtener estadísticas actualizadas de usuarios
+     */
+    @GetMapping("/estadisticas")
+    @ResponseBody
+    public ResponseEntity<?> obtenerEstadisticas() {
+        try {
+            long totalUsuarios = usuarioRepository.count();
+            long usuariosActivos = usuarioRepository.countByEstado(true);
+            long usuariosInactivos = usuarioRepository.countByEstado(false);
+            
+            Map<String, Object> estadisticas = Map.of(
+                "totalUsuarios", totalUsuarios,
+                "usuariosActivos", usuariosActivos,
+                "usuariosInactivos", usuariosInactivos,
+                "timestamp", LocalDateTime.now().toString()
+            );
+            
+            System.out.println("📊 Estadísticas actualizadas: " + estadisticas);
+            return ResponseEntity.ok(estadisticas);
+        } catch (Exception e) {
+            System.err.println("❌ Error al obtener estadísticas: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Error al obtener estadísticas: " + e.getMessage());
+        }
     }
 
     /**
@@ -2337,6 +2403,26 @@ public class AdminUsuarioController extends BaseController {
                     "error", true,
                     "mensaje", "Error en test de email: " + e.getMessage()
                 ));
+        }
+    }
+
+    /**
+     * Método auxiliar para eliminar registros de auditoría directamente
+     * usando consulta SQL nativa para mayor control
+     */
+    @Transactional
+    private void eliminarRegistrosAuditoriaDirectamente(String dni) {
+        try {
+            // Usar la consulta nativa directamente
+            actividadAdminRepository.deleteByUsuarioAfectadoDniNative(dni);
+            
+            // Forzar el flush de la transacción
+            actividadAdminRepository.flush();
+            
+            System.out.println("✅ Eliminación directa completada para DNI: " + dni);
+        } catch (Exception e) {
+            System.err.println("❌ Error en eliminación directa: " + e.getMessage());
+            throw new RuntimeException("No se pudieron eliminar los registros de auditoría: " + e.getMessage(), e);
         }
     }
 }
