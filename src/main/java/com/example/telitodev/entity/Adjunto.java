@@ -16,7 +16,7 @@ public class Adjunto {
     private String nombre;
 
     @Lob
-    @Column(name = "archivo")
+    @Column(name = "archivo", columnDefinition = "LONGBLOB")
     private byte[] archivo;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)

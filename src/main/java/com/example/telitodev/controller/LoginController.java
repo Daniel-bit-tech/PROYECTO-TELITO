@@ -15,7 +15,7 @@ import java.util.Collection;
 import java.util.Optional;
 
 @Controller
-public class LoginController {
+public class LoginController extends BaseController {
 
     final UsuarioRepository usuarioRepository;
 
@@ -80,7 +80,7 @@ public class LoginController {
 
 
     @GetMapping("/home")
-    public String home(Authentication authentication) {
+    public String home(Authentication authentication, HttpSession session) {
         System.out.println("=== LoginController.home() llamado ===");
         
         if (authentication == null) {
@@ -88,28 +88,57 @@ public class LoginController {
             return "redirect:/login";
         }
 
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        System.out.println("Usuario autenticado: " + authentication.getName());
-        System.out.println("Autoridades: " + authorities);
-
-        for (GrantedAuthority authority : authorities) {
-            System.out.println("Procesando autoridad: " + authority.getAuthority());
-            switch (authority.getAuthority()) {
-                case "ROLE_SUPERADMIN":
-                    System.out.println("Redirigiendo SUPERADMIN a /admin/home");
+        // Verificar si hay impersonación activa
+        boolean isImpersonating = isImpersonating(session);
+        System.out.println("¿Hay impersonación activa? " + isImpersonating);
+        
+        if (isImpersonating) {
+            // Si hay impersonación, usar el rol impersonado
+            String impersonatedUserRole = (String) session.getAttribute("IMPERSONATED_USER_ROLE");
+            System.out.println("Rol impersonado: " + impersonatedUserRole);
+            
+            switch (impersonatedUserRole) {
+                case "SUPERADMIN":
+                    System.out.println("Redirigiendo IMPERSONATED SUPERADMIN a /admin/home");
                     return "redirect:/admin/home";
-                case "ROLE_DEV":
-                    System.out.println("Redirigiendo DEV a /dev/home");
+                case "DEV":
+                    System.out.println("Redirigiendo IMPERSONATED DEV a /dev/home");
                     return "redirect:/dev/home";
-                case "ROLE_QA":
-                    System.out.println("Redirigiendo QA a /qa/home");
+                case "QA":
+                    System.out.println("Redirigiendo IMPERSONATED QA a /qa/home");
                     return "redirect:/qa/home";
-                case "ROLE_PO":
-                    System.out.println("Redirigiendo PO a /po/home");
+                case "PO":
+                    System.out.println("Redirigiendo IMPERSONATED PO a /po/home");
                     return "redirect:/po/home";
                 default:
-                    System.out.println("Autoridad no reconocida: " + authority.getAuthority());
+                    System.out.println("Rol impersonado no reconocido: " + impersonatedUserRole);
                     break;
+            }
+        } else {
+            // Sin impersonación, usar los roles reales
+            Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+            System.out.println("Usuario autenticado: " + authentication.getName());
+            System.out.println("Autoridades: " + authorities);
+
+            for (GrantedAuthority authority : authorities) {
+                System.out.println("Procesando autoridad: " + authority.getAuthority());
+                switch (authority.getAuthority()) {
+                    case "ROLE_SUPERADMIN":
+                        System.out.println("Redirigiendo SUPERADMIN a /admin/home");
+                        return "redirect:/admin/home";
+                    case "ROLE_DEV":
+                        System.out.println("Redirigiendo DEV a /dev/home");
+                        return "redirect:/dev/home";
+                    case "ROLE_QA":
+                        System.out.println("Redirigiendo QA a /qa/home");
+                        return "redirect:/qa/home";
+                    case "ROLE_PO":
+                        System.out.println("Redirigiendo PO a /po/home");
+                        return "redirect:/po/home";
+                    default:
+                        System.out.println("Autoridad no reconocida: " + authority.getAuthority());
+                        break;
+                }
             }
         }
 

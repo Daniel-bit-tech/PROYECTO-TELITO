@@ -11,20 +11,26 @@ import org.springframework.data.repository.query.Param;
 
 @Repository
 public interface BacklogRepository extends JpaRepository<Backlog, Integer> {
-
-    // Método existente - mantenerlo
     Optional<Backlog> findByFeedback_IdFeedback(Integer idFeedback);
 
-    // ✅ NUEVO: Paginación básica
-    Page<Backlog> findAll(Pageable pageable);
-
-    // ✅ NUEVO: Búsqueda en múltiples campos
+    // Métodos para búsqueda con paginación
     @Query("SELECT b FROM Backlog b WHERE " +
-            "b.api.nombre LIKE %:search% OR " +
-            "b.usuarioEncargado.nombre LIKE %:search% OR " +
-            "b.descripcion LIKE %:search% OR " +
-            "b.prioridad LIKE %:search% OR " +
-            "b.estadoBacklog LIKE %:search% OR " +
-            "b.asunto LIKE %:search%")
-    Page<Backlog> searchBacklogs(@Param("search") String search, Pageable pageable);
+           "(:search IS NULL OR :search = '' OR " +
+           "LOWER(b.api.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(b.descripcion) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(b.usuarioEncargado.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(b.prioridad) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(b.estadoBacklog) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Backlog> findBySearchTerm(@Param("search") String search, Pageable pageable);
+
+    // Método adicional para contar total de elementos con búsqueda
+    @Query("SELECT COUNT(b) FROM Backlog b WHERE " +
+           "(:search IS NULL OR :search = '' OR " +
+           "LOWER(b.api.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(b.descripcion) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(b.usuarioEncargado.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(b.prioridad) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+           "LOWER(b.estadoBacklog) LIKE LOWER(CONCAT('%', :search, '%')))")
+    long countBySearchTerm(@Param("search") String search);
+
 }

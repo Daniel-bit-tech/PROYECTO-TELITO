@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.desarrollador;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.CredencialApi;
 import com.example.telitodev.entity.Notificacion;
 import com.example.telitodev.entity.Ticket;
@@ -19,8 +20,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/dev")
-@PreAuthorize("hasAnyRole('DEV', 'SUPERADMIN')")
-public class DeveloperController {
+public class DeveloperController extends BaseController {
 
     final UsuarioRepository usuarioRepository;
     final CredencialApiRepository credencialApiRepository;
@@ -39,8 +39,8 @@ public class DeveloperController {
 
     @GetMapping("/home")
     public String showDeveloperView(Model model, Authentication auth, HttpSession session) {
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(auth, session);
+        // Obtener el usuario correcto considerando impersonación usando BaseController
+        Usuario usuario = getCurrentUser(auth, session);
 
         Integer NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(),true);
         List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
@@ -71,52 +71,22 @@ public class DeveloperController {
         model.addAttribute("notificaciones", notis);
         model.addAttribute("tickets", tickets);
         
-        // Agregar información de impersonación al modelo
-        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
-        if (isImpersonating != null && isImpersonating) {
-            model.addAttribute("isImpersonating", true);
-            model.addAttribute("impersonatedUserDni", session.getAttribute("IMPERSONATED_USER_DNI"));
-            model.addAttribute("originalAdminUsername", session.getAttribute("ORIGINAL_ADMIN_USERNAME"));
-            System.out.println("🎭 DEV - Modo impersonación detectado para DNI: " + session.getAttribute("IMPERSONATED_USER_DNI"));
-        } else {
-            model.addAttribute("isImpersonating", false);
-        }
+        // Agregar información de impersonación al modelo usando BaseController
+        addImpersonationAttributes(model, session);
 
         return "desarrollador/developer";
     }
 
     @GetMapping("/catalogo")
     public String developerDashboard(Model model, Authentication authentication, HttpSession session) {
-        // Obtener el usuario correcto considerando impersonación
-        Usuario usuario = obtenerUsuarioActual(authentication, session);
+        // Obtener el usuario correcto considerando impersonación usando BaseController
+        Usuario usuario = getCurrentUser(authentication, session);
         model.addAttribute("usuario", usuario);
         model.addAttribute("smg", usuario.getCorreo());
 
-        return "desarrollador/apis";
-    }
+        // Agregar información de impersonación al modelo
+        addImpersonationAttributes(model, session);
 
-    /**
-     * Método helper para obtener el usuario correcto durante impersonación
-     */
-    private Usuario obtenerUsuarioActual(Authentication auth, HttpSession session) {
-        // Verificar si hay impersonación activa
-        Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
-        
-        if (isImpersonating != null && isImpersonating) {
-            // Durante impersonación, obtener usuario por DNI del usuario impersonado
-            String impersonatedUserDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
-            if (impersonatedUserDni != null) {
-                Usuario impersonatedUser = usuarioRepository.findByDni(impersonatedUserDni);
-                if (impersonatedUser != null) {
-                    System.out.println("🎭 DEV - Usando datos del usuario impersonado: " + impersonatedUser.getNombre());
-                    return impersonatedUser;
-                }
-            }
-        }
-        
-        // Sin impersonación, usar el usuario autenticado normal
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        System.out.println("👤 DEV - Usando datos del usuario autenticado: " + usuario.getNombre());
-        return usuario;
+        return "desarrollador/apis";
     }
 }

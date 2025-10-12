@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.admin;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.entity.ActividadAdmin;
 import com.example.telitodev.repository.UsuarioRepository;
@@ -12,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import jakarta.servlet.http.HttpSession;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,8 +23,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/admin")
-@PreAuthorize("hasRole('SUPERADMIN')")
-public class AdminController {
+public class AdminController extends BaseController {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -31,11 +32,7 @@ public class AdminController {
     private AuditoriaService auditoriaService;
 
     @GetMapping("/home")
-    public String showAdminHome(Model model, Authentication authentication) {
-        System.out.println("=== ADMIN HOME ACCESS ===");
-        System.out.println("Usuario: " + authentication.getName());
-        System.out.println("Roles: " + authentication.getAuthorities());
-        
+    public String showAdminHome(Model model, Authentication authentication, HttpSession session) {
         // Registrar acceso al dashboard en auditoría
         try {
             auditoriaService.registrarActividad(
@@ -43,7 +40,8 @@ public class AdminController {
                 "Accedió al panel de administración"
             );
         } catch (Exception e) {
-            System.err.println("Error al registrar acceso a dashboard: " + e.getMessage());
+            System.err.println("⚠️ Error al registrar auditoría (continuando sin auditoría): " + e.getMessage());
+            // Continuar sin auditoría, no es crítico
         }
         
         try {
@@ -94,6 +92,10 @@ public class AdminController {
             }
             
             System.out.println("Redirigiendo a admin/dashboard");
+            
+            // Agregar información de impersonación al modelo
+            addImpersonationAttributes(model, session);
+            
             return "admin/dashboard";
         } catch (Exception e) {
             System.out.println("Error general en admin/home: " + e.getMessage());
@@ -101,6 +103,10 @@ public class AdminController {
             model.addAttribute("totalUsuarios", 11);  // 11 usuarios gestionables (sin SUPERADMINs)
             model.addAttribute("usuariosActivos", 10);  // Basado en la imagen actual
             model.addAttribute("usuariosInactivos", 1);  // Basado en la imagen actual
+            
+            // Agregar información de impersonación al modelo incluso en caso de error
+            addImpersonationAttributes(model, session);
+            
             return "admin/dashboard";
         }
     }
@@ -112,7 +118,7 @@ public class AdminController {
     }
     
     @GetMapping("/perfil")
-    public String showPerfil(Model model, Authentication authentication) {
+    public String showPerfil(Model model, Authentication authentication, HttpSession session) {
         try {
             String correo = authentication.getName();
             Optional<Usuario> usuarioOpt = usuarioRepository.findByCorreoAndEstado(correo, true);
@@ -123,9 +129,16 @@ public class AdminController {
                 model.addAttribute("usuario", createMockAdmin(correo));
             }
             
+            // Agregar información de impersonación al modelo
+            addImpersonationAttributes(model, session);
+            
             return "admin/perfil-admin";
         } catch (Exception e) {
             model.addAttribute("usuario", createMockAdmin(authentication.getName()));
+            
+            // Agregar información de impersonación al modelo incluso en caso de error
+            addImpersonationAttributes(model, session);
+            
             return "admin/perfil-admin";
         }
     }
