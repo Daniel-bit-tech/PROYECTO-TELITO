@@ -143,7 +143,7 @@ public class ImpersonationAuthorizationFilter extends OncePerRequestFilter {
         if (path.startsWith("/admin/")) {
             return "SUPERADMIN".equals(role);
         } else if (path.startsWith("/dev/")) {
-            return "DEV".equals(role) || "SUPERADMIN".equals(role);
+            return "DEV".equals(role) || "SUPERADMIN".equals(role) || "DEVELOPER".equals(role);
         } else if (path.startsWith("/qa/")) {
             return "QA".equals(role) || "SUPERADMIN".equals(role);
         } else if (path.startsWith("/po/")) {
@@ -167,6 +167,8 @@ public class ImpersonationAuthorizationFilter extends OncePerRequestFilter {
             case "SUPERADMIN":
                 return "/admin/home";
             case "DEV":
+                return "/dev/home";
+            case "DEVELOPER":
                 return "/dev/home";
             case "QA":
                 return "/qa/home";

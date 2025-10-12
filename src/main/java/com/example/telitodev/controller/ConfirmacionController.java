@@ -100,7 +100,7 @@ public class ConfirmacionController {
             model.addAttribute("token", token != null ? token : "");
         }
 
-        return "sesion/confirmar-cuenta"; // Tu template path
+        return "confirmar-cuenta"; // Tu template path
     }
 
     /**
@@ -125,28 +125,28 @@ public class ConfirmacionController {
             // Validaciones básicas (combinadas de ambas versiones)
             if (email == null || email.trim().isEmpty()) {
                 model.addAttribute("error", "Email es requerido");
-                return "sesion/confirmar-cuenta";
+                return "confirmar-cuenta";
             }
 
             if (token == null || token.trim().isEmpty()) {
                 model.addAttribute("error", "Código de confirmación es requerido");
                 model.addAttribute("email", email);
                 model.addAttribute("token", token);
-                return "sesion/confirmar-cuenta";
+                return "confirmar-cuenta";
             }
 
             if (password == null || password.trim().isEmpty()) {
                 model.addAttribute("error", "La contraseña es requerida");
                 model.addAttribute("email", email);
                 model.addAttribute("token", token);
-                return "sesion/confirmar-cuenta";
+                return "confirmar-cuenta";
             }
 
             if (confirmPassword == null || confirmPassword.trim().isEmpty()) {
                 model.addAttribute("error", "Debes confirmar la contraseña");
                 model.addAttribute("email", email);
                 model.addAttribute("token", token);
-                return "sesion/confirmar-cuenta";
+                return "confirmar-cuenta";
             }
 
             // Limpiar datos
@@ -160,14 +160,14 @@ public class ConfirmacionController {
                 model.addAttribute("error", "Las contraseñas no coinciden");
                 model.addAttribute("email", email);
                 model.addAttribute("token", token);
-                return "sesion/confirmar-cuenta";
+                return "confirmar-cuenta";
             }
 
             if (password.length() < 8) {
                 model.addAttribute("error", "La contraseña debe tener al menos 8 caracteres");
                 model.addAttribute("email", email);
                 model.addAttribute("token", token);
-                return "sesion/confirmar-cuenta";
+                return "confirmar-cuenta";
             }
 
             // Buscar token
@@ -178,7 +178,7 @@ public class ConfirmacionController {
                 model.addAttribute("error", "Código de confirmación inválido o email incorrecto");
                 model.addAttribute("email", email);
                 model.addAttribute("token", token);
-                return "sesion/confirmar-cuenta";
+                return "confirmar-cuenta";
             }
 
             TokenConfirmacion tokenConfirmacion = tokenOpt.get();
@@ -189,14 +189,14 @@ public class ConfirmacionController {
                 model.addAttribute("error", "Este código de confirmación ya ha sido utilizado");
                 model.addAttribute("email", email);
                 model.addAttribute("token", token);
-                return "sesion/confirmar-cuenta";
+                return "confirmar-cuenta";
             }
 
             if (tokenConfirmacion.estaExpirado()) {
                 model.addAttribute("error", "El código de confirmación ha expirado. Solicita una nueva cuenta.");
                 model.addAttribute("email", email);
                 model.addAttribute("token", token);
-                return "sesion/confirmar-cuenta";
+                return "confirmar-cuenta";
             }
 
             // NUEVA FUNCIONALIDAD: Verificar duplicados (de tu amigo)
@@ -209,7 +209,7 @@ public class ConfirmacionController {
                 model.addAttribute("error", "Ya existe un usuario con este DNI");
                 model.addAttribute("email", email);
                 model.addAttribute("token", token);
-                return "sesion/confirmar-cuenta";
+                return "confirmar-cuenta";
             }
 
             if (usuarioRepository.findByCorreo(tokenConfirmacion.getEmail()) != null) {
@@ -220,7 +220,7 @@ public class ConfirmacionController {
                 model.addAttribute("error", "Ya existe un usuario con este email");
                 model.addAttribute("email", email);
                 model.addAttribute("token", token);
-                return "sesion/confirmar-cuenta";
+                return "confirmar-cuenta";
             }
 
             // Obtener rol (tu lógica mejorada con fallback)
@@ -249,7 +249,7 @@ public class ConfirmacionController {
                 model.addAttribute("error", "Error interno del servidor. Contacta al administrador.");
                 model.addAttribute("email", email);
                 model.addAttribute("token", token);
-                return "sesion/confirmar-cuenta";
+                return "confirmar-cuenta";
             }
 
             // Crear usuario (combinando ambas versiones)
@@ -318,7 +318,7 @@ public class ConfirmacionController {
             model.addAttribute("error", "Error interno del servidor: " + e.getMessage());
             model.addAttribute("email", email);
             model.addAttribute("token", token);
-            return "sesion/confirmar-cuenta";
+            return "confirmar-cuenta";
         }
     }
 }

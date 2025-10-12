@@ -37,7 +37,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
     @Autowired
     private RolRepository rolRepository;
     
-    private static final String DEFAULT_EXTERNAL_ROLE = "DEV"; // Rol por defecto para usuarios externos
+    private static final String DEFAULT_EXTERNAL_ROLE = "DEVELOPER"; // Rol por defecto para usuarios externos
 
     @Override
     @Transactional
@@ -79,7 +79,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         );
         
         // Retornar el usuario OAuth2 con las autoridades correctas
-        return new DefaultOAuth2User(authorities, attributes, "sub");
+        return new DefaultOAuth2User(authorities, attributes, "email");
     }
     
     @Transactional
@@ -111,7 +111,7 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         );
         
         // Crear nuevo OAuth2User con las autoridades correctas de nuestra BD
-        return new DefaultOAuth2User(authorities, attributes, "sub");
+        return new DefaultOAuth2User(authorities, attributes, "email");
     }
     
     private UserInfo extractUserInfo(String registrationId, Map<String, Object> attributes) {

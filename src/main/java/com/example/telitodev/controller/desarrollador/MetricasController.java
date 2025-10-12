@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @Controller
-
+@RequestMapping ("/dev")
 @PreAuthorize("hasAnyRole('DEV', 'DEVELOPER', 'SADMIN')")
 public class MetricasController extends BaseController {
 

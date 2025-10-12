@@ -39,7 +39,7 @@ public class LoginController extends BaseController {
         System.out.println("   - Full URL: " + request.getRequestURL() + (request.getQueryString() != null ? "?" + request.getQueryString() : ""));
 
         if (auth != null && auth.isAuthenticated() && auth.getPrincipal() != null) {
-            return "redirect:/home";
+            return "redirect:/dashboard";
         }
         
         if (error != null) {
