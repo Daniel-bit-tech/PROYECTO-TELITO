@@ -21,7 +21,7 @@ import java.util.Optional;
 @Controller
 
 @PreAuthorize("hasAnyRole('DEV', 'DEVELOPER', 'SADMIN')")
-public class MetricasController {
+public class MetricasController extends BaseController {
 
     private final UsuarioRepository usuarioRepository;
     private final LogapiRepository logapiRepository;

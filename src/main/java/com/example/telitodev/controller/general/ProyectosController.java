@@ -67,16 +67,16 @@ public class ProyectosController extends BaseController {
             }
         } else {
 
-            Integer organizacionId = usuario.getOrganizacion().getIdOrganizacion();
-            // Para usuarios no-SuperAdmin, verificar que tengan organización asignada
-            if (usuario.getOrganizacion() == null) {
-                System.err.println("ERROR: Usuario " + usuario.getDni() + " no tiene organización asignada");
-                model.addAttribute("error", "Usuario sin organización asignada. Contacte al administrador.");
-                model.addAttribute("listaProyectos", List.of()); // Lista vacía para evitar errores en el template
-                model.addAttribute("filtro", filtro);
-                model.addAttribute("usuario", usuario);
-                return "general/proyectos";
-            }
+//            Integer organizacionId = usuario.getOrganizacion().getIdOrganizacion();
+//            // Para usuarios no-SuperAdmin, verificar que tengan organización asignada
+//            if (usuario.getOrganizacion() == null) {
+//                System.err.println("ERROR: Usuario " + usuario.getDni() + " no tiene organización asignada");
+//                model.addAttribute("error", "Usuario sin organización asignada. Contacte al administrador.");
+//                model.addAttribute("listaProyectos", List.of()); // Lista vacía para evitar errores en el template
+//                model.addAttribute("filtro", filtro);
+//                model.addAttribute("usuario", usuario);
+//                return "general/proyectos";
+//            }
 
             // Mostrar proyectos de su organización
             Integer organizacionId = usuario.getOrganizacion().getIdOrganizacion();
