@@ -98,18 +98,7 @@
             margin-bottom: 2rem;
         }
 
-        .feedback-tab {
-            padding: 1rem 1.5rem;
-            font-weight: 500;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-        }
 
-        .feedback-tab.active {
-            color: var(--tblr-primary);
-            border-bottom-color: var(--tblr-primary);
-        }
 
         .feedback-form-container {
             background-color: var(--tblr-bg-surface);
@@ -123,6 +112,105 @@
             font-weight: 600;
             font-size: 1.25rem;
             margin-bottom: 1.5rem;
+        }
+
+        /* Diseño de Pestañas (Tabs) */
+        .forum-tabs-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .feedback-tab {
+            padding: 0.75rem 1.25rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            color: var(--tblr-secondary-color);
+        }
+
+        .feedback-tab.active {
+            color: var(--tblr-primary);
+            border-bottom-color: var(--tblr-primary);
+        }
+
+        .feedback-tab:hover {
+            color: var(--tblr-primary);
+        }
+
+
+        .comment-card {
+            border: 1px solid var(--tblr-border-color-translucent);
+            border-radius: 8px;
+            padding: 1.5rem;
+            background-color: var(--tblr-bg-surface);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .comment-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .comment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--tblr-primary); /* Color de fondo por defecto o imagen */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 600;
+            color: white;
+            margin-right: 1rem;
+            font-size: 1rem;
+        }
+
+        .comment-meta {
+            flex-grow: 1;
+        }
+
+        .comment-author {
+            font-weight: 700;
+            color: var(--tblr-body-color);
+            line-height: 1.2;
+        }
+
+        .comment-role {
+            font-size: 0.75rem;
+            font-weight: 500;
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--tblr-light);
+            background-color: var(--tblr-secondary);
+            margin-left: 8px;
+        }
+
+        .comment-date {
+            font-size: 0.875rem;
+            color: var(--tblr-secondary-color);
+        }
+
+        .comment-content {
+            padding-left: 56px; /* Alinear con el texto junto al avatar */
+        }
+
+        .comment-message {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .comment-attachments a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-right: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--tblr-primary);
         }
 
         .form-group {
@@ -376,13 +464,19 @@
                     </div>
                     <br>
 
-                    <div class="feedback-tabs">
-                        <div class="feedback-tab active" data-tab="evidences">Evidencias del reporte</div>
-                        <!--
-                        <div class="feedback-tab" data-tab="my-feedback">Información</div>
-                        -->
-                        <div class="feedback-tab" data-tab="roadmap">Foro</div>
-                        <div class="feedback-tab" data-tab="create-foro">Crear comentario al foro</div>
+                    <div class="forum-tabs-container">
+                        <div class="feedback-tabs">
+                            <div class="feedback-tab active" data-tab="evidences">
+                                <i class="ti ti-file-text me-1"></i> Evidencias
+                            </div>
+                            <div class="feedback-tab" data-tab="roadmap">
+                                <i class="ti ti-message-2 me-1"></i> Foro (Comentarios)
+                                <span class="badge text-white bg-primary ms-1" th:text="${issue.comentarios.size()}">0</span>
+                            </div>
+                            <div class="feedback-tab" data-tab="create-foro">
+                                <i class="ti ti-pencil me-1"></i> Dejar Comentario
+                            </div>
+                        </div>
                     </div>
 
                     <div id="evidences" class="feedback-tab-content">
@@ -444,7 +538,7 @@
                             <div class="card">
                                 <!-- Si no hay comentarios, mostrar mensaje -->
                                 <div th:if="${#lists.isEmpty(issue.comentarios)}" class="empty-state">
-                                    <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                                    <div class="empty-icon"><i class="fas fa-comment-alt"></i></div>
                                     <h4 class="empty-title">Aún no hay comentarios</h4>
                                     <p class="empty-description">Sé el primero en dejar un comentario sobre este issue.</p>
 
@@ -452,21 +546,26 @@
 
                                 <!-- Si hay comentarios, mostrarlos -->
                                 <div th:unless="${#lists.isEmpty(issue.comentarios)}">
-                                    <div class="feedback-list">
-                                        <div th:each="comentario : ${issue.comentarios}" class="feedback-card">
-                                            <div class="feedback-header">
-                                                <div class="feedback-meta">
-                                                    <div class="feedback-author" th:text="|${comentario.usuario.nombre}-${comentario.usuario.rol.nombreRol}|"></div>
-                                                    <div class="feedback-date" th:text="${#dates.format(comentario.fecha, 'dd/MM/yyyy HH:mm')}"></div>
+                                    <div class="d-grid gap-4">
+                                        <div th:each="comentario : ${issue.comentarios}" class="comment-card">
+                                            <div class="comment-header">
+                                                <div class="comment-avatar" th:text="${#strings.substring(comentario.usuario.nombre, 0, 1)}">U</div>
+                                                <div class="comment-meta">
+                                                    <div class="comment-author">
+                                                        <span th:text="${comentario.usuario.nombre}">Usuario</span>
+                                                        <span class="comment-role" th:text="${comentario.usuario.rol.nombreRol}">Rol</span>
+                                                    </div>
+                                                    <div class="comment-date" th:text="${#dates.format(comentario.fecha, 'dd/MM/yyyy HH:mm')}"></div>
                                                 </div>
                                             </div>
-                                            <div class="feedback-content">
-                                                <div class="feedback-message" th:text="${comentario.comentario}"></div>
-                                                <span th:text="${comentario.adjuntos.size()}"></span>
+                                            <div class="comment-content">
+                                                <div class="comment-message" th:text="${comentario.comentario}"></div>
+
                                                 <div th:if="${comentario.adjuntos != null && comentario.adjuntos.size() > 0}">
+                                                    <i class="ti ti-paperclip me-1 text-secondary"></i>
                                                     <a th:each="adjunto : ${comentario.adjuntos}"
                                                        th:href="@{/qa/archivos/verAdjunto/{idAdjunto}(idAdjunto=${adjunto.idAdjunto})}"
-                                                       class="btn btn-link">
+                                                       class="btn btn-link p-0 text-decoration-none me-2">
                                                         <span th:text="${adjunto.nombre}"></span>
                                                     </a>
                                                 </div>

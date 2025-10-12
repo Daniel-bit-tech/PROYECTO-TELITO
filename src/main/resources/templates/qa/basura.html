@@ -1,62 +1,31 @@
-<html lang="es" data-bs-theme="dark" xmlns:th="http://www.thymeleaf.org">
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>TELITO DEVELOPER PORTAL | Sistema de Reservas Deportivas</title>
-    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler.css" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-flags.css" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-socials.css" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-payments.css" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-marketing.css" rel="stylesheet">
-    <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet">
-    <link href="/tabler/preview/css/demo.css" rel="stylesheet">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Detalles del issue</title>
+    <!-- BEGIN GLOBAL MANDATORY STYLES -->
+    <link href="/tabler/dist/css/tabler.css?1757307617" rel="stylesheet" />
+    <!-- END GLOBAL MANDATORY STYLES -->
+    <!-- BEGIN PLUGINS STYLES -->
+    <link href="/tabler/dist/css/tabler-flags.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-socials.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-payments.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-vendors.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-marketing.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-themes.css?1757307617" rel="stylesheet" />
+    <!-- END PLUGINS STYLES -->
+    <!-- BEGIN DEMO STYLES -->
+    <link href="/tabler/preview/css/demo.css?1757307617" rel="stylesheet" />
+    <link href="/tabler/preview/css/demo.css?1757307616" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- END DEMO STYLES -->
+    <!-- BEGIN CUSTOM FONT -->
     <style>
         @import url("https://rsms.me/inter/inter.css");
-        .api-card:hover {
-            transform: translateY(-5px);
-            transition: transform 0.2s ease;
-        }
-        .quick-action-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .chatbot-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1000;
-        }
-        .chatbot-btn {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: #206bc4;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-        .api-status-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-        }
-        .sport-icon {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 8px;
-        }
-
+    </style>
+    <style>
         .empty-state {
             text-align: center;
             padding: 3rem;
@@ -80,71 +49,665 @@
             color: var(--tblr-secondary-color);
             margin-bottom: 1.5rem;
         }
+
+        .empty-state .btn-primary {
+            margin-top: 20px;
+        }
+
+        .catalog-header {
+            padding: 2rem 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .catalog-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .catalog-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .feedback-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .feedback-header {
+            padding: 2rem 0 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .feedback-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .feedback-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .feedback-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--tblr-border-color);
+            margin-bottom: 2rem;
+        }
+
+        .feedback-tab {
+            padding: 1rem 1.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .feedback-tab.active {
+            color: var(--tblr-primary);
+            border-bottom-color: var(--tblr-primary);
+        }
+
+        .feedback-form-container {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .feedback-form-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--tblr-border-color);
+            border-radius: 4px;
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+
+        .rating-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .rating-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .rating-star {
+            font-size: 1.5rem;
+            color: var(--tblr-border-color);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .rating-star.active,
+        .rating-star:hover {
+            color: #ffc107;
+        }
+
+        .feedback-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .feedback-card {
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+        }
+
+        .feedback-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding: 0;
+        }
+
+        .feedback-meta {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .feedback-author {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .feedback-date {
+            color: var(--tblr-secondary-color);
+            font-size: 0.875rem;
+        }
+
+        .feedback-rating {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .feedback-star {
+            color: #ffc107;
+            font-size: 0.875rem;
+        }
+
+        .feedback-content {
+            margin-bottom: 1rem;
+        }
+
+        .feedback-subject {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .feedback-message {
+            color: var(--tblr-body-color);
+            line-height: 1.5;
+        }
+
+        .feedback-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--tblr-secondary-color);
+        }
+
+        .feedback-api {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feedback-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background-color: rgba(var(--tblr-warning-rgb), 0.1);
+            color: var(--tblr-warning);
+        }
+
+        .status-reviewed {
+            background-color: rgba(var(--tblr-success-rgb), 0.1);
+            color: var(--tblr-success);
+        }
+
+        .status-closed {
+            background-color: rgba(var(--tblr-secondary-rgb), 0.1);
+            color: var(--tblr-secondary);
+        }
+
+        .btn-primary {
+            background-color: var(--tblr-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--tblr-primary-dark);
+        }
+
+        @media (max-width: 768px) {
+            .feedback-tabs {
+                flex-direction: column;
+            }
+
+            .feedback-header {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .feedback-footer {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+        }
+
     </style>
+    <!-- END CUSTOM FONT -->
 </head>
-
 <body>
-<script src="/tabler/dist/js/tabler-theme.min.js"></script>
+<!-- BEGIN GLOBAL THEME SCRIPT -->
+<script src="/tabler/dist/js/tabler-theme.min.js?1757307617"></script>
+<!-- END GLOBAL THEME SCRIPT -->
 <div class="page">
-
-    <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+    <!-- BEGIN NAVBAR  -->
     <div th:replace="qa/header_qa.html :: header"></div>
 
+    <!-- END NAVBAR  -->
     <div class="page-wrapper">
+        <!-- BEGIN PAGE HEADER -->
         <div class="page-header d-print-none" aria-label="Page header">
             <div class="container-xl">
                 <div class="row g-2 align-items-center">
-                    <div class="col">
-                        <h2 class="page-title">Feedback</h2>
+
+                    <div class="col" >
+                        <h2 th:text="|Issue de ${issue.reporte.api.nombre}|"></h2>
                     </div>
+
+                    <div th:if="${issue.estado != 'Corregido'}" class="col-md-auto">
+                        <form th:action="@{/qa/issueCerrar/{idIssue}/{idReporte}(idIssue=${issue.id.idIssue}, idReporte=${issue.reporte.idReporte})}" method="post">
+                            <button type="submit" class="btn btn-danger">Cerrar Issue</button>
+                        </form>
+                    </div>
+                    <!-- Page title actions -->
                 </div>
             </div>
-        </div>
-
-        <div class="page-body">
-            <div class="container-xl">
-                <div class="row row-cards">
-
-                    <div th:if="${listaTickets == null or listaTickets.isEmpty()}" class="empty-state">
-                        <div class="empty-icon">
-                            <i class="far fa-comments"></i>
+            <!-- END PAGE HEADER -->
+            <!-- BEGIN PAGE BODY -->
+            <div class="page-body">
+                <div class="container-xl">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Información</h3>
                         </div>
-                        <h3 class="empty-title">No hay feedback disponible</h3>
-                        <p class="empty-description">Aún no se han enviado comentarios. Anima a los desarrolladores a compartir sus ideas.</p>
-                    </div>
-
-                    <div th:each="feedback : ${listaFeedback}" class="col-md-6 col-lg-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <h3 class="card-title" th:text="${feedback.api.nombre}">API o Recurso</h3>
-                                <h3 class="card-title mt-4">Usuario</h3>
-                                <p class="card-subtitle" th:text="${feedback.usuario.nombre}"></p>
-                                <h3 class="card-title mt-4">Comentario</h3>
-                                <p class="card-subtitle" th:text="${feedback.comentario}"></p>
-                                <h3 class="card-title mt-4">Calificación</h3>
-                                <p class="card-subtitle">
-                                    <span th:each="i : ${#numbers.sequence(1, feedback.calificacion)}" class="text-warning"><i class="fas fa-star"></i></span>
-                                    <span th:each="i : ${#numbers.sequence(feedback.calificacion + 1, 5)}" class="text-muted"><i class="far fa-star"></i></span>
-                                </p>
-                            </div>
-                            <div class="card-footer">
-                                <div class="d-flex">
-                                    <a th:href="@{/po/feedbackDetalle/{id}(id=${feedback.idFeedback})}" class="btn btn-primary ms-auto">
-                                        Ver Detalles
-                                    </a>
+                        <div class="card-body">
+                            <div class="datagrid">
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">Dominio/Tags</div>
+                                    <div class="datagrid-content" th:text="|${issue.reporte.api.dominio.nombre}/${issue.reporte.api.tag.nombre}|"></div>
                                 </div>
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">Versión</div>
+                                    <div class="datagrid-content">2.1</div>
+                                </div>
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">Estado</div>
+                                    <div class="datagrid-content"><span th:text="${issue.estado}" th:classappend="${issue.estado == 'Reportado' ? 'text-danger' : (issue.estado == 'En progreso' ? 'text-warning' : (issue.estado == 'Corregido' ? 'text-success' : ''))}" style="text-transform: uppercase;">EN PROGRESO</span></div>
+                                </div>
+                                <div class="datagrid-item">
+                                    <div class="datagrid-title">Fecha</div>
+                                    <div class="datagrid-content"><span th:text="${#dates.format(issue.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span></div>
+                                </div>
+
+
                             </div>
+                            <br>
+                            <div class="datagrid-item">
+                                <div class="datagrid-title">Descripción</div>
+                                <div class="datagrid-content"><span th:text="${issue.descripcion}"></span></div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <br>
+
+                    <div class="feedback-tabs">
+                        <div class="feedback-tab active" data-tab="evidences">Evidencias del reporte</div>
+                        <!--
+                        <div class="feedback-tab" data-tab="my-feedback">Información</div>
+                        -->
+                        <div class="feedback-tab" data-tab="roadmap">Foro</div>
+                        <div class="feedback-tab" data-tab="create-foro">Crear comentario al foro</div>
+                    </div>
+
+                    <div id="evidences" class="feedback-tab-content">
+                        <div class="feedback-form-container">
+                            <h3 class="feedback-form-title">Evidencias</h3>
+                            <p>Acá se muestran los archivos adjuntos que muestran errores en la API</p>
+                            <div th:if="${#lists.isEmpty(evidencias)}" class="empty-state">
+                                <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                                <h4 class="empty-title">No hay evidencias</h4>
+                                <p class="empty-description">Este reporte aún no tiene archivos adjuntos.</p>
+                            </div>
+
+                            <div th:unless="${#lists.isEmpty(evidencias)}">
+                                <ul>
+                                    <li th:each="evidencia : ${evidencias}">
+                                        <a th:href="@{/qa/evidencias/{idEvidencia}(idEvidencia=${evidencia.idEvidencia})}">
+                                            <span th:text="${evidencia.nombre}"></span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+
+                        </div>
+                    </div>
+                    <!--
+
+                    <div id="my-feedback" class="feedback-tab-content" style="display: none;">
+                        <div class="feedback-list">
+                            <h3>Información</h3>
+                            <ul class="steps steps-vertical">
+                                <li class="step-item">
+                                    <div class="h4 m-0">07/06/2025 13:07</div>
+                                    <div class="text-secondary">
+                                        Lorem ipsum dolor sit amet, consectetur adipisicing elit. Accusamus culpa cum expedita ipsam laborum nam ratione reprehenderit sed
+                                        sint tenetur!
+                                    </div>
+                                </li>
+                                <li class="step-item">
+                                    <div class="h4 m-0">10/05/2025 13:07</div>
+                                    <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
+                                </li>
+                                <li class="step-item ">
+                                    <div class="h4 m-0">08/05/2025 13:07</div>
+                                    <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
+                                </li>
+                                <li class="step-item active">
+                                    <div class="h4 m-0">07/05/2025 13:07</div>
+                                    <div class="text-secondary">Parche 1</div>
+                                    <div class="text-secondary">Lorem ipsum dolor sit amet.</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    -->
+
+                    <div id="roadmap" class="feedback-tab-content" style="display: none;">
+                        <div class="feedback-form-container">
+                            <h3 class="feedback-form-title">Foro</h3>
+                            <div class="card">
+                                <!-- Si no hay comentarios, mostrar mensaje -->
+                                <div th:if="${#lists.isEmpty(issue.comentarios)}" class="empty-state">
+                                    <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                                    <h4 class="empty-title">Aún no hay comentarios</h4>
+                                    <p class="empty-description">Sé el primero en dejar un comentario sobre este issue.</p>
+
+                                </div>
+
+                                <!-- Si hay comentarios, mostrarlos -->
+                                <div th:unless="${#lists.isEmpty(issue.comentarios)}">
+                                    <div class="feedback-list">
+                                        <div th:each="comentario : ${issue.comentarios}" class="feedback-card">
+                                            <div class="feedback-header">
+                                                <div class="feedback-meta">
+                                                    <div class="feedback-author" th:text="|${comentario.usuario.nombre}-${comentario.usuario.rol.nombreRol}|"></div>
+                                                    <div class="feedback-date" th:text="${#dates.format(comentario.fecha, 'dd/MM/yyyy HH:mm')}"></div>
+                                                </div>
+                                            </div>
+                                            <div class="feedback-content">
+                                                <div class="feedback-message" th:text="${comentario.comentario}"></div>
+                                                <span th:text="${comentario.adjuntos.size()}"></span>
+                                                <div th:if="${comentario.adjuntos != null && comentario.adjuntos.size() > 0}">
+                                                    <a th:each="adjunto : ${comentario.adjuntos}"
+                                                       th:href="@{/qa/archivos/verAdjunto/{idAdjunto}(idAdjunto=${adjunto.idAdjunto})}"
+                                                       class="btn btn-link">
+                                                        <span th:text="${adjunto.nombre}"></span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                    <div id="create-foro" class="feedback-tab-content" style="display:none">
+                        <div class="feedback-form-container">
+                            <h3 class="feedback-form-title">Foro - Deja tu Comentario</h3>
+                            <div th:if="${issue.estado == 'Corregido'}" class="alert alert-success mt-3">
+                                Este issue ha sido desperado. No se pueden enviar más comentarios.
+                            </div>
+
+                            <div th:unless="${issue.estado == 'Corregido'}">
+                                <!-- Aquí va el formulario para crear comentario -->
+                                <form th:action="@{/qa/crearComentario}" method="POST" enctype="multipart/form-data">
+                                    <!-- ID del Issue y Reporte -->
+                                    <input type="hidden" name="idIssue" th:value="${issue.id.idIssue}" />
+                                    <input type="hidden" name="idReporte" th:value="${issue.reporte.idReporte}" />
+
+                                    <div class="form-group">
+                                        <label for="comentario" class="form-label">Tu Comentario:</label>
+                                        <textarea id="comentario" name="comentario" class="form-control" rows="4" required></textarea>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="archivo" class="form-label">Adjuntar archivo (opcional):</label>
+                                        <input type="file" id="archivo" name="archivos" class="form-control" accept=".png, .jpg, .jpeg, .log" multiple />
+                                        <small>Máximo 5 archivos</small>
+                                    </div>
+                                    <div id="error-message" style="color: red; display: none;">Solo se permiten archivos de tipo .png, .jpg, .jpeg o .log</div>
+                                    <button type="submit" onclick="return validateFiles()" class="btn btn-primary mt-3">Enviar Comentario</button>
+                                </form>
+                            </div>
+
                         </div>
                     </div>
                 </div>
+
             </div>
+            <!-- END PAGE BODY -->
+            <!--  BEGIN FOOTER  -->
+            <div th:replace="qa/footer.html :: footer"></div>
+            <!--  END FOOTER  -->
         </div>
     </div>
 
-    <div th:replace="qa/footer.html :: footer"></div>
-</div>
+    <!-- BEGIN GLOBAL MANDATORY SCRIPTS -->
+    <script src="/tabler/dist/js/tabler.min.js?1757307617" defer></script>
+    <!-- END GLOBAL MANDATORY SCRIPTS -->
+    <!-- BEGIN DEMO SCRIPTS -->
+    <script src="/tabler/preview/js/demo.min.js?1757307617" defer></script>
+    <!-- END DEMO SCRIPTS -->
+    <!-- BEGIN PAGE SCRIPTS -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var themeConfig = {
+                theme: "light",
+                "theme-base": "gray",
+                "theme-font": "sans-serif",
+                "theme-primary": "blue",
+                "theme-radius": "1",
+            };
+            var url = new URL(window.location);
+            var form = document.getElementById("offcanvasSettings");
+            var resetButton = document.getElementById("reset-changes");
+            var checkItems = function () {
+                for (var key in themeConfig) {
+                    var value = window.localStorage["tabler-" + key] || themeConfig[key];
+                    if (!!value) {
+                        var radios = form.querySelectorAll(`[name="${key}"]`);
+                        if (!!radios) {
+                            radios.forEach((radio) => {
+                                radio.checked = radio.value === value;
+                            });
+                        }
+                    }
+                }
+            };
+            form.addEventListener("change", function (event) {
+                var target = event.target,
+                    name = target.name,
+                    value = target.value;
+                for (var key in themeConfig) {
+                    if (name === key) {
+                        document.documentElement.setAttribute("data-bs-" + key, value);
+                        window.localStorage.setItem("tabler-" + key, value);
+                        url.searchParams.set(key, value);
+                    }
+                }
+                window.history.pushState({}, "", url);
+            });
+            resetButton.addEventListener("click", function () {
+                for (var key in themeConfig) {
+                    var value = themeConfig[key];
+                    document.documentElement.removeAttribute("data-bs-" + key);
+                    window.localStorage.removeItem("tabler-" + key);
+                    url.searchParams.delete(key);
+                }
+                checkItems();
+                window.history.pushState({}, "", url);
+            });
+            checkItems();
+        });
+    </script>
+    <script>
 
-<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/tabler/dist/js/tabler.min.js"></script>
+        document.querySelectorAll('.feedback-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+
+                document.querySelectorAll('.feedback-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.feedback-tab-content').forEach(c => c.style.display = 'none');
+
+
+                this.classList.add('active');
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(tabId).style.display = 'block';
+            });
+        });
+
+
+        document.querySelectorAll('.rating-star').forEach(star => {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+                document.getElementById('feedback-rating').value = value;
+
+
+                document.querySelectorAll('.rating-star').forEach(s => {
+                    const starValue = parseInt(s.getAttribute('data-value'));
+                    if (starValue <= value) {
+                        s.innerHTML = '<i class="fas fa-star"></i>';
+                        s.classList.add('active');
+                    } else {
+                        s.innerHTML = '<i class="far fa-star"></i>';
+                        s.classList.remove('active');
+                    }
+                });
+            });
+        });
+
+
+        document.getElementById('feedback-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const rating = document.getElementById('feedback-rating').value;
+            if (rating === '0') {
+                alert('Por favor, proporciona una calificación con las estrellas');
+                return;
+            }
+
+
+            console.log('Feedback enviado:', {
+                api: document.getElementById('feedback-api').value,
+                subject: document.getElementById('feedback-subject').value,
+                type: document.getElementById('feedback-type').value,
+                rating: rating,
+                message: document.getElementById('feedback-message').value,
+                contact: document.getElementById('feedback-contact').checked
+            });
+
+            alert('¡Gracias por tu feedback! Tu comentario ha sido enviado al equipo de Telito.');
+            this.reset();
+
+
+            document.querySelectorAll('.rating-star').forEach(s => {
+                s.innerHTML = '<i class="far fa-star"></i>';
+                s.classList.remove('active');
+            });
+            document.getElementById('feedback-rating').value = '0';
+        });
+
+
+        document.querySelectorAll('.switch-tab').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const tabId = this.getAttribute('data-tab');
+                document.querySelectorAll('.feedback-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.feedback-tab-content').forEach(c => c.style.display = 'none');
+
+                document.querySelector(`.feedback-tab[data-tab="${tabId}"]`).classList.add('active');
+                document.getElementById(tabId).style.display = 'block';
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Obtén el botón de dejar comentario
+            const leaveCommentButton = document.getElementById('leave-comment-btn');
+
+            if (leaveCommentButton) {
+                leaveCommentButton.addEventListener('click', function(e) {
+                    e.preventDefault(); // Prevenir comportamiento por defecto (evitar que la página se recargue)
+
+                    // Cambia las clases de activación de pestañas
+                    document.querySelectorAll('.feedback-tab').forEach(tab => tab.classList.remove('active'));
+                    document.querySelectorAll('.feedback-tab-content').forEach(content => content.style.display = 'none');
+
+                    // Activa la pestaña "Crear comentario"
+                    const createTab = document.querySelector('.feedback-tab[data-tab="create-foro"]');
+                    createTab.classList.add('active');
+
+                    // Muestra el contenido del formulario de crear comentario
+                    document.getElementById('create-foro').style.display = 'block';
+                });
+            }
+        });
+
+    </script>
+    <script>
+        function validateFiles() {
+            const fileInput = document.getElementById("archivo");
+            const files = fileInput.files;
+            const allowedTypes = ["image/png", "image/jpeg", "text/plain"]; // Tipos de archivo permitidos
+
+            // Limpiar cualquier mensaje de error previo
+            document.getElementById("error-message").style.display = "none";
+
+            for (let i = 0; i < files.length; i++) {
+                if (!allowedTypes.includes(files[i].type)) {
+                    // Si el archivo no tiene un tipo permitido, mostramos un mensaje de error
+                    document.getElementById("error-message").style.display = "block";
+                    return false; // Evita que el formulario se envíe
+                }
+            }
+
+            return true; // Si todos los archivos son válidos, el formulario se envía
+        }
+    </script>
+    <!-- END PAGE SCRIPTS -->
 </body>
 </html>
