@@ -46,6 +46,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
     // Método para obtener el primer PO de una organización específica
     Usuario findFirstByRol_IdRolAndOrganizacion_IdOrganizacion(Integer idRol, Integer idOrganizacion);
 
+    // Encontrar usuarios por rol
+    List<Usuario> findByRol_NombreRol(String nombreRol);
+
     // Búsqueda avanzada con múltiples filtros
     @Query("SELECT u FROM Usuario u WHERE " +
             "(:nombre IS NULL OR LOWER(u.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) AND " +
