@@ -18,7 +18,7 @@ public class Historial {
     @Column(name = "etiqueta", nullable = false, length = 25)
     private String etiqueta;
     
-    @Column(name = "descripcion", length = 200)
+    @Column(name = "descripción", length = 200)
     private String descripcion;
     
     @ManyToOne(fetch = FetchType.LAZY)

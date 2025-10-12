@@ -91,6 +91,10 @@ public class Usuario {
     @OneToMany(mappedBy = "usuarioLider", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Proyecto> proyectosLiderados;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Api> misApis;
     
     // Constructores
     public Usuario() {}
@@ -283,5 +287,13 @@ public class Usuario {
     
     public void setAuditLogs(List<AuditLog> auditLogs) {
         this.auditLogs = auditLogs;
+    }
+
+    public List<Api> getMisApis() {
+        return misApis;
+    }
+
+    public void setMisApis(List<Api> misApis) {
+        this.misApis = misApis;
     }
 }
