@@ -10,4 +10,5 @@ import java.util.List;
 public interface EvidenciaRepository extends JpaRepository<Evidencia, Integer> {
     // Método para encontrar todas las evidencias asociadas a un reporte
     List<Evidencia> findByReporte(Reporte reporte);
+    List<Evidencia> findByReporteIdReporte(Integer idReporte);
 }

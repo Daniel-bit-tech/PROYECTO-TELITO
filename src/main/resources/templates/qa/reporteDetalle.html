@@ -24,6 +24,29 @@
     <!-- BEGIN CUSTOM FONT -->
     <style>
         @import url("https://rsms.me/inter/inter.css");
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background-color: var(--tblr-bg-surface);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-description {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
     </style>
     <!-- END CUSTOM FONT -->
 </head>
@@ -80,7 +103,7 @@
                                 </div>
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Fecha</div>
-                                    <div class="datagrid-content"><span th:text="${#dates.format(reporte.fechaCreacion, 'dd-MM-yyyy')}"></span></div>
+                                    <div class="datagrid-content"><span th:text="${#dates.format(reporte.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span></div>
                                 </div>
 
 
@@ -100,8 +123,20 @@
                             <h3 class="card-title">Evidencias adjuntas</h3>
                         </div>
 
-                        <div class="card-body">
+                        <div th:if="${#lists.isEmpty(evidencias)}" class="empty-state">
+                            <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                            <h4 class="empty-title">No hay evidencias</h4>
+                            <p class="empty-description">No se han subido archivos asociados a este reporte.</p>
+                        </div>
 
+                        <div th:unless="${#lists.isEmpty(evidencias)}">
+                            <ul class="list-group">
+                                <li class="list-group-item" th:each="evidencia : ${evidencias}">
+                                    <span th:text="${evidencia.nombre}"></span>
+                                    <a th:href="@{/qa/evidencias/descargar/{idEvidencia}(idEvidencia=${evidencia.idEvidencia})}"
+                                       class="btn btn-link btn-sm"> <span th:text="${evidencia.nombre}"></span></a>
+                                </li>
+                            </ul>
                         </div>
                     </div>
 

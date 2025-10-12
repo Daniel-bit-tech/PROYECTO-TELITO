@@ -49,7 +49,7 @@
                     </div>
                     <!-- Acción para QA -->
                     <div sec:authorize="hasRole('QA')" class="col-md-auto">
-                        <a class="btn btn-warning" th:href="@{/qa/crearFeedback/{apiId}(apiId=${api.idApi})}">
+                        <a class="btn btn-primary" th:href="@{/qa/crearFeedback/{apiId}(apiId=${api.idApi})}">
                             <i class="fas fa-comment-dots me-2"></i>Generar Feedback
                         </a>
                     </div>

@@ -361,7 +361,7 @@
                                 </div>
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Fecha</div>
-                                    <div class="datagrid-content"><span th:text="${#dates.format(issue.fechaCreacion, 'dd-mm-yyyy HH:mm')}"></span></div>
+                                    <div class="datagrid-content"><span th:text="${#dates.format(issue.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></span></div>
                                 </div>
 
 
@@ -389,6 +389,21 @@
                         <div class="feedback-form-container">
                             <h3 class="feedback-form-title">Evidencias</h3>
                             <p>Acá se muestran los archivos adjuntos que muestran errores en la API</p>
+                            <div th:if="${#lists.isEmpty(evidencias)}" class="empty-state">
+                                <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                                <h4 class="empty-title">No hay evidencias</h4>
+                                <p class="empty-description">Este reporte aún no tiene archivos adjuntos.</p>
+                            </div>
+
+                            <div th:unless="${#lists.isEmpty(evidencias)}">
+                                <ul>
+                                    <li th:each="evidencia : ${evidencias}">
+                                        <a th:href="@{/qa/evidencias/{idEvidencia}(idEvidencia=${evidencia.idEvidencia})}">
+                                            <span th:text="${evidencia.nombre}"></span>
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
 
                         </div>
                     </div>
