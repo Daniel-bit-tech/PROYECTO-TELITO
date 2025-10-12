@@ -7,27 +7,6 @@ import java.util.Date;
 @Table(name = "roadmap")
 public class Roadmap {
 
-    public enum EstadoRoadmap {
-        Nueva("Nueva"),
-        En_desarrollo("En desarrollo"),
-        Próxima("Próxima");
-
-        private final String displayName;
-
-        EstadoRoadmap(String displayName) {
-            this.displayName = displayName;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        @Override
-        public String toString() {
-            return name(); // Devuelve el nombre del enum (En_desarrollo)
-        }
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -37,40 +16,39 @@ public class Roadmap {
     @JoinColumn(name = "api_id", referencedColumnName = "idAPI", nullable = false)
     private Api api;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false, columnDefinition = "ENUM('Nueva','En_desarrollo','Próxima')")
-    private EstadoRoadmap estado;
+    @Column(name = "estado", nullable = false, length = 50)
+    private String estado;  // Nueva, En desarrollo, Próxima, Sin estado
 
     @Column(name = "fecha_modificacion", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date fechaModificacion;
 
-
     // Constructores
     public Roadmap() {}
 
-    public Roadmap(Api api, EstadoRoadmap estado, Date fechaInicio, Date fechaFin) {
+    // Constructor corregido
+    public Roadmap(Api api, String estado, Date fechaModificacion) {
         this.api = api;
         this.estado = estado;
-        this.fechaModificacion = fechaInicio;
+        this.fechaModificacion = fechaModificacion;
+    }
+
+    // Constructor simplificado con fecha automática
+    public Roadmap(Api api, String estado) {
+        this.api = api;
+        this.estado = estado;
+        this.fechaModificacion = new Date();
     }
 
     @Override
     public String toString() {
         return "Roadmap{" +
                 "id=" + id +
-                ", api='" + api + '\'' +
+                ", api='" + (api != null ? api.getNombre() : "null") + '\'' +
                 ", estado='" + estado + '\'' +
                 ", fechaModificacion=" + fechaModificacion +
-
                 '}';
     }
-
-    public Roadmap(String estado, Api api) {
-        this.estado = EstadoRoadmap.valueOf(estado);
-        this.api = api;
-    }
-
 
     // Getters y Setters
     public Integer getId() {
@@ -89,28 +67,21 @@ public class Roadmap {
         this.api = api;
     }
 
-    public EstadoRoadmap getEstado() {
+    public String getEstado() {
         return estado;
     }
 
-    public void setEstado(EstadoRoadmap estado) {
+    public void setEstado(String estado) {
         this.estado = estado;
+        // Actualizar automáticamente la fecha cuando cambia el estado
+        this.fechaModificacion = new Date();
     }
 
     public Date getFechaModificacion() {
         return fechaModificacion;
     }
+
     public void setFechaModificacion(Date fechaModificacion) {
         this.fechaModificacion = fechaModificacion;
     }
-
-    public String getEstadoString() {
-        return estado.getDisplayName();
-    }
-
-    public void setEstadoString(String estado) {
-        this.estado = EstadoRoadmap.valueOf(estado);
-    }
-
-
 }
