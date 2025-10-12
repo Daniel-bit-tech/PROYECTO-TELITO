@@ -44,6 +44,10 @@ public class SecurityConfig {
     private UsuarioActivoFilter usuarioActivoFilter;
 
     @Autowired
+    @Qualifier("oauth2UserServiceBean")
+    private org.springframework.security.oauth2.client.userinfo.OAuth2UserService<OAuth2UserRequest, OAuth2User> oauth2UserServiceBean;
+
+    @Autowired
     private ImpersonationAuthorizationFilter impersonationAuthorizationFilter;
 
     @Autowired
