@@ -257,7 +257,8 @@
                         <!-- Fecha Asociación -->
                         <div class="col-md-6">
                             <label class="form-label">Fecha Asociación</label>
-                            <input type="date" class="form-control" th:field="*{fechaAsociacion}" required>
+                            <input type="date" class="form-control"  min="2000-01-01" max="2025-12-31" th:field="*{fechaAsociacion}" required>
+
                         </div>
                     </div>
                 </div>

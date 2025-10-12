@@ -1,8 +1,7 @@
 package com.example.telitodev.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
@@ -21,7 +20,7 @@ public class Proyecto {
     @JoinColumn(name = "idOrganizacion")
     private Organizacion organizacion;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="dni_po_lider",nullable = false)
     private Usuario usuarioLider;
 
@@ -36,10 +35,12 @@ public class Proyecto {
     private String descripcion;
 
     @Column(name = "fecha_inicio", nullable = false)
+    @PastOrPresent(message = "La fecha no puede ser futura")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaInicio;
 
     @Column(name = "fecha_fin")
+    @Future(message = "La fecha de finalización debe ser futura")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaFin;
 

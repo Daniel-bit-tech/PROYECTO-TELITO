@@ -227,11 +227,11 @@ public class ProyectosController extends BaseController {
 
         if (proyecto.getIdProyecto() != null) {
             //Edición
-            if (usuario.getOrganizacion().equals(proyecto.getOrganizacion()) && proyecto.getUsuarioLider().equals(usuario)) {
 
-                Proyecto existente = proyectoRepository.findById(proyecto.getIdProyecto())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+            Proyecto existente = proyectoRepository.findById(proyecto.getIdProyecto())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
+            if (usuario.getOrganizacion().equals(existente.getOrganizacion()) && existente.getUsuarioLider().equals(usuario)) {
                 proyecto.setNombre(existente.getNombre());
                 proyecto.setFechaInicio(existente.getFechaInicio());
                 proyecto.setOrganizacion(existente.getOrganizacion());
@@ -254,8 +254,9 @@ public class ProyectosController extends BaseController {
 
     @PostMapping("{id}/addApis")
     @PreAuthorize("hasRole('PO')")
-    public String agregarApisProy(@Valid @ModelAttribute("nuevaAsociacion") ProyectoHasApi nuevaAsociacion,
+    public String agregarApisProy(@Valid @ModelAttribute("nuevaAsociacion") ProyectoHasApi nuevaAsociacion, RedirectAttributes redirectAttributes,
                                   Model model, Authentication auth, @PathVariable Integer id) {
+
 
         Proyecto proyecto = proyectoRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no encontrado"));
@@ -273,6 +274,7 @@ public class ProyectosController extends BaseController {
         }
 
 
+
         nuevaAsociacion.setProyecto(proyecto); // asignar el proyecto
         if (nuevaAsociacion.getFechaAsociacion() == null) {
             nuevaAsociacion.setFechaAsociacion(new Date(System.currentTimeMillis())); // fecha por defecto si no se envía
@@ -280,7 +282,9 @@ public class ProyectosController extends BaseController {
 
         proyHasApiRepository.save(nuevaAsociacion);
 
-        return "redirect:/proyectos/{id}?success=apiAgregada";
+        redirectAttributes.addFlashAttribute("msg", "Se agrego la nueva Api al Proyecto "+nuevaAsociacion.getProyecto().getNombre()+" exitosamente");
+
+        return "redirect:/proyectos/{id}";
     }
 
 }

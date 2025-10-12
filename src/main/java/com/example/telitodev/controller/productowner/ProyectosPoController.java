@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/po")
+@RequestMapping("/po/proyectos")
 public class ProyectosPoController extends BaseController {
 
     final UsuarioRepository usuarioRepository;
@@ -39,7 +39,7 @@ public class ProyectosPoController extends BaseController {
         this.entornoRepository = entornoRepository;
     }
 
-    @GetMapping("/proyectos")
+    @GetMapping()
     public String mostrarListaProyectos(@RequestParam(value = "filter", required = false) String filtro,
                                        Model model, Authentication auth, HttpSession session) {
 
@@ -86,7 +86,7 @@ public class ProyectosPoController extends BaseController {
         return "po/proyectos";
     }
 
-    @GetMapping("/proyectos/{id}")
+    @GetMapping("/{id}")
     public String mostrarDetalleProyecto(@PathVariable Integer id, Model model, Authentication auth, HttpSession session) {
         
         Usuario usuario = getCurrentUser(auth, session);

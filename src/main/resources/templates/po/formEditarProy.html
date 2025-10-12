@@ -61,6 +61,7 @@
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Fecha Fin</label>
                     <input type="date" th:field="*{fechaFin}" class="form-control"/>
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fechaFin')}" th:errors="*{fechaFin}"></div>
                   </div>
                 </div>
 
