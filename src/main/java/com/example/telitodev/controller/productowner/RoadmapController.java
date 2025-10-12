@@ -58,7 +58,7 @@ public class RoadmapController {
             Optional<Roadmap> roadmapOpt = roadmapRepository.findByApiIdApi(api.getIdApi());
             String estadoActual;
             if (roadmapOpt.isPresent()) {
-                estadoActual = roadmapOpt.get().getEstadoString();
+                estadoActual = roadmapOpt.get().getEstado();
                 System.out.println("✅ API " + api.getNombre() + " - Estado: " + estadoActual);
 
                 // Solo agregar a roadmapData si no está en "Sin estado"
@@ -168,11 +168,11 @@ public class RoadmapController {
                 // Actualizar estado existente
                 roadmap = roadmapOpt.get();
                 System.out.println("📝 Actualizando roadmap existente - Estado anterior: " + roadmap.getEstado());
-                roadmap.setEstadoString(nuevoEstado);
+                roadmap.setEstado(nuevoEstado);
             } else {
                 // Crear nuevo roadmap
                 System.out.println("🆕 Creando nuevo roadmap");
-                roadmap = new Roadmap(nuevoEstado, api);
+                roadmap = new Roadmap(api, nuevoEstado);
             }
 
             Roadmap saved = roadmapRepository.save(roadmap);
@@ -205,7 +205,7 @@ public class RoadmapController {
             if (roadmapOpt.isPresent()) {
                 Roadmap roadmap = roadmapOpt.get();
                 System.out.println("📝 Roadmap encontrado - Estado anterior: " + roadmap.getEstado());
-                roadmap.setEstadoString("Sin estado");
+                roadmap.setEstado("Sin estado");
                 Roadmap saved = roadmapRepository.save(roadmap);
                 System.out.println("💾 Roadmap actualizado - Estado nuevo: " + saved.getEstado());
             } else {
