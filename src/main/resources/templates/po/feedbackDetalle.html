@@ -3,6 +3,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <!-- CSRF tokens necesarios para seguridad -->
+    <meta th:name="_csrf" th:content="${_csrf.token}"/>
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <!-- Control de caché y seguridad -->
+    <div th:replace="~{components/security-cache-control :: security-cache-control}"></div>
     <title>TELITO DEVELOPER PORTAL | Detalles de Feedback</title>
     <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css" rel="stylesheet">
     <link href="/tabler/dist/css/tabler.css" rel="stylesheet">

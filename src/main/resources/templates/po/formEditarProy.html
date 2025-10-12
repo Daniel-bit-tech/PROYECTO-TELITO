@@ -11,7 +11,8 @@
   <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
   <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 </head>
 <body>
@@ -20,8 +21,8 @@
   <!-- Barra de impersonación -->
   <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
   
-  <header th:replace="admin/header :: header"
-          sec:authorize="hasRole('SUPERADMIN')"></header>
+<!--  <header th:replace="admin/header :: header"-->
+<!--          sec:authorize="hasRole('SUPERADMIN')"></header>-->
   <header th:replace="po/header_po :: header"
           sec:authorize="hasRole('PO')"></header>
 
@@ -61,7 +62,6 @@
                   <div class="col-md-6 mb-3">
                     <label class="form-label">Fecha Fin</label>
                     <input type="date" th:field="*{fechaFin}" class="form-control"/>
-                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fechaFin')}" th:errors="*{fechaFin}"></div>
                   </div>
                 </div>
 
@@ -84,11 +84,11 @@
                 </div>
 
               </div>
-              <div class="card-footer text-end">
+              <div class="card-footer bg-light text-end">
                 <!-- Detectar el rol del usuario para dirigir correctamente el botón cancelar -->
-                <a th:if="${usuario.rol.nombreRol == 'PO'}" th:href="@{/po/proyectos}" class="btn btn-secondary">Cancelar</a>
-                <a th:if="${usuario.rol.nombreRol == 'DEV'}" th:href="@{/dev/proyectos}" class="btn btn-secondary">Cancelar</a>
-                <a th:if="${usuario.rol.nombreRol != 'PO' and usuario.rol.nombreRol != 'DEV'}" th:href="@{/proyectos}" class="btn btn-secondary">Cancelar</a>
+                <a th:if="${usuario.rol.nombreRol == 'PO'}" th:href="@{/po/proyectos}" class="btn btn-secondary me-2">Cancelar</a>
+                <a th:if="${usuario.rol.nombreRol == 'DEV'}" th:href="@{/dev/proyectos}" class="btn btn-secondary me-2">Cancelar</a>
+                <a th:if="${usuario.rol.nombreRol != 'PO' and usuario.rol.nombreRol != 'DEV'}" th:href="@{/proyectos}" class="btn btn-secondary me-2">Cancelar</a>
                 <button type="submit" class="btn btn-primary">Guardar</button>
               </div>
             </form>
@@ -100,5 +100,7 @@
 </div>
 
 <script src="/tabler/dist/js/tabler.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
