@@ -30,8 +30,16 @@
                         <i class="fas fa-sign-out-alt me-1"></i>
                         Volver a SuperAdmin
                     </button>
+                    <button id="emergencyCleanupBtn" 
+                            class="btn btn-danger btn-sm fw-bold me-2"
+                            title="Usar solo si el botón normal no funciona"
+                            style="display: none !important;">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Emergencia
+                    </button>
                     <button id="testImpersonationBtn" 
-                            class="btn btn-info btn-sm fw-bold">
+                            class="btn btn-info btn-sm fw-bold"
+                            style="display: none !important;">
                         <i class="fas fa-bug me-1"></i>
                         Test
                     </button>
@@ -73,6 +81,21 @@
         box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
+    .impersonation-banner .btn-danger {
+        background: #dc3545;
+        border: 2px solid #fff;
+        color: #fff;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .impersonation-banner .btn-danger:hover {
+        background: #c82333;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
     @keyframes pulse-border {
         0% { border-bottom-color: #ffc107; }
         50% { border-bottom-color: #fff; }
@@ -84,6 +107,121 @@
         padding-top: 60px !important;
     }
     </style>
+    
+    <!-- JavaScript SIEMPRE - para limpiar protección residual -->
+    <script>
+    // SCRIPT GLOBAL: Limpiar protección de impersonación residual
+    document.addEventListener('DOMContentLoaded', function() {
+        // Si NO hay impersonación activa, limpiar cualquier protección residual
+        const hasImpersonationBanner = document.querySelector('.impersonation-banner');
+        
+        if (!hasImpersonationBanner) {
+            console.log('🧹 Sin impersonación activa - limpiando protección residual');
+            
+            // VERIFICACIÓN CRÍTICA: Si estamos en una vista incorrecta después de terminar impersonación
+            const currentPath = window.location.pathname;
+            const currentUser = document.querySelector('[data-username]')?.getAttribute('data-username');
+            const pageTitle = document.title;
+            const bodyText = document.body.textContent;
+            
+            // Detectar múltiples señales de incongruencia
+            const isInDevPortal = currentPath.startsWith('/dev/') || pageTitle.includes('Developer Portal');
+            const isInQAPortal = currentPath.startsWith('/qa/') || pageTitle.includes('QA Portal');
+            const isInPOPortal = currentPath.startsWith('/po/') || pageTitle.includes('PO Portal');
+            const isInWrongPortal = isInDevPortal || isInQAPortal || isInPOPortal;
+            
+            // Detectar si el usuario mostrado es SuperAdmin o similar
+            const hasAdminData = bodyText.includes('SUPERADMIN') || 
+                                bodyText.includes('Super Admin') ||
+                                currentUser === 'Carlos' ||
+                                bodyText.includes('Carlos');
+            
+            // Detectar si hay un banner de impersonación visible
+            const hasVisibleImpersonationBanner = document.querySelector('.impersonation-banner') && 
+                                                 !document.querySelector('.impersonation-banner').style.display === 'none';
+            
+            console.log('🔍 ANÁLISIS DE INCONSISTENCIA:');
+            console.log('   Path actual:', currentPath);
+            console.log('   Usuario detectado:', currentUser);
+            console.log('   ¿En portal incorrecto?:', isInWrongPortal);
+            console.log('   ¿Datos de admin?:', hasAdminData);
+            console.log('   ¿Banner de impersonación visible?:', hasVisibleImpersonationBanner);
+            
+            // Si estamos en una vista que NO es admin pero el usuario parece ser SuperAdmin
+            // O si hay un banner de impersonación pero no debería haberlo
+            if ((isInWrongPortal && hasAdminData) || hasVisibleImpersonationBanner) {
+                
+                console.log('🚨 INCONGRUENCIA DETECTADA: Vista incorrecta para SuperAdmin');
+                console.log('   Path actual:', currentPath);
+                console.log('   Usuario:', currentUser);
+                console.log('   Banner impersonación:', hasVisibleImpersonationBanner ? 'VISIBLE' : 'No visible');
+                
+                // Mostrar alerta específica según el tipo de incongruencia
+                let alertMessage = '⚠️ INCONGRUENCIA DETECTADA\\n\\n';
+                
+                if (hasVisibleImpersonationBanner) {
+                    alertMessage += '❌ Se detectó un banner de impersonación activo sin impersonación real.\\n' +
+                                  '🔧 Esto indica un estado inconsistente de la sesión.\\n\\n';
+                } else if (isInWrongPortal && hasAdminData) {
+                    alertMessage += '❌ Estás viendo una vista de usuario normal con datos de SuperAdmin.\\n' +
+                                  '🔧 Esto no debería suceder después de terminar la impersonación.\\n\\n';
+                }
+                
+                alertMessage += '🔄 Redirigiendo automáticamente a la vista de SuperAdmin...';
+                
+                alert(alertMessage);
+                
+                // Forzar redirección inmediata a admin
+                setTimeout(() => {
+                    console.log('🔄 Ejecutando redirección correctiva a admin');
+                    window.location.replace('/admin/gestion-usuarios');
+                }, 1000);
+                return;
+            }
+            
+            // Limpiar todos los listeners de protección que puedan quedar
+            if (window.impersonationNavigationHandler) {
+                window.removeEventListener('popstate', window.impersonationNavigationHandler);
+                delete window.impersonationNavigationHandler;
+                console.log('✅ Listener de navegación de impersonación removido (residual)');
+            }
+            
+            if (window.impersonationPopStateHandler) {
+                window.removeEventListener('popstate', window.impersonationPopStateHandler);
+                delete window.impersonationPopStateHandler;
+                console.log('✅ Listener de popstate de impersonación removido (residual)');
+            }
+            
+            if (window.impersonationBackHandler) {
+                window.removeEventListener('popstate', window.impersonationBackHandler);
+                delete window.impersonationBackHandler;
+                console.log('✅ Listener de protección hacia atrás removido (residual)');
+            }
+            
+            if (window.impersonationUnloadHandler) {
+                window.removeEventListener('beforeunload', window.impersonationUnloadHandler);
+                delete window.impersonationUnloadHandler;
+                console.log('✅ Listener de beforeunload removido (residual)');
+            }
+            
+            // Marcar protección como desactivada
+            window.impersonationProtectionDisabled = true;
+            
+            // Restaurar estado normal del historial
+            if (window.history && window.history.replaceState) {
+                const normalState = { 
+                    normal: true, 
+                    timestamp: Date.now(),
+                    noImpersonation: true 
+                };
+                window.history.replaceState(normalState, '', window.location.href);
+                console.log('✅ Estado del historial restaurado a normal (sin impersonación)');
+            }
+            
+            console.log('🔓 Protección de impersonación completamente removida - navegación normal restaurada');
+        }
+    });
+    </script>
     
     <!-- JavaScript solo si hay impersonación -->
     <script th:if="${isImpersonating}">
@@ -108,6 +246,7 @@
         
         // Configurar botón de detener impersonación
         const stopBtn = document.getElementById('stopImpersonationBtn');
+        const emergencyBtn = document.getElementById('emergencyCleanupBtn');
         const testBtn = document.getElementById('testImpersonationBtn');
         
         if (stopBtn) {
@@ -118,6 +257,19 @@
             });
         } else {
             console.error('❌ No se encontró el botón stopImpersonationBtn');
+        }
+        
+        if (emergencyBtn) {
+            emergencyBtn.addEventListener('click', function() {
+                if (confirm('⚠️ LIMPIEZA DE EMERGENCIA\\n\\n' +
+                          'Esto forzará la limpieza completa de la sesión de impersonación.\\n' +
+                          'Úsalo solo si el botón normal "Volver a SuperAdmin" no funciona.\\n\\n' +
+                          '¿Estás seguro de que quieres continuar?')) {
+                    emergencyCleanup();
+                }
+            });
+        } else {
+            console.error('❌ No se encontró el botón emergencyCleanupBtn');
         }
         
         if (testBtn) {
@@ -159,60 +311,246 @@
         function preventBackNavigationDuringImpersonation() {
             console.log('🛡️ Configurando protección contra navegación hacia atrás durante impersonación');
             
+            // Verificar si la protección ha sido desactivada globalmente
+            if (window.impersonationProtectionDisabled) {
+                console.log('🔓 Protección desactivada globalmente - omitiendo configuración');
+                return;
+            }
+            
+            // Crear estado de protección más robusto
+            const impersonationProtectionState = {
+                impersonationActive: true,
+                protectionLevel: 'active',
+                timestamp: Date.now(),
+                currentPath: window.location.pathname
+            };
+            
             // Agregar una entrada al historial para "atrapar" el botón atrás
             if (window.history && window.history.pushState) {
-                // Agregar un estado al historial
-                window.history.pushState({ impersonationActive: true }, '', window.location.href);
+                // Reemplazar estado actual y agregar protección
+                window.history.replaceState(impersonationProtectionState, '', window.location.href);
+                window.history.pushState(impersonationProtectionState, '', window.location.href);
                 
-                // Escuchar eventos de popstate (botón atrás/adelante)
-                window.addEventListener('popstate', function(event) {
-                    console.log('🔙 Detectada navegación hacia atrás durante impersonación');
-                    console.log('   Estado:', event.state);
+                // Función para manejar intentos de navegación hacia atrás
+                const handleImpersonationNavigation = function(event) {
+                    // Verificar nuevamente si la protección sigue activa
+                    if (window.impersonationProtectionDisabled) {
+                        console.log('🔓 Protección desactivada - permitiendo navegación normal');
+                        return true; // Permitir navegación normal
+                    }
                     
-                    // Si estamos en impersonación y el usuario intenta ir atrás
-                    if (window.location.pathname.includes('/admin/')) {
+                    console.log('🔙 Detectada navegación durante impersonación');
+                    console.log('   Estado:', event.state);
+                    console.log('   URL actual:', window.location.href);
+                    
+                    // Si el usuario intenta acceder a páginas de admin durante impersonación
+                    if (window.location.pathname.startsWith('/admin/')) {
                         console.log('🚫 Bloqueando acceso a admin durante impersonación');
                         
-                        // Redirigir al portal correcto (obtenido del banner)
+                        // Mostrar mensaje informativo
+                        alert('⚠️ Durante la impersonación no puedes acceder a páginas de SuperAdmin.\\n\\n' +
+                              '✅ Para volver a SuperAdmin, usa el botón "Volver a SuperAdmin" en la barra superior.\\n\\n' +
+                              '🔄 Serás redirigido a la vista del usuario impersonado...');
+                        
+                        // Redirigir al portal correcto basado en la URL actual o el estado
                         const currentUrl = window.location.href;
-                        if (currentUrl.includes('/po/')) {
-                            window.location.replace('/po/');
-                        } else if (currentUrl.includes('/dev/')) {
-                            window.location.replace('/dev/');
-                        } else if (currentUrl.includes('/qa/')) {
-                            window.location.replace('/qa/');
+                        let targetUrl = '/';
+                        
+                        // Determinar la URL de redirección apropiada
+                        if (currentUrl.includes('/po/') || event.state?.targetRole === 'PO') {
+                            targetUrl = '/po/home';
+                        } else if (currentUrl.includes('/dev/') || event.state?.targetRole === 'DEV') {
+                            targetUrl = '/dev/home';
+                        } else if (currentUrl.includes('/qa/') || event.state?.targetRole === 'QA') {
+                            targetUrl = '/qa/home';
                         } else {
-                            // Por defecto, mantener en la página actual
-                            window.history.pushState({ impersonationActive: true }, '', window.location.href);
+                            // Intentar obtener el rol del banner visible
+                            const roleElement = document.querySelector('[data-impersonated-role]');
+                            if (roleElement) {
+                                const role = roleElement.getAttribute('data-impersonated-role');
+                                targetUrl = `/${role.toLowerCase()}/home`;
+                            }
                         }
+                        
+                        // Usar replace para evitar ciclos de navegación
+                        setTimeout(() => {
+                            window.location.replace(targetUrl);
+                        }, 500);
+                        
                     } else {
-                        // Mantener la protección agregando otra entrada al historial
-                        window.history.pushState({ impersonationActive: true }, '', window.location.href);
+                        // Para otras navegaciones, mantener la protección
+                        console.log('🛡️ Manteniendo protección de navegación');
+                        window.history.pushState(impersonationProtectionState, '', window.location.href);
                     }
-                });
+                };
+                
+                // Remover listener anterior si existe
+                if (window.impersonationNavigationHandler) {
+                    window.removeEventListener('popstate', window.impersonationNavigationHandler);
+                }
+                
+                // Agregar el nuevo listener
+                window.addEventListener('popstate', handleImpersonationNavigation);
+                window.impersonationNavigationHandler = handleImpersonationNavigation;
+                
+                console.log('✅ Protección contra navegación hacia atrás configurada correctamente');
             }
         }
         
-        function clearHistoryAndRedirect(redirectUrl) {
-            console.log('🧹 Limpiando historial y redirigiendo...');
+        function clearHistoryAndRedirect(redirectUrl, disableProtection = false) {
+            console.log('🧹 Limpiando historial agresivamente y redirigiendo...');
+            console.log('🔓 Desactivar protección:', disableProtection);
             
-            // Método 1: Usar replace para no agregar al historial
-            try {
-                // Intentar limpiar el historial usando history.pushState
-                if (window.history && window.history.pushState) {
-                    // Reemplazar la entrada actual del historial
-                    window.history.replaceState(null, null, redirectUrl);
-                    
-                    // Forzar la navegación
-                    window.location.replace(redirectUrl);
-                } else {
-                    // Fallback para navegadores más antiguos
-                    window.location.replace(redirectUrl);
+            if (disableProtection) {
+                // DESACTIVAR TODA LA PROTECCIÓN DE NAVEGACIÓN
+                console.log('🗑️ LIMPIANDO TODA LA PROTECCIÓN DE IMPERSONACIÓN');
+                
+                // Remover todos los listeners de protección
+                if (window.impersonationNavigationHandler) {
+                    window.removeEventListener('popstate', window.impersonationNavigationHandler);
+                    delete window.impersonationNavigationHandler;
+                    console.log('✅ Listener de navegación de impersonación removido');
                 }
+                
+                if (window.impersonationPopStateHandler) {
+                    window.removeEventListener('popstate', window.impersonationPopStateHandler);
+                    delete window.impersonationPopStateHandler;
+                    console.log('✅ Listener de popstate de impersonación removido');
+                }
+                
+                if (window.impersonationBackHandler) {
+                    window.removeEventListener('popstate', window.impersonationBackHandler);
+                    delete window.impersonationBackHandler;
+                    console.log('✅ Listener de protección hacia atrás removido');
+                }
+                
+                if (window.impersonationUnloadHandler) {
+                    window.removeEventListener('beforeunload', window.impersonationUnloadHandler);
+                    delete window.impersonationUnloadHandler;
+                    console.log('✅ Listener de beforeunload removido');
+                }
+                
+                // Limpiar estado del historial - RESTAURAR NAVEGACIÓN NORMAL
+                if (window.history && window.history.replaceState) {
+                    const normalState = { 
+                        normal: true, 
+                        timestamp: Date.now(),
+                        impersonationEnded: true 
+                    };
+                    
+                    // Reemplazar estado actual con estado normal
+                    window.history.replaceState(normalState, '', window.location.href);
+                    console.log('✅ Estado del historial restaurado a normal');
+                }
+                
+                // Marcar que la protección ha sido desactivada globalmente
+                window.impersonationProtectionDisabled = true;
+                console.log('🔓 Protección de impersonación COMPLETAMENTE DESACTIVADA');
+            }
+            
+            try {
+                // Método 1: Limpiar todo el historial existente solo si NO se desactiva protección
+                if (!disableProtection && window.history && window.history.pushState) {
+                    // Reemplazar toda la pila del historial con una nueva entrada
+                    const newState = { preventBack: true, timestamp: Date.now() };
+                    
+                    // Limpiar historial completamente
+                    window.history.replaceState(newState, '', redirectUrl);
+                    
+                    // Agregar una entrada extra para bloquear el botón atrás
+                    window.history.pushState(newState, '', redirectUrl);
+                    
+                    // Manejar el evento popstate para prevenir regresos
+                    const handlePopState = (e) => {
+                        if (e.state && e.state.preventBack) {
+                            console.log('🚫 Intento de navegar hacia atrás bloqueado');
+                            window.history.pushState(newState, '', redirectUrl);
+                            return false;
+                        }
+                        // Si no es nuestro estado especial, permitir navegación normal
+                        console.log('✅ Navegación normal permitida');
+                    };
+                    
+                    // Remover listener anterior si existe
+                    window.removeEventListener('popstate', window.impersonationPopStateHandler);
+                    
+                    // Agregar nuevo listener
+                    window.addEventListener('popstate', handlePopState);
+                    window.impersonationPopStateHandler = handlePopState;
+                }
+                
+                // Usar replace para la navegación final
+                setTimeout(() => {
+                    window.location.replace(redirectUrl);
+                }, 100);
+                    
             } catch (error) {
                 console.warn('⚠️ Error al limpiar historial, usando replace simple:', error);
                 window.location.replace(redirectUrl);
             }
+        }
+        
+        function preventBackNavigation() {
+            console.log('🔒 Activando protección contra navegación hacia atrás...');
+            
+            // Crear un estado único para identificar esta sesión
+            const antiBackState = { 
+                preventBack: true, 
+                sessionId: Date.now(),
+                reason: 'impersonation_ended'
+            };
+            
+            // Reemplazar el historial actual
+            window.history.replaceState(antiBackState, '', window.location.href);
+            
+            // Función para manejar intentos de navegación hacia atrás
+            const handleBackNavigation = (event) => {
+                if (event.state && event.state.preventBack && event.state.reason === 'impersonation_ended') {
+                    console.log('🚫 Navegación hacia atrás bloqueada - sesión de impersonación terminada');
+                    
+                    // Mostrar mensaje al usuario
+                    alert('⚠️ No puedes regresar a las páginas de la sesión de impersonación anterior por motivos de seguridad.');
+                    
+                    // Forzar a ir hacia adelante en el historial
+                    window.history.pushState(antiBackState, '', window.location.href);
+                    
+                    return false;
+                }
+            };
+            
+            // Remover listener anterior si existe
+            if (window.impersonationBackHandler) {
+                window.removeEventListener('popstate', window.impersonationBackHandler);
+            }
+            
+            // Agregar el nuevo listener
+            window.addEventListener('popstate', handleBackNavigation);
+            window.impersonationBackHandler = handleBackNavigation;
+            
+            // También proteger con beforeunload por si acaso
+            const handleBeforeUnload = (event) => {
+                // Solo mostrar confirmación si se está intentando navegar desde admin
+                if (window.location.pathname.includes('/admin/gestion-usuarios')) {
+                    const message = 'Para tu seguridad, esta sesión ha sido protegida contra navegación hacia atrás.';
+                    event.returnValue = message;
+                    return message;
+                }
+            };
+            
+            // Remover listener anterior
+            if (window.impersonationUnloadHandler) {
+                window.removeEventListener('beforeunload', window.impersonationUnloadHandler);
+            }
+            
+            // Agregar protección (temporal - 30 segundos)
+            window.addEventListener('beforeunload', handleBeforeUnload);
+            window.impersonationUnloadHandler = handleBeforeUnload;
+            
+            // Remover la protección beforeunload después de 30 segundos para no molestar
+            setTimeout(() => {
+                window.removeEventListener('beforeunload', handleBeforeUnload);
+                console.log('🔓 Protección beforeunload removida después de 30 segundos');
+            }, 30000);
         }
         
         function stopImpersonation() {
@@ -262,26 +600,212 @@
             })
             .then(response => {
                 console.log('📡 Respuesta recibida:', response.status, response.statusText);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                
+                // Manejar respuestas exitosas Y de error
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    // Para respuestas 400/500, intentar obtener el cuerpo como texto
+                    return response.text().then(errorText => {
+                        throw new Error(`HTTP ${response.status}: ${errorText}`);
+                    });
                 }
-                return response.json();
             })
             .then(data => {
-                console.log('✅ Impersonación detenida:', data);
-                alert('✅ ' + data.mensaje);
+                console.log('✅ Respuesta del servidor:', data);
                 
-                // Redirigir a gestión de usuarios SIN crear entrada en el historial
-                const redirectUrl = data.redirectUrl || '/admin/gestion-usuarios';
-                console.log('🔄 Redirigiendo a:', redirectUrl);
+                // Verificar si hay flags especiales
+                if (data.stateInconsistent) {
+                    alert('⚠️ ' + data.mensaje + '\\n\\nSe detectó un estado inconsistente y se ha corregido automáticamente.');
+                } else if (data.manualCleanup) {
+                    alert('⚠️ ' + data.mensaje + '\\n\\nSe realizó una limpieza manual de la sesión.');
+                } else if (data.emergencyCleanup) {
+                    alert('⚠️ ' + data.mensaje + '\\n\\nSe realizó una limpieza de emergencia.');
+                } else if (data.errorRecovery) {
+                    alert('⚠️ ' + data.mensaje + '\\n\\nError original: ' + (data.originalError || 'Desconocido'));
+                } else {
+                    alert('✅ ' + data.mensaje);
+                }
                 
-                // Limpiar historial agresivamente y redirigir
-                clearHistoryAndRedirect(redirectUrl);
+                // FORZAR redirección a admin SIEMPRE
+                const redirectUrl = '/admin/gestion-usuarios'; // HARDCODED para seguridad
+                console.log('� FORZANDO redirección a admin:', redirectUrl);
+                
+                // LIMPIEZA COMPLETA antes de redirigir
+                console.log('🧹 LIMPIEZA TOTAL DE PROTECCIÓN');
+                
+                // Limpiar todos los listeners
+                if (window.impersonationNavigationHandler) {
+                    window.removeEventListener('popstate', window.impersonationNavigationHandler);
+                    delete window.impersonationNavigationHandler;
+                }
+                if (window.impersonationPopStateHandler) {
+                    window.removeEventListener('popstate', window.impersonationPopStateHandler);
+                    delete window.impersonationPopStateHandler;
+                }
+                if (window.impersonationBackHandler) {
+                    window.removeEventListener('popstate', window.impersonationBackHandler);
+                    delete window.impersonationBackHandler;
+                }
+                if (window.impersonationUnloadHandler) {
+                    window.removeEventListener('beforeunload', window.impersonationUnloadHandler);
+                    delete window.impersonationUnloadHandler;
+                }
+                
+                // Marcar protección como desactivada
+                window.impersonationProtectionDisabled = true;
+                
+                // Limpiar historial completamente
+                if (window.history && window.history.replaceState) {
+                    const normalState = { 
+                        superadmin: true, 
+                        timestamp: Date.now(),
+                        impersonationEnded: true 
+                    };
+                    window.history.replaceState(normalState, '', redirectUrl);
+                }
+                
+                console.log('🔓 Protección completamente desactivada');
+                
+                // REDIRECCIÓN FORZADA
+                console.log('🚀 EJECUTANDO REDIRECCIÓN FORZADA');
+                
+                // Usar replace para evitar entrada en historial
+                setTimeout(() => {
+                    window.location.replace(redirectUrl);
+                }, 500);
             })
             .catch(error => {
                 console.error('❌ Error completo:', error);
                 console.error('❌ Error al detener impersonación:', error.message);
-                alert('❌ Error al volver a SuperAdmin: ' + error.message);
+                
+                // LIMPIEZA DE EMERGENCIA EN CASO DE ERROR
+                console.log('🆘 EJECUTANDO LIMPIEZA DE EMERGENCIA EN FRONTEND');
+                
+                // Mostrar error específico
+                let errorMessage = '❌ Error al volver a SuperAdmin: ' + error.message;
+                if (error.message.includes('HTTP 400')) {
+                    errorMessage += '\\n\\n⚠️ Esto puede indicar un estado inconsistente de la sesión.\\n🔄 La página se refrescará para limpiar el estado.';
+                }
+                
+                alert(errorMessage);
+                
+                // Limpiar toda la protección como emergencia
+                if (window.impersonationNavigationHandler) {
+                    window.removeEventListener('popstate', window.impersonationNavigationHandler);
+                    delete window.impersonationNavigationHandler;
+                }
+                if (window.impersonationPopStateHandler) {
+                    window.removeEventListener('popstate', window.impersonationPopStateHandler);
+                    delete window.impersonationPopStateHandler;
+                }
+                if (window.impersonationBackHandler) {
+                    window.removeEventListener('popstate', window.impersonationBackHandler);
+                    delete window.impersonationBackHandler;
+                }
+                if (window.impersonationUnloadHandler) {
+                    window.removeEventListener('beforeunload', window.impersonationUnloadHandler);
+                    delete window.impersonationUnloadHandler;
+                }
+                
+                window.impersonationProtectionDisabled = true;
+                
+                // En caso de error, forzar redirección a admin tras un momento
+                setTimeout(() => {
+                    console.log('🔄 Redirección de emergencia a admin');
+                    window.location.replace('/admin/gestion-usuarios');
+                }, 2000);
+            });
+        }
+        
+        function emergencyCleanup() {
+            console.log('🆘 Ejecutando limpieza de emergencia...');
+            
+            const csrfTokenMeta = document.querySelector('meta[name="_csrf"]');
+            const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+            
+            const csrfToken = csrfTokenMeta?.getAttribute('content');
+            const csrfHeader = csrfHeaderMeta?.getAttribute('content');
+            
+            if (!csrfToken || !csrfHeader) {
+                alert('❌ Error: No se pudieron obtener los tokens de seguridad.\\n\\n' +
+                      '🔄 La página se refrescará para intentar restablecer el estado.');
+                window.location.replace('/admin/gestion-usuarios');
+                return;
+            }
+            
+            console.log('📡 Enviando petición de emergencia a: /admin/gestion-usuarios/emergency-cleanup');
+            
+            fetch('/admin/gestion-usuarios/emergency-cleanup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeader]: csrfToken
+                }
+            })
+            .then(response => {
+                console.log('📡 Respuesta de emergencia recibida:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    return response.text().then(errorText => {
+                        throw new Error(`HTTP ${response.status}: ${errorText}`);
+                    });
+                }
+            })
+            .then(data => {
+                console.log('✅ Limpieza de emergencia exitosa:', data);
+                
+                if (data.sessionInvalidated) {
+                    alert('🔄 Sesión invalidada completamente.\\n\\nSerás redirigido al login para iniciar sesión nuevamente.');
+                    window.location.replace('/login');
+                } else {
+                    alert('✅ ' + data.mensaje);
+                    
+                    // LIMPIEZA TOTAL DE FRONTEND
+                    console.log('🧹 LIMPIEZA TOTAL DE FRONTEND');
+                    
+                    if (window.impersonationNavigationHandler) {
+                        window.removeEventListener('popstate', window.impersonationNavigationHandler);
+                        delete window.impersonationNavigationHandler;
+                    }
+                    if (window.impersonationPopStateHandler) {
+                        window.removeEventListener('popstate', window.impersonationPopStateHandler);
+                        delete window.impersonationPopStateHandler;
+                    }
+                    if (window.impersonationBackHandler) {
+                        window.removeEventListener('popstate', window.impersonationBackHandler);
+                        delete window.impersonationBackHandler;
+                    }
+                    if (window.impersonationUnloadHandler) {
+                        window.removeEventListener('beforeunload', window.impersonationUnloadHandler);
+                        delete window.impersonationUnloadHandler;
+                    }
+                    
+                    window.impersonationProtectionDisabled = true;
+                    
+                    if (window.history && window.history.replaceState) {
+                        const cleanState = { 
+                            emergencyClean: true, 
+                            timestamp: Date.now() 
+                        };
+                        window.history.replaceState(cleanState, '', '/admin/gestion-usuarios');
+                    }
+                    
+                    console.log('🚀 REDIRECCIÓN DE EMERGENCIA');
+                    window.location.replace('/admin/gestion-usuarios');
+                }
+            })
+            .catch(error => {
+                console.error('❌ Error en limpieza de emergencia:', error);
+                alert('❌ Error en limpieza de emergencia: ' + error.message + 
+                      '\\n\\n🔄 La página se refrescará para intentar restablecer el estado.');
+                
+                // Último recurso: refresco forzado
+                setTimeout(() => {
+                    window.location.replace('/admin/gestion-usuarios');
+                }, 1000);
             });
         }
     });
