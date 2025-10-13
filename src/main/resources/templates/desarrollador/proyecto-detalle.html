@@ -175,7 +175,7 @@
                                         </td>
                                         <td th:text="${#temporals.format(proyHasApi.fechaAsociacion.toLocalDate(), 'dd/MM/yyyy')}">2025-09-23</td>
                                         <td>
-                                            <a th:href="@{'/desarrollador/apis/' + ${proyHasApi.api.idApi}}" class="btn btn-sm btn-primary">
+                                            <a th:href="@{'/apis/' + ${proyHasApi.api.idApi}+'/docs'}" class="btn btn-sm btn-primary">
                                                 <i class="fas fa-eye"></i> Ver API
                                             </a>
                                         </td>
