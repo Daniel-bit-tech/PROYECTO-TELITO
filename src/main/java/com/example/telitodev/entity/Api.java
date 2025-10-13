@@ -1,5 +1,6 @@
 package com.example.telitodev.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
