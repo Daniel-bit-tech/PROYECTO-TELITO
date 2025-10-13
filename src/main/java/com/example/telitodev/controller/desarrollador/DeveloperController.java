@@ -103,4 +103,16 @@ public class DeveloperController extends BaseController {
 
         return "desarrollador/apis";
     }
+
+    @GetMapping("/sandbox")
+    public String mostrarSandboxPage(Model model, Authentication auth, HttpSession session) {
+
+        Usuario usuario = getCurrentUser(auth, session);
+        model.addAttribute("usuario", usuario);
+
+        addImpersonationAttributes(model, session);
+
+
+        return "desarrollador/sandbox";
+    }
 }
