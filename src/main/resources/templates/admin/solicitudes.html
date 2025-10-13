@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Solicitudes - TELITO Admin</title>
+    <!-- CSRF tokens for AJAX requests -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    
+    <!-- Control de caché y seguridad -->
+    <div th:replace="~{components/security-cache-control :: security-cache-control}"></div>
+    
+    <!-- Tabler CSS siguiendo el patrón del proyecto -->
+    <link th:href="|/tabler/dist/css/tabler.css?1757307620|" rel="stylesheet" />
+    <link th:href="|/tabler/dist/css/tabler-flags.css?1757307620|" rel="stylesheet" />
+    <link th:href="|/tabler/dist/css/tabler-payments.css?1757307620|" rel="stylesheet" />
+    <link th:href="|/tabler/dist/css/tabler-vendors.css?1757307620|" rel="stylesheet" />
+    <link th:href="|/tabler/dist/css/tabler-themes.css?1757307620|" rel="stylesheet" />
+    <!-- Font Awesome con fallback -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+          integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" 
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- DataTables CSS compatible con Tabler -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    
+    <!-- Script para aplicar tema inmediatamente y evitar FOUC (Flash of Unstyled Content) -->
+    <script>
+        (function() {
+            // Detectar tema guardado o del sistema antes de que se renderice la página
+            const systemTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            const savedTheme = localStorage.getItem('theme') || systemTheme;
+            
+            // Aplicar tema inmediatamente al HTML
+            document.documentElement.setAttribute('data-bs-theme', savedTheme);
+            document.documentElement.className = 'theme-' + savedTheme;
+            
+            console.log('Tema aplicado inmediatamente:', savedTheme);
+        })();
+    </script>
+    
+    <style>
+        /* Estilos específicos para mantener compatibilidad con DataTables */
+        .page {
+            min-height: 100vh;
+            height: auto !important;
+            overflow-x: hidden;
+        }
+        
+        .page-wrapper {
+            padding-top: 0;
+            flex: 1;
+        }
+        
+        .page-header {
+            margin-top: 1rem; /* Reducido de 2rem a 1rem */
+            margin-bottom: 1rem; /* Agregado para menos espacio */
+        }
+        
+        /* Reducir espaciado general de la página */
+        .page-body {
+            padding-top: 1rem;
+            flex: 1;
+        }
+        
+        .container-xl {
+            padding-top: 0;
+        }
+        
+        /* Estilos para tema oscuro por defecto */
+        [data-bs-theme="dark"] .card {
+            background-color: var(--tblr-dark) !important;
+            border-color: var(--tblr-border-color-dark) !important;
+        }
+        
+        [data-bs-theme="light"] .card {
+            background-color: var(--tblr-bg-surface) !important;
+            border-color: var(--tblr-border-color) !important;
+        }
+        
+        /* Adaptación para ambos temas */
+        .card {
+            background-color: var(--tblr-card-bg, var(--tblr-bg-surface));
+            border-color: var(--tblr-border-color);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        [data-bs-theme="dark"] .table {
+            --bs-table-bg: transparent;
+            color: var(--tblr-body-color-dark);
+        }
+        
+        [data-bs-theme="light"] .table {
+            --bs-table-bg: transparent;
+            color: var(--tblr-body-color);
+        }
+        
+        /* Badge personalizado para estados */
+        .badge-custom {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .badge-pendiente {
+            background-color: #ffc107;
+            color: #000;
+        }
+        
+        .badge-aprobada {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .badge-rechazada {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        /* Botones de acción */
+        .action-buttons {
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .btn-aprobar {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+            border-radius: 6px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        .btn-rechazar {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+            border-radius: 6px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+        
+        /* Tipos de solicitud */
+        .solicitud-tipo {
+            padding: 0.25rem 0.75rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .tipo-organizacion {
+            background-color: #f3e5f5;
+            color: #7b1fa2;
+        }
+        
+        /* Asegurar que DataTables se vea bien */
+        .table-responsive {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: none;
+        }
+        
+        /* Estilos para las pestañas */
+        .nav-pills .nav-link {
+            border-radius: 6px;
+            margin-right: 0.5rem;
+            color: var(--tblr-body-color);
+            background-color: transparent;
+            border: 1px solid transparent;
+        }
+        
+        .nav-pills .nav-link.active {
+            background-color: #28a745 !important; /* Verde en lugar de azul */
+            color: white !important;
+            border-color: #28a745 !important;
+            font-weight: 600;
+        }
+        
+        .nav-pills .nav-link:hover:not(.active) {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: #28a745;
+            border-color: rgba(40, 167, 69, 0.3);
+        }
+        
+        /* Asegurar que el badge en el tab activo sea visible */
+        .nav-pills .nav-link.active .badge {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            color: white !important;
+        }
+        
+        /* Estilos adicionales para mejorar la compatibilidad de temas */
+        .page-wrapper {
+            background-color: var(--tblr-bg-surface);
+            transition: background-color 0.3s ease;
+        }
+        
+        .page-header {
+            background-color: transparent;
+        }
+        
+        .page-title {
+            color: var(--tblr-body-color);
+        }
+        
+        /* Iconos y botones adaptables al tema */
+        .btn {
+            transition: all 0.3s ease;
+        }
+        
+        .fas, .fab, .far {
+            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Font Awesome 6 Pro" !important;
+        }
+        
+        /* Asegurar contraste en diferentes temas */
+        [data-bs-theme="light"], .theme-light {
+            --tblr-body-color: #1e293b;
+            --tblr-border-color: #e2e8f0;
+            --tblr-bg-surface: #ffffff;
+        }
+        
+        [data-bs-theme="dark"], .theme-dark {
+            --tblr-body-color: #f1f5f9;
+            --tblr-border-color: #334155;
+            --tblr-bg-surface: #1e293b;
+        }
+        
+        /* Forzar aplicación de colores base */
+        html, body {
+            background-color: var(--tblr-bg-surface) !important;
+            color: var(--tblr-body-color) !important;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        /* Asegurar que el contenido principal respete el tema */
+        .page, .page-wrapper, .page-body {
+            background-color: var(--tblr-bg-surface);
+            color: var(--tblr-body-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Banner de impersonación -->
+    <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+
+    <div class="page">
+        <!-- Header compartido -->
+        <div th:replace="admin/header.html :: header"></div>
+        
+        <!-- Contenido principal siguiendo el patrón Tabler -->
+        <div class="page-wrapper">
+            <div class="page-header d-print-none">
+                <div class="container-xl">
+                    <div class="row g-2 align-items-center">
+                        <div class="col">
+                            <h2 class="page-title">
+                                <i class="fas fa-building me-2"></i>
+                                Gestión de Solicitudes de Organización
+                            </h2>
+                            <div class="text-muted mt-1">Panel administrativo para gestionar solicitudes de acceso a organizaciones</div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="btn-list">
+                                <button class="btn btn-outline-primary" onclick="location.reload()">
+                                    <i class="fas fa-sync-alt me-1"></i>Actualizar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-body">
+                <div class="container-xl">
+                
+                <!-- Alertas siguiendo el patrón Tabler -->
+                <div th:if="${success}" class="alert alert-success alert-dismissible" role="alert">
+                    <div class="d-flex">
+                        <div>
+                            <i class="fas fa-check-circle me-2"></i>
+                        </div>
+                        <div>
+                            <span th:text="${success}"></span>
+                        </div>
+                    </div>
+                    <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+                </div>
+                
+                <div th:if="${warning}" class="alert alert-warning alert-dismissible" role="alert">
+                    <div class="d-flex">
+                        <div>
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        </div>
+                        <div>
+                            <span th:text="${warning}"></span>
+                        </div>
+                    </div>
+                    <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+                </div>
+                
+                <div th:if="${error}" class="alert alert-danger alert-dismissible" role="alert">
+                    <div class="d-flex">
+                        <div>
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                        </div>
+                        <div>
+                            <span th:text="${error}"></span>
+                        </div>
+                    </div>
+                    <a class="btn-close" data-bs-dismiss="alert" aria-label="close"></a>
+                </div>
+
+                <!-- Estadísticas siguiendo el patrón del proyecto -->
+                <div class="row row-cards mb-4">
+                    <div class="col-md-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-warning text-white avatar">
+                                            <i class="fas fa-building"></i>
+                                        </span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="${totalOrgPendientes}">0</div>
+                                        <div class="text-muted">Pendientes</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-success text-white avatar">
+                                            <i class="fas fa-check-circle"></i>
+                                        </span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="${totalOrgAprobadas}">0</div>
+                                        <div class="text-muted">Aprobadas</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-danger text-white avatar">
+                                            <i class="fas fa-times-circle"></i>
+                                        </span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="${totalOrgRechazadas}">0</div>
+                                        <div class="text-muted">Rechazadas</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-info text-white avatar">
+                                            <i class="fas fa-chart-bar"></i>
+                                        </span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="${totalOrgPendientes + totalOrgAprobadas + totalOrgRechazadas}">0</div>
+                                        <div class="text-muted">Total</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card principal -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-building me-2"></i>Solicitudes de Acceso a Organización
+                        </h3>
+                        <div class="card-actions">
+                            <span class="badge bg-warning ms-2" th:text="${totalOrgPendientes}">0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <!-- Contenido de solicitudes de organización -->
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table" id="tablaOrganizacion">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Solicitante</th>
+                                        <th>DNI</th>
+                                        <th>Organización</th>
+                                        <th>Estado</th>
+                                        <th>Fecha</th>
+                                        <th class="w-1">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="solicitud : ${solicitudesOrganizacion}">
+                                        <td>
+                                            <span class="solicitud-tipo tipo-organizacion">#<span th:text="${solicitud.idSolicitudOrg}">1</span></span>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <div class="fw-bold" th:text="${solicitud.nombre + ' ' + solicitud.apellido}">Nombre Completo</div>
+                                                <div class="text-muted small" th:text="${solicitud.correo}">correo@ejemplo.com</div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span th:text="${solicitud.dni}">12345678</span>
+                                        </td>
+                                        <td>
+                                            <span th:text="${solicitud.organizacionDestino.nombre}">Organización</span>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-custom badge-pendiente" th:text="${solicitud.estado}">PENDIENTE</span>
+                                        </td>
+                                        <td>
+                                            <div class="text-muted small" th:text="${solicitud.fechaSolicitud != null ? #dates.format(solicitud.fechaSolicitud, 'dd/MM/yyyy HH:mm') : 'Sin fecha'}">01/01/2025 10:00</div>
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <form th:action="@{/admin/solicitudes/organizacion/{id}/aprobar(id=${solicitud.idSolicitudOrg})}" method="post" class="d-inline">
+                                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                    <button type="button" class="btn btn-success btn-sm" onclick="aprobarSolicitud(this, 'ORG')">
+                                                        <i class="fas fa-check"></i>
+                                                    </button>
+                                                </form>
+                                                <form th:action="@{/admin/solicitudes/organizacion/{id}/rechazar(id=${solicitud.idSolicitudOrg})}" method="post" class="d-inline">
+                                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                    <button type="button" class="btn btn-danger btn-sm" onclick="rechazarSolicitud(this, 'ORG')">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div th:if="${#lists.isEmpty(solicitudesOrganizacion)}" class="empty">
+                            <div class="empty-icon">
+                                <i class="fas fa-building"></i>
+                            </div>
+                            <p class="empty-title">No hay solicitudes de organización pendientes</p>
+                            <p class="empty-subtitle text-muted">Todas las solicitudes han sido procesadas</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Navegación de retorno -->
+                <div class="text-center mt-4">
+                    <a href="/admin/dashboard" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal para comentarios siguiendo el patrón Tabler -->
+        <div class="modal modal-blur fade" id="comentariosModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="comentariosModalTitle">Agregar Comentarios</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="comentariosForm">
+                            <div class="mb-3">
+                                <label class="form-label" for="comentarios">Comentarios (opcional):</label>
+                                <textarea class="form-control" id="comentarios" name="comentarios" rows="3" 
+                                    placeholder="Agregar comentarios sobre la decisión..."></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <a href="#" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+                            Cancelar
+                        </a>
+                        <button type="button" class="btn btn-primary ms-auto" id="confirmarAccion">
+                            Confirmar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts siguiendo el patrón Tabler -->
+    <script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
+    <!-- Bootstrap desde CDN para mayor confiabilidad -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" 
+            integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" 
+            crossorigin="anonymous"></script>
+    <script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+    <script th:inline="none">
+        // Inicializar DataTables
+        $(document).ready(function() {
+            // Obtener CSRF token
+            const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+            
+            // Inicializar solo la tabla de organizaciones
+            $('#tablaOrganizacion').DataTable({
+                language: {
+                    "decimal":        "",
+                    "emptyTable":     "No hay solicitudes de organización disponibles",
+                    "info":           "Mostrando _START_ a _END_ de _TOTAL_ solicitudes",
+                    "infoEmpty":      "Mostrando 0 a 0 de 0 solicitudes",
+                    "infoFiltered":   "(filtrado de _MAX_ solicitudes totales)",
+                    "infoPostFix":    "",
+                    "thousands":      ",",
+                    "lengthMenu":     "Mostrar _MENU_ solicitudes",
+                    "loadingRecords": "Cargando solicitudes...",
+                    "processing":     "Procesando...",
+                    "search":         "Buscar solicitudes:",
+                    "zeroRecords":    "No se encontraron solicitudes coincidentes",
+                    "paginate": {
+                        "first":      "Primero",
+                        "last":       "Último",
+                        "next":       "Siguiente",
+                        "previous":   "Anterior"
+                    },
+                    "aria": {
+                        "sortAscending":  ": activar para ordenar la columna ascendente",
+                        "sortDescending": ": activar para ordenar la columna descendente"
+                    }
+                },
+                order: [[0, 'desc']], // Ordenar por ID descendente
+                pageLength: 10,
+                responsive: true,
+                dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rtip'
+            });
+        });
+
+        let formActual = null;
+        let accionActual = '';
+
+        function aprobarSolicitud(button, tipo) {
+            console.log('🟢 Iniciando aprobación de solicitud:', tipo);
+            console.log('🔘 Botón clickeado:', button);
+            
+            // Buscar el formulario más específicamente
+            formActual = button.closest('form');
+            
+            if (!formActual) {
+                console.error('❌ No se pudo encontrar el formulario para aprobar');
+                console.error('🔍 Elemento padre del botón:', button.parentElement);
+                console.error('🔍 HTML del botón:', button.outerHTML);
+                alert('Error: No se pudo encontrar el formulario. Por favor, recarga la página e intenta de nuevo.');
+                return;
+            }
+            
+            console.log('✅ Formulario de aprobación encontrado:', formActual);
+            console.log('🎯 URL de acción:', formActual.action);
+            console.log('📋 Método:', formActual.method);
+            console.log('🔍 HTML del formulario:', formActual.outerHTML);
+            
+            accionActual = 'aprobar';
+            
+            document.getElementById('comentariosModalTitle').textContent = 
+                `Aprobar Solicitud de ${tipo}`;
+            document.getElementById('confirmarAccion').textContent = 'Aprobar';
+            document.getElementById('confirmarAccion').className = 'btn btn-success ms-auto';
+            
+            // Usar Bootstrap 5 directamente después de que se cargue
+            if (typeof bootstrap !== 'undefined') {
+                const modalElement = document.getElementById('comentariosModal');
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+                console.log('🏠 Modal de comentarios mostrado');
+            } else {
+                // Fallback si Bootstrap no está disponible
+                console.warn('⚠️ Bootstrap no está disponible, usando jQuery como fallback');
+                $('#comentariosModal').modal('show');
+            }
+        }
+
+        function rechazarSolicitud(button, tipo) {
+            console.log('🔴 Iniciando rechazo de solicitud:', tipo);
+            console.log('🔘 Botón clickeado:', button);
+            
+            // Buscar el formulario más específicamente
+            formActual = button.closest('form');
+            
+            if (!formActual) {
+                console.error('❌ No se pudo encontrar el formulario para rechazar');
+                console.error('🔍 Elemento padre del botón:', button.parentElement);
+                console.error('🔍 HTML del botón:', button.outerHTML);
+                alert('Error: No se pudo encontrar el formulario. Por favor, recarga la página e intenta de nuevo.');
+                return;
+            }
+            
+            console.log('✅ Formulario de rechazo encontrado:', formActual);
+            console.log('🎯 URL de acción:', formActual.action);
+            console.log('📋 Método:', formActual.method);
+            console.log('🔍 HTML del formulario:', formActual.outerHTML);
+            
+            accionActual = 'rechazar';
+            
+            document.getElementById('comentariosModalTitle').textContent = 
+                `Rechazar Solicitud de ${tipo}`;
+            document.getElementById('confirmarAccion').textContent = 'Rechazar';
+            document.getElementById('confirmarAccion').className = 'btn btn-danger ms-auto';
+            
+            // Usar Bootstrap 5 directamente después de que se cargue
+            if (typeof bootstrap !== 'undefined') {
+                const modalElement = document.getElementById('comentariosModal');
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+                console.log('🏠 Modal de comentarios mostrado');
+            } else {
+                // Fallback si Bootstrap no está disponible
+                console.warn('⚠️ Bootstrap no está disponible, usando jQuery como fallback');
+                $('#comentariosModal').modal('show');
+            }
+        }
+
+        document.getElementById('confirmarAccion').addEventListener('click', function() {
+            console.log('🔘 Botón confirmar clickeado');
+            console.log('📝 Formulario actual:', formActual);
+            
+            if (formActual) {
+                console.log('✅ Formulario encontrado:', formActual);
+                console.log('🎯 Acción URL:', formActual.action);
+                console.log('📋 Método:', formActual.method);
+                
+                const comentarios = document.getElementById('comentarios').value;
+                console.log('💬 Comentarios:', comentarios);
+                
+                // Limpiar comentarios anteriores si existen
+                const existingInput = formActual.querySelector('input[name="comentarios"]');
+                if (existingInput) {
+                    existingInput.remove();
+                    console.log('🗑️ Input de comentarios anterior eliminado');
+                }
+                
+                // Agregar comentarios al formulario
+                if (comentarios && comentarios.trim() !== '') {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'comentarios';
+                    input.value = comentarios.trim();
+                    formActual.appendChild(input);
+                    console.log('✅ Comentarios agregados al formulario:', comentarios.trim());
+                }
+                
+                // Mostrar estado de carga
+                const botonConfirmar = document.getElementById('confirmarAccion');
+                const textoOriginal = botonConfirmar.textContent;
+                botonConfirmar.disabled = true;
+                botonConfirmar.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
+                
+                // Cerrar modal usando Bootstrap 5
+                const modalElement = document.getElementById('comentariosModal');
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) {
+                    modalInstance.hide();
+                    console.log('🏠 Modal cerrado');
+                }
+                
+                // Enviar formulario después de cerrar el modal
+                setTimeout(function() {
+                    try {
+                        console.log('📤 Enviando formulario...');
+                        console.log('🔍 Verificando formulario antes del envío:', formActual);
+                        
+                        if (formActual && typeof formActual.submit === 'function') {
+                            formActual.submit();
+                            console.log('✅ Formulario enviado exitosamente');
+                        } else {
+                            throw new Error('Formulario no válido o método submit no disponible');
+                        }
+                    } catch (error) {
+                        console.error('❌ Error al enviar formulario:', error);
+                        alert('Error al procesar la solicitud. Por favor, intenta de nuevo.');
+                        // Restaurar botón en caso de error
+                        botonConfirmar.disabled = false;
+                        botonConfirmar.textContent = textoOriginal;
+                        botonConfirmar.className = 'btn btn-primary ms-auto';
+                    }
+                }, 300);
+                
+                // Limpiar form actual después de un delay
+                setTimeout(function() {
+                    formActual = null;
+                    document.getElementById('comentarios').value = '';
+                    console.log('🧹 Variables limpiadas');
+                }, 1000);
+                
+                // Restaurar botón después de un tiempo como backup
+                setTimeout(function() {
+                    const botonConfirmar = document.getElementById('confirmarAccion');
+                    if (botonConfirmar) {
+                        botonConfirmar.disabled = false;
+                        botonConfirmar.textContent = textoOriginal;
+                        botonConfirmar.className = 'btn btn-primary ms-auto';
+                        console.log('🔄 Botón restaurado como backup');
+                    }
+                }, 5000);
+            } else {
+                console.error('❌ No se encontró el formulario para enviar');
+                console.error('📝 formActual es:', formActual);
+                alert('Error: No se pudo encontrar el formulario. Por favor, intenta de nuevo.');
+            }
+        });
+
+        // Auto-refresh cada 30 segundos (opcional)
+        setInterval(function() {
+            console.log('Auto-refresh de solicitudes');
+        }, 30000);
+
+        // Inicializar tooltips de Tabler
+        document.addEventListener('DOMContentLoaded', function() {
+            // Verificar si Font Awesome se cargó correctamente
+            checkFontAwesome();
+            
+            // Sistema de tema simplificado y compatible
+            initPageTheme();
+            
+            // Esperar a que Bootstrap se cargue completamente antes de inicializar
+            setTimeout(() => {
+                // Limpiar modal cuando se cierre - usando Bootstrap 5
+                const modalElement = document.getElementById('comentariosModal');
+                modalElement.addEventListener('hidden.bs.modal', function () {
+                    document.getElementById('comentarios').value = '';
+                    const botonConfirmar = document.getElementById('confirmarAccion');
+                    botonConfirmar.disabled = false;
+                    botonConfirmar.textContent = 'Confirmar';
+                    botonConfirmar.className = 'btn btn-primary ms-auto';
+                    formActual = null;
+                });
+                
+                // Inicializar tooltips con Bootstrap 5 si está disponible
+                if (typeof bootstrap !== 'undefined') {
+                    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                    const tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                        return new bootstrap.Tooltip(tooltipTriggerEl);
+                    });
+                }
+            }, 500);
+        });
+        
+        // Sistema de tema simplificado para la página
+        function initPageTheme() {
+            console.log('🎨 Inicializando tema de la página de solicitudes...');
+            
+            // Detectar tema del sistema si no hay uno guardado
+            const systemTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            const savedTheme = localStorage.getItem('theme') || systemTheme;
+            
+            console.log('Tema del sistema:', systemTheme);
+            console.log('Tema guardado:', localStorage.getItem('theme'));
+            console.log('Tema a aplicar:', savedTheme);
+            
+            // Aplicar tema inicial
+            applyPageTheme(savedTheme);
+            
+            // Escuchar cambios de tema desde el header
+            window.addEventListener('themeChanged', function(event) {
+                console.log('📢 Evento de cambio de tema recibido en solicitudes:', event.detail.theme);
+                applyPageTheme(event.detail.theme);
+                // También actualizar localStorage para mantener sincronización
+                localStorage.setItem('theme', event.detail.theme);
+            });
+            
+            // Escuchar cambios en el tema del sistema
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                if (!localStorage.getItem('theme')) {
+                    const newTheme = e.matches ? 'dark' : 'light';
+                    console.log('🔄 Cambio de tema del sistema detectado en solicitudes:', newTheme);
+                    applyPageTheme(newTheme);
+                }
+            });
+            
+            // Observar cambios en el atributo data-bs-theme del header
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'attributes' && mutation.attributeName === 'data-bs-theme') {
+                        const newTheme = document.documentElement.getAttribute('data-bs-theme');
+                        if (newTheme) {
+                            console.log('🔄 Cambio de tema detectado por observer:', newTheme);
+                            applyPageTheme(newTheme);
+                        }
+                    }
+                });
+            });
+            
+            observer.observe(document.documentElement, {
+                attributes: true,
+                attributeFilter: ['data-bs-theme']
+            });
+            
+            // También observar cambios en el storage para sincronizar entre pestañas
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'theme' && e.newValue) {
+                    console.log('🔄 Cambio de tema detectado en localStorage:', e.newValue);
+                    applyPageTheme(e.newValue);
+                }
+            });
+            
+            console.log('✅ Sistema de tema de solicitudes inicializado');
+        }
+        
+        // Función para aplicar el tema a la página
+        function applyPageTheme(theme) {
+            console.log('🎨 Aplicando tema en solicitudes:', theme);
+            
+            // Validar que el tema sea válido
+            if (theme !== 'light' && theme !== 'dark') {
+                console.warn('⚠️ Tema inválido:', theme, 'usando dark por defecto');
+                theme = 'dark';
+            }
+            
+            // Aplicar el tema a los elementos principales (sin interferir con el header)
+            if (document.documentElement.getAttribute('data-bs-theme') !== theme) {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+            }
+            if (document.body.getAttribute('data-bs-theme') !== theme) {
+                document.body.setAttribute('data-bs-theme', theme);
+            }
+            
+            // Actualizar variables CSS dinámicamente
+            updatePageCSSVariables(theme);
+            
+            // Actualizar las cards
+            updateCardsTheme(theme);
+            
+            console.log('✅ Tema aplicado en solicitudes:', theme);
+        }
+        
+        // Función para actualizar variables CSS de la página
+        function updatePageCSSVariables(theme) {
+            const root = document.documentElement;
+            if (theme === 'dark') {
+                root.style.setProperty('--tblr-body-color', '#f1f5f9');
+                root.style.setProperty('--tblr-border-color', '#334155');
+                root.style.setProperty('--tblr-bg-surface', '#1e293b');
+                root.style.setProperty('--tblr-card-bg', '#1e293b');
+                root.classList.add('theme-dark');
+                root.classList.remove('theme-light');
+            } else {
+                root.style.setProperty('--tblr-body-color', '#1e293b');
+                root.style.setProperty('--tblr-border-color', '#e2e8f0');
+                root.style.setProperty('--tblr-bg-surface', '#ffffff');
+                root.style.setProperty('--tblr-card-bg', '#ffffff');
+                root.classList.add('theme-light');
+                root.classList.remove('theme-dark');
+            }
+        }
+        
+        // Función para actualizar el tema de las cards
+        function updateCardsTheme(theme) {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                if (theme === 'dark') {
+                    card.style.backgroundColor = '#1e293b';
+                    card.style.borderColor = '#334155';
+                    card.style.color = '#f1f5f9';
+                } else {
+                    card.style.backgroundColor = '#ffffff';
+                    card.style.borderColor = '#e2e8f0';
+                    card.style.color = '#1e293b';
+                }
+            });
+        }
+        
+        // Verificar si Font Awesome se carga correctamente
+        function checkFontAwesome() {
+            const testElement = document.createElement('i');
+            testElement.className = 'fas fa-check';
+            testElement.style.position = 'absolute';
+            testElement.style.left = '-9999px';
+            document.body.appendChild(testElement);
+            
+            setTimeout(() => {
+                const computed = window.getComputedStyle(testElement);
+                if (computed.fontFamily.indexOf('Font Awesome') === -1) {
+                    console.warn('Font Awesome no se cargó correctamente. Usando fallback.');
+                    // Cargar Font Awesome desde otro CDN como fallback
+                    const fallbackLink = document.createElement('link');
+                    fallbackLink.rel = 'stylesheet';
+                    fallbackLink.href = 'https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css';
+                    document.head.appendChild(fallbackLink);
+                }
+                document.body.removeChild(testElement);
+            }, 100);
+        }
+    </script>
+
+</body>
+</html>

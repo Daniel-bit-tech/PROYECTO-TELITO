@@ -14,10 +14,10 @@ public class ContratoApi {
     
     @Column(name = "formato", nullable = false)
     private String formato;
-    
+
     @Column(name = "url_contrato", nullable = true, length = 45)
     private String urlContrato;
-    
+
     @Column(name = "fecha_modificacion")
     private Timestamp fechaModificacion;
 
@@ -58,11 +58,11 @@ public class ContratoApi {
     public String getUrlContrato() {
         return urlContrato;
     }
-    
+
     public void setUrlContrato(String urlContrato) {
         this.urlContrato = urlContrato;
     }
-    
+
     public Timestamp getFechaModificacion() {
         return fechaModificacion;
     }

@@ -1,6 +1,5 @@
 package com.example.telitodev.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
 import java.util.List;
@@ -49,7 +48,7 @@ public class Api {
     
 //    @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 //    private List<ContratoApi> contratosApi;
-    
+
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<CredencialApi> credencialesApi;
@@ -83,7 +82,8 @@ public class Api {
     private List<VersionApi> versionesApi;
 
 
-    
+
+
 
     public Api() {}
     

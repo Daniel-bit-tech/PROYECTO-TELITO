@@ -1,4 +1,3 @@
-
 package com.example.telitodev.entity;
 
 import jakarta.persistence.*;

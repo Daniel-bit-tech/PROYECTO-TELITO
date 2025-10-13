@@ -72,8 +72,7 @@ public class Usuario {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<SolicitudAcceso> solicitudesAcceso;
-
-
+    
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
     private List<CredencialApi> credencialesApi;
@@ -106,9 +105,18 @@ public class Usuario {
     @JsonIgnore
     private List<Proyecto> proyectosLiderados;
 
+    // relaciones para la tabla SolAccesoOrg
+
+    @OneToMany(mappedBy = "usuarioSolicitante", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<SolAccesoOrg> solicitudesAccesoOrgEnviadas;
+
+    @OneToMany(mappedBy = "usuarioRevisor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<SolAccesoOrg> solicitudesAccesoOrgRevisadas;
+
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Api> misApis;
+    // // //
 
     // Constructores
     public Usuario() {}
@@ -347,5 +355,22 @@ public class Usuario {
 
     public boolean hasPassword() {
         return this.contrasena != null && !this.contrasena.trim().isEmpty();
+    }
+
+    // nuevos setters y getters para la tabla SolAccesoOrg
+    public List<SolAccesoOrg> getSolicitudesAccesoOrgEnviadas() {
+        return solicitudesAccesoOrgEnviadas;
+    }
+
+    public void setSolicitudesAccesoOrgEnviadas(List<SolAccesoOrg> solicitudesAccesoOrgEnviadas) {
+        this.solicitudesAccesoOrgEnviadas = solicitudesAccesoOrgEnviadas;
+    }
+
+    public List<SolAccesoOrg> getSolicitudesAccesoOrgRevisadas() {
+        return solicitudesAccesoOrgRevisadas;
+    }
+
+    public void setSolicitudesAccesoOrgRevisadas(List<SolAccesoOrg> solicitudesAccesoOrgRevisadas) {
+        this.solicitudesAccesoOrgRevisadas = solicitudesAccesoOrgRevisadas;
     }
 }

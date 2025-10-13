@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Solicitudes de Permisos - SuperAdmin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .stats-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+        .stats-card:hover {
+            transform: translateY(-2px);
+        }
+        .solicitud-card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+        .solicitud-card:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        .estado-badge {
+            font-size: 0.8em;
+            padding: 0.4em 0.8em;
+        }
+        .filtros-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .btn-action {
+            margin: 2px;
+            min-width: 80px;
+        }
+        .modal-header {
+            border-bottom: 2px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h2 class="text-primary mb-0">
+                    <i class="bi bi-shield-check"></i>
+                    Gestión de Solicitudes de Permisos
+                </h2>
+                <p class="text-muted">Panel de SuperAdmin para aprobar/rechazar solicitudes</p>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="row mb-4" id="estadisticas-container">
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card text-warning">
+                    <div class="card-body text-center">
+                        <i class="bi bi-clock-history fs-1"></i>
+                        <h3 class="mt-2" id="stat-pendientes">0</h3>
+                        <p class="mb-0">Pendientes</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card text-success">
+                    <div class="card-body text-center">
+                        <i class="bi bi-check-circle fs-1"></i>
+                        <h3 class="mt-2" id="stat-aprobadas">0</h3>
+                        <p class="mb-0">Aprobadas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card text-danger">
+                    <div class="card-body text-center">
+                        <i class="bi bi-x-circle fs-1"></i>
+                        <h3 class="mt-2" id="stat-rechazadas">0</h3>
+                        <p class="mb-0">Rechazadas</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card stats-card text-info">
+                    <div class="card-body text-center">
+                        <i class="bi bi-list-ul fs-1"></i>
+                        <h3 class="mt-2" id="stat-total">0</h3>
+                        <p class="mb-0">Total</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filtros-container">
+            <form id="filtros-form">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="filtro-estado" class="form-label">Estado</label>
+                        <select class="form-select" id="filtro-estado" name="estado">
+                            <option value="">Todos los estados</option>
+                            <option value="PENDIENTE">Pendiente</option>
+                            <option value="APROBADA">Aprobada</option>
+                            <option value="RECHAZADA">Rechazada</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="filtro-solicitante" class="form-label">Solicitante</label>
+                        <input type="text" class="form-control" id="filtro-solicitante" name="solicitante" 
+                               placeholder="Nombre o correo del PO">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="filtro-organizacion" class="form-label">Organización</label>
+                        <input type="text" class="form-control" id="filtro-organizacion" name="organizacionSolicitante" 
+                               placeholder="Nombre de la organización">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label for="filtro-usuario" class="form-label">Usuario Solicitado</label>
+                        <input type="text" class="form-control" id="filtro-usuario" name="usuarioSolicitado" 
+                               placeholder="Usuario a agregar">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label for="filtro-tipo" class="form-label">Tipo de Solicitud</label>
+                        <select class="form-select" id="filtro-tipo" name="tipoSolicitud">
+                            <option value="">Todos los tipos</option>
+                            <option value="AGREGAR_A_ORGANIZACION">Agregar a Organización</option>
+                            <option value="AGREGAR_A_PROYECTO">Agregar a Proyecto</option>
+                        </select>
+                    </div>
+                    <div class="col-md-9 mb-3 d-flex align-items-end">
+                        <button type="button" class="btn btn-primary me-2" onclick="aplicarFiltros()">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                        <button type="button" class="btn btn-secondary me-2" onclick="limpiarFiltros()">
+                            <i class="bi bi-arrow-clockwise"></i> Limpiar
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="cargarSolicitudesPendientes()">
+                            <i class="bi bi-clock-history"></i> Solo Pendientes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Lista de Solicitudes -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-list-check"></i>
+                            Solicitudes
+                            <span class="badge bg-secondary ms-2" id="total-resultados">0</span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Loading spinner -->
+                        <div id="loading-spinner" class="text-center d-none">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Cargando...</span>
+                            </div>
+                        </div>
+
+                        <!-- Lista de solicitudes -->
+                        <div id="solicitudes-container"></div>
+
+                        <!-- Paginación -->
+                        <nav aria-label="Paginación de solicitudes" id="paginacion-container"></nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Ver Detalles -->
+    <div class="modal fade" id="modalDetalles" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle"></i>
+                        Detalles de la Solicitud
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="modal-detalles-content">
+                    <!-- Contenido dinámico -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Procesar Solicitud -->
+    <div class="modal fade" id="modalProcesar" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modal-procesar-title">
+                        <i class="bi bi-gear"></i>
+                        Procesar Solicitud
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-procesar-solicitud">
+                        <input type="hidden" id="solicitud-id">
+                        <input type="hidden" id="accion-tipo">
+                        
+                        <div class="mb-3">
+                            <label for="comentarios-procesar" class="form-label">
+                                Comentarios <span class="text-danger" id="comentarios-required" style="display:none;">*</span>
+                            </label>
+                            <textarea class="form-control" id="comentarios-procesar" rows="4" 
+                                     placeholder="Escribe tus comentarios sobre esta decisión..."></textarea>
+                            <div class="form-text">
+                                <span id="comentarios-help">Los comentarios son opcionales para aprobaciones.</span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn" id="btn-confirmar-accion" onclick="confirmarAccion()">
+                        <i class="bi bi-check"></i> Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Variables globales
+        let paginaActual = 0;
+        let totalPaginas = 0;
+
+        // Inicializar página
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarEstadisticas();
+            cargarSolicitudesPendientes();
+        });
+
+        // Cargar estadísticas
+        async function cargarEstadisticas() {
+            try {
+                const response = await fetch('/admin/solicitudes/api/estadisticas');
+                const stats = await response.json();
+                
+                document.getElementById('stat-pendientes').textContent = stats.pendientes || 0;
+                document.getElementById('stat-aprobadas').textContent = stats.aprobadas || 0;
+                document.getElementById('stat-rechazadas').textContent = stats.rechazadas || 0;
+                document.getElementById('stat-total').textContent = stats.total || 0;
+            } catch (error) {
+                console.error('Error al cargar estadísticas:', error);
+            }
+        }
+
+        // Cargar solicitudes pendientes
+        function cargarSolicitudesPendientes() {
+            document.getElementById('filtro-estado').value = 'PENDIENTE';
+            aplicarFiltros();
+        }
+
+        // Aplicar filtros
+        async function aplicarFiltros(pagina = 0) {
+            mostrarSpinner(true);
+            paginaActual = pagina;
+
+            const formData = new FormData(document.getElementById('filtros-form'));
+            const params = new URLSearchParams();
+            params.append('page', pagina);
+            params.append('size', 10);
+
+            for (let [key, value] of formData.entries()) {
+                if (value.trim() !== '') {
+                    params.append(key, value);
+                }
+            }
+
+            try {
+                const response = await fetch(`/admin/solicitudes/api/todas?${params.toString()}`);
+                const data = await response.json();
+                
+                mostrarSolicitudes(data.solicitudes);
+                actualizarPaginacion(data);
+                document.getElementById('total-resultados').textContent = data.totalItems;
+            } catch (error) {
+                console.error('Error al cargar solicitudes:', error);
+                mostrarError('Error al cargar las solicitudes');
+            } finally {
+                mostrarSpinner(false);
+            }
+        }
+
+        // Mostrar solicitudes
+        function mostrarSolicitudes(solicitudes) {
+            const container = document.getElementById('solicitudes-container');
+            
+            if (solicitudes.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox fs-1 text-muted"></i>
+                        <p class="text-muted mt-2">No se encontraron solicitudes</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = solicitudes.map(solicitud => `
+                <div class="solicitud-card card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <h6 class="card-title mb-2">
+                                    <i class="bi bi-person-plus"></i>
+                                    ${solicitud.solicitanteNombre}
+                                    <span class="badge estado-badge ${getEstadoBadgeClass(solicitud.estado)}">${getEstadoDisplayName(solicitud.estado)}</span>
+                                </h6>
+                                <p class="card-text mb-1">
+                                    <strong>Organización:</strong> ${solicitud.organizacionNombre}
+                                </p>
+                                <p class="card-text mb-1">
+                                    <strong>Usuario a agregar:</strong> ${solicitud.usuarioExternoNombre} (${solicitud.usuarioExternoCorreo})
+                                </p>
+                                <p class="card-text mb-1">
+                                    <strong>Tipo:</strong> ${getTipoDisplayName(solicitud.tipoSolicitud)}
+                                    ${solicitud.proyectoNombre ? `<br><strong>Proyecto:</strong> ${solicitud.proyectoNombre}` : ''}
+                                </p>
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar"></i>
+                                    Solicitado el ${formatearFecha(solicitud.fechaSolicitud)}
+                                </small>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <div class="btn-group-vertical w-100" role="group">
+                                    <button type="button" class="btn btn-outline-info btn-action" 
+                                            onclick="verDetalles(${solicitud.id})">
+                                        <i class="bi bi-eye"></i> Ver Detalles
+                                    </button>
+                                    ${solicitud.estado === 'PENDIENTE' ? `
+                                        <button type="button" class="btn btn-success btn-action" 
+                                                onclick="prepararAprobacion(${solicitud.id})">
+                                            <i class="bi bi-check-circle"></i> Aprobar
+                                        </button>
+                                        <button type="button" class="btn btn-danger btn-action" 
+                                                onclick="prepararRechazo(${solicitud.id})">
+                                            <i class="bi bi-x-circle"></i> Rechazar
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Ver detalles de solicitud
+        async function verDetalles(solicitudId) {
+            try {
+                const response = await fetch(`/admin/solicitudes/api/${solicitudId}`);
+                const solicitud = await response.json();
+                
+                const modalContent = document.getElementById('modal-detalles-content');
+                modalContent.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Información del Solicitante</h6>
+                            <p><strong>Nombre:</strong> ${solicitud.solicitanteNombre}</p>
+                            <p><strong>Correo:</strong> ${solicitud.solicitanteCorreo}</p>
+                            <p><strong>Organización:</strong> ${solicitud.organizacionNombre}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Usuario a Agregar</h6>
+                            <p><strong>Nombre:</strong> ${solicitud.usuarioExternoNombre}</p>
+                            <p><strong>Correo:</strong> ${solicitud.usuarioExternoCorreo}</p>
+                            <p><strong>Rol solicitado:</strong> ${getRolDisplayName(solicitud.rolSolicitado)}</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-primary">Detalles de la Solicitud</h6>
+                            <p><strong>Tipo:</strong> ${getTipoDisplayName(solicitud.tipoSolicitud)}</p>
+                            ${solicitud.proyectoNombre ? `<p><strong>Proyecto:</strong> ${solicitud.proyectoNombre}</p>` : ''}
+                            <p><strong>Estado:</strong> <span class="badge ${getEstadoBadgeClass(solicitud.estado)}">${getEstadoDisplayName(solicitud.estado)}</span></p>
+                            <p><strong>Fecha de solicitud:</strong> ${formatearFecha(solicitud.fechaSolicitud)}</p>
+                            ${solicitud.fechaRespuesta ? `<p><strong>Fecha de respuesta:</strong> ${formatearFecha(solicitud.fechaRespuesta)}</p>` : ''}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row">
+                        <div class="col-12">
+                            <h6 class="text-primary">Justificación</h6>
+                            <p class="border p-3 rounded bg-light">${solicitud.justificacion || 'Sin justificación proporcionada'}</p>
+                            ${solicitud.motivoRespuesta ? `
+                                <h6 class="text-primary mt-3">Comentarios del SuperAdmin</h6>
+                                <p class="border p-3 rounded bg-light">${solicitud.motivoRespuesta}</p>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                
+                new bootstrap.Modal(document.getElementById('modalDetalles')).show();
+            } catch (error) {
+                console.error('Error al cargar detalles:', error);
+                mostrarError('Error al cargar los detalles de la solicitud');
+            }
+        }
+
+        // Preparar aprobación
+        function prepararAprobacion(solicitudId) {
+            document.getElementById('solicitud-id').value = solicitudId;
+            document.getElementById('accion-tipo').value = 'aprobar';
+            document.getElementById('modal-procesar-title').innerHTML = '<i class="bi bi-check-circle"></i> Aprobar Solicitud';
+            document.getElementById('comentarios-required').style.display = 'none';
+            document.getElementById('comentarios-help').textContent = 'Los comentarios son opcionales para aprobaciones.';
+            document.getElementById('btn-confirmar-accion').className = 'btn btn-success';
+            document.getElementById('btn-confirmar-accion').innerHTML = '<i class="bi bi-check"></i> Aprobar';
+            document.getElementById('comentarios-procesar').value = '';
+            
+            new bootstrap.Modal(document.getElementById('modalProcesar')).show();
+        }
+
+        // Preparar rechazo
+        function prepararRechazo(solicitudId) {
+            document.getElementById('solicitud-id').value = solicitudId;
+            document.getElementById('accion-tipo').value = 'rechazar';
+            document.getElementById('modal-procesar-title').innerHTML = '<i class="bi bi-x-circle"></i> Rechazar Solicitud';
+            document.getElementById('comentarios-required').style.display = 'inline';
+            document.getElementById('comentarios-help').textContent = 'Los comentarios son obligatorios para rechazos.';
+            document.getElementById('btn-confirmar-accion').className = 'btn btn-danger';
+            document.getElementById('btn-confirmar-accion').innerHTML = '<i class="bi bi-x"></i> Rechazar';
+            document.getElementById('comentarios-procesar').value = '';
+            
+            new bootstrap.Modal(document.getElementById('modalProcesar')).show();
+        }
+
+        // Confirmar acción
+        async function confirmarAccion() {
+            const solicitudId = document.getElementById('solicitud-id').value;
+            const accion = document.getElementById('accion-tipo').value;
+            const comentarios = document.getElementById('comentarios-procesar').value.trim();
+            
+            // Validar comentarios para rechazo
+            if (accion === 'rechazar' && !comentarios) {
+                mostrarError('Los comentarios son obligatorios para rechazar una solicitud');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/admin/solicitudes/api/${solicitudId}/${accion}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ comentarios: comentarios })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    mostrarExito(result.message);
+                    bootstrap.Modal.getInstance(document.getElementById('modalProcesar')).hide();
+                    cargarEstadisticas();
+                    aplicarFiltros(paginaActual);
+                } else {
+                    mostrarError(result.message);
+                }
+            } catch (error) {
+                console.error('Error al procesar solicitud:', error);
+                mostrarError('Error al procesar la solicitud');
+            }
+        }
+
+        // Limpiar filtros
+        function limpiarFiltros() {
+            document.getElementById('filtros-form').reset();
+            aplicarFiltros();
+        }
+
+        // Actualizar paginación
+        function actualizarPaginacion(data) {
+            const container = document.getElementById('paginacion-container');
+            totalPaginas = data.totalPages;
+            
+            if (totalPaginas <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            let paginacionHTML = '<ul class="pagination justify-content-center">';
+            
+            // Botón anterior
+            paginacionHTML += `
+                <li class="page-item ${!data.hasPrevious ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="aplicarFiltros(${paginaActual - 1})">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                </li>
+            `;
+            
+            // Páginas
+            const startPage = Math.max(0, paginaActual - 2);
+            const endPage = Math.min(totalPaginas - 1, paginaActual + 2);
+            
+            for (let i = startPage; i <= endPage; i++) {
+                paginacionHTML += `
+                    <li class="page-item ${i === paginaActual ? 'active' : ''}">
+                        <a class="page-link" href="#" onclick="aplicarFiltros(${i})">${i + 1}</a>
+                    </li>
+                `;
+            }
+            
+            // Botón siguiente
+            paginacionHTML += `
+                <li class="page-item ${!data.hasNext ? 'disabled' : ''}">
+                    <a class="page-link" href="#" onclick="aplicarFiltros(${paginaActual + 1})">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            `;
+            
+            paginacionHTML += '</ul>';
+            container.innerHTML = paginacionHTML;
+        }
+
+        // Utilidades
+        function mostrarSpinner(mostrar) {
+            const spinner = document.getElementById('loading-spinner');
+            const container = document.getElementById('solicitudes-container');
+            
+            if (mostrar) {
+                spinner.classList.remove('d-none');
+                container.style.opacity = '0.5';
+            } else {
+                spinner.classList.add('d-none');
+                container.style.opacity = '1';
+            }
+        }
+
+        function getEstadoBadgeClass(estado) {
+            switch (estado) {
+                case 'PENDIENTE': return 'bg-warning text-dark';
+                case 'APROBADA': return 'bg-success';
+                case 'RECHAZADA': return 'bg-danger';
+                default: return 'bg-secondary';
+            }
+        }
+
+        function getEstadoDisplayName(estado) {
+            switch (estado) {
+                case 'PENDIENTE': return 'Pendiente';
+                case 'APROBADA': return 'Aprobada';
+                case 'RECHAZADA': return 'Rechazada';
+                default: return estado;
+            }
+        }
+
+        function getTipoDisplayName(tipo) {
+            switch (tipo) {
+                case 'AGREGAR_A_ORGANIZACION': return 'Agregar a Organización';
+                case 'AGREGAR_A_PROYECTO': return 'Agregar a Proyecto';
+                default: return tipo;
+            }
+        }
+
+        function getRolDisplayName(rol) {
+            switch (rol) {
+                case 'MIEMBRO_ORGANIZACION': return 'Miembro de Organización';
+                case 'MIEMBRO_PROYECTO': return 'Miembro de Proyecto';
+                case 'COLABORADOR': return 'Colaborador';
+                default: return rol;
+            }
+        }
+
+        function formatearFecha(fechaStr) {
+            const fecha = new Date(fechaStr);
+            return fecha.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function mostrarExito(mensaje) {
+            // Implementar notificación de éxito
+            alert('✅ ' + mensaje);
+        }
+
+        function mostrarError(mensaje) {
+            // Implementar notificación de error
+            alert('❌ ' + mensaje);
+        }
+    </script>
+</body>
+</html>
