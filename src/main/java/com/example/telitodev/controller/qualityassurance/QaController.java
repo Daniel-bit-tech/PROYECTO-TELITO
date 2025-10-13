@@ -4,6 +4,7 @@ import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.dto.*;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
+import com.example.telitodev.repository.po.ActividadRecienteRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,21 +37,22 @@ public class QaController extends BaseController {
     final CredencialApiRepository credencialApiRepository;
     final NotificacionRepository notificacionRepository;
     final TicketRepository ticketRepository;
-
+    final IssueRepository issueRepository;
     final FeedbackRepository feedbackRepository;
     private final ApiRepository apiRepository;
+    private final ActividadRecienteRepository actividadRecienteRepository;
 
 
 
-    public QaController(UsuarioRepository usuarioRepository, CredencialApiRepository credencialApiRepository, NotificacionRepository notificacionRepository, TicketRepository ticketRepository,ReporteRepository reporteRepository,ApiRepository apiRepository, FeedbackRepository feedbackRepository) {
+    public QaController(UsuarioRepository usuarioRepository, CredencialApiRepository credencialApiRepository, NotificacionRepository notificacionRepository, TicketRepository ticketRepository, IssueRepository issueRepository, ApiRepository apiRepository, FeedbackRepository feedbackRepository, ActividadRecienteRepository actividadRecienteRepository) {
         this.usuarioRepository = usuarioRepository;
         this.credencialApiRepository = credencialApiRepository;
         this.notificacionRepository = notificacionRepository;
         this.ticketRepository = ticketRepository;
-
+        this.issueRepository = issueRepository;
         this.feedbackRepository = feedbackRepository;
         this.apiRepository = apiRepository;
-
+        this.actividadRecienteRepository = actividadRecienteRepository;
     }
 
     @GetMapping("/home")
@@ -68,12 +71,100 @@ public class QaController extends BaseController {
         
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
-        
+
+        // Contar issues no corregidos
+        Integer NissuesNoCorregidos = issueRepository.countByEstadoNot("Corregido");
+        model.addAttribute("NissuesNoCorregidos", NissuesNoCorregidos);
+
+        // Contar las notificaciones no leídas para el usuario
+        Integer NnotificacionesSinLeer = notificacionRepository.countByUsuarioAndLeido(usuario, false);
+        model.addAttribute("NnotificacionesSinLeer", NnotificacionesSinLeer);
+
+        // Obtener el QA en sesión
+        Usuario qaSesion = usuarioRepository.findByCorreo(auth.getName());
+
+        List<Issue> ultimos3Issues = issueRepository.findTop5ByCreadorOrderByFechaCreacionDesc(qaSesion);
+
+
+// Pasar la lista al modelo
+        model.addAttribute("ultimos3Issues", ultimos3Issues);
+
+        for (Issue issue : ultimos3Issues) {
+            if (issue.getFechaCreacion() != null) {
+                LocalDateTime fechaCreacionLocal = issue.getFechaCreacion().toLocalDateTime();
+                Duration duration = Duration.between(fechaCreacionLocal, LocalDateTime.now());
+
+                long days = duration.toDays();
+                long hours = duration.toHours();
+                long minutes = duration.toMinutes();
+
+                String tiempoTranscurrido = "";
+                if (days > 365) {
+                    long years = days / 365;
+                    tiempoTranscurrido = years + " años";
+                } else if (days > 30) {
+                    long months = days / 30;
+                    tiempoTranscurrido = months + " meses";
+                } else if (days > 0) {
+                    tiempoTranscurrido = days + " días";
+                } else if (hours > 0) {
+                    tiempoTranscurrido = hours + " horas";
+                } else if (minutes > 0) {
+                    tiempoTranscurrido = minutes + " minutos";
+                } else {
+                    tiempoTranscurrido = "Hace poco";
+                }
+
+                // Asignamos el tiempo transcurrido a la propiedad
+                issue.setTiempoTranscurrido(tiempoTranscurrido);
+            } else {
+                issue.setTiempoTranscurrido("Fecha desconocida");
+            }
+        }
+
+        List<ActividadReciente> actividadesRecientes = actividadRecienteRepository.findTop5ByUsuarioOrderByFechaDesc(usuario);
+
+        // Calcular el tiempo transcurrido para cada actividad reciente
+        for (ActividadReciente actividad : actividadesRecientes) {
+            if (actividad.getFecha() != null) {
+                LocalDateTime fechaActividadLocal = actividad.getFecha();
+                Duration duration = Duration.between(fechaActividadLocal, LocalDateTime.now());
+
+                long days = duration.toDays();
+                long hours = duration.toHours();
+                long minutes = duration.toMinutes();
+
+                String tiempoTranscurrido = "";
+                if (days > 365) {
+                    long years = days / 365;
+                    tiempoTranscurrido = years + " años";
+                } else if (days > 30) {
+                    long months = days / 30;
+                    tiempoTranscurrido = months + " meses";
+                } else if (days > 0) {
+                    tiempoTranscurrido = days + " días";
+                } else if (hours > 0) {
+                    tiempoTranscurrido = hours + " horas";
+                } else if (minutes > 0) {
+                    tiempoTranscurrido = minutes + " minutos";
+                } else {
+                    tiempoTranscurrido = "Hace poco";
+                }
+
+                // Asignamos el tiempo transcurrido a la propiedad de la actividad
+                actividad.setTiempoTranscurrido(tiempoTranscurrido);
+            } else {
+                actividad.setTiempoTranscurrido("Fecha desconocida");
+            }
+        }
+
+
         model.addAttribute("usuario", usuario);
         model.addAttribute("NcredActivas", NCredenciales);
         model.addAttribute("credenciales", credenciales);
         model.addAttribute("Nnotis", Nnotis);
         model.addAttribute("notificaciones", notis);
+        model.addAttribute("actividadesRecientes", actividadesRecientes);
         return "qa/quality";
     }
 
@@ -88,6 +179,7 @@ public class QaController extends BaseController {
         
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
+
         
         model.addAttribute("usuario", usuario);
         return "qa/perfilQa";
@@ -102,40 +194,6 @@ public class QaController extends BaseController {
         
         model.addAttribute("usuario", usuario);
         return "qa/apiDetalle";
-    }
-
-    @GetMapping("/feedback")
-    public String showFeedbackView(Model model, Authentication auth, HttpSession session) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        
-        // Agregar atributos de impersonación
-        addImpersonationAttributes(model, session);
-        
-        model.addAttribute("usuario", usuario);
-        List<Feedback> listaFeedback = feedbackRepository.findAll();
-        model.addAttribute("listaFeedback", listaFeedback);
-
-        return "qa/feedback";
-    }
-
-
-    @GetMapping("/feedbackDetalle/{id}")
-    public String showFeedbackDetalleView(Model model, @PathVariable("id") int idFeedback, Authentication auth, HttpSession session) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        
-        // Agregar atributos de impersonación
-        addImpersonationAttributes(model, session);
-        
-        model.addAttribute("usuario", usuario);
-
-        Optional<Feedback> feedbackOptional = feedbackRepository.findById(idFeedback);
-
-        if (feedbackOptional.isPresent()) {
-            model.addAttribute("feedback", feedbackOptional.get());
-            return "qa/feedbackDetalle";
-        } else {
-            return "redirect:/qa/feedback";
-        }
     }
 
     @GetMapping("/soporte")

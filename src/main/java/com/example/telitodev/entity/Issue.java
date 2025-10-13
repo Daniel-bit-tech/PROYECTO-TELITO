@@ -32,13 +32,23 @@ public class Issue {
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Historial> historiales;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idCreador")
+    private Usuario creador; // Aquí guardamos al QA que lo creó
+
+    // Nueva propiedad para almacenar el tiempo transcurrido
+    @Transient
+    private String tiempoTranscurrido;
+
+
     // Constructores
     public Issue() {}
 
-    public Issue(String descripcion, Timestamp fechaCreacion, Reporte reporte) {
+    public Issue(String descripcion, Timestamp fechaCreacion, Reporte reporte, Usuario creador) {
         this.descripcion = descripcion;
         this.fechaCreacion = fechaCreacion;
         this.reporte = reporte;
+        this.creador = creador;
     }
 
     // Getters y Setters
@@ -96,5 +106,21 @@ public class Issue {
 
     public void setHistoriales(List<Historial> historiales) {
         this.historiales = historiales;
+    }
+
+    public Usuario getCreador() {
+        return creador;
+    }
+
+    public void setCreador(Usuario creador) {
+        this.creador = creador;
+    }
+
+    public String getTiempoTranscurrido() {
+        return tiempoTranscurrido;
+    }
+
+    public void setTiempoTranscurrido(String tiempoTranscurrido) {
+        this.tiempoTranscurrido = tiempoTranscurrido;
     }
 }

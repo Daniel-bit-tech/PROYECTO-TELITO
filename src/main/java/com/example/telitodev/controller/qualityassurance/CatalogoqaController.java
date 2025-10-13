@@ -57,6 +57,15 @@ public class CatalogoqaController extends BaseController {
         List<Dominio> allDominios = dominioRepository.findAll();
         List<Tag> allTags = tagRepository.findAll();
 
+        // Debug: Imprimir los valores de las APIs y su idApi
+        if (apis != null && !apis.isEmpty()) {
+            for (ApiProyectoDTO api : apis) {
+                System.out.println("API ID: " + api.getIdApi());  // Imprimir la ID de cada API
+            }
+        } else {
+            System.out.println("No se encontraron APIs.");
+        }
+
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
 

@@ -13,7 +13,7 @@ public class Usuario {
     public enum TipoAcceso {
         interno, externo
     }
-    
+
     @Id
     @Column(name = "dni", length = 8, columnDefinition = "CHAR(8)")
     private String dni;
@@ -45,13 +45,13 @@ public class Usuario {
     @Enumerated(EnumType.STRING)
     @Column(name = "tipo_acceso", nullable = false)
     private TipoAcceso tipoAcceso = TipoAcceso.interno;
-    
+
     @Column(name = "oauth_provider_id")
     private String oauthProviderId;
-    
+
     @Column(name = "oauth_provider", length = 50)
     private String oauthProvider;
-    
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idRol", nullable = false, insertable = true, updatable = true)
     private Rol rol;
@@ -105,7 +105,11 @@ public class Usuario {
     @OneToMany(mappedBy = "usuarioLider", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<Proyecto> proyectosLiderados;
-    
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Api> misApis;
+
     // Constructores
     public Usuario() {}
     
@@ -298,41 +302,49 @@ public class Usuario {
     public void setAuditLogs(List<AuditLog> auditLogs) {
         this.auditLogs = auditLogs;
     }
-    
+
+    public List<Api> getMisApis() {
+        return misApis;
+    }
+
+    public void setMisApis(List<Api> misApis) {
+        this.misApis = misApis;
+    }
+
     // Getters y Setters para OAuth2
     public TipoAcceso getTipoAcceso() {
         return tipoAcceso;
     }
-    
+
     public void setTipoAcceso(TipoAcceso tipoAcceso) {
         this.tipoAcceso = tipoAcceso;
     }
-    
+
     public String getOauthProviderId() {
         return oauthProviderId;
     }
-    
+
     public void setOauthProviderId(String oauthProviderId) {
         this.oauthProviderId = oauthProviderId;
     }
-    
+
     public String getOauthProvider() {
         return oauthProvider;
     }
-    
+
     public void setOauthProvider(String oauthProvider) {
         this.oauthProvider = oauthProvider;
     }
-    
+
     // Métodos de utilidad para OAuth2
     public boolean isUsuarioExterno() {
         return TipoAcceso.externo.equals(this.tipoAcceso);
     }
-    
+
     public boolean isUsuarioInterno() {
         return TipoAcceso.interno.equals(this.tipoAcceso);
     }
-    
+
     public boolean hasPassword() {
         return this.contrasena != null && !this.contrasena.trim().isEmpty();
     }

@@ -23,7 +23,7 @@ public class Evidencia {
     private String descripcion;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idReporte", referencedColumnName = "idReporte", nullable = false)
+    @JoinColumn(name = "idReporte", referencedColumnName = "idReporte")
     private Reporte reporte;
 
 

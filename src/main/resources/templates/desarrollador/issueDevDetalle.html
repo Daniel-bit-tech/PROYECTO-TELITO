@@ -98,18 +98,7 @@
             margin-bottom: 2rem;
         }
 
-        /*.feedback-tab {
-            padding: 1rem 1.5rem;
-            font-weight: 500;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.2s;
-        }*/
 
-        /*.feedback-tab.active {
-            color: var(--tblr-primary);
-            border-bottom-color: var(--tblr-primary);
-        }*/
 
         .feedback-form-container {
             background-color: var(--tblr-bg-surface);
@@ -421,7 +410,7 @@
 <!-- END GLOBAL THEME SCRIPT -->
 <div class="page">
     <!-- BEGIN NAVBAR  -->
-    <div th:replace="qa/header_qa.html :: header"></div>
+    <div th:replace="desarrollador/header.html :: header"></div>
 
     <!-- END NAVBAR  -->
     <div class="page-wrapper">
@@ -432,12 +421,6 @@
 
                     <div class="col" >
                         <h2 th:text="|Issue de ${issue.reporte.api.nombre}|"></h2>
-                    </div>
-
-                    <div th:if="${issue.estado != 'Corregido'}" class="col-md-auto">
-                        <form th:action="@{/qa/issueCerrar/{idIssue}/{idReporte}(idIssue=${issue.id.idIssue}, idReporte=${issue.reporte.idReporte})}" method="post">
-                            <button type="submit" class="btn btn-danger">Cerrar Issue</button>
-                        </form>
                     </div>
                     <!-- Page title actions -->
                 </div>
@@ -457,8 +440,8 @@
                                     <div class="datagrid-content" th:text="|${issue.reporte.api.dominio.nombre}/${issue.reporte.api.tag.nombre}|"></div>
                                 </div>
                                 <div class="datagrid-item">
-                                    <div class="datagrid-title">Versión</div>
-                                    <div class="datagrid-content">2.1</div>
+                                    <div class="datagrid-title">Creado por:</div>
+                                    <div class="datagrid-content" th:text="${issue.creador != null ? issue.creador.nombre : 'Sin creador'}"></div>
                                 </div>
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Estado</div>
@@ -576,9 +559,9 @@
                                                 </div>
                                             </div>
                                             <div class="comment-content">
-                                                <p class="comment-message" th:text="${comentario.comentario}"></p>
+                                                <div class="comment-message" th:text="${comentario.comentario}"></div>
 
-                                                <div th:if="${comentario.adjuntos != null && comentario.adjuntos.size() > 0}" class="comment-attachments">
+                                                <div th:if="${comentario.adjuntos != null && comentario.adjuntos.size() > 0}">
                                                     <i class="ti ti-paperclip me-1 text-secondary"></i>
                                                     <a th:each="adjunto : ${comentario.adjuntos}"
                                                        th:href="@{/qa/archivos/verAdjunto/{idAdjunto}(idAdjunto=${adjunto.idAdjunto})}"
@@ -590,7 +573,10 @@
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
+
+
                         </div>
                     </div>
 
@@ -598,12 +584,12 @@
                         <div class="feedback-form-container">
                             <h3 class="feedback-form-title">Foro - Deja tu Comentario</h3>
                             <div th:if="${issue.estado == 'Corregido'}" class="alert alert-success mt-3">
-                                Este issue ha sido desperado. No se pueden enviar más comentarios.
+                                Este issue ha sido cerrado. No se pueden enviar más comentarios.
                             </div>
 
                             <div th:unless="${issue.estado == 'Corregido'}">
                                 <!-- Aquí va el formulario para crear comentario -->
-                                <form th:action="@{/qa/crearComentario}" method="POST" enctype="multipart/form-data">
+                                <form th:action="@{/crearComentarioDev}" method="POST" enctype="multipart/form-data">
                                     <!-- ID del Issue y Reporte -->
                                     <input type="hidden" name="idIssue" th:value="${issue.id.idIssue}" />
                                     <input type="hidden" name="idReporte" th:value="${issue.reporte.idReporte}" />
@@ -621,7 +607,6 @@
                                     <button type="submit" onclick="return validateFiles()" class="btn btn-primary mt-3">Enviar Comentario</button>
                                 </form>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -629,7 +614,7 @@
             </div>
             <!-- END PAGE BODY -->
             <!--  BEGIN FOOTER  -->
-            <div th:replace="qa/footer.html :: footer"></div>
+            <div th:replace="desarrollador/footer.html :: footer"></div>
             <!--  END FOOTER  -->
         </div>
     </div>

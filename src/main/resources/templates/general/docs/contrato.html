@@ -47,9 +47,15 @@
             <div class="container-xl">
                 <!-- Header de navegación -->
                 <div class="row mb-4">
-                    <div class="col-12">
+                    <div class="col">
                         <div class="page-pretitle">Documentación</div>
                         <h1 class="page-title" th:text="${api.nombre}">API 1</h1>
+                    </div>
+                    <!-- Acción para QA -->
+                    <div sec:authorize="hasRole('QA')" class="col-md-auto">
+                        <a class="btn btn-primary" th:href="@{/qa/crearFeedback/{apiId}(apiId=${api.idApi})}">
+                            <i class="fas fa-comment-dots me-2"></i>Generar Feedback
+                        </a>
                     </div>
                 </div>
 
