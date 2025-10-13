@@ -6,6 +6,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telito Admin Portal</title>
     
+    <!-- Script para aplicar tema inmediatamente antes de que se renderice la página -->
+    <script>
+        (function() {
+            console.log('⚡ Aplicando tema inicial inmediatamente...');
+            try {
+                const systemTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                const savedTheme = localStorage.getItem('theme') || systemTheme;
+                
+                console.log('  - Tema del sistema:', systemTheme);
+                console.log('  - Tema guardado:', savedTheme);
+                console.log('  - Aplicando:', savedTheme);
+                
+                document.documentElement.setAttribute('data-bs-theme', savedTheme);
+                document.documentElement.className = 'theme-' + savedTheme;
+                
+                console.log('✅ Tema inicial aplicado:', savedTheme);
+            } catch (error) {
+                console.error('❌ Error al aplicar tema inicial:', error);
+            }
+        })();
+    </script>
+    
     <!-- Control de caché y seguridad -->
     <div th:replace="~{components/security-cache-control :: security-cache-control}"></div>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -156,11 +178,18 @@
             align-items: center;
             justify-content: center;
             transition: var(--transition);
+            border: none;
+            cursor: pointer;
         }
 
         .theme-switcher:hover {
             background: rgba(255, 255, 255, 0.2);
             transform: rotate(15deg);
+        }
+        
+        .theme-switcher:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
         }
 
         .notification-dropdown .card {
@@ -508,9 +537,6 @@
                         <a th:href="@{/admin/gestion-usuarios}" class="dropdown-item d-flex align-items-center">
                             <i class="fas fa-users me-2"></i> Gestionar Usuarios
                         </a>
-                        <a th:href="@{/admin/sesiones}" class="dropdown-item d-flex align-items-center">
-                            <i class="fas fa-users-cog me-2"></i> Gestión de Sesiones
-                        </a>
 
                         <div class="dropdown-divider"></div>
                         <form th:action="@{/logout}" method="post" style="margin: 0;">
@@ -550,11 +576,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/admin/sesiones}">
+                        <a class="nav-link" th:href="@{/admin/solicitudes}">
                 <span class="nav-link-icon d-md-none d-lg-inline-block">
-                  <i class="fas fa-users-cog"></i>
+                  <i class="fas fa-clipboard-list"></i>
                 </span>
-                            <span class="nav-link-title">Sesiones</span>
+                            <span class="nav-link-title">Gestionar Solicitudes</span>
                         </a>
                     </li>
                     <!--<li class="nav-item">
@@ -648,87 +674,213 @@
         return new bootstrap.Tooltip(tooltipTriggerEl)
     })
 
-    document.querySelectorAll('.theme-switcher').forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            const theme = this.classList.contains('hide-theme-dark') ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-bs-theme', theme);
-            document.body.setAttribute('data-bs-theme', theme);
+    // Sistema mejorado de cambio de tema - VERSIÓN ROBUSTA
+    function initThemeSystem() {
+        console.log('🎨 === INICIANDO SISTEMA DE TEMA ===');
+        
+        // Detectar tema del sistema
+        const systemTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        const savedTheme = localStorage.getItem('theme') || systemTheme;
+        
+        console.log('📊 Estado inicial:');
+        console.log('  - Tema del sistema:', systemTheme);
+        console.log('  - Tema guardado:', localStorage.getItem('theme'));
+        console.log('  - Tema a aplicar:', savedTheme);
+        
+        // Buscar botones
+        const darkBtn = document.getElementById('themeDarkBtn');
+        const lightBtn = document.getElementById('themeLightBtn');
+        
+        console.log('🔍 Elementos encontrados:');
+        console.log('  - Botón oscuro:', darkBtn ? '✅ Encontrado' : '❌ No encontrado');
+        console.log('  - Botón claro:', lightBtn ? '✅ Encontrado' : '❌ No encontrado');
+        
+        if (!darkBtn || !lightBtn) {
+            console.error('❌ ERROR: No se encontraron los botones de tema');
+            console.error('  - darkBtn:', darkBtn);
+            console.error('  - lightBtn:', lightBtn);
+            
+            // Intentar buscar de otra manera
+            const allButtons = document.querySelectorAll('.theme-switcher');
+            console.log('🔄 Buscando botones por clase, encontrados:', allButtons.length);
+            allButtons.forEach((btn, index) => {
+                console.log(`  - Botón ${index}:`, btn.id, btn);
+            });
+            
+            return; // Salir si no se encuentran los botones
+        }
+        
+        // Aplicar tema inicial
+        setTheme(savedTheme);
+        updateThemeButtons(savedTheme);
+        
+        // Configurar event listeners con manejo de errores robusto
+        try {
+            darkBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🌙 === CLICK BOTÓN OSCURO ===');
+                setTheme('dark');
+                updateThemeButtons('dark');
+            });
+            console.log('✅ Event listener agregado al botón oscuro');
+        } catch (error) {
+            console.error('❌ Error al agregar listener al botón oscuro:', error);
+        }
+        
+        try {
+            lightBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('☀️ === CLICK BOTÓN CLARO ===');
+                setTheme('light');
+                updateThemeButtons('light');
+            });
+            console.log('✅ Event listener agregado al botón claro');
+        } catch (error) {
+            console.error('❌ Error al agregar listener al botón claro:', error);
+        }
+        
+        // Escuchar cambios en el tema del sistema
+        try {
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+                if (!localStorage.getItem('theme')) {
+                    const newTheme = e.matches ? 'dark' : 'light';
+                    console.log('🔄 Cambio de tema del sistema detectado:', newTheme);
+                    setTheme(newTheme);
+                    updateThemeButtons(newTheme);
+                }
+            });
+        } catch (error) {
+            console.error('❌ Error al configurar listener del sistema:', error);
+        }
+        
+        // Escuchar eventos de cambio de tema desde otras páginas
+        try {
+            window.addEventListener('themeChanged', function(event) {
+                console.log('📢 Evento de cambio de tema recibido:', event.detail.theme);
+                updateThemeButtons(event.detail.theme);
+            });
+        } catch (error) {
+            console.error('❌ Error al configurar listener de eventos:', error);
+        }
+        
+        console.log('✅ === SISTEMA DE TEMA INICIALIZADO CORRECTAMENTE ===');
+    }
+    
+    // Función para establecer el tema - VERSIÓN ROBUSTA
+    function setTheme(theme) {
+        console.log('🎨 === APLICANDO TEMA ===');
+        console.log('  - Tema solicitado:', theme);
+        
+        // Validar tema
+        if (theme !== 'light' && theme !== 'dark') {
+            console.warn('⚠️ Tema inválido:', theme, 'usando dark por defecto');
+            theme = 'dark';
+        }
+        
+        try {
+            // Verificar elementos antes de aplicar
+            const htmlElement = document.documentElement;
+            const bodyElement = document.body;
+            
+            console.log('📋 Estado antes del cambio:');
+            console.log('  - HTML data-bs-theme:', htmlElement.getAttribute('data-bs-theme'));
+            console.log('  - Body data-bs-theme:', bodyElement.getAttribute('data-bs-theme'));
+            
+            // Aplicar el tema a los elementos principales
+            htmlElement.setAttribute('data-bs-theme', theme);
+            bodyElement.setAttribute('data-bs-theme', theme);
+            
+            // Guardar en localStorage
             localStorage.setItem('theme', theme);
             
-            // Apply theme-specific styles
-            setTimeout(() => {
-                applyThemeStyles(theme);
-            }, 10);
-        });
-    });
-
-    function applyThemeStyles(theme) {
-        if (theme === 'light') {
-            // Force dark text in light mode for navbar elements
-            document.querySelectorAll('.custom-navbar .navbar-brand, .custom-navbar .nav-link, .custom-navbar .navbar-nav .nav-link, .navbar-brand-link, .user-info, .dropdown-toggle').forEach(el => {
-                el.style.color = '#333';
-                el.style.fontWeight = '500';
-            });
+            console.log('📋 Estado después del cambio:');
+            console.log('  - HTML data-bs-theme:', htmlElement.getAttribute('data-bs-theme'));
+            console.log('  - Body data-bs-theme:', bodyElement.getAttribute('data-bs-theme'));
+            console.log('  - LocalStorage theme:', localStorage.getItem('theme'));
             
-            // Update welcome banner text for light mode
-            document.querySelectorAll('.welcome-title, .welcome-text').forEach(el => {
-                el.style.color = '#333';
-                el.style.fontWeight = '500';
-            });
-        } else {
-            // Reset to white for dark mode
-            document.querySelectorAll('.custom-navbar .navbar-brand, .custom-navbar .nav-link, .custom-navbar .navbar-nav .nav-link, .navbar-brand-link, .user-info, .dropdown-toggle').forEach(el => {
-                el.style.color = 'white';
-                el.style.fontWeight = '500';
-            });
+            // Aplicar estilos específicos del navbar
+            applyNavbarColors(theme);
             
-            // Reset welcome banner text for dark mode
-            document.querySelectorAll('.welcome-title, .welcome-text').forEach(el => {
-                el.style.removeProperty('color');
-                el.style.removeProperty('font-weight');
+            // Emitir evento para otras páginas
+            const event = new CustomEvent('themeChanged', { 
+                detail: { theme: theme },
+                bubbles: true,
+                cancelable: true
             });
+            window.dispatchEvent(event);
+            
+            console.log('✅ Tema aplicado exitosamente:', theme);
+            console.log('📢 Evento themeChanged emitido');
+            
+        } catch (error) {
+            console.error('❌ Error al aplicar tema:', error);
         }
     }
-
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-bs-theme', savedTheme);
-    document.body.setAttribute('data-bs-theme', savedTheme);
     
-    // Apply theme styles on load
-    setTimeout(() => {
-        applyThemeStyles(savedTheme);
-    }, 100);
-
-    document.addEventListener("DOMContentLoaded", function() {
-        let path = window.location.pathname;
-        let page = path.substring(path.lastIndexOf("/") + 1);
-
-        if (page === "" || page === "/") page = "admin.html";
-
-        const links = document.querySelectorAll('.nav-link');
-        links.forEach(link => {
-            let href = link.getAttribute('href');
-            if (!href) return;
-
-            href = href.substring(href.lastIndexOf("/") + 1);
-
-            if (href.replace(".html","") === page.replace(".html","") || 
-                (path.includes('/admin/') && href.includes(page))) {
-                link.classList.add('active');
-            } else {
-                link.classList.remove('active');
+    // Función para actualizar la visibilidad de los botones de tema - VERSIÓN ROBUSTA
+    function updateThemeButtons(theme) {
+        console.log('🔄 === ACTUALIZANDO BOTONES DE TEMA ===');
+        console.log('  - Tema:', theme);
+        
+        try {
+            const darkBtn = document.getElementById('themeDarkBtn');
+            const lightBtn = document.getElementById('themeLightBtn');
+            
+            console.log('🔍 Estado de botones:');
+            console.log('  - darkBtn encontrado:', darkBtn ? '✅' : '❌', darkBtn);
+            console.log('  - lightBtn encontrado:', lightBtn ? '✅' : '❌', lightBtn);
+            
+            if (!darkBtn || !lightBtn) {
+                console.error('❌ ERROR: No se encontraron los botones para actualizar');
+                return;
             }
-        });
-    });
-
+            
+            // Mostrar el estado actual
+            console.log('📋 Estado actual:');
+            console.log('  - darkBtn display:', window.getComputedStyle(darkBtn).display);
+            console.log('  - lightBtn display:', window.getComputedStyle(lightBtn).display);
+            
+            if (theme === 'dark') {
+                // En modo oscuro, mostrar botón de modo claro
+                darkBtn.style.display = 'none';
+                lightBtn.style.display = 'flex';
+                darkBtn.style.visibility = 'hidden';
+                lightBtn.style.visibility = 'visible';
+                console.log('✅ Configurado para modo oscuro: mostrando botón claro');
+            } else {
+                // En modo claro, mostrar botón de modo oscuro
+                darkBtn.style.display = 'flex';
+                lightBtn.style.display = 'none';
+                darkBtn.style.visibility = 'visible';
+                lightBtn.style.visibility = 'hidden';
+                console.log('✅ Configurado para modo claro: mostrando botón oscuro');
+            }
+            
+            // Verificar el resultado
+            console.log('� Estado final:');
+            console.log('  - darkBtn display:', window.getComputedStyle(darkBtn).display);
+            console.log('  - lightBtn display:', window.getComputedStyle(lightBtn).display);
+            console.log('  - darkBtn visibility:', window.getComputedStyle(darkBtn).visibility);
+            console.log('  - lightBtn visibility:', window.getComputedStyle(lightBtn).visibility);
+            
+        } catch (error) {
+            console.error('❌ Error al actualizar botones:', error);
+        }
+        
+        console.log('✅ === BOTONES ACTUALIZADOS ===');
+    }
+    
     // Función para aplicar colores del navbar según el tema
-    function applyNavbarColors() {
-        const theme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+    function applyNavbarColors(theme) {
+        console.log('🎨 Aplicando colores de navbar para tema:', theme);
+        
         const navbarBrand = document.querySelector('.navbar-brand');
         const navLinks = document.querySelectorAll('.nav-link');
         const dropdownToggle = document.querySelector('.dropdown-toggle');
         const userInfo = document.querySelector('.user-info');
+        const navbarBrandLink = document.querySelector('.navbar-brand-link');
         
         if (theme === 'light') {
             // Modo claro - texto oscuro
@@ -738,8 +890,14 @@
                 if (brandSpan) brandSpan.style.color = '#212529';
             }
             
+            if (navbarBrandLink) {
+                navbarBrandLink.style.color = '#212529';
+            }
+            
             navLinks.forEach(link => {
-                link.style.color = 'rgba(33, 37, 41, 0.85)';
+                if (!link.closest('.theme-switcher')) {
+                    link.style.color = 'rgba(33, 37, 41, 0.85)';
+                }
             });
             
             if (dropdownToggle) {
@@ -761,8 +919,14 @@
                 if (brandSpan) brandSpan.style.color = 'white';
             }
             
+            if (navbarBrandLink) {
+                navbarBrandLink.style.color = 'white';
+            }
+            
             navLinks.forEach(link => {
-                link.style.color = 'rgba(255, 255, 255, 0.85)';
+                if (!link.closest('.theme-switcher')) {
+                    link.style.color = 'rgba(255, 255, 255, 0.85)';
+                }
             });
             
             if (dropdownToggle) {
@@ -779,28 +943,221 @@
         }
     }
 
-    // Aplicar colores inicialmente
-    applyNavbarColors();
-
-    // Observar cambios en el atributo data-bs-theme
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'data-bs-theme') {
-                setTimeout(applyNavbarColors, 50);
+    // === INICIALIZACIÓN ROBUSTA DEL SISTEMA DE TEMA ===
+    console.log('🚀 === INICIANDO CARGA DEL SISTEMA DE TEMA ===');
+    
+    // Función para intentar inicializar el tema
+    function tryInitTheme() {
+        console.log('🔄 Intentando inicializar sistema de tema...');
+        console.log('  - DOM readyState:', document.readyState);
+        
+        // Verificar si los elementos están disponibles
+        const darkBtn = document.getElementById('themeDarkBtn');
+        const lightBtn = document.getElementById('themeLightBtn');
+        
+        if (darkBtn && lightBtn) {
+            console.log('✅ Elementos encontrados (código legacy desactivado)');
+            return true;
+        } else {
+            console.log('⏳ Elementos no encontrados aún, esperando...');
+            console.log('  - darkBtn:', darkBtn);
+            console.log('  - lightBtn:', lightBtn);
+            return false;
+        }
+    }
+    
+    // Intentar inicialización inmediata
+    if (document.readyState === 'loading') {
+        console.log('📄 DOM aún cargando, esperando DOMContentLoaded...');
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOMContentLoaded disparado');
+            setTimeout(tryInitTheme, 100);
+        });
+    } else {
+        console.log('📄 DOM ya cargado, intentando inicialización inmediata...');
+        if (!tryInitTheme()) {
+            // Si falla, reintentar con delays
+            setTimeout(tryInitTheme, 100);
+        }
+    }
+    
+    // Reintentos con delays progresivos como respaldo
+    const retryDelays = [200, 500, 1000, 2000];
+    retryDelays.forEach((delay, index) => {
+        setTimeout(function() {
+            console.log(`🔄 Reintento ${index + 1} después de ${delay}ms...`);
+            tryInitTheme();
+        }, delay);
+    });
+    
+    // Listener adicional para cuando el window termine de cargar
+    window.addEventListener('load', function() {
+        console.log('🪟 Window load completado, reintentando inicialización...');
+        setTimeout(tryInitTheme, 100);
+    });
+    
+    console.log('🎯 Sistema de inicialización configurado');
+    
+    // === FUNCIONES GLOBALES PARA DEBUG ===
+    // Función global para debuggear el tema desde la consola
+    window.debugTheme = function() {
+        console.log('🐛 === DEBUG DEL SISTEMA DE TEMA ===');
+        
+        const darkBtn = document.getElementById('themeDarkBtn');
+        const lightBtn = document.getElementById('themeLightBtn');
+        const htmlTheme = document.documentElement.getAttribute('data-bs-theme');
+        const bodyTheme = document.body.getAttribute('data-bs-theme');
+        const savedTheme = localStorage.getItem('theme');
+        
+        console.log('📊 Estado actual:');
+        console.log('  - HTML theme:', htmlTheme);
+        console.log('  - Body theme:', bodyTheme);
+        console.log('  - LocalStorage theme:', savedTheme);
+        console.log('  - Dark button:', darkBtn ? '✅ Encontrado' : '❌ No encontrado');
+        console.log('  - Light button:', lightBtn ? '✅ Encontrado' : '❌ No encontrado');
+        
+        if (darkBtn) {
+            console.log('  - Dark button display:', window.getComputedStyle(darkBtn).display);
+            console.log('  - Dark button visibility:', window.getComputedStyle(darkBtn).visibility);
+        }
+        
+        if (lightBtn) {
+            console.log('  - Light button display:', window.getComputedStyle(lightBtn).display);
+            console.log('  - Light button visibility:', window.getComputedStyle(lightBtn).visibility);
+        }
+        
+        console.log('🔧 Funciones disponibles:');
+        console.log('  - debugTheme() - Mostrar estado actual');
+        console.log('  - forceTheme("dark") - Forzar tema oscuro');
+        console.log('  - forceTheme("light") - Forzar tema claro');
+        console.log('  - resetTheme() - Reinicializar sistema');
+    };
+    
+    // Función para forzar un tema
+    window.forceTheme = function(theme) {
+        console.log('🔧 Forzando tema:', theme);
+        if (typeof setTheme === 'function') {
+            setTheme(theme);
+            if (typeof updateThemeButtons === 'function') {
+                updateThemeButtons(theme);
             }
+        } else {
+            console.error('❌ Función setTheme no disponible');
+        }
+    };
+    
+    // Función para reinicializar el sistema
+    window.resetTheme = function() {
+        console.log('🔄 Sistema legacy desactivado');
+    };
+    
+    console.log('🐛 Funciones de debug registradas. Usa debugTheme() en la consola.');
+
+    // === SISTEMA DE TEMA SIMPLIFICADO - SOBRESCRIBE FUNCIONALIDAD ANTERIOR ===
+    setTimeout(function() {
+        console.log('🎨 Inicializando sistema de tema simplificado...');
+        
+        // Detectar tema actual
+        const systemTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        const savedTheme = localStorage.getItem('theme') || systemTheme;
+        
+        // Buscar botones
+        const darkBtn = document.getElementById('themeDarkBtn');
+        const lightBtn = document.getElementById('themeLightBtn');
+        
+        if (!darkBtn || !lightBtn) {
+            console.error('No se encontraron los botones de tema');
+            return;
+        }
+        
+        // Función simple para aplicar tema
+        function applySimpleTheme(theme) {
+            console.log('Aplicando tema:', theme);
+            
+            // Aplicar atributo
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            document.body.setAttribute('data-bs-theme', theme);
+            
+            // Guardar en localStorage
+            localStorage.setItem('theme', theme);
+            
+            // Actualizar visibilidad de botones
+            if (theme === 'dark') {
+                darkBtn.style.display = 'none';
+                lightBtn.style.display = 'flex';
+            } else {
+                darkBtn.style.display = 'flex';
+                lightBtn.style.display = 'none';
+            }
+            
+            console.log('Tema aplicado:', theme);
+        }
+        
+        // Aplicar tema inicial
+        applySimpleTheme(savedTheme);
+        
+        // Limpiar event listeners anteriores y agregar nuevos
+        const newDarkBtn = darkBtn.cloneNode(true);
+        const newLightBtn = lightBtn.cloneNode(true);
+        
+        darkBtn.parentNode.replaceChild(newDarkBtn, darkBtn);
+        lightBtn.parentNode.replaceChild(newLightBtn, lightBtn);
+        
+        // Event listeners simples
+        newDarkBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Click botón oscuro');
+            applySimpleTheme('dark');
+        });
+        
+        newLightBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Click botón claro');
+            applySimpleTheme('light');
+        });
+        
+        console.log('✅ Sistema de tema simplificado inicializado');
+        
+    }, 100);
+
+    // === SISTEMA DE TEMA SIMPLE - COPIADO DEL PO ===
+    document.querySelectorAll('.theme-switcher').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const theme = this.classList.contains('hide-theme-dark') ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
+            console.log('🎨 Tema cambiado a:', theme);
         });
     });
 
-    observer.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['data-bs-theme']
-    });
+    // Aplicar tema guardado
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-bs-theme', savedTheme);
+    console.log('🎨 Tema inicial aplicado:', savedTheme);
 
-    // También escuchar clicks en el botón de theme toggle
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('[data-bs-theme-value]')) {
-            setTimeout(applyNavbarColors, 100);
-        }
+    document.addEventListener("DOMContentLoaded", function() {
+        let path = window.location.pathname;
+        let page = path.substring(path.lastIndexOf("/") + 1);
+
+        if (page === "" || page === "/") page = "admin.html";
+
+        const links = document.querySelectorAll('.nav-link');
+        links.forEach(link => {
+            let href = link.getAttribute('href');
+            if (!href) return;
+
+            href = href.substring(href.lastIndexOf("/") + 1);
+
+            if (href.replace(".html","") === page.replace(".html","") || 
+                (path.includes('/admin/') && href.includes(page))) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
     });
 </script>
 </body>
