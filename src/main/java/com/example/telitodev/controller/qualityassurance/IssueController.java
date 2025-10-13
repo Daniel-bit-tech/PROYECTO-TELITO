@@ -54,7 +54,7 @@ public class IssueController extends BaseController {
                                 @RequestParam(value = "fechaFin", required = false) String fechaFin,
                                 @RequestParam(value = "nombre", required = false) String nombre,
                                 @RequestParam(defaultValue = "0") int page,
-                                @RequestParam(defaultValue = "10") int size) { // 6 issues por página
+                                @RequestParam(defaultValue = "10") int size) {
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         addImpersonationAttributes(model, session);
@@ -65,26 +65,32 @@ public class IssueController extends BaseController {
         try {
             if (fechaInicio != null && !fechaInicio.isEmpty()) inicio = Timestamp.valueOf(fechaInicio + " 00:00:00");
             if (fechaFin != null && !fechaFin.isEmpty()) fin = Timestamp.valueOf(fechaFin + " 23:59:59");
-        } catch (Exception e) { e.printStackTrace(); }
-
-        Pageable pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
-        Page<Issue> issuesPage = issueRepository.findByFilters(estados, inicio, fin, nombre, pageable);
-
-        // 🔹 Si el usuario pide una página mayor al total, regresar a la última válida
-        if (page >= issuesPage.getTotalPages() && issuesPage.getTotalPages() > 0) {
-            pageable = PageRequest.of(issuesPage.getTotalPages() - 1, size);
-            issuesPage = issueRepository.findByFilters(estados, inicio, fin, nombre, pageable);
-            page = issuesPage.getTotalPages() - 1;
+        } catch (Exception e) {
+            // Manejar el error, por ejemplo, loggearlo o mostrar un mensaje al usuario
+            e.printStackTrace();
         }
 
-        model.addAttribute("issues", issuesPage.getContent());
+        Pageable pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
+        Page<Issue> issuePage = issueRepository.findByFilters(estados, inicio, fin, nombre, pageable);
+
+        // Si la página solicitada está fuera de rango, redirigir a la última página válida.
+        if (page >= issuePage.getTotalPages() && issuePage.getTotalPages() > 0) {
+            int lastPage = issuePage.getTotalPages() - 1;
+            pageable = PageRequest.of(lastPage, size, Sort.by("fechaCreacion").descending());
+            issuePage = issueRepository.findByFilters(estados, inicio, fin, nombre, pageable);
+            page = lastPage;
+        }
+
+        // Pasamos el objeto Page completo a la vista para mayor consistencia
+        model.addAttribute("issuePage", issuePage);
         model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", issuesPage.getTotalPages());
+        model.addAttribute("totalPages", issuePage.getTotalPages());
+
+        // Devolvemos los parámetros de filtro a la vista para mantener su estado
         model.addAttribute("selectedEstados", estados);
         model.addAttribute("fechaInicio", fechaInicio);
         model.addAttribute("fechaFin", fechaFin);
         model.addAttribute("nombre", nombre);
-        model.addAttribute("pageSize", size);
 
         return "qa/issues";
     }
@@ -155,20 +161,36 @@ public class IssueController extends BaseController {
     public String crearIssue(Model model, Authentication auth,
                              @RequestParam("idReporte") Integer idReporte,
                              @RequestParam("descripcion") String descripcion,
-                             @RequestParam("estado") String estado) {
+                             @RequestParam("estado") String estado,
+                             RedirectAttributes redirectAttributes) {
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
 
-        // Obtener el reporte por id
         Reporte reporte = reporteRepository.findById(idReporte).orElse(null);
         if (reporte == null) {
-            return "redirect:/qa/issues?error=Reporte no encontrado";
+            redirectAttributes.addFlashAttribute("error", "Reporte no encontrado.");
+            return "redirect:/qa/reportes";
         }
+
+        // --- INICIO DE VALIDACIÓN ---
+        if (descripcion == null || descripcion.trim().isEmpty()) {
+            // Si hay error, usamos RedirectAttributes para enviar el error a la página anterior
+            redirectAttributes.addFlashAttribute("errorDescripcion", "La descripción no puede estar vacía.");
+            // Redirigimos de vuelta a la página del detalle del reporte desde donde se crea el issue
+            return "redirect:/qa/reporteDetalle?idReporte=" + idReporte;
+        }
+
+        if (descripcion.length() > 200) {
+            redirectAttributes.addFlashAttribute("errorDescripcion", "La descripción no puede superar los 200 caracteres.");
+            return "redirect:/qa/reporteDetalle?idReporte=" + idReporte;
+        }
+        // --- FIN DE VALIDACIÓN ---
 
         // Verificar que el reporte tiene estado "Fallido"
         if (!"Fallido".equals(reporte.getEstado())) {
-            return "redirect:/qa/issues?error=Solo puedes crear un Issue para reportes en estado Fallido";
+            redirectAttributes.addFlashAttribute("error", "Solo puedes crear un Issue para reportes en estado 'Fallido'.");
+            return "redirect:/qa/reportes";
         }
 
         // Crear el IssueId (composite key)
@@ -210,6 +232,20 @@ public class IssueController extends BaseController {
                                     @RequestParam("idReporte") Integer idReporte,
                                     Authentication auth, RedirectAttributes redirectAttributes) {
 
+
+        if (comentario == null || comentario.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorComentario", "El comentario no puede estar vacío.");
+            // No repoblamos el comentario porque estaba vacío
+            return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+        }
+
+        // Validación 2: Comentario no puede exceder los 400 caracteres
+        if (comentario.length() > 400) {
+            redirectAttributes.addFlashAttribute("errorComentario", "El comentario no puede superar los 400 caracteres.");
+            // Devolvemos el comentario para que el usuario pueda editarlo
+            redirectAttributes.addFlashAttribute("submittedComentario", comentario);
+            return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+        }
         // Obtener el usuario
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
@@ -300,6 +336,7 @@ public class IssueController extends BaseController {
     @PostMapping("/issueCerrar/{idIssue}/{idReporte}")
     public String cerrarIssue(@PathVariable Integer idIssue, @PathVariable Integer idReporte,
                               RedirectAttributes redirectAttributes, Authentication auth) {
+
 
         // Obtener el usuario
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());

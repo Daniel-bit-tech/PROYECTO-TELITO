@@ -1,205 +1,133 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge" />
   <title>TELITO DEVELOPER PORTAL | Crear Reporte</title>
-  <!-- BEGIN GLOBAL MANDATORY STYLES -->
-  <link href="/tabler/dist/css/tabler.css?1757307617" rel="stylesheet" />
-  <!-- END GLOBAL MANDATORY STYLES -->
-  <!-- BEGIN PLUGINS STYLES -->
-  <link href="/tabler/dist/css/tabler-flags.css?1757307617" rel="stylesheet" />
-  <link href="/tabler/dist/css/tabler-socials.css?1757307617" rel="stylesheet" />
-  <link href="/tabler/dist/css/tabler-payments.css?1757307617" rel="stylesheet" />
-  <link href="/tabler/dist/css/tabler-vendors.css?1757307617" rel="stylesheet" />
-  <link href="/tabler/dist/css/tabler-marketing.css?1757307617" rel="stylesheet" />
-  <link href="/tabler/dist/css/tabler-themes.css?1757307617" rel="stylesheet" />
-  <!-- END PLUGINS STYLES -->
-  <!-- BEGIN DEMO STYLES -->
-  <link href="/tabler/preview/css/demo.css?1757307617" rel="stylesheet" />
-  <link href="/tabler/preview/css/demo.css?1757307616" rel="stylesheet" />
+  <!-- Estilos de Tabler y FontAwesome -->
+  <link href="/tabler/dist/css/tabler.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- END DEMO STYLES -->
-  <!-- BEGIN CUSTOM FONT -->
   <style>
     @import url("https://rsms.me/inter/inter.css");
   </style>
-  <!-- END CUSTOM FONT -->
 </head>
 <body>
-<!-- BEGIN GLOBAL THEME SCRIPT -->
-<script src="/tabler/dist/js/tabler-theme.min.js?1757307617"></script>
-<!-- END GLOBAL THEME SCRIPT -->
+<script src="/tabler/dist/js/tabler-theme.min.js"></script>
 <div class="page">
-  <!-- BEGIN NAVBAR  -->
   <div th:replace="qa/header_qa.html :: header"></div>
-  <!-- END NAVBAR  -->
   <div class="page-wrapper">
-    <!-- BEGIN PAGE HEADER -->
-    <div class="page-header d-print-none" aria-label="Page header">
+    <div class="page-header d-print-none">
       <div class="container-xl">
         <div class="row g-2 align-items-center">
-
           <div class="col" >
             <h2>Crear reporte</h2>
           </div>
-
         </div>
       </div>
-      <!-- END PAGE HEADER -->
-      <!-- BEGIN PAGE BODY -->
-      <div class="page-body">
-        <div class="container-xl">
-          <div class="row row-cards row-cols-1 row-cols-md-2">
-            <div class="col">
-              <div class="row row-cards">
-                <div class="col-12">
-                  <div class="card">
-                    <div class="card-header">
-                      <h3 class="card-title">Genera un reporte después de validar una API</h3>
-                    </div>
-                    <div class="card-body">
-                      <form method="POST" th:action="@{/qa/guardarReporte}" enctype="multipart/form-data">
-                        <div class="space-y">
-                          <!-- Campo oculto para el ID del reporte -->
+    </div>
+    <div class="page-body">
+      <div class="container-xl">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">Genera un reporte después de validar una API</h3>
+          </div>
+          <div class="card-body">
+            <form method="POST" th:action="@{/qa/guardarReporte}" enctype="multipart/form-data">
 
-
-                          <div class="form-group">
-                            <label class="form-label">API o recurso</label>
-                            <select class="form-select" name="apiId" required>
-                              <option value="">Selecciona una API o recurso</option>
-                              <option th:each="api : ${apis}" th:value="${api.idApi}" th:text="${api.nombre}"></option>
-                            </select>
-                          </div>
-
-                          <div class="form-group">
-                            <label class="form-label">Estado del reporte</label>
-                            <select class="form-select" name="estado" required>
-                              <option value="">Selecciona el estado del reporte</option>
-                              <option th:each="estado : ${estadosReporte}"
-                                      th:value="${estado}"
-                                      th:text="${estado}">
-                              </option>
-                            </select>
-                          </div>
-
-                          <div class="form-group">
-                            <label class="form-label"> Descripción </label>
-                            <textarea name="descripcion" placeholder="Ingresa una descripcion" rows="6" class="form-control"></textarea>
-                            <div th:if="${errorDescripcion}" class="text-danger mt-1" th:text="${errorDescripcion}"></div>
-                          </div>
-                          <div class="form-group">
-                            <label for="archivo" class="form-label">Adjuntar archivo (opcional):</label>
-                            <input type="file" id="archivo" name="archivos" class="form-control" accept=".png, .jpg, .jpeg, .log" multiple />
-                            <small>Máximo 5 archivos</small>
-                          </div>
-                          <div id="error-message" style="color: red; display: none;">Solo se permiten archivos de tipo .png, .jpg, .jpeg o .log</div>
-                          <div>
-                            <button type="submit" onclick="return validateFiles()" class="btn btn-primary btn-4 w-100">
-                              Generar reporte
-                              <!-- Icono para el botón -->
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-end icon-2">
-                                <path d="M5 12l14 0" />
-                                <path d="M13 18l6 -6" />
-                                <path d="M13 6l6 6" />
-                              </svg>
-                            </button>
-                          </div>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                </div>
+              <!-- Combobox de APIs ajustado -->
+              <div class="mb-3">
+                <label class="form-label" for="apiSelect">API a reportar</label>
+                <select class="form-select" name="apiId" id="apiSelect" required>
+                  <option value="" selected disabled>-- Seleccione una API --</option>
+                  <option th:each="apiDto : ${apis}"
+                          th:value="${apiDto.idApi}"
+                          th:data-polider="${apiDto.poLiderDni}"
+                          th:text="${apiDto.nombreApi} + ' (Proyecto: ' + ${apiDto.nombreProyecto} + ')'">
+                  </option>
+                </select>
               </div>
-            </div>
+
+              <!-- CAMBIO: Campo oculto para enviar el DNI del PO Líder (sin la parte visible) -->
+              <input type="hidden" name="poLiderDni" id="poLiderDniInput" />
+
+              <!-- Selector de Estado -->
+              <div class="mb-3">
+                <label class="form-label">Estado del reporte</label>
+                <select class="form-select" name="estado" required>
+                  <option value="">Selecciona el estado del reporte</option>
+                  <option th:each="estado : ${estadosReporte}"
+                          th:value="${estado}"
+                          th:text="${estado}">
+                  </option>
+                </select>
+                <!-- NUEVO: Contenedor para mostrar el error de estado -->
+                <div th:if="${errorEstado}" class="text-danger mt-1" th:text="${errorEstado}"></div>
+              </div>
+
+              <!-- Campo de Descripción -->
+              <div class="mb-3">
+                <label class="form-label">Descripción</label>
+                <textarea name="descripcion" placeholder="Ingresa una descripcion" rows="6" class="form-control" required maxlength="200"></textarea>
+                <div th:if="${errorDescripcion}" class="text-danger mt-1" th:text="${errorDescripcion}"></div>
+              </div>
+
+              <!-- Campo para adjuntar archivos -->
+              <div class="mb-3">
+                <label for="archivo" class="form-label">Adjuntar archivo (opcional):</label>
+                <input type="file" id="archivo" name="archivos" class="form-control" accept=".png, .jpg, .jpeg, .log, .txt" multiple />
+                <small>Máximo 5 archivos</small>
+                <!-- NUEVO: Contenedor para mostrar el error de archivos -->
+                <div th:if="${errorArchivos}" class="text-danger mt-1" th:text="${errorArchivos}"></div>
+                <div id="error-message" style="color: red; display: none;">Solo se permiten archivos de tipo .png, .jpg, .jpeg, .log o .txt</div>
+              </div>
+
+              <div class="mt-4">
+                <button type="submit" onclick="return validateFiles()" class="btn btn-primary w-100">
+                  Generar reporte
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
-      <!-- END PAGE BODY -->
-      <!--  BEGIN FOOTER  -->
-      <div th:replace="qa/footer.html :: footer"></div>
-      <!--  END FOOTER  -->
     </div>
+    <div th:replace="qa/footer.html :: footer"></div>
   </div>
-  <!-- BEGIN GLOBAL MANDATORY SCRIPTS -->
-  <script src="/tabler/dist/js/tabler.min.js?1757307617" defer></script>
-  <!-- END GLOBAL MANDATORY SCRIPTS -->
-  <!-- BEGIN DEMO SCRIPTS -->
-  <script src="/tabler/preview/js/demo.min.js?1757307617" defer></script>
-  <!-- END DEMO SCRIPTS -->
-  <!-- BEGIN PAGE SCRIPTS -->
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      var themeConfig = {
-        theme: "light",
-        "theme-base": "gray",
-        "theme-font": "sans-serif",
-        "theme-primary": "blue",
-        "theme-radius": "1",
-      };
-      var url = new URL(window.location);
-      var form = document.getElementById("offcanvasSettings");
-      var resetButton = document.getElementById("reset-changes");
-      var checkItems = function () {
-        for (var key in themeConfig) {
-          var value = window.localStorage["tabler-" + key] || themeConfig[key];
-          if (!!value) {
-            var radios = form.querySelectorAll(`[name="${key}"]`);
-            if (!!radios) {
-              radios.forEach((radio) => {
-                radio.checked = radio.value === value;
-              });
-            }
-          }
-        }
-      };
-      form.addEventListener("change", function (event) {
-        var target = event.target,
-                name = target.name,
-                value = target.value;
-        for (var key in themeConfig) {
-          if (name === key) {
-            document.documentElement.setAttribute("data-bs-" + key, value);
-            window.localStorage.setItem("tabler-" + key, value);
-            url.searchParams.set(key, value);
-          }
-        }
-        window.history.pushState({}, "", url);
-      });
-      resetButton.addEventListener("click", function () {
-        for (var key in themeConfig) {
-          var value = themeConfig[key];
-          document.documentElement.removeAttribute("data-bs-" + key);
-          window.localStorage.removeItem("tabler-" + key);
-          url.searchParams.delete(key);
-        }
-        checkItems();
-        window.history.pushState({}, "", url);
-      });
-      checkItems();
-    });
-  </script>
-  <script>
-    function validateFiles() {
-      const fileInput = document.getElementById("archivo");
-      const files = fileInput.files;
-      const allowedTypes = ["image/png", "image/jpeg", "text/plain"]; // Tipos de archivo permitidos
+</div>
+<script src="/tabler/dist/js/tabler.min.js" defer></script>
+<script>
+  // CAMBIO: Script simplificado para guardar el DNI en el campo oculto
+  document.getElementById('apiSelect').addEventListener('change', function() {
+    const selectedOption = this.options[this.selectedIndex];
+    const poLiderDni = selectedOption.getAttribute('data-polider');
+    const poLiderDniInput = document.getElementById('poLiderDniInput');
 
-      // Limpiar cualquier mensaje de error previo
-      document.getElementById("error-message").style.display = "none";
-
-      for (let i = 0; i < files.length; i++) {
-        if (!allowedTypes.includes(files[i].type)) {
-          // Si el archivo no tiene un tipo permitido, mostramos un mensaje de error
-          document.getElementById("error-message").style.display = "block";
-          return false; // Evita que el formulario se envíe
-        }
-      }
-
-      return true; // Si todos los archivos son válidos, el formulario se envía
+    if (poLiderDni && poLiderDni !== 'null') {
+      poLiderDniInput.value = poLiderDni; // Asigna el DNI al valor del campo oculto
+    } else {
+      poLiderDniInput.value = ''; // Limpia el valor si no hay selección
     }
-  </script>
-  <!-- END PAGE SCRIPTS -->
+  });
+
+  // Tu script de validación de archivos existente
+  function validateFiles() {
+    const fileInput = document.getElementById("archivo");
+    const files = fileInput.files;
+    const allowedExtensions = ["png", "jpeg", "jpg", "log", "txt"];
+    document.getElementById("error-message").style.display = "none";
+
+    for (let i = 0; i < files.length; i++) {
+      const fileName = files[i].name;
+      const fileExtension = fileName.split('.').pop().toLowerCase();
+      if (!allowedExtensions.includes(fileExtension)) {
+        document.getElementById("error-message").style.display = "block";
+        return false;
+      }
+    }
+    return true;
+  }
+</script>
 </body>
 </html>
+

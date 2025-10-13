@@ -1,6 +1,7 @@
 package com.example.telitodev.controller.qualityassurance;
 
 import com.example.telitodev.controller.BaseController;
+import com.example.telitodev.dto.ApiProyectoDTO;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
 import com.example.telitodev.repository.po.ActividadRecienteRepository;
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/qa")
@@ -63,12 +65,12 @@ public class ReporteController extends BaseController {
                                    @RequestParam(defaultValue = "0") int page,
                                    @RequestParam(defaultValue = "10") int size) {
 
-        // 🧩 Obtener usuario autenticado y datos de impersonación
+        // Obtener usuario autenticado y datos de impersonación
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         addImpersonationAttributes(model, session);
         model.addAttribute("usuario", usuario);
 
-        // 📅 Convertir fechas a Timestamp
+        // Convertir fechas a Timestamp
         Timestamp inicio = null;
         Timestamp fin = null;
         try {
@@ -82,26 +84,28 @@ public class ReporteController extends BaseController {
             e.printStackTrace();
         }
 
-        // 📄 Configurar paginación (orden descendente por fecha de creación)
+        // Configurar paginación (orden descendente por fecha de creación)
         Pageable pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
-        Page<Reporte> reportesPage = reporteRepository.findByFiltersPaged(estados, inicio, fin, nombreApi, pageable);
+        Page<Reporte> reportePage = reporteRepository.findByFiltersPaged(estados, inicio, fin, nombreApi, pageable);
 
-        // ⚙️ Evitar error si la página solicitada excede el total
-        if (page >= reportesPage.getTotalPages() && reportesPage.getTotalPages() > 0) {
-            pageable = PageRequest.of(reportesPage.getTotalPages() - 1, size);
-            reportesPage = reporteRepository.findByFiltersPaged(estados, inicio, fin, nombreApi, pageable);
-            page = reportesPage.getTotalPages() - 1;
+        // Evitar error si la página solicitada excede el total
+        if (page >= reportePage.getTotalPages() && reportePage.getTotalPages() > 0) {
+            int lastPage = reportePage.getTotalPages() - 1;
+            pageable = PageRequest.of(lastPage, size, Sort.by("fechaCreacion").descending());
+            reportePage = reporteRepository.findByFiltersPaged(estados, inicio, fin, nombreApi, pageable);
+            page = lastPage;
         }
 
-        // 📦 Pasar datos al modelo
-        model.addAttribute("reportes", reportesPage.getContent());
+        // Pasar el objeto Page completo a la vista
+        model.addAttribute("reportePage", reportePage);
         model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", reportesPage.getTotalPages());
+        model.addAttribute("totalPages", reportePage.getTotalPages());
+
+        // Devolver los parámetros de filtro a la vista para mantener su estado
         model.addAttribute("selectedEstados", estados);
         model.addAttribute("fechaInicio", fechaInicio);
         model.addAttribute("fechaFin", fechaFin);
         model.addAttribute("nombreApi", nombreApi);
-        model.addAttribute("pageSize", size);
 
         return "qa/reportes";
     }
@@ -139,8 +143,10 @@ public class ReporteController extends BaseController {
     public String madeReport(Model model, Authentication auth, HttpSession session){
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
-        List<Api> apis = apiService.getAllApis();
-        model.addAttribute("apis", apis);
+        List<ApiProyectoDTO> apisParaValidar = apiRepository.findApisToReportForQa(usuario.getDni());
+        model.addAttribute("apis", apisParaValidar);
+
+        System.out.println("Lonigut es: "+apisParaValidar.size());
 
         // Lista de estados para el combobox
         List<String> estados = List.of("Aprobado", "Fallido");
@@ -158,6 +164,7 @@ public class ReporteController extends BaseController {
     public String submitReporte(@RequestParam("apiId") Integer apiId,
                                     @RequestParam("estado") String estado,
                                     @RequestParam("descripcion") String descripcion,
+                                    @RequestParam("poLiderDni") String poLiderDni, // <-- ¡Aquí está!
                                     @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
                                     Model model,
                                     Authentication auth,
@@ -165,26 +172,65 @@ public class ReporteController extends BaseController {
 
             Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
-            // Validación de longitud de descripción
-            if (descripcion.length() > 200) {
-                model.addAttribute("errorDescripcion", "La descripción no puede superar los 200 caracteres.");
+        boolean hasErrors = false;
 
-                // Volvemos a cargar los atributos necesarios
-                List<Api> apis = apiService.getAllApis();
-                model.addAttribute("apis", apis);
+        // --- INICIO DE VALIDACIONES DEL BACKEND ---
 
-                List<String> estados = List.of("Aprobado", "Fallido");
-                model.addAttribute("estadosReporte", estados);
+        // 1. Validación de Descripción
+        if (descripcion == null || descripcion.trim().isEmpty()) {
+            model.addAttribute("errorDescripcion", "La descripción no puede estar vacía.");
+            hasErrors = true;
+        } else if (descripcion.length() > 200) {
+            model.addAttribute("errorDescripcion", "La descripción no puede superar los 200 caracteres.");
+            hasErrors = true;
+        }
 
-                addImpersonationAttributes(model, session);
-                model.addAttribute("usuario", usuario);
+        // 2. Validación de Estado
+        if (estado == null || (!estado.equals("Aprobado") && !estado.equals("Fallido"))) {
+            model.addAttribute("errorEstado", "Por favor, seleccione un estado válido.");
+            hasErrors = true;
+        }
 
-                return "qa/reporteRealizar"; // Regresamos al mismo formulario
+        // 3. Validaciones de Archivos
+        if (archivos != null) {
+            MultipartFile[] nonEmptyFiles = Arrays.stream(archivos).filter(f -> !f.isEmpty()).toArray(MultipartFile[]::new);
+
+            if (nonEmptyFiles.length > 5) {
+                model.addAttribute("errorArchivos", "No puede subir más de 5 archivos.");
+                hasErrors = true;
+            } else {
+                for (MultipartFile archivo : nonEmptyFiles) {
+                    if (archivo.getSize() > MAX_FILE_SIZE) {
+                        model.addAttribute("errorArchivos", "El archivo '" + archivo.getOriginalFilename() + "' supera el tamaño máximo de 5MB.");
+                        hasErrors = true;
+                        break;
+                    }
+                    String contentType = archivo.getContentType();
+                    if (contentType == null || (!contentType.equals("image/png") && !contentType.equals("image/jpeg") && !contentType.equals("text/plain"))) {
+                        model.addAttribute("errorArchivos", "Formato de archivo no permitido. Solo se aceptan: .png, .jpg, .log, .txt.");
+                        hasErrors = true;
+                        break;
+                    }
+                }
             }
+        }
+
+        // --- FIN DE VALIDACIONES ---
+
+        // Si se encontró algún error, recargamos la vista del formulario con los mensajes
+        if (hasErrors) {
+            List<ApiProyectoDTO> apisParaValidar = apiRepository.findApisToReportForQa(usuario.getDni());
+            model.addAttribute("apisParaValidar", apisParaValidar);
+            model.addAttribute("estadosReporte", List.of("Aprobado", "Fallido"));
+            addImpersonationAttributes(model, session);
+            model.addAttribute("usuario", usuario);
+            return "qa/reporteRealizar";
+        }
 
         // Crear y guardar el reporte
         Reporte reporte = new Reporte();
-        reporte.setApi(apiRepository.findById(apiId).orElseThrow(() -> new RuntimeException("API no encontrada")));
+        Api apiReportada = apiRepository.findById(apiId).orElseThrow(() -> new RuntimeException("API no encontrada"));
+        reporte.setApi(apiReportada);
         reporte.setEstado(estado);
         reporte.setDescripcion(descripcion);
         reporte.setFechaCreacion(new Timestamp(System.currentTimeMillis()));
@@ -240,6 +286,27 @@ public class ReporteController extends BaseController {
         notif.setFecha(new Timestamp(System.currentTimeMillis()));
         notif.setUsuario(usuario); // propietario de la API
         notificacionRepository.save(notif);
+
+        // Si el reporte fue APROBADO, notificar al PO Líder.
+        if ("Aprobado".equals(estado) && poLiderDni != null && !poLiderDni.isEmpty()) {
+
+            // Buscamos al PO Líder por su DNI
+            Optional<Usuario> poLiderOpt = usuarioRepository.findById(poLiderDni);
+
+            if (poLiderOpt.isPresent()) {
+                Usuario poLider = poLiderOpt.get();
+
+                // Creamos la notificación para el PO Líder
+                Notificacion notificacionParaPO = new Notificacion();
+                String mensaje = "El QA " + usuario.getNombre() + " ha validado y aprobado la API: '" + apiReportada.getNombre() + "'.";
+                notificacionParaPO.setMensaje(mensaje);
+                notificacionParaPO.setLeido(false);
+                notificacionParaPO.setFecha(new Timestamp(System.currentTimeMillis()));
+                notificacionParaPO.setUsuario(poLider); // Asignamos al PO Líder como receptor
+
+                notificacionRepository.save(notificacionParaPO);
+            }
+        }
 
         ActividadReciente actividad = new ActividadReciente();
         actividad.setTitulo("Nuevo Reporte");

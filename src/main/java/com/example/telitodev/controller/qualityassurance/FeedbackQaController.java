@@ -11,11 +11,13 @@ import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.repository.po.ActividadRecienteRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -40,7 +42,9 @@ public class FeedbackQaController extends BaseController {
 
 
     @GetMapping("/feedback")
-    public String showFeedbackView(Model model, Authentication auth, HttpSession session) {
+    public String showFeedbackView(Model model, Authentication auth, HttpSession session,
+                                   @RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "8") int size) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
         // Agregar atributos de impersonación
@@ -48,9 +52,13 @@ public class FeedbackQaController extends BaseController {
 
         model.addAttribute("usuario", usuario);
 
+        Pageable pageable = PageRequest.of(page, size);
+
         // Filtrar feedbacks del usuario autenticado
-        List<Feedback> listaFeedback = feedbackRepository.findByUsuario(usuario);
-        model.addAttribute("listaFeedback", listaFeedback);
+        Page<Feedback> feedbackPage = feedbackRepository.findByUsuario(usuario, pageable);
+        model.addAttribute("feedbackPage", feedbackPage);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", feedbackPage.getTotalPages());
 
         return "qa/feedback";
     }
@@ -107,7 +115,35 @@ public class FeedbackQaController extends BaseController {
     public String submitFeedback(@RequestParam("comentario") String comentario,
                                  @RequestParam("calificacion") int calificacion,
                                  @RequestParam("apiId") int apiId,
-                                 Authentication auth) {
+                                 Authentication auth, RedirectAttributes redirectAttributes) {
+
+        // --- INICIO DE VALIDACIONES ---
+        boolean hasErrors = false;
+
+        // Validación 1: Comentario no puede estar vacío
+        if (comentario == null || comentario.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("errorComentario", "El comentario no puede estar vacío.");
+            hasErrors = true;
+        }
+        // Validación 2: Comentario no puede exceder 400 caracteres
+        else if (comentario.length() > 400) {
+            redirectAttributes.addFlashAttribute("errorComentario", "El comentario no puede superar los 400 caracteres.");
+            hasErrors = true;
+        }
+
+        // Validación 3: Calificación debe estar en el rango de 1 a 5
+        if (calificacion < 1 || calificacion > 5) {
+            redirectAttributes.addFlashAttribute("errorCalificacion", "Por favor, seleccione una calificación válida.");
+            hasErrors = true;
+        }
+
+        // Si hay errores, redirigir de vuelta al formulario de creación
+        if (hasErrors) {
+            // Guardamos los datos enviados para que el usuario no los pierda
+            redirectAttributes.addFlashAttribute("submittedComentario", comentario);
+            redirectAttributes.addFlashAttribute("submittedCalificacion", calificacion);
+            return "redirect:/qa/crearFeedback/" + apiId;
+        }
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
         Api api = apiRepository.findById(apiId).orElseThrow(() -> new RuntimeException("API no encontrada"));
