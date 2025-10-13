@@ -21,7 +21,7 @@ public class Documentacion {
 
     @Column(name = "url_documento", nullable = true, length = 45)
     private String urlDocumento;
-    
+
     @Column(name = "contenido", columnDefinition = "JSON")
     private String contenido;
     

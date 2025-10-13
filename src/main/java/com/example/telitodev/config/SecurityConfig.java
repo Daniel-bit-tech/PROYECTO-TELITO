@@ -19,7 +19,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-// import org.springframework.security.web.session.HttpSessionEventPublisher;  // COMENTADO TEMPORALMENTE
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
@@ -59,8 +58,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        System.out.println("🔧 SECURITY CONFIG - CONFIGURANDO OAUTH2:");
-        System.out.println("   - Bean inyectado: " + (oauth2UserServiceBean != null ? oauth2UserServiceBean.getClass().getName() : "NULL"));
 
         http
                 .authorizeHttpRequests(authz -> authz
