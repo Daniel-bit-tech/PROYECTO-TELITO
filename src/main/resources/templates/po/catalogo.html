@@ -2,12 +2,12 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8" />
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>TELITO DEVELOPER PORTAL | Catálogo de APIs</title>
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <!-- CSRF tokens for impersonation -->
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
     <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
@@ -57,8 +57,8 @@
 
         .search-box {
             flex: 1;
-            min-width: 300px;
             position: relative;
+            margin-bottom: 1.5rem;
         }
 
         .search-input {
@@ -118,6 +118,8 @@
 
         .filter-section {
             margin-bottom: 1.5rem;
+            max-height: 350px;
+            overflow-y: scroll;
         }
 
         .filter-section-title {
@@ -168,6 +170,7 @@
             flex-direction: column;
             transition: transform 0.2s, box-shadow 0.2s;
             height: 100%;
+            max-height: 300px;
         }
 
         .api-card:hover {
@@ -374,7 +377,6 @@
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        /* -------------------------------------------------------------" */
 
         @media (max-width: 1024px) {
             .catalog-content {
@@ -413,11 +415,13 @@
 </head>
 
 <body>
+<!-- Banner de impersonación -->
+<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
 
     <div th:replace="po/header_po.html :: header"></div>
-    <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
 
     <!-- Main -->
     <div class="content">
@@ -435,23 +439,14 @@
                     </div>
                 </div>
 
-                <div class="search-filters">
-                    <form method="get" action="/po/catalogo" class="d-flex w-100 gap-2">
-                        <div class="search-box">
-                            <i class="fas fa-search search-icon"></i>
-                            <input type="text" class="search-input" name="nombre"
-                                   placeholder="Buscar APIs por nombre" th:value="${nombre}">
-                        </div>
-                        <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
-                            <i class="fas fa-filter"></i> Buscar
-                        </button>
-                    </form>
-                </div>
-
                 <div class="catalog-content">
                     <form method="get" action="/po/catalogo" id="filterForm">
-                        <input type="hidden" name="nombre" id="nombreHidden">
                         <div class="filters-sidebar">
+                            <div class="search-box">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" class="search-input" id="search" name="nombre" placeholder="Buscar APIs por nombre" th:value="${nombre != null ? nombre : ''}">
+                            </div>
+
                             <div class="filter-section">
                                 <h3 class="filter-section-title">
                                     <i class="fas fa-signal"></i> Dominios
@@ -551,12 +546,11 @@
                                 <button class="btn btn-primary" onclick="clearFilters()">
                                     <i class="fas fa-times"></i> Limpiar todos los filtros
                                 </button>
-                                <a href="/po/catalogo" class="btn btn-outline">
+                                <a href="/apis" class="btn btn-outline">
                                     <i class="fas fa-redo"></i> Ver todas las APIs
                                 </a>
                             </div>
                         </div>
-                        <!-- Mensaje de "No se encontraron resultados" -->
                     </div>
                 </div>
             </main>
@@ -575,15 +569,11 @@
         });
 
         // Limpiar campo de búsqueda
-        document.querySelector('.search-input').value = '';
+        document.getElementById('search').value = '';
 
         // Enviar formulario
         document.getElementById('filterForm').submit();
     }
-
-    document.getElementById('filterForm').addEventListener('submit', function() {
-        document.getElementById('nombreHidden').value = document.querySelector('.search-input').value;
-    });
 
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -595,7 +585,7 @@
         });
     });
 
-    const searchInput = document.querySelector('.search-input');
+    const searchInput = document.getElementById('search');
     searchInput.addEventListener('input', function() {
         const searchTerm = this.value.toLowerCase();
         console.log(`Buscando: ${searchTerm}`);
