@@ -763,16 +763,22 @@
         function initPageTheme() {
             console.log('🎨 Inicializando tema de la página de solicitudes...');
             
-            // Detectar tema del sistema si no hay uno guardado
-            const systemTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            const savedTheme = localStorage.getItem('theme') || systemTheme;
+            // Detectar tema guardado, usar light como defecto
+            // TEMPORAL: Forzar light si está en dark por problemas de configuración
+            const storedTheme = localStorage.getItem('theme');
+            const savedTheme = storedTheme || 'light';
             
-            console.log('Tema del sistema:', systemTheme);
-            console.log('Tema guardado:', localStorage.getItem('theme'));
+            console.log('Tema guardado:', storedTheme);
             console.log('Tema a aplicar:', savedTheme);
             
-            // Aplicar tema inicial
-            applyPageTheme(savedTheme);
+            // Solo aplicar tema inicial si no hay uno ya establecido en el documento
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme');
+            if (!currentTheme || currentTheme !== savedTheme) {
+                console.log('🎨 Aplicando tema inicial desde solicitudes:', savedTheme);
+                applyPageTheme(savedTheme);
+            } else {
+                console.log('✅ Tema ya establecido correctamente:', currentTheme);
+            }
             
             // Escuchar cambios de tema desde el header
             window.addEventListener('themeChanged', function(event) {
@@ -795,10 +801,13 @@
             const observer = new MutationObserver(function(mutations) {
                 mutations.forEach(function(mutation) {
                     if (mutation.type === 'attributes' && mutation.attributeName === 'data-bs-theme') {
-                        const newTheme = document.documentElement.getAttribute('data-bs-theme');
-                        if (newTheme) {
-                            console.log('🔄 Cambio de tema detectado por observer:', newTheme);
-                            applyPageTheme(newTheme);
+                        // Solo reaccionar si no estamos en el proceso de aplicar tema
+                        if (!isApplyingTheme) {
+                            const newTheme = document.documentElement.getAttribute('data-bs-theme');
+                            if (newTheme) {
+                                console.log('🔄 Cambio de tema detectado por observer:', newTheme);
+                                applyPageTheme(newTheme);
+                            }
                         }
                     }
                 });
@@ -820,14 +829,25 @@
             console.log('✅ Sistema de tema de solicitudes inicializado');
         }
         
+        // Variables para evitar loops infinitos
+        let isApplyingTheme = false;
+        
         // Función para aplicar el tema a la página
         function applyPageTheme(theme) {
             console.log('🎨 Aplicando tema en solicitudes:', theme);
             
+            // Evitar loops infinitos
+            if (isApplyingTheme) {
+                console.log('⏸️ Ya aplicando tema, saltando...');
+                return;
+            }
+            
+            isApplyingTheme = true;
+            
             // Validar que el tema sea válido
             if (theme !== 'light' && theme !== 'dark') {
-                console.warn('⚠️ Tema inválido:', theme, 'usando dark por defecto');
-                theme = 'dark';
+                console.warn('⚠️ Tema inválido:', theme, 'usando light por defecto');
+                theme = 'light';
             }
             
             // Aplicar el tema a los elementos principales (sin interferir con el header)
@@ -844,7 +864,15 @@
             // Actualizar las cards
             updateCardsTheme(theme);
             
+            // Guardar en localStorage
+            localStorage.setItem('theme', theme);
+            
             console.log('✅ Tema aplicado en solicitudes:', theme);
+            
+            // Restablecer la bandera después de un pequeño delay
+            setTimeout(() => {
+                isApplyingTheme = false;
+            }, 100);
         }
         
         // Función para actualizar variables CSS de la página

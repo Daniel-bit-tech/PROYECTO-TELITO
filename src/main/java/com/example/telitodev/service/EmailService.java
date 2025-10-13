@@ -23,7 +23,7 @@ public class EmailService {
     @Value("${app.name:TelitoDev}")
     private String appName;
 
-    @Value("${app.url:http://localhost:8080}")
+    @Value("${app.url:http://34.212.200.2:8080}")
     private String appUrl;
 
     /**
