@@ -158,6 +158,11 @@ public class QaController extends BaseController {
             }
         }
 
+        // --- INICIO: Nueva Lógica para Contar APIs ---
+        // Llama al nuevo método del repositorio para obtener el conteo de APIs a validar
+        Integer apisPorValidar = apiRepository.countApisForQaValidation(usuario.getDni());
+        model.addAttribute("apisPorValidar", apisPorValidar);
+
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("NcredActivas", NCredenciales);

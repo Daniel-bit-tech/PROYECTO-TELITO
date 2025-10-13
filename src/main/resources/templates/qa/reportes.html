@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -311,28 +311,6 @@
             color: var(--tblr-body-color);
         }
 
-        .pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 2rem;
-            gap: 0.5rem;
-        }
-
-        .pagination-btn {
-            padding: 0.5rem 1rem;
-            border: 1px solid var(--tblr-border-color);
-            border-radius: 4px;
-            background-color: var(--tblr-bg-surface);
-            color: var(--tblr-body-color);
-            cursor: pointer;
-        }
-
-        .pagination-btn.active {
-            background-color: var(--tblr-primary);
-            color: white;
-            border-color: var(--tblr-primary);
-        }
-
         @media (max-width: 1024px) {
             .catalog-content {
                 grid-template-columns: 1fr;
@@ -402,7 +380,6 @@
 
                 <div class="catalog-content">
                     <form method="GET" th:action="@{/qa/reportes}" id="filterForm">
-                        <!--<input type="hidden" name="nombre" id="nombreHidden" />-->
                         <div class="filters-sidebar">
 
                             <div class="filter-section">
@@ -412,13 +389,13 @@
                                 <div class="filter-tags">
                                     <label class="filter-tag">
                                         <input type="checkbox" name="estados" value="Aprobado"
-                                               th:checked="${selectedEstados != null and #arrays.contains(selectedEstados, 'Aprobado')}">
+                                               th:checked="${selectedEstados != null and selectedEstados.contains('Aprobado')}">
                                         Aprobado
                                     </label>
 
                                     <label class="filter-tag">
                                         <input type="checkbox" name="estados" value="Fallido"
-                                               th:checked="${selectedEstados != null and #arrays.contains(selectedEstados, 'Fallido')}">
+                                               th:checked="${selectedEstados != null and selectedEstados.contains('Fallido')}">
                                         Fallido
                                     </label>
                                 </div>
@@ -442,100 +419,77 @@
                             <button type="submit" class="btn-api btn-primary" style="width: 100%;">
                                 <i class="fas fa-filter"></i> Aplicar Filtros
                             </button>
-                            <a th:href="@{/qa/reportes}" class="btn-api btn-secondary">Limpiar</a>
+                            <a th:href="@{/qa/reportes}" class="btn-api btn-secondary mt-2">Limpiar</a>
                         </div>
                     </form>
 
+                    <div class="d-flex flex-column">
+                        <div class="apis-grid">
+                            <div th:if="${!reportePage.hasContent()}" class="empty-state" style="grid-column: 1 / -1;">
+                                <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+                                <h4 class="empty-title">No hay reportes disponibles</h4>
+                                <p class="empty-description">Actualmente no hay reportes registrados</p>
+                            </div>
 
-                    <div class="apis-grid">
-                        <div th:if="${#lists.isEmpty(reportes)}" class="empty-state">
-                            <div class="empty-icon"><i class="fas fa-inbox"></i></div>
-                            <h4 class="empty-title">No hay reportes disponibles</h4>
-                            <p class="empty-description">Actualmente no hay reportes registrados</p>
-                        </div>
-
-                        <div th:unless="${#lists.isEmpty(reportes)}" th:each="reporte : ${reportes}">
-                            <div class="api-card">
-                                <div class="api-header">
-                                    <div>
-                                        <h3>Reporte #<span th:text="|${reporte.idReporte}: ${reporte.api.nombre}|"></span></h3>
-                                        <span class="api-status status-production"
-                                              th:text="${reporte.api.dominio.nombre}">Producción</span>
-                                        <span class="api-status status-production"
-                                              th:text="${reporte.api.tag.nombre}">Producción</span>
-                                    </div>
-                                </div>
-
-
-                                <div class="row">
-                                    <div class="col-md">
-                                        Estado:
-                                        <span th:text="${reporte.estado}"
-                                              th:classappend="${reporte.estado == 'Aprobado' ? 'text-success' : (reporte.estado == 'Fallido' ? 'text-danger' : '')}" style="text-transform: uppercase;"></span>
+                            <div th:each="reporte : ${reportePage.content}">
+                                <div class="api-card">
+                                    <div class="api-header">
+                                        <div>
+                                            <h3>Reporte #<span th:text="|${reporte.idReporte}: ${reporte.api.nombre}|"></span></h3>
+                                            <span class="api-status status-production"
+                                                  th:text="${reporte.api.dominio.nombre}">Producción</span>
+                                            <span class="api-status status-production"
+                                                  th:text="${reporte.api.tag.nombre}">Producción</span>
+                                        </div>
                                     </div>
 
-                                </div>
-                                <div class="row">
-                                    <div class="col-md">
-                                        Fecha: <span th:text="${#dates.format(reporte.fechaCreacion, 'dd-MM-yyyy HH:mm')}"></span>
+
+                                    <div class="row">
+                                        <div class="col-md">
+                                            Estado:
+                                            <span th:text="${reporte.estado}"
+                                                  th:classappend="${reporte.estado == 'Aprobado' ? 'text-success' : 'text-danger'}" class="fw-bold text-uppercase"></span>
+                                        </div>
 
                                     </div>
-                                </div>
-                                <br>
+                                    <div class="row">
+                                        <div class="col-md">
+                                            Fecha: <span th:text="${#dates.format(reporte.fechaCreacion, 'dd-MM-yyyy HH:mm')}"></span>
 
-                                <div class="api-actions">
-                                    <a th:href="@{/qa/reporteDetalle(idReporte=${reporte.idReporte})}" class="btn btn-primary">Ver detalles</a>
+                                        </div>
+                                    </div>
+                                    <br>
 
-                                    <!-- Mostrar el botón de "Generar Issue" solo si el estado es "Fallido" -->
-                                    <a th:href="@{/qa/issueRealizar(idReporte=${reporte.idReporte})}"
-                                       class="btn btn-danger"
-                                       th:if="${reporte.estado == 'Fallido'}">
-                                        Generar Issue
-                                    </a>
-                                    <!--
-                                    <a href="#" class="btn-api btn-outline">
-                                        <i class="fas fa-play"></i> Probar
-                                    </a> Para poder agregar de que el issue ya está resuelto
-                                    -->
+                                    <div class="api-actions">
+                                        <a th:href="@{/qa/reporteDetalle(idReporte=${reporte.idReporte})}" class="btn btn-primary">Ver detalles</a>
+
+                                        <!-- Mostrar el botón de "Generar Issue" solo si el estado es "Fallido" -->
+                                        <a th:href="@{/qa/issueRealizar(idReporte=${reporte.idReporte})}"
+                                           class="btn btn-danger"
+                                           th:if="${reporte.estado == 'Fallido'}">
+                                            Generar Issue
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Paginación Estandarizada -->
+                        <nav aria-label="Page navigation" class="mt-4" th:if="${reportePage.totalPages > 0}">
+                            <ul class="pagination justify-content-center">
+                                <li class="page-item" th:classappend="${reportePage.isFirst()} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/qa/reportes(page=${currentPage - 1}, size=${reportePage.getSize()}, estados=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombreApi=${nombreApi})}">Anterior</a>
+                                </li>
+                                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'">
+                                    <a class="page-link" th:href="@{/qa/reportes(page=${i}, size=${reportePage.getSize()}, estados=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombreApi=${nombreApi})}" th:text="${i + 1}"></a>
+                                </li>
+                                <li class="page-item" th:classappend="${reportePage.isLast()} ? 'disabled'">
+                                    <a class="page-link" th:href="@{/qa/reportes(page=${currentPage + 1}, size=${reportePage.getSize()}, estados=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombreApi=${nombreApi})}">Siguiente</a>
+                                </li>
+                            </ul>
+                        </nav>
                     </div>
-
-
                 </div>
-                <div class="pagination" style="justify-content: center; align-items: center;">
-                    <a th:if="${currentPage > 0}"
-                       th:href="@{/qa/reportes(
-       page=${currentPage - 1},
-       nombreApi=${nombreApi},
-       fechaInicio=${fechaInicio},
-       fechaFin=${fechaFin},
-       estados=${selectedEstados != null ? selectedEstados : {}})}"
-                       class="pagination-btn">Anterior</a>
-
-                    <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-    <a th:href="@{/qa/reportes(
-        page=${i},
-        nombreApi=${nombreApi},
-        fechaInicio=${fechaInicio},
-        fechaFin=${fechaFin},
-        estados=${selectedEstados != null ? selectedEstados : {}})}"
-       th:text="${i + 1}"
-       th:classappend="${i == currentPage} ? 'pagination-btn active' : 'pagination-btn'"></a>
-</span>
-
-                    <a th:if="${currentPage < totalPages - 1}"
-                       th:href="@{/qa/reportes(
-       page=${currentPage + 1},
-       nombreApi=${nombreApi},
-       fechaInicio=${fechaInicio},
-       fechaFin=${fechaFin},
-       estados=${selectedEstados != null ? selectedEstados : {}})}"
-                       class="pagination-btn">Siguiente</a>
-
-                </div>
-
             </main>
         </div>
     </div>
@@ -548,58 +502,6 @@
 <!-- BEGIN DEMO SCRIPTS -->
 <script src="/tabler/preview/js/demo.min.js?1757307617" defer></script>
 <!-- END DEMO SCRIPTS -->
-<!-- BEGIN PAGE SCRIPTS -->
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        var themeConfig = {
-            theme: "light",
-            "theme-base": "gray",
-            "theme-font": "sans-serif",
-            "theme-primary": "blue",
-            "theme-radius": "1",
-        };
-        var url = new URL(window.location);
-        var form = document.getElementById("offcanvasSettings");
-        var resetButton = document.getElementById("reset-changes");
-        var checkItems = function () {
-            for (var key in themeConfig) {
-                var value = window.localStorage["tabler-" + key] || themeConfig[key];
-                if (!!value) {
-                    var radios = form.querySelectorAll(`[name="${key}"]`);
-                    if (!!radios) {
-                        radios.forEach((radio) => {
-                            radio.checked = radio.value === value;
-                        });
-                    }
-                }
-            }
-        };
-        form.addEventListener("change", function (event) {
-            var target = event.target,
-                name = target.name,
-                value = target.value;
-            for (var key in themeConfig) {
-                if (name === key) {
-                    document.documentElement.setAttribute("data-bs-" + key, value);
-                    window.localStorage.setItem("tabler-" + key, value);
-                    url.searchParams.set(key, value);
-                }
-            }
-            window.history.pushState({}, "", url);
-        });
-        resetButton.addEventListener("click", function () {
-            for (var key in themeConfig) {
-                var value = themeConfig[key];
-                document.documentElement.removeAttribute("data-bs-" + key);
-                window.localStorage.removeItem("tabler-" + key);
-                url.searchParams.delete(key);
-            }
-            checkItems();
-            window.history.pushState({}, "", url);
-        });
-        checkItems();
-    });
-</script>
-<!-- END PAGE SCRIPTS -->
 </body>
 </html>
+

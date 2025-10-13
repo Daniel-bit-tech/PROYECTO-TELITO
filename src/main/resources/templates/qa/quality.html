@@ -413,7 +413,7 @@
             <div class="welcome-banner">
                 <div class="welcome-content">
                     <h2 class="welcome-title">¡Hola otra vez, <span th:text="${usuario.nombre}">Juan</span>!</h2>
-                    <p class="welcome-text">Tienes <span th:text="${NcredActivas}">0</span> APIs pendientes para validar</span> y <span th:text="${NnotificacionesSinLeer}"></span> notificaciones sin leer.</p>
+                    <p class="welcome-text">Tienes <span th:text="${apisPorValidar}">0</span> APIs pendientes para validar</span> y <span th:text="${NnotificacionesSinLeer}"></span> notificaciones sin leer.</p>
                     <div class="welcome-actions">
                         <a th:href="@{/qa/catalogo}" class="btn btn-primary">
                             <i class="fas fa-rocket"></i> Validar APIs
@@ -431,7 +431,7 @@
                         <i class="fas fa-bolt"></i>
                     </div>
                     <div class="stat-content">
-                        <div class="stat-value">149</div>
+                        <div class="stat-value"><span th:text="${apisPorValidar}"></span></div>
                         <div class="stat-label">APIs para validar</div>
                     </div>
                 </div>
