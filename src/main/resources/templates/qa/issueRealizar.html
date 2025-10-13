@@ -60,6 +60,8 @@
                                             <h3 class="card-title">Crear nuevo issue</h3>
                                         </div>
                                         <div class="card-body">
+                                            <!-- NUEVO: Contenedor para mostrar errores generales enviados con RedirectAttributes -->
+                                            <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
                                             <form method="POST" th:action="@{/qa/crearIssue}">
                                                 <div class="space-y">
                                                     <!-- Campo oculto para el ID del reporte -->
@@ -72,6 +74,7 @@
                                                     <div>
                                                         <label class="form-label"> Descripción </label>
                                                         <textarea name="descripcion" placeholder="Ingresa una descripcion" rows="6" class="form-control"></textarea>
+                                                        <div th:if="${errorDescripcion}" class="text-danger mt-2" th:text="${errorDescripcion}"></div>
                                                     </div>
                                                     <div>
                                                         <p>Se adjuntarán las evidencias subidas del reporte</p>

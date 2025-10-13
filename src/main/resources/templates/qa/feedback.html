@@ -103,32 +103,63 @@
 
         <div class="page-body">
             <div class="container-xl">
-                <div class="row row-cards">
+                <!-- Contenedor para las tarjetas y la paginación -->
+                <div th:if="${feedbackPage.hasContent()}">
+                    <div class="row row-cards">
+                        <!-- CAMBIO: Iteramos sobre el contenido de la página actual -->
+                        <div th:each="feedback : ${feedbackPage.content}" class="col-md-6 col-lg-3">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h3 class="card-title" th:text="${feedback.api.nombre}">API o Recurso</h3>
 
-                    <div th:if="${listaFeedback == null or listaFeedback.isEmpty()}" class="empty-state">
-                        <div class="empty-icon">
-                            <i class="far fa-comments"></i>
-                        </div>
-                        <h3 class="empty-title">No hay feedback disponible</h3>
-                        <p class="empty-description">Aún no se han enviado comentarios. Anima a los desarrolladores a compartir sus ideas.</p>
-                    </div>
-
-                    <div th:each="feedback : ${listaFeedback}" class="col-md-6 col-lg-3">
-                        <div class="card">
-                            <div class="card-body">
-                                <h3 class="card-title" th:text="${feedback.api.nombre}">API o Recurso</h3>
-
-                                <h3 class="card-title mt-4">Comentario</h3>
-                                <p class="card-subtitle" th:text="${feedback.comentario}"></p>
-                                <h3 class="card-title mt-4">Calificación</h3>
-                                <p class="card-subtitle">
-                                    <span th:each="i : ${#numbers.sequence(1, feedback.calificacion)}" class="text-warning"><i class="fas fa-star"></i></span>
-                                    <span th:each="i : ${#numbers.sequence(feedback.calificacion + 1, 5)}" class="text-muted"><i class="far fa-star"></i></span>
-                                </p>
+                                    <h3 class="card-title mt-4">Comentario</h3>
+                                    <!-- Usamos #strings.abbreviate para cortar comentarios largos -->
+                                    <p class="card-subtitle" th:text="${#strings.abbreviate(feedback.comentario, 100)}"></p>
+                                    <h3 class="card-title mt-4">Calificación</h3>
+                                    <p class="card-subtitle">
+                                        <span th:each="i : ${#numbers.sequence(1, feedback.calificacion)}" class="text-warning"><i class="fas fa-star"></i></span>
+                                        <span th:each="i : ${#numbers.sequence(feedback.calificacion + 1, 5)}" class="text-muted"><i class="far fa-star"></i></span>
+                                    </p>
+                                    <div class="mt-4">
+                                        <a th:href="@{'/qa/feedbackDetalle/' + ${feedback.idFeedback}}" class="btn btn-primary w-100">Ver Detalle</a>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- NUEVO: Controles de Paginación -->
+                    <nav aria-label="Page navigation" class="mt-4" th:if="${feedbackPage.totalPages > 0}">
+                        <ul class="pagination justify-content-center">
+
+                            <!-- Botón 'Anterior' -->
+                            <li class="page-item" th:classappend="${feedbackPage.isFirst()} ? 'disabled'">
+                                <a class="page-link" th:href="@{/qa/feedback(page=${currentPage - 1}, size=${feedbackPage.getSize()})}">Anterior</a>
+                            </li>
+
+                            <!-- Números de Página -->
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                                th:classappend="${i == currentPage} ? 'active'">
+                                <a class="page-link" th:href="@{/qa/feedback(page=${i}, size=${feedbackPage.getSize()})}" th:text="${i + 1}">1</a>
+                            </li>
+
+                            <!-- Botón 'Siguiente' -->
+                            <li class="page-item" th:classappend="${feedbackPage.isLast()} ? 'disabled'">
+                                <a class="page-link" th:href="@{/qa/feedback(page=${currentPage + 1}, size=${feedbackPage.getSize()})}">Siguiente</a>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
+
+                <!-- CAMBIO: Condición para mostrar el estado vacío -->
+                <div th:if="${!feedbackPage.hasContent()}" class="empty-state">
+                    <div class="empty-icon">
+                        <i class="far fa-comments"></i>
+                    </div>
+                    <h3 class="empty-title">No hay feedback disponible</h3>
+                    <p class="empty-description">Aún no has enviado ningún feedback. ¡Anímate a ser el primero!</p>
+                </div>
+
             </div>
         </div>
     </div>
@@ -140,3 +171,5 @@
 <script src="/tabler/dist/js/tabler.min.js"></script>
 </body>
 </html>
+
+

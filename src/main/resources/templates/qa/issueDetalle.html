@@ -611,6 +611,7 @@
                                     <div class="form-group">
                                         <label for="comentario" class="form-label">Tu Comentario:</label>
                                         <textarea id="comentario" name="comentario" class="form-control" rows="4" required></textarea>
+                                        <div th:if="${errorComentario}" class="text-danger mt-2" th:text="${errorComentario}"></div>
                                     </div>
                                     <div class="form-group">
                                         <label for="archivo" class="form-label">Adjuntar archivo (opcional):</label>

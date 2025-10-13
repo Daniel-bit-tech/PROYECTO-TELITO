@@ -124,76 +124,6 @@
             color: var(--tblr-body-color);
         }
 
-        .rating-container {
-            margin-bottom: 1.5rem;
-        }
-
-        .rating-title {
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-        }
-
-        .rating-stars {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .rating-star {
-            font-size: 1.5rem;
-            color: var(--tblr-border-color);
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-
-        .rating-star.active,
-        .rating-star:hover {
-            color: #ffc107;
-        }
-
-        .feedback-list {
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .feedback-card {
-            background-color: var(--tblr-bg-surface);
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            padding: 1.5rem;
-        }
-
-        .feedback-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 1rem;
-            padding: 0;
-        }
-
-        .feedback-meta {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .feedback-author {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-        }
-
-        .feedback-date {
-            color: var(--tblr-secondary-color);
-            font-size: 0.875rem;
-        }
-
-        .feedback-rating {
-            display: flex;
-            gap: 0.25rem;
-        }
-
-        .feedback-star {
-            color: #ffc107;
-            font-size: 0.875rem;
-        }
 
         .feedback-content {
             margin-bottom: 1rem;
@@ -350,6 +280,7 @@
                                 <option value="">Selecciona una calificación</option>
                                 <option th:each="i : ${#numbers.sequence(1, 5)}" th:value="${i}" th:text="${i}"></option>
                             </select>
+                            <div th:if="${errorCalificacion}" class="text-danger mt-2" th:text="${errorCalificacion}"></div>
                         </div>
 
                         <button type="submit" class="btn-primary">
