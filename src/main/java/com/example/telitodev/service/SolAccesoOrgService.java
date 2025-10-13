@@ -120,6 +120,17 @@ public class SolAccesoOrgService {
                 throw new RuntimeException("Usuario revisor no encontrado");
             }
 
+            // ✅ ACTUALIZAR ORGANIZACIÓN DEL USUARIO OBJETIVO
+            Usuario usuarioObjetivo = usuarioRepository.findByDni(solicitud.getDni());
+            if (usuarioObjetivo != null) {
+                usuarioObjetivo.setOrganizacion(solicitud.getOrganizacionDestino());
+                usuarioRepository.save(usuarioObjetivo);
+                System.out.println("✅ Usuario " + usuarioObjetivo.getNombre() + " asignado a organización: " + 
+                    solicitud.getOrganizacionDestino().getNombre());
+            } else {
+                System.out.println("⚠️ Usuario con DNI " + solicitud.getDni() + " no encontrado para asignar organización");
+            }
+
             // Actualizar estado y datos de revisión
             solicitud.setEstado(EstadoSolicitud.APROBADA);
             solicitud.setUsuarioRevisor(usuarioRevisor);
