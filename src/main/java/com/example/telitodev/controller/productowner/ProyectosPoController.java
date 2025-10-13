@@ -4,19 +4,17 @@ import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
 import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.sql.Date;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -116,4 +114,30 @@ public class ProyectosPoController extends BaseController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no encontrado");
         }
     }
+
+
+    @PostMapping("/{idProy}/api/{idApi}/cambiar-entorno")
+    @ResponseBody
+    public ResponseEntity<?> cambiarEntornoApiProy(@PathVariable Integer idProy, @PathVariable Integer idApi, @RequestParam Integer idEntorno,
+                                        Authentication auth, HttpSession session ) {
+        Usuario usuario = getCurrentUser(auth, session);
+
+        ProyectoHasApiId idProyHasApi = new ProyectoHasApiId(idProy, idApi);
+        ProyectoHasApi proyHasApi = proyHasApiRepository.findById(idProyHasApi)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto o la API "));
+
+        if (!proyHasApi.getProyecto().getUsuarioLider().equals(usuario)
+                || !proyHasApi.getProyecto().getOrganizacion().equals(usuario.getOrganizacion())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes editar este proyecto");
+        }
+
+        Entorno newEntorno = entornoRepository.findById(idEntorno)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Entorno no encontrado"));
+
+        proyHasApi.setEntorno(newEntorno);
+        proyHasApiRepository.save(proyHasApi);
+
+        return ResponseEntity.ok(Map.of("message", "API "+proyHasApi.getApi().getNombre()+" cambió a entorno "+newEntorno.getNombre()+" con éxito"));
+    }
+
 }

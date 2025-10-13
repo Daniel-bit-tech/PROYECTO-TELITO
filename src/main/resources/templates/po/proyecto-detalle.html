@@ -147,6 +147,16 @@
                         </div>
                     </div>
 
+                    <!-- Toast container -->
+                    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+                        <div id="successToast" class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                            <div class="d-flex">
+                                <div class="toast-body" id="toastMessage">Operación realizada con éxito</div>
+                                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- APIs asociadas -->
                     <div class="col-md-12 mt-3">
                         <div class="card">
@@ -165,21 +175,22 @@
                                     <tr>
                                         <th>API</th>
                                         <th>Versión</th>
-<!--                                        <th>Estado</th>-->
+                                        <th>Estado</th>
                                         <th>Propósito</th>
                                         <th>Entorno</th>
                                         <th>Fecha Asociación</th>
+                                        <th>Acciones</th>
                                     </tr>
                                     </thead>
                                     <tbody>
                                     <tr th:each="proyHasApi : ${proyecto.proyectoHasApis}">
                                         <td th:text="${proyHasApi.api.nombre}">API Test</td>
                                         <td th:text="${proyHasApi.version.version}">v1.0</td>
-<!--                                        <td>-->
-<!--                      <span class="badge"-->
-<!--                            th:classappend="${proyHasApi.api.estadosApi == 'Activa'} ? ' bg-green' : ' bg-yellow' "-->
-<!--                            th:text="${proyHasApi.api.estadosApi}">Activa</span>-->
-<!--                                        </td>-->
+                                        <td>
+                                            <span class="badge"
+                                                th:classappend="${proyHasApi.api.estadoApi.estado == 'Activo'} ? ' bg-green' : ' bg-yellow' "
+                                                th:text="${proyHasApi.api.estadoApi.estado}">Activa</span>
+                                        </td>
                                         <td th:text="${proyHasApi.proposito}">Integración</td>
                                         <td>
                                             <span class="badge"
@@ -189,6 +200,12 @@
                                             </span>
                                         </td>
                                         <td th:text="${#temporals.format(proyHasApi.fechaAsociacion.toLocalDate(), 'dd/MM/yyyy')}">2025-09-23</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    th:onclick="'abrirModalCambiarEntorno(' + ${proyHasApi.api.idApi} + ')'">
+                                                <i class="fas fa-exchange-alt"></i> Cambiar Entorno
+                                            </button>
+                                        </td>
                                     </tr>
                                     </tbody>
                                 </table>
@@ -202,6 +219,7 @@
     </div>
 </div>
 
+<!-- Modal para Agregar API -->
 <div class="modal fade" id="modalAgregarApi" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
@@ -263,6 +281,36 @@
     </div>
 </div>
 
+<!-- Modal para Cambiar Entorno -->
+<div class="modal fade" id="modalCambiarEntorno" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cambiar Entorno de API</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <form id="formCambiarEntorno" method="post">
+                <input type="hidden" name="_csrf" th:value="${_csrf.token}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nuevo Entorno</label>
+                        <select class="form-select" id="entornoSelect" name="idEntorno" required>
+                            <option th:each="ent : ${entornosDisponibles}"
+                                    th:value="${ent.idEntorno}"
+                                    th:text="${ent.nombre}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Footer específico para PO -->
 <div th:replace="~{po/footer :: footer}"></div>
 
@@ -270,15 +318,79 @@
 <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
 
 <script>
+
+    // Variables globales
+    const idProyecto = [[${proyecto.idProyecto}]];
+
     function abrirModalAgregarApi() {
         const modal = new bootstrap.Modal(document.getElementById('modalAgregarApi'));
         modal.show();
-        // document.getElementById('project-modal').style.display = 'flex';
-    }
-    function closeModal() {
-        document.getElementById('project-modal').style.display = 'none';
     }
 
+    function abrirModalCambiarEntorno(idApi) {
+        // Guardar el idApi en el formulario como data attribute
+        const form = document.getElementById('formCambiarEntorno');
+        form.setAttribute('data-api-id', idApi);
+
+        const modal = new bootstrap.Modal(document.getElementById('modalCambiarEntorno'));
+        modal.show();
+    }
+
+    // Manejar envío del formulario de cambiar entorno
+    document.getElementById('formCambiarEntorno').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const idApi = this.getAttribute('data-api-id');
+        const idEntorno = document.getElementById('entornoSelect').value;
+
+        if (!idApi || !idEntorno) {
+            alert('Por favor seleccione un entorno');
+            return;
+        }
+
+        // Construir URL dinámica según el controller
+        const url = `/po/proyectos/${idProyecto}/api/${idApi}/cambiar-entorno`;
+
+        // Enviar formulario programáticamente
+        const formData = new FormData();
+        formData.append('idEntorno', idEntorno);
+        formData.append('_csrf', document.querySelector('input[name="_csrf"]').value);
+
+        fetch(url, {
+            method: 'POST',
+            body: new URLSearchParams(formData),
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Error al cambiar el entorno');
+            return response.json();
+        })
+        .then(data => {
+            // Mostrar toast con el mensaje
+            document.getElementById('toastMessage').textContent = data.message;
+
+            const toast = new bootstrap.Toast(document.getElementById('successToast'));
+            toast.show();
+
+            // Cerrar modal
+            bootstrap.Modal.getInstance(document.getElementById('modalCambiarEntorno')).hide();
+
+            // Recargar después de un breve delay
+            setTimeout(() => location.reload(), 1500);
+        })
+        .catch(error => {
+            console.error(error);
+            alert('Error al cambiar el entorno');
+        });
+    });
+
+    // function closeModal() {
+    //     document.getElementById('project-modal').style.display = 'none';
+    // }
+
+    // Código existente para cargar versiones
     document.getElementById('apiSelect').addEventListener('change', function() {
         const apiId = this.value;
         const versionSelect = document.getElementById('versionSelect');
