@@ -16,10 +16,9 @@ public class Evidencia {
     private String nombre;
 
     @Lob
-    @Column(name = "evidencia", nullable = false)
+    @Column(name = "evidencia", nullable = false, columnDefinition = "LONGBLOB")
     private byte[] evidencia;
 
-    @Lob
     @Column(name = "descripción", length = 200)
     private String descripcion;
 
