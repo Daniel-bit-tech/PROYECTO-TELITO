@@ -26,6 +26,13 @@ public class ProyectoHasApiId implements Serializable {
         this.idApi = idApi;
     }
 
+    public ProyectoHasApiId() {
+    }
+
+    public ProyectoHasApiId(Integer idProyecto, Integer idApi) {
+        this.idProyecto = idProyecto;
+        this.idApi = idApi;
+    }
 
     @Override
     public boolean equals(Object o) {
