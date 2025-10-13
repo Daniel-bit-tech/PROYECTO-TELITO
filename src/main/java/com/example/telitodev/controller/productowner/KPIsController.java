@@ -29,17 +29,28 @@ public class KPIsController extends BaseController {
     @GetMapping("/KPIs")
     public String showKPIsView(Model model, Authentication auth, HttpSession session) {
         Usuario usuario = getCurrentUser(auth, session);
-        
+
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
-        
+
         model.addAttribute("usuario", usuario);
 
         // KPIs (puedes cambiar a las versiones *Fast()* si prefieres agregaciones directas en DB)
-        model.addAttribute("totalLlamadas",    metricsService.getTotalRequests());
-        model.addAttribute("latenciaPromedio", metricsService.getAverageLatency());
-        model.addAttribute("tasaExito", String.format("%.1f", metricsService.getSuccessRate()));
-        model.addAttribute("tasaError", String.format("%.1f", metricsService.getErrorRate()));
+        long totalLlamadas = metricsService.getTotalRequests();
+        double latenciaPromedio = metricsService.getAverageLatency();
+        double tasaExito = metricsService.getSuccessRate();
+        double tasaError = metricsService.getErrorRate();
+
+        System.out.println("=== KPIs CARGADOS ===");
+        System.out.println("Total Requests: " + totalLlamadas);
+        System.out.println("Latencia Promedio: " + latenciaPromedio);
+        System.out.println("Tasa Éxito: " + tasaExito);
+        System.out.println("Tasa Error: " + tasaError);
+
+        model.addAttribute("totalLlamadas", totalLlamadas);
+        model.addAttribute("latenciaPromedio", Math.round(latenciaPromedio));
+        model.addAttribute("tasaExito", String.format("%.1f", tasaExito));
+        model.addAttribute("tasaError", String.format("%.1f", tasaError));
 
         // Para tablas u otros listados (opcional)
         model.addAttribute("metricas", metricsService.getAllMetrics());
@@ -66,8 +77,19 @@ public class KPIsController extends BaseController {
         var start = java.sql.Timestamp.valueOf(startD.atStartOfDay());
         var end   = java.sql.Timestamp.valueOf(endD.atTime(23, 59, 59));
 
-        return metricsService.getLatencyBarsByApi(idApi, idEntorno, start, end);
+        System.out.println("=== SOLICITUD GRÁFICO ===");
+        System.out.println("API: " + idApi + ", Entorno: " + idEntorno);
+        System.out.println("Fechas: " + startD + " a " + endD);
+
+        MetricsService.ChartSeriesDTO result = metricsService.getLatencyBarsByApi(idApi, idEntorno, start, end);
+
+        System.out.println("=== RESULTADO GRÁFICO ===");
+        System.out.println("Labels: " + result.labels());
+        System.out.println("Data: " + result.data());
+
+        return result;
     }
+
 
     /** Serie para Chart.js (donut): Éxito vs Errores (filtros opcionales) */
     @GetMapping("/KPIs/status-distribution")

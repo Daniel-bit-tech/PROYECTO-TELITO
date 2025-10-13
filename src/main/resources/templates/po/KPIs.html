@@ -18,8 +18,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        @import url("https://rsms.me/inter/inter.css");
-
         .metrics-container{max-width:1400px;margin:0 auto;padding:0 1rem;}
         .metrics-header{padding:2rem 0 1rem;margin-bottom:1rem;}
         .metrics-title{font-size:1.875rem;font-weight:700;margin-bottom:.5rem;}
@@ -61,6 +59,27 @@
         .table-card table{width:100%;}
         .status-indicator{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:.5rem;}
         .status-warning{background:var(--tblr-warning);}
+        .status-success{background:var(--tblr-success);}
+
+        /* Indicadores de carga */
+        .loading-indicator {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: var(--tblr-secondary-color);
+        }
+        .loading-indicator.active {
+            display: block;
+        }
+        .chart-error {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: var(--tblr-danger);
+        }
+        .chart-error.active {
+            display: block;
+        }
 
         @media (max-width:1024px){.charts-grid{grid-template-columns:1fr;}}
     </style>
@@ -71,7 +90,7 @@
 
 <div class="page">
     <!-- Header -->
-    <div th:replace="po/header_po.html :: header"></div>
+    <div th:replace="~{po/header_po.html :: header}"></div>
 
     <!-- Body -->
     <div class="content">
@@ -120,7 +139,6 @@
             <!-- Filtros -->
             <div class="filters-bar">
                 <div class="filter-group">
-                    <!-- Si ya tienes IDs numéricos en BD, cambia los value por esos IDs -->
                     <select class="filter-select" id="api-select">
                         <option value="all">Todas las APIs</option>
                         <option value="1">API de Usuarios</option>
@@ -151,7 +169,15 @@
                     <div class="chart-header">
                         <h3 class="chart-title">Latencia por API (ms)</h3>
                     </div>
-                    <div class="chart-canvas"><canvas id="latencyChart"></canvas></div>
+                    <div class="chart-canvas">
+                        <div id="latency-loading" class="loading-indicator">
+                            <i class="fas fa-spinner fa-spin"></i> Cargando datos de latencia...
+                        </div>
+                        <div id="latency-error" class="chart-error">
+                            <i class="fas fa-exclamation-triangle"></i> Error al cargar los datos de latencia
+                        </div>
+                        <canvas id="latencyChart"></canvas>
+                    </div>
                 </div>
 
                 <!-- Alertas (estático de ejemplo) -->
@@ -217,7 +243,6 @@
                             </tr>
                             </thead>
                             <tbody>
-                            <!-- ejemplo estático; aquí puedes iterar sobre ${metricas} si quieres -->
                             <tr>
                                 <td>API Usuarios</td>
                                 <td><span class="status-indicator status-warning"></span> Con problemas</td>
@@ -232,7 +257,7 @@
                             </tr>
                             <tr>
                                 <td>API Productos</td>
-                                <td><span class="status-indicator status-warning"></span> Con problemas</td>
+                                <td><span class="status-indicator status-success"></span> Estable</td>
                                 <td>8,000</td>
                                 <td>150</td>
                             </tr>
@@ -246,7 +271,7 @@
     </div> <!-- /content -->
 
     <!-- Footer -->
-    <div th:replace="po/footer.html :: footer"></div>
+    <div th:replace="~{po/footer.html :: footer}"></div>
 </div> <!-- /page -->
 
 <!-- JS libs -->
@@ -259,6 +284,7 @@
     const CHART_URL = /*[[@{/po/KPIs/chart}]]*/ '/po/KPIs/chart';
 
     document.addEventListener('DOMContentLoaded', () => {
+        console.log('Inicializando dashboard de KPIs...');
         initLatencyBarsByApi();
         initStatusCodesDonutLocal();
 
@@ -267,12 +293,39 @@
             const el = document.getElementById(id);
             if (el) el.addEventListener('change', initLatencyBarsByApi);
         });
+
+        // Establecer fechas por defecto (últimos 7 días)
+        setDefaultDates();
     });
+
+    function setDefaultDates() {
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - 7);
+
+        document.getElementById('end-date').value = formatDate(endDate);
+        document.getElementById('start-date').value = formatDate(startDate);
+    }
+
+    function formatDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
 
     /* ---------- Barras: Latencia promedio por API (dinámico) ---------- */
     async function initLatencyBarsByApi() {
         const canvas = document.getElementById('latencyChart');
+        const loadingEl = document.getElementById('latency-loading');
+        const errorEl = document.getElementById('latency-error');
+
         if (!canvas || typeof Chart === 'undefined') return;
+
+        // Mostrar indicador de carga
+        loadingEl.classList.add('active');
+        errorEl.classList.remove('active');
+        canvas.style.display = 'none';
 
         const idApiRaw     = document.getElementById('api-select')?.value;
         const idEntornoRaw = document.getElementById('environment-select')?.value;
@@ -286,22 +339,80 @@
         if (end)   params.append('endDate',   end);
 
         const url = `${CHART_URL}?${params.toString()}`;
+        console.log('Solicitando datos de gráfico:', url);
+
         try {
             const res = await fetch(url, { credentials: 'same-origin' });
-            if (!res.ok) { console.error('Error chart:', res.status); return; }
-            const json = await res.json(); // { labels:[], data:[] }
+            console.log('Respuesta del servidor:', res.status, res.statusText);
+
+            if (!res.ok) {
+                console.error('Error HTTP:', res.status);
+                throw new Error(`Error ${res.status}: ${res.statusText}`);
+            }
+
+            const json = await res.json();
+            console.log('Datos recibidos:', json);
+
+            // Verificar que la respuesta tenga el formato esperado
+            if (!json.labels || !json.data) {
+                console.error('Formato de datos incorrecto:', json);
+                throw new Error('Formato de respuesta inválido');
+            }
+
+            // Verificar que haya datos
+            if (json.labels.length === 0 || json.data.length === 0) {
+                console.warn('No hay datos para mostrar');
+                showSampleData(canvas, loadingEl, errorEl);
+                return;
+            }
+
+            // Ocultar indicador de carga y mostrar gráfico
+            loadingEl.classList.remove('active');
+            canvas.style.display = 'block';
 
             if (!window._latApiChart) {
                 window._latApiChart = new Chart(canvas, {
                     type: 'bar',
                     data: {
                         labels: json.labels,
-                        datasets: [{ label:'Latencia promedio (ms)', data: json.data, borderWidth:0, backgroundColor:'#4299e1' }]
+                        datasets: [{
+                            label:'Latencia promedio (ms)',
+                            data: json.data,
+                            borderWidth:0,
+                            backgroundColor:'#4299e1',
+                            borderRadius: 4
+                        }]
                     },
                     options: {
-                        responsive:true, maintainAspectRatio:false,
-                        plugins:{ legend:{ display:false } },
-                        scales:{ y:{ beginAtZero:true, grid:{ drawBorder:false } }, x:{ grid:{ display:false } } }
+                        responsive:true,
+                        maintainAspectRatio:false,
+                        plugins:{
+                            legend:{ display:false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Latencia: ${context.parsed.y} ms`;
+                                    }
+                                }
+                            }
+                        },
+                        scales:{
+                            y:{
+                                beginAtZero:true,
+                                grid:{ drawBorder:false },
+                                title: {
+                                    display: true,
+                                    text: 'Milisegundos (ms)'
+                                }
+                            },
+                            x:{
+                                grid:{ display:false },
+                                title: {
+                                    display: true,
+                                    text: 'APIs'
+                                }
+                            }
+                        }
                     }
                 });
             } else {
@@ -309,8 +420,82 @@
                 window._latApiChart.data.datasets[0].data = json.data;
                 window._latApiChart.update();
             }
+
+            console.log('Gráfico actualizado correctamente');
+
         } catch (e) {
-            console.error('Excepción fetch chart:', e);
+            console.error('Error al cargar el gráfico:', e);
+            loadingEl.classList.remove('active');
+            errorEl.classList.add('active');
+            errorEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Error: ${e.message}`;
+
+            // Mostrar datos de ejemplo en caso de error
+            showSampleData(canvas, loadingEl, errorEl);
+        }
+    }
+
+    // Función para mostrar datos de ejemplo en caso de error
+    function showSampleData(canvas, loadingEl, errorEl) {
+        console.log('Mostrando datos de ejemplo...');
+        loadingEl.classList.remove('active');
+        errorEl.classList.add('active');
+        errorEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Usando datos de ejemplo`;
+        canvas.style.display = 'block';
+
+        const sampleData = {
+            labels: ['API Usuarios', 'API Pagos', 'API Productos', 'API Pedidos'],
+            data: [120, 200, 150, 180]
+        };
+
+        if (!window._latApiChart) {
+            window._latApiChart = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels: sampleData.labels,
+                    datasets: [{
+                        label:'Latencia promedio (ms)',
+                        data: sampleData.data,
+                        borderWidth:0,
+                        backgroundColor:'#4299e1',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive:true,
+                    maintainAspectRatio:false,
+                    plugins:{
+                        legend:{ display:false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Latencia: ${context.parsed.y} ms`;
+                                }
+                            }
+                        }
+                    },
+                    scales:{
+                        y:{
+                            beginAtZero:true,
+                            grid:{ drawBorder:false },
+                            title: {
+                                display: true,
+                                text: 'Milisegundos (ms)'
+                            }
+                        },
+                        x:{
+                            grid:{ display:false },
+                            title: {
+                                display: true,
+                                text: 'APIs'
+                            }
+                        }
+                    }
+                }
+            });
+        } else {
+            window._latApiChart.data.labels = sampleData.labels;
+            window._latApiChart.data.datasets[0].data = sampleData.data;
+            window._latApiChart.update();
         }
     }
 
@@ -336,7 +521,20 @@
         new Chart(c, {
             type: 'doughnut',
             data: { labels, datasets: [{ data, backgroundColor: colors }] },
-            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }
+            options: {
+                responsive:true,
+                maintainAspectRatio:false,
+                plugins:{
+                    legend:{ position:'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `${context.label}: ${context.parsed.toFixed(1)}%`;
+                            }
+                        }
+                    }
+                }
+            }
         });
     }
 </script>
