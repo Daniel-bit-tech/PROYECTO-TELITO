@@ -12,10 +12,11 @@ public class ApiProyectoDTO {
     private String nombreDominio;
     private String nombreTag;
     private Timestamp fechaCreacion;
+    private String poLiderDni; // Campo para el DNI del PO Líder
 
-    // Constructor con parámetros
+    // Constructor que coincide con la consulta @Query
     public ApiProyectoDTO(Integer idApi, String nombreApi, String nombreProyecto, String descripcion, String endpointUrl,
-                          String nombreDominio, String nombreTag, Timestamp fechaCreacion) {
+                          String nombreDominio, String nombreTag, Timestamp fechaCreacion, String poLiderDni) {
         this.idApi = idApi;
         this.nombreApi = nombreApi;
         this.nombreProyecto = nombreProyecto;
@@ -24,9 +25,18 @@ public class ApiProyectoDTO {
         this.nombreDominio = nombreDominio;
         this.nombreTag = nombreTag;
         this.fechaCreacion = fechaCreacion;
+        this.poLiderDni = poLiderDni;
     }
 
     // Getters y setters
+    public Integer getIdApi() {
+        return idApi;
+    }
+
+    public void setIdApi(Integer idApi) {
+        this.idApi = idApi;
+    }
+
     public String getNombreApi() {
         return nombreApi;
     }
@@ -83,12 +93,12 @@ public class ApiProyectoDTO {
         this.fechaCreacion = fechaCreacion;
     }
 
-
-    public Integer getIdApi() {
-        return idApi;
+    public String getPoLiderDni() {
+        return poLiderDni;
     }
 
-    public void setIdApi(Integer idApi) {
-        this.idApi = idApi;
+    public void setPoLiderDni(String poLiderDni) {
+        this.poLiderDni = poLiderDni;
     }
 }
+

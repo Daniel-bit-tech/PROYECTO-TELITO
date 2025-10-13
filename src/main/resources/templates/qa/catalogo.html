@@ -425,18 +425,21 @@
                             <button type="submit" class="btn-api btn-primary" style="width: 100%;">
                                 <i class="fas fa-filter"></i> Aplicar Filtros
                             </button>
+                            <a th:href="@{/qa/catalogo}" class="btn-api btn-secondary mt-2">Limpiar</a>
                         </div>
                     </form>
 
 
                     <div class="apis-grid">
-                        <div th:if="${#lists.isEmpty(apis)}" class="empty-state">
+                        <!-- AJUSTE: Condición para mostrar mensaje si no hay contenido en la página -->
+                        <div th:if="${!apiPage.hasContent()}" class="empty-state" style="grid-column: 1 / -1;">
                             <div class="empty-icon"><i class="fas fa-inbox"></i></div>
                             <h4 class="empty-title">No hay APIs disponibles</h4>
                             <p class="empty-description">Actualmente no hay APIs relacionadas a tu proyecto u organización.</p>
                         </div>
 
-                        <div th:unless="${#lists.isEmpty(apis)}" th:each="api : ${apis}">
+                        <!-- AJUSTE: Iterar sobre el contenido de la página (apiPage.content) -->
+                        <div th:if="${apiPage.hasContent()}" th:each="api : ${apiPage.content}">
                             <div class="api-card">
                                 <div class="api-header">
                                     <div>
@@ -448,9 +451,7 @@
 
                                     </div>
                                 </div>
-                                <div class="api-project">
-                                    <strong>Proyecto:</strong> <span th:text="${api.nombreProyecto}"></span> <!-- Nombre del Proyecto -->
-                                </div>
+
 
                                 <p class="api-description" th:text="${api.descripcion}"></p>
                                 <!--<span th:text="${api.idApi}"></span>-->
@@ -459,73 +460,37 @@
                                     <a th:href="@{/apis/{idApi}/docs(idApi=${api.idApi})}" class="btn-api btn-primary">
                                         <i class="fas fa-book"></i> Documentación
                                     </a>
-                                    <a href="#" class="btn-api btn-outline">
-                                        <i class="fas fa-play"></i> Probar
-                                    </a>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-
                 </div>
-                <div>
-                    <ul class="pagination" style="justify-content: center; align-items: center">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                                <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-left -->
-                                <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="icon icon-1"
-                                >
-                                    <path d="M15 6l-6 6l6 6" />
-                                </svg>
+
+                <!-- INICIO: Bloque de Paginación Dinámica y Uniforme -->
+                <nav aria-label="Page navigation" class="mt-4" th:if="${apiPage.totalPages > 0}">
+                    <ul class="pagination justify-content-center">
+
+                        <!-- Botón 'Anterior' -->
+                        <li class="page-item" th:classappend="${apiPage.isFirst()} ? 'disabled'">
+                            <a class="page-link" th:href="@{/qa/catalogo(page=${apiPage.number - 1}, size=${apiPage.size}, nombre=${nombre}, dominios=${selectedDominios}, tags=${selectedTags})}">
+                                Anterior
                             </a>
                         </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">1</a>
+
+                        <!-- Números de Página -->
+                        <li class="page-item" th:each="pageNumber : ${#numbers.sequence(0, apiPage.totalPages - 1)}" th:classappend="${pageNumber == apiPage.number} ? 'active'">
+                            <a class="page-link" th:href="@{/qa/catalogo(page=${pageNumber}, size=${apiPage.size}, nombre=${nombre}, dominios=${selectedDominios}, tags=${selectedTags})}" th:text="${pageNumber + 1}"></a>
                         </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">2</a>
-                        </li>
-                        <li class="page-item active">
-                            <a class="page-link" href="#">3</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">4</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">5</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">
-                                <!-- Download SVG icon from http://tabler.io/icons/icon/chevron-right -->
-                                <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="24"
-                                        height="24"
-                                        viewBox="0 0 24 24"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        stroke-width="2"
-                                        stroke-linecap="round"
-                                        stroke-linejoin="round"
-                                        class="icon icon-1"
-                                >
-                                    <path d="M9 6l6 6l-6 6" />
-                                </svg>
+
+                        <!-- Botón 'Siguiente' -->
+                        <li class="page-item" th:classappend="${apiPage.isLast()} ? 'disabled'">
+                            <a class="page-link" th:href="@{/qa/catalogo(page=${apiPage.number + 1}, size=${apiPage.size}, nombre=${nombre}, dominios=${selectedDominios}, tags=${selectedTags})}">
+                                Siguiente
                             </a>
                         </li>
                     </ul>
-                </div>
+                </nav>
+                <!-- FIN: Bloque de Paginación Dinámica y Uniforme -->
 
             </main>
         </div>
@@ -594,3 +559,4 @@
 <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
 </body>
 </html>
+
