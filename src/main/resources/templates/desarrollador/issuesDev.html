@@ -7,7 +7,7 @@
     <!-- CSRF tokens para impersonación -->
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    <title>TELITO DEVELOPER PORTAL | Reportes</title>
+    <title>TELITO DEVELOPER PORTAL | Issues</title>
     <!-- BEGIN GLOBAL MANDATORY STYLES -->
     <link href="/tabler/dist/css/tabler.css?1757307617" rel="stylesheet" />
     <!-- END GLOBAL MANDATORY STYLES -->
@@ -366,7 +366,7 @@
 <!-- END GLOBAL THEME SCRIPT -->
 <div class="page">
     <!-- BEGIN NAVBAR  -->
-    <div th:replace="qa/header_qa.html :: header"></div>
+    <div th:replace="desarrollador/header.html :: header"></div>
     <!-- END NAVBAR  -->
 
     <!-- Banner de impersonación -->
@@ -379,8 +379,8 @@
                 <div class="catalog-header rounded-3 px-4">
                     <div class="row align-items-center">
                         <div class="col-md-8">
-                            <h1 class="catalog-title">Reportes</h1>
-                            <p class="catalog-subtitle">Administra los reportes presentados</p>
+                            <h1 class="catalog-title">Issues</h1>
+                            <p class="catalog-subtitle"></p>
                         </div>
                         <div class="col-md-4 text-md-end">
                         </div>
@@ -388,11 +388,11 @@
                 </div>
 
                 <div class="search-filters">
-                    <form method="get" th:action="@{/qa/reportes}" class="d-flex w-100 gap-2" id="searchForm">
+                    <form method="get" th:action="@{/issuesDev}" class="d-flex w-100 gap-2" id="searchForm">
                         <div class="search-box">
                             <i class="fas fa-search search-icon"></i>
-                            <input type="text" class="search-input" name="nombreApi"
-                                   placeholder="Buscar Reportes por nombre" th:value="${nombreApi}">
+                            <input type="text" class="search-input" name="nombre"
+                                   placeholder="Buscar Issues por nombre" th:value="${nombre}">
                         </div>
                         <button type="submit" class="btn btn-primary d-flex align-items-center gap-2">
                             <i class="fas fa-filter"></i> Buscar
@@ -401,9 +401,10 @@
                 </div>
 
                 <div class="catalog-content">
-                    <form method="GET" th:action="@{/qa/reportes}" id="filterForm">
-                        <!--<input type="hidden" name="nombre" id="nombreHidden" />-->
+                    <form method="GET" th:action="@{/issuesDev}" id="filterForm">
+                        <input type="hidden" name="nombre" id="nombreHidden" />
                         <div class="filters-sidebar">
+
 
                             <div class="filter-section">
                                 <h3 class="filter-section-title">
@@ -411,18 +412,18 @@
                                 </h3>
                                 <div class="filter-tags">
                                     <label class="filter-tag">
-                                        <input type="checkbox" name="estados" value="Aprobado"
-                                               th:checked="${selectedEstados != null and #arrays.contains(selectedEstados, 'Aprobado')}">
-                                        Aprobado
+                                        <input type="checkbox" name="tags" value="Reportado"
+                                               th:checked="${selectedEstados != null and selectedEstados.contains('Reportado')}"> Reportado
                                     </label>
-
                                     <label class="filter-tag">
-                                        <input type="checkbox" name="estados" value="Fallido"
-                                               th:checked="${selectedEstados != null and #arrays.contains(selectedEstados, 'Fallido')}">
-                                        Fallido
+                                        <input type="checkbox" name="tags" value="En progreso"
+                                               th:checked="${selectedEstados != null and selectedEstados.contains('En progreso')}"> En progreso
+                                    </label>
+                                    <label class="filter-tag">
+                                        <input type="checkbox" name="tags" value="Corregido"
+                                               th:checked="${selectedEstados != null and selectedEstados.contains('Corregido')}"> Corregido
                                     </label>
                                 </div>
-
                             </div>
                             <div class="filter-section">
                                 <h3 class="filter-section-title">
@@ -442,61 +443,56 @@
                             <button type="submit" class="btn-api btn-primary" style="width: 100%;">
                                 <i class="fas fa-filter"></i> Aplicar Filtros
                             </button>
-                            <a th:href="@{/qa/reportes}" class="btn-api btn-secondary">Limpiar</a>
+                            <a th:href="@{/issuesDev}" class="btn-api btn-secondary">Limpiar</a>
                         </div>
                     </form>
 
 
                     <div class="apis-grid">
-                        <div th:if="${#lists.isEmpty(reportes)}" class="empty-state">
+                        <div th:if="${#lists.isEmpty(issues)}" class="empty-state">
                             <div class="empty-icon"><i class="fas fa-inbox"></i></div>
-                            <h4 class="empty-title">No hay reportes disponibles</h4>
-                            <p class="empty-description">Actualmente no hay reportes registrados</p>
+                            <h4 class="empty-title">No hay issues disponibles</h4>
+                            <p class="empty-description">No se encontraron issues que coincidan con los filtros seleccionados.</p>
+
                         </div>
 
-                        <div th:unless="${#lists.isEmpty(reportes)}" th:each="reporte : ${reportes}">
+                        <div th:unless="${#lists.isEmpty(issues)}" th:each="issue : ${issues}">
                             <div class="api-card">
                                 <div class="api-header">
                                     <div>
-                                        <h3>Reporte #<span th:text="|${reporte.idReporte}: ${reporte.api.nombre}|"></span></h3>
+                                        <h3 class="api-title" th:text="${issue.reporte.api.nombre}"></h3> <!-- Nombre de la API -->
                                         <span class="api-status status-production"
-                                              th:text="${reporte.api.dominio.nombre}">Producción</span>
+                                              th:text="${issue.reporte.api.dominio.nombre}">Producción</span>
                                         <span class="api-status status-production"
-                                              th:text="${reporte.api.tag.nombre}">Producción</span>
+                                              th:text="${issue.reporte.api.tag.nombre}">Producción</span>
+
                                     </div>
                                 </div>
 
 
                                 <div class="row">
                                     <div class="col-md">
-                                        Estado:
-                                        <span th:text="${reporte.estado}"
-                                              th:classappend="${reporte.estado == 'Aprobado' ? 'text-success' : (reporte.estado == 'Fallido' ? 'text-danger' : '')}" style="text-transform: uppercase;"></span>
+                                        Estado: <span th:text="${issue.estado}"
+                                                      th:classappend="${issue.estado == 'Reportado' ? 'text-danger' : (issue.estado == 'En progreso' ? 'text-warning' : (issue.estado == 'Corregido' ? 'text-success' : ''))}" style="text-transform: uppercase;"></span>
                                     </div>
-
                                 </div>
                                 <div class="row">
                                     <div class="col-md">
-                                        Fecha: <span th:text="${#dates.format(reporte.fechaCreacion, 'dd-MM-yyyy HH:mm')}"></span>
+                                        Fecha: <span th:text="${#dates.format(issue.fechaCreacion, 'dd-MM-yyyy HH:mm')}"></span>
 
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md">
+                                        Reporte origen: <span th:text="${issue.reporte.idReporte}"></span>
                                     </div>
                                 </div>
                                 <br>
 
                                 <div class="api-actions">
-                                    <a th:href="@{/qa/reporteDetalle(idReporte=${reporte.idReporte})}" class="btn btn-primary">Ver detalles</a>
-
-                                    <!-- Mostrar el botón de "Generar Issue" solo si el estado es "Fallido" -->
-                                    <a th:href="@{/qa/issueRealizar(idReporte=${reporte.idReporte})}"
-                                       class="btn btn-danger"
-                                       th:if="${reporte.estado == 'Fallido'}">
-                                        Generar Issue
+                                    <a th:href="@{/issueDetalleDev/{idIssue}/{idReporte}(idIssue=${issue.id.idIssue}, idReporte=${issue.id.idReporte})}" class="btn-api btn-primary">
+                                        <i class="fas fa-eye"></i> Detalles
                                     </a>
-                                    <!--
-                                    <a href="#" class="btn-api btn-outline">
-                                        <i class="fas fa-play"></i> Probar
-                                    </a> Para poder agregar de que el issue ya está resuelto
-                                    -->
                                 </div>
                             </div>
                         </div>
@@ -504,37 +500,37 @@
 
 
                 </div>
-                <div class="pagination" style="justify-content: center; align-items: center;">
+                <div class="pagination">
                     <a th:if="${currentPage > 0}"
-                       th:href="@{/qa/reportes(
-       page=${currentPage - 1},
-       nombreApi=${nombreApi},
-       fechaInicio=${fechaInicio},
-       fechaFin=${fechaFin},
-       estados=${selectedEstados != null ? selectedEstados : {}})}"
+                       th:href="@{/qa/issues(
+           page=${currentPage - 1},
+           nombre=${nombre},
+           fechaInicio=${fechaInicio},
+           fechaFin=${fechaFin},
+           tags=${selectedEstados != null ? selectedEstados : {}})}"
                        class="pagination-btn">Anterior</a>
 
                     <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-    <a th:href="@{/qa/reportes(
-        page=${i},
-        nombreApi=${nombreApi},
-        fechaInicio=${fechaInicio},
-        fechaFin=${fechaFin},
-        estados=${selectedEstados != null ? selectedEstados : {}})}"
-       th:text="${i + 1}"
-       th:classappend="${i == currentPage} ? 'pagination-btn active' : 'pagination-btn'"></a>
-</span>
+        <a th:href="@{/qa/issues(
+            page=${i},
+            nombre=${nombre},
+            fechaInicio=${fechaInicio},
+            fechaFin=${fechaFin},
+            tags=${selectedEstados != null ? selectedEstados : {}})}"
+           th:text="${i + 1}"
+           th:classappend="${i == currentPage} ? 'pagination-btn active' : 'pagination-btn'"></a>
+    </span>
 
                     <a th:if="${currentPage < totalPages - 1}"
-                       th:href="@{/qa/reportes(
-       page=${currentPage + 1},
-       nombreApi=${nombreApi},
-       fechaInicio=${fechaInicio},
-       fechaFin=${fechaFin},
-       estados=${selectedEstados != null ? selectedEstados : {}})}"
+                       th:href="@{/qa/issues(
+           page=${currentPage + 1},
+           nombre=${nombre},
+           fechaInicio=${fechaInicio},
+           fechaFin=${fechaFin},
+           tags=${selectedEstados != null ? selectedEstados : {}})}"
                        class="pagination-btn">Siguiente</a>
-
                 </div>
+
 
             </main>
         </div>

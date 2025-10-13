@@ -38,7 +38,7 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
                             @Param("idDominios") List<Integer> idDominios,
                             @Param("idTags") List<Integer> idTags);
 
-    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(a.nombre, p.nombre, a.descripcion, " +
+    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(a.idApi, a.nombre, p.nombre, a.descripcion, " +
             "a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion) " +
             "FROM Api a " +
             "JOIN ProyectoHasApi pha ON pha.api = a " +
@@ -48,7 +48,7 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
             "WHERE p.organizacion.idOrganizacion = (SELECT u.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni)")
     List<ApiProyectoDTO> findApisByUsuarioAndProyecto(@Param("dni") String dni);
 
-    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(a.nombre, p.nombre, a.descripcion, " +
+    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(a.idApi, a.nombre, p.nombre, a.descripcion, " +
             "a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion) " +
             "FROM Api a " +
             "JOIN ProyectoHasApi pha ON pha.api = a " +
@@ -61,7 +61,7 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
                                                                @Param("nombre") String nombre);
 
     @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
-            "a.nombre, p.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion) " +
+            "a.idApi, a.nombre, p.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion) " +
             "FROM Api a " +
             "JOIN ProyectoHasApi pha ON pha.api = a " +
             "JOIN Proyecto p ON pha.proyecto = p " +

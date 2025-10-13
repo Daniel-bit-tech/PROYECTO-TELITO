@@ -17,6 +17,9 @@ public class ActividadReciente {
 
     private LocalDateTime fecha;
 
+    @Transient
+    private String tiempoTranscurrido;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idUsuario", nullable = false, referencedColumnName = "dni")
     private Usuario usuario;
@@ -64,5 +67,13 @@ public class ActividadReciente {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
+    }
+
+    public String getTiempoTranscurrido() {
+        return tiempoTranscurrido;
+    }
+
+    public void setTiempoTranscurrido(String tiempoTranscurrido) {
+        this.tiempoTranscurrido = tiempoTranscurrido;
     }
 }

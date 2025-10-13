@@ -48,6 +48,10 @@ public class FeedbackController {
         List<Feedback> misFeedback = feedbackRepository.findByUsuario_Dni(usuario.getDni());
         model.addAttribute("misFeedback", misFeedback);
 
+        // Traer feedbacks que fueron hechos a las APIs de este usuario
+        List<Feedback> apisFeedback = feedbackRepository.findByApi_Usuario_Dni(usuario.getDni());
+        model.addAttribute("apisFeedback", apisFeedback);
+
         return "desarrollador/feedback";
     }
 

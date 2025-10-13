@@ -1,9 +1,8 @@
-package com.example.telitodev.controller.qualityassurance;
+package com.example.telitodev.controller.desarrollador;
 
 import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
-import com.example.telitodev.repository.po.ActividadRecienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.*;
@@ -23,9 +22,9 @@ import java.util.Arrays;
 import java.util.List;
 
 @Controller
-@RequestMapping("/qa")
-@PreAuthorize("hasAnyRole('QA', 'SADMIN')")
-public class IssueController extends BaseController {
+@PreAuthorize("hasAnyRole('DEV', 'SADMIN')")
+public class IssueDevController extends BaseController{
+
     @Autowired
     private IssueRepository issueRepository;
     @Autowired
@@ -40,13 +39,11 @@ public class IssueController extends BaseController {
     private EvidenciaRepository evidenciaRepository;
     @Autowired
     private NotificacionRepository notificacionRepository;
-    @Autowired
-    private ActividadRecienteRepository actividadRecienteRepository;
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-    @GetMapping("/issues")
-    public String showIssueView(Model model,
+    @GetMapping("/issuesDev")
+    public String showIssueDevView(Model model,
                                 Authentication auth,
                                 HttpSession session,
                                 @RequestParam(value = "tags", required = false) List<String> estados,
@@ -68,12 +65,12 @@ public class IssueController extends BaseController {
         } catch (Exception e) { e.printStackTrace(); }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
-        Page<Issue> issuesPage = issueRepository.findByFilters(estados, inicio, fin, nombre, pageable);
+        Page<Issue> issuesPage = issueRepository.findByFiltersForDev(estados, inicio, fin, nombre, usuario.getDni(), pageable);
 
         // 🔹 Si el usuario pide una página mayor al total, regresar a la última válida
         if (page >= issuesPage.getTotalPages() && issuesPage.getTotalPages() > 0) {
             pageable = PageRequest.of(issuesPage.getTotalPages() - 1, size);
-            issuesPage = issueRepository.findByFilters(estados, inicio, fin, nombre, pageable);
+            issuesPage = issueRepository.findByFiltersForDev(estados, inicio, fin, nombre, usuario.getDni(), pageable);
             page = issuesPage.getTotalPages() - 1;
         }
 
@@ -86,10 +83,10 @@ public class IssueController extends BaseController {
         model.addAttribute("nombre", nombre);
         model.addAttribute("pageSize", size);
 
-        return "qa/issues";
+        return "desarrollador/issuesDev";
     }
 
-    @GetMapping("/issueDetalle/{idIssue}/{idReporte}")
+    @GetMapping("/issueDetalleDev/{idIssue}/{idReporte}")
     public String showIssueDetalleView(Model model, Authentication auth, HttpSession session,
                                        @PathVariable Integer idIssue, @PathVariable Integer idReporte) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
@@ -120,90 +117,10 @@ public class IssueController extends BaseController {
         model.addAttribute("comentarios", comentarios);  // Pasa los comentarios a la vista
 
         model.addAttribute("issue", issue);  // Pasa el Issue a la vista
-        return "qa/issueDetalle";  // Vista para mostrar los detalles del Issue
+        return "desarrollador/issueDevDetalle";  // Vista para mostrar los detalles del Issue
     }
 
-
-
-    @GetMapping("/issueRealizar")
-    public String madeIssue(Model model, Authentication auth, HttpSession session,
-                            @RequestParam("idReporte") Integer idReporte) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-
-        // Agregar atributos de impersonación
-        addImpersonationAttributes(model, session);
-
-        model.addAttribute("usuario", usuario);
-
-        // Obtener el reporte por id
-        Reporte reporte = reporteRepository.findById(idReporte).orElse(null);
-        if (reporte == null) {
-            return "redirect:/qa/issues?error=Reporte no encontrado";
-        }
-
-        // Verificar que el reporte tiene estado "Fallido"
-        if (!"Fallido".equals(reporte.getEstado())) {
-            return "redirect:/qa/issues?error=Solo puedes crear un Issue para reportes en estado Fallido";
-        }
-
-        model.addAttribute("reporte", reporte); // Pasamos el reporte a la vista
-        return "qa/issueRealizar";
-    }
-
-    //Creando un nuevo issue
-    @PostMapping("/crearIssue")
-    public String crearIssue(Model model, Authentication auth,
-                             @RequestParam("idReporte") Integer idReporte,
-                             @RequestParam("descripcion") String descripcion,
-                             @RequestParam("estado") String estado) {
-
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        model.addAttribute("usuario", usuario);
-
-        // Obtener el reporte por id
-        Reporte reporte = reporteRepository.findById(idReporte).orElse(null);
-        if (reporte == null) {
-            return "redirect:/qa/issues?error=Reporte no encontrado";
-        }
-
-        // Verificar que el reporte tiene estado "Fallido"
-        if (!"Fallido".equals(reporte.getEstado())) {
-            return "redirect:/qa/issues?error=Solo puedes crear un Issue para reportes en estado Fallido";
-        }
-
-        // Crear el IssueId (composite key)
-        IssueId issueId = new IssueId(); // Si el idIssue es autogenerado, no es necesario pasarlo
-        issueId.setIdReporte(idReporte);
-
-        // Crear el nuevo Issue
-        Issue newIssue = new Issue();
-        newIssue.setId(issueId);  // Asignar el IssueId
-        newIssue.setDescripcion(descripcion);
-        newIssue.setEstado("Reportado");  // Establecer el estado del Issue
-        newIssue.setReporte(reporte); // Asociar el Issue con el Reporte
-        newIssue.setFechaCreacion(new Timestamp(System.currentTimeMillis()));
-        newIssue.setCreador(usuario);
-        issueRepository.save(newIssue); // Guardar el Issue
-
-        // Crear la notificación
-        Notificacion notif = new Notificacion();
-        notif.setMensaje("Se ha creado un nuevo issue para tu API: " + newIssue.getReporte().getApi().getNombre());
-        notif.setLeido(false);
-        notif.setFecha(new Timestamp(System.currentTimeMillis()));
-        notif.setUsuario(newIssue.getReporte().getApi().getUsuario()); // propietario de la API
-        notificacionRepository.save(notif);
-
-        ActividadReciente actividad = new ActividadReciente();
-        actividad.setTitulo("Nuevo Issue");
-        actividad.setDescripcion("Has creado un issue para la api " + newIssue.getReporte().getApi().getNombre());
-        actividad.setUsuario(usuario);
-        actividadRecienteRepository.save(actividad);
-
-
-        return "redirect:/qa/issues"; // Redirigir a la lista de Issues
-    }
-
-    @PostMapping("/crearComentario")
+    @PostMapping("/crearComentarioDev")
     public String guardarComentario(@RequestParam("comentario") String comentario,
                                     @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
                                     @RequestParam("idIssue") Integer idIssue,
@@ -218,7 +135,7 @@ public class IssueController extends BaseController {
         Issue issue = issueRepository.findById(issueId).orElse(null);
         if (issue == null) {
             redirectAttributes.addFlashAttribute("error", "Issue no encontrado");
-            return "redirect:/qa/issues";
+            return "redirect:/issuesDev";
         }
 
         // Crear comentario
@@ -227,6 +144,7 @@ public class IssueController extends BaseController {
         newComentario.setFecha(new Timestamp(System.currentTimeMillis()));
         newComentario.setIssue(issue);
         newComentario.setUsuario(usuario);
+
 
         System.out.println("------------------");
         System.out.println(archivos.length);
@@ -241,20 +159,20 @@ public class IssueController extends BaseController {
         // Validaciones de archivos
         if (archivos != null && archivos.length > 5) {
             redirectAttributes.addFlashAttribute("error", "Máximo 5 archivos permitidos");
-            return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+            return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
         }
 
         for (MultipartFile archivo : archivos) {
             if (archivo.getSize() > MAX_FILE_SIZE) {
                 redirectAttributes.addFlashAttribute("error", "El archivo es demasiado grande");
-                return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+                return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
             }
 
             // Validar tipo de archivo (solo imágenes y logs)
             String contentType = archivo.getContentType();
             if (!contentType.equals("image/png") && !contentType.equals("image/jpeg") && !contentType.equals("text/plain")) {
                 redirectAttributes.addFlashAttribute("error", "Solo se permiten archivos de tipo .png, .jpg o .log");
-                return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+                return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
             }
 
             try {
@@ -268,72 +186,32 @@ public class IssueController extends BaseController {
             } catch (IOException e) {
                 e.printStackTrace();
                 redirectAttributes.addFlashAttribute("error", "Error al guardar el archivo");
-                return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+                return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
             }
         }
 
         // Guardar el comentario
         comentarioRepository.save(newComentario);
 
-        // Después de guardar el comentario
-        Usuario desarrollador = issue.getReporte().getApi().getUsuario(); // propietario de la API
+        // 🔹 Cambiar estado del Issue si el usuario es desarrollador
+        if (usuario.getRol().getNombreRol().equals("DEV")) {
+            issue.setEstado("En progreso");
+            issueRepository.save(issue);
+        }
 
+        // Obtener el QA que creó el issue (suponiendo que lo guardaste como 'creador')
+        Usuario qaCreador = issue.getCreador();  // si agregaste un campo Issue.usuarioCreador
+
+        // Crear la notificación
         Notificacion notif = new Notificacion();
-        notif.setMensaje("El QA " + usuario.getNombre() +
-                " comentó en el foro del Issue de tu API: " + issue.getReporte().getApi().getNombre());
+        notif.setMensaje("El desarrollador " + usuario.getNombre() +
+                " respondió en el foro del Issue: " + issue.getReporte().getApi().getNombre());
         notif.setLeido(false);
         notif.setFecha(new Timestamp(System.currentTimeMillis()));
-        notif.setUsuario(desarrollador); // receptor
+        notif.setUsuario(qaCreador); // receptor de la notificación
         notificacionRepository.save(notif);
 
-        // Registrar la actividad reciente
-        ActividadReciente actividad = new ActividadReciente();
-        actividad.setTitulo("Nuevo Comentario");
-        actividad.setDescripcion("Has dejado un comentario en el issue " + issue.getReporte().getApi().getNombre());
-        actividad.setUsuario(usuario);
-        actividadRecienteRepository.save(actividad);
-
         // Redirigir de nuevo al detalle del Issue
-        return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
-    }
-
-    @PostMapping("/issueCerrar/{idIssue}/{idReporte}")
-    public String cerrarIssue(@PathVariable Integer idIssue, @PathVariable Integer idReporte,
-                              RedirectAttributes redirectAttributes, Authentication auth) {
-
-        // Obtener el usuario
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-
-        IssueId issueId = new IssueId(idIssue, idReporte);
-        Issue issue = issueRepository.findById(issueId).orElse(null);
-
-        if (issue == null) {
-            redirectAttributes.addFlashAttribute("error", "Issue no encontrado");
-            return "redirect:/issues"; // o tu listado de QA
-        }
-
-        issue.setEstado("Corregido");
-        issueRepository.save(issue);
-
-        // Opcional: enviar notificación al desarrollador
-        Usuario dev = issue.getReporte().getApi().getUsuario();
-        if(dev != null){
-            Notificacion notif = new Notificacion();
-            notif.setMensaje("El QA cerró el Issue: " + issue.getReporte().getApi().getNombre());
-            notif.setLeido(false);
-            notif.setFecha(new Timestamp(System.currentTimeMillis()));
-            notif.setUsuario(dev);
-            notificacionRepository.save(notif);
-        }
-
-        // Registrar la actividad reciente
-        ActividadReciente actividad = new ActividadReciente();
-        actividad.setTitulo("Issue corregido");
-        actividad.setDescripcion("Has cerrado el issue de " + issue.getReporte().getApi().getNombre());
-        actividad.setUsuario(usuario);
-        actividadRecienteRepository.save(actividad);
-
-        redirectAttributes.addFlashAttribute("success", "Issue cerrado correctamente");
-        return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+        return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
     }
 }
