@@ -269,7 +269,7 @@ public class MetricsService {
         try {
             var rows = metricaApiRepository.getLatencyTrend();
             var labels = rows.stream().map(r -> r[0].toString()).toList();
-            var data = rows.stream().map(r -> ((Number) r[1]).intValue()).toList();
+            var data = rows.stream().map(r -> ((Number) r[1]).doubleValue()).toList();
             return new ChartSeriesDTO(labels, data);
         } catch (Exception e) {
             return new ChartSeriesDTO(new ArrayList<>(), new ArrayList<>());
