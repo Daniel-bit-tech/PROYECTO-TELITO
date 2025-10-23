@@ -433,7 +433,7 @@
 
     .filter-row {
       display: grid;
-      grid-template-columns: 1fr 200px 200px auto;
+      grid-template-columns: 2fr 180px 180px 160px 140px;
       gap: 1rem;
       align-items: end;
     }
@@ -696,9 +696,9 @@
               <select class="form-control" name="rol">
                 <option value="">Todos los roles</option>
                 <option th:each="rol : ${roles}" 
-                        th:value="${rol.idRol}" 
+                        th:value="${rol.nombreRol}" 
                         th:text="${rol.nombreRol}"
-                        th:selected="${selectedRol == rol.idRol.toString()}">Rol</option>
+                        th:selected="${selectedRol == rol.nombreRol}">Rol</option>
               </select>
             </div>
             <div class="form-group">
@@ -710,29 +710,14 @@
                 <option value="20" th:selected="${pageSize == 20}">20 usuarios</option>
               </select>
             </div>
+            <div class="form-group">
+              <label class="form-label">&nbsp;</label>
+              <button type="button" class="btn btn-outline-secondary w-100" onclick="limpiarFiltros()" title="Limpiar todos los filtros">
+                <i class="fas fa-times me-1"></i>Limpiar filtros
+              </button>
+            </div>
           </div>
         </form>
-      </div>
-
-      <!-- Indicador de filtros activos -->
-      <div th:if="${search != null and !search.isEmpty()} or ${selectedEstado != null and !selectedEstado.isEmpty()} or ${selectedRol != null and !selectedRol.isEmpty()}" 
-           class="alert alert-info d-flex justify-content-between align-items-center">
-        <div>
-          <i class="fas fa-filter me-2"></i>
-          <strong>Filtros activos:</strong>
-          <span th:if="${search != null and !search.isEmpty()}" class="badge bg-primary ms-2">
-            Búsqueda: "<span th:text="${search}"></span>"
-          </span>
-          <span th:if="${selectedEstado != null and !selectedEstado.isEmpty()}" class="badge bg-success ms-2">
-            Estado: <span th:text="${selectedEstado == 'true' ? 'Activos' : 'Inactivos'}"></span>
-          </span>
-          <span th:if="${selectedRol != null and !selectedRol.isEmpty()}" class="badge bg-secondary ms-2">
-            Rol ID: <span th:text="${selectedRol}"></span>
-          </span>
-        </div>
-        <button type="button" class="btn btn-sm btn-outline-info" onclick="limpiarFiltros()">
-          <i class="fas fa-times"></i> Limpiar filtros
-        </button>
       </div>
 
       <!-- Tokens Pendientes -->
@@ -1140,7 +1125,7 @@
 </div>
 
 <!-- Modal para crear nuevo usuario -->
-<div class="modal fade" id="newUserModal" tabindex="-1" aria-labelledby="newUserModalLabel" aria-hidden="true">
+<div class="modal fade" id="newUserModal" tabindex="-1" aria-labelledby="newUserModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
@@ -1237,11 +1222,17 @@
                 <div class="input-group">
                   <input type="password" class="form-control" id="newUserPassword" name="contrasena" 
                          placeholder="Mínimo 8 caracteres" minlength="8" required>
-                  <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword">
+                  <button class="btn btn-outline-secondary" type="button" id="toggleNewPassword" title="Mostrar contraseña">
                     <i class="fas fa-eye"></i>
                   </button>
                 </div>
-                <div class="form-text">El usuario podrá cambiarla después de confirmar su cuenta</div>
+                <div class="form-text">
+                  <strong>Requisitos de contraseña:</strong><br>
+                  • Mínimo 8 caracteres<br>
+                  • No puede contener "123456", "password" o datos del usuario<br>
+                  • No puede ser igual al DNI o email del usuario<br>
+                  • El usuario podrá cambiarla después de confirmar su cuenta
+                </div>
               </div>
             </div>
             
@@ -1251,8 +1242,13 @@
                 <label for="newUserPasswordConfirm" class="form-label fw-bold">
                   <i class="fas fa-lock me-1"></i>Confirmar Contraseña <span class="text-danger">*</span>
                 </label>
-                <input type="password" class="form-control" id="newUserPasswordConfirm" name="confirmarContrasena" 
-                       placeholder="Repetir contraseña" minlength="8" required>
+                <div class="input-group">
+                  <input type="password" class="form-control" id="newUserPasswordConfirm" name="confirmarContrasena" 
+                         placeholder="Repetir contraseña" minlength="8" required>
+                  <button class="btn btn-outline-secondary" type="button" id="toggleConfirmPassword" title="Mostrar contraseña">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
                 <div class="invalid-feedback" id="passwordMismatchError">
                   Las contraseñas no coinciden
                 </div>
@@ -1341,6 +1337,64 @@
 <script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
 
 <script>
+// ====================================================================
+// FUNCIONES GLOBALES (disponibles en window scope)
+// ====================================================================
+
+// Función global para limpiar filtros
+function limpiarFiltros() {
+  console.log('🧹 Limpiando filtros...');
+  
+  // Obtener referencias frescas a los elementos
+  const searchInputElement = document.querySelector('input[name="search"]');
+  const estadoSelectElement = document.querySelector('select[name="estado"]');
+  const rolSelectElement = document.querySelector('select[name="rol"]');
+  const pageSizeSelectElement = document.querySelector('select[name="size"]');
+  
+  console.log('📋 Elementos encontrados:', {
+    search: !!searchInputElement,
+    estado: !!estadoSelectElement,
+    rol: !!rolSelectElement,
+    pageSize: !!pageSizeSelectElement
+  });
+  
+  // Limpiar valores de los campos
+  if (searchInputElement) {
+    searchInputElement.value = '';
+    console.log('✅ Search input cleared');
+  }
+  
+  if (estadoSelectElement) {
+    estadoSelectElement.value = '';
+    console.log('✅ Estado select cleared');
+  }
+  
+  if (rolSelectElement) {
+    rolSelectElement.value = '';
+    console.log('✅ Rol select cleared');
+  }
+  
+  // Mantener el tamaño de página actual
+  let currentPageSize = '4'; // valor por defecto
+  if (pageSizeSelectElement && pageSizeSelectElement.value) {
+    currentPageSize = pageSizeSelectElement.value;
+  }
+  
+  // Crear URL limpia pero manteniendo el tamaño de página
+  const baseUrl = window.location.pathname + '?size=' + currentPageSize;
+  console.log('🔄 Redirecting to:', baseUrl);
+  
+  // Redirigir a la URL base solo con el parámetro size
+  window.location.href = baseUrl;
+}
+
+// Hacer la función disponible globalmente
+window.limpiarFiltros = limpiarFiltros;
+
+// ====================================================================
+// CÓDIGO PRINCIPAL
+// ====================================================================
+
 document.addEventListener('DOMContentLoaded', function() {
   // Obtener token CSRF
   const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
@@ -1875,34 +1929,16 @@ if (rolSelect) {
 if (pageSizeSelect) {
   pageSizeSelect.addEventListener('change', function() {
     console.log('Page size changed to:', this.value);
+    
+    // Actualizar el campo oculto sizeInput
+    const sizeInput = document.getElementById('sizeInput');
+    if (sizeInput) {
+      sizeInput.value = this.value;
+      console.log('Updated sizeInput to:', this.value);
+    }
+    
     resetPageAndSubmit();
   });
-}
-
-// Limpiar filtros
-function limpiarFiltros() {
-  console.log('Limpiando filtros...');
-  
-  // Limpiar valores de los campos
-  if (searchInput) {
-    searchInput.value = '';
-    console.log('Search input cleared');
-  }
-  if (estadoSelect) {
-    estadoSelect.value = '';
-    console.log('Estado select cleared');
-  }
-  if (rolSelect) {
-    rolSelect.value = '';
-    console.log('Rol select cleared');
-  }
-  
-  // Crear una nueva URL sin parámetros
-  const baseUrl = window.location.pathname;
-  console.log('Redirecting to:', baseUrl);
-  
-  // Redirigir a la URL base sin parámetros
-  window.location.href = baseUrl;
 }
 
 // Mostrar estado de filtros activos
@@ -2057,21 +2093,132 @@ function handleCreateUser() {
 
 // Validación de formulario en tiempo real
 function initializeNewUserValidation() {
+  console.log('🔧 Inicializando validación de nuevo usuario...');
+  
   const form = document.getElementById('newUserForm');
   const submitButton = document.getElementById('createNewUser');
   const passwordField = document.getElementById('newUserPassword');
   const confirmPasswordField = document.getElementById('newUserPasswordConfirm');
   const toggleButton = document.getElementById('toggleNewPassword');
+  const toggleConfirmButton = document.getElementById('toggleConfirmPassword');
   
-  // Toggle password visibility
-  toggleButton.addEventListener('click', function() {
-    const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
-    passwordField.setAttribute('type', type);
+  // Función global de testing (disponible en consola)
+  window.testPasswordToggles = function() {
+    console.log('🧪 TESTING PASSWORD TOGGLES');
+    console.log('Password field type:', passwordField ? passwordField.type : 'NOT FOUND');
+    console.log('Confirm field type:', confirmPasswordField ? confirmPasswordField.type : 'NOT FOUND');
+    console.log('Toggle button exists:', !!toggleButton);
+    console.log('Toggle confirm button exists:', !!toggleConfirmButton);
     
-    const icon = toggleButton.querySelector('i');
-    icon.classList.toggle('fa-eye');
-    icon.classList.toggle('fa-eye-slash');
+    if (toggleButton) {
+      console.log('🔄 Simulando click en toggle principal...');
+      toggleButton.click();
+    }
+    
+    if (toggleConfirmButton) {
+      console.log('🔄 Simulando click en toggle confirmación...');
+      toggleConfirmButton.click();
+    }
+  };
+  
+  console.log('📋 Elementos encontrados:', {
+    form: !!form,
+    passwordField: !!passwordField,
+    confirmPasswordField: !!confirmPasswordField,
+    toggleButton: !!toggleButton,
+    toggleConfirmButton: !!toggleConfirmButton
   });
+  
+  // Toggle password visibility para contraseña principal
+  if (toggleButton && passwordField) {
+    console.log('👁️ Configurando toggle para contraseña principal...');
+    console.log('Elementos encontrados:', {toggleButton: toggleButton, passwordField: passwordField});
+    
+    // Remover cualquier listener previo
+    toggleButton.replaceWith(toggleButton.cloneNode(true));
+    const newToggleButton = document.getElementById('toggleNewPassword');
+    
+    newToggleButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('👁️ CLICK en toggle contraseña principal');
+      
+      const pwField = document.getElementById('newUserPassword');
+      const icon = this.querySelector('i');
+      
+      console.log('Campo encontrado:', pwField);
+      console.log('Tipo actual:', pwField ? pwField.type : 'NO ENCONTRADO');
+      
+      if (pwField) {
+        if (pwField.type === 'password') {
+          // Mostrar contraseña
+          pwField.type = 'text';
+          icon.className = 'fas fa-eye-slash';
+          this.title = 'Ocultar contraseña';
+          console.log('✅ Contraseña VISIBLE');
+        } else {
+          // Ocultar contraseña  
+          pwField.type = 'password';
+          icon.className = 'fas fa-eye';
+          this.title = 'Mostrar contraseña';
+          console.log('✅ Contraseña OCULTA');
+        }
+      } else {
+        console.error('❌ No se encontró el campo de contraseña');
+      }
+    });
+    
+    console.log('✅ Toggle principal configurado');
+  } else {
+    console.warn('❌ No se pudo configurar toggle para contraseña principal');
+    console.log('toggleButton:', toggleButton);
+    console.log('passwordField:', passwordField);
+  }
+  
+  // Toggle password visibility para confirmar contraseña
+  if (toggleConfirmButton && confirmPasswordField) {
+    console.log('👁️ Configurando toggle para confirmar contraseña...');
+    
+    // Remover cualquier listener previo
+    toggleConfirmButton.replaceWith(toggleConfirmButton.cloneNode(true));
+    const newToggleConfirmButton = document.getElementById('toggleConfirmPassword');
+    
+    newToggleConfirmButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      console.log('👁️ CLICK en toggle confirmar contraseña');
+      
+      const confirmPwField = document.getElementById('newUserPasswordConfirm');
+      const icon = this.querySelector('i');
+      
+      console.log('Campo confirmación encontrado:', confirmPwField);
+      console.log('Tipo actual:', confirmPwField ? confirmPwField.type : 'NO ENCONTRADO');
+      
+      if (confirmPwField) {
+        if (confirmPwField.type === 'password') {
+          // Mostrar contraseña
+          confirmPwField.type = 'text';
+          icon.className = 'fas fa-eye-slash';
+          this.title = 'Ocultar contraseña';
+          console.log('✅ Confirmar contraseña VISIBLE');
+        } else {
+          // Ocultar contraseña
+          confirmPwField.type = 'password';
+          icon.className = 'fas fa-eye';
+          this.title = 'Mostrar contraseña';
+          console.log('✅ Confirmar contraseña OCULTA');
+        }
+      } else {
+        console.error('❌ No se encontró el campo de confirmar contraseña');
+      }
+    });
+    
+    console.log('✅ Toggle confirmación configurado');
+  } else {
+    console.warn('❌ No se pudo configurar toggle para confirmar contraseña');
+    console.log('toggleConfirmButton:', toggleConfirmButton);
+    console.log('confirmPasswordField:', confirmPasswordField);
+  }
   
   // Validación de contraseñas coincidentes
   function validatePasswords() {
@@ -2157,6 +2304,87 @@ function forceCleanModals() {
   }
 }
 
+// Función para cerrar modal completamente y limpiar backdrop
+async function cerrarModalCompletamente(modalId) {
+  return new Promise((resolve) => {
+    const modalElement = document.getElementById(modalId);
+    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+    
+    if (modalInstance) {
+      // Listener para cuando el modal se haya cerrado completamente
+      modalElement.addEventListener('hidden.bs.modal', function onHidden() {
+        modalElement.removeEventListener('hidden.bs.modal', onHidden);
+        limpiarBackdropCompletamente();
+        resolve();
+      });
+      
+      modalInstance.hide();
+    } else {
+      // Limpieza manual
+      modalElement.style.display = 'none';
+      modalElement.classList.remove('show');
+      modalElement.setAttribute('aria-hidden', 'true');
+      modalElement.removeAttribute('aria-modal');
+      modalElement.removeAttribute('role');
+      
+      limpiarBackdropCompletamente();
+      resolve();
+    }
+  });
+}
+
+// Función para limpiar backdrop completamente
+function limpiarBackdropCompletamente() {
+  // Remover todas las clases de modal del body
+  document.body.classList.remove('modal-open');
+  document.body.style.overflow = '';
+  document.body.style.paddingRight = '';
+  
+  // Remover todos los backdrops
+  const backdrops = document.querySelectorAll('.modal-backdrop');
+  backdrops.forEach(backdrop => backdrop.remove());
+  
+  // Asegurar que no hay estilos residuales
+  const modalElements = document.querySelectorAll('.modal.show');
+  modalElements.forEach(modal => {
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+  });
+  
+  console.log('✅ Modal y backdrop limpiados completamente');
+}
+
+// Función para validar contraseña según lineamientos
+function validarContraseña(password, dni, email, nombre) {
+  const errores = [];
+  
+  if (password.length < 8) {
+    errores.push('Debe tener al menos 8 caracteres');
+  }
+  
+  if (password.toLowerCase().includes('123456')) {
+    errores.push('No puede contener "123456"');
+  }
+  
+  if (password.toLowerCase().includes('password')) {
+    errores.push('No puede contener "password"');
+  }
+  
+  if (dni && password.toLowerCase() === dni.toLowerCase()) {
+    errores.push('No puede ser igual al DNI');
+  }
+  
+  if (email && password.toLowerCase() === email.toLowerCase()) {
+    errores.push('No puede ser igual al email');
+  }
+  
+  if (nombre && password.toLowerCase().includes(nombre.toLowerCase())) {
+    errores.push('No puede contener el nombre del usuario');
+  }
+  
+  return errores;
+}
+
 // Función para crear usuario con confirmación por email
 async function createUserWithConfirmation() {
   try {
@@ -2185,6 +2413,18 @@ async function createUserWithConfirmation() {
       throw new Error('Las contraseñas no coinciden');
     }
     
+    // Validar lineamientos de contraseña
+    const erroresPassword = validarContraseña(
+      userData.contrasena, 
+      userData.dni, 
+      userData.correo, 
+      userData.nombre
+    );
+    
+    if (erroresPassword.length > 0) {
+      throw new Error('Errores en la contraseña:\n• ' + erroresPassword.join('\n• '));
+    }
+    
     // Enviar solicitud al servidor
     const response = await fetch('/admin/gestion-usuarios/crear-con-confirmacion', {
       method: 'POST',
@@ -2202,19 +2442,8 @@ async function createUserWithConfirmation() {
       throw new Error(result.error || 'Error desconocido');
     }
     
-    // Éxito - cerrar modal de creación
-    const newUserModal = bootstrap.Modal.getInstance(document.getElementById('newUserModal'));
-    if (newUserModal) {
-      newUserModal.hide();
-    } else {
-      // Forzar cierre manual si no se puede obtener la instancia
-      document.getElementById('newUserModal').style.display = 'none';
-      document.body.classList.remove('modal-open');
-      const backdrop = document.querySelector('.modal-backdrop');
-      if (backdrop) {
-        backdrop.remove();
-      }
-    }
+    // Éxito - cerrar modal de creación con limpieza completa
+    await cerrarModalCompletamente('newUserModal');
     
     // Limpiar formulario
     form.reset();
@@ -2354,12 +2583,47 @@ document.getElementById('editUserFromModal').addEventListener('click', function(
 });
 
 // ===============================
-// EVENT LISTENERS PARA NUEVO USUARIO
+// EVENT LISTENERS PARA NUEVO USUARIO - BACKDROP OPACO
 // ===============================
+
+// SIMPLE: Agregar fondo OPACO cuando se abre el modal
+document.getElementById('newUserModal').addEventListener('show.bs.modal', function() {
+  console.log('📱 Modal abriendo - Agregando fondo opaco');
+  
+  // Crear overlay opaco simple
+  const overlay = document.createElement('div');
+  overlay.id = 'simple-overlay';
+  overlay.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1050;
+    pointer-events: none;
+  `;
+  document.body.appendChild(overlay);
+});
 
 // Inicializar validación del formulario cuando se abre el modal
 document.getElementById('newUserModal').addEventListener('shown.bs.modal', function() {
-  initializeNewUserValidation();
+  console.log('📱 Modal mostrado completamente');
+  
+  // Pequeño delay para asegurar que el DOM esté listo
+  setTimeout(() => {
+    initializeNewUserValidation();
+  }, 100);
+});
+
+// Remover overlay cuando se cierra el modal
+document.getElementById('newUserModal').addEventListener('hidden.bs.modal', function() {
+  console.log('📱 Modal cerrado - Removiendo fondo opaco');
+  
+  const overlay = document.getElementById('simple-overlay');
+  if (overlay) {
+    overlay.remove();
+  }
 });
 
 // Event listener para crear usuario
@@ -2728,5 +2992,97 @@ function activarCuentaManual(tokenId, email) {
 
 });
 </script>
+
+<!-- CSS SIMPLE Y DIRECTO para modal backdrop OPACO -->
+<style>
+/* FORZAR BACKDROP OPACO (NO NEGRO COMPLETO) */
+body.modal-open::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  z-index: 1050 !important;
+  pointer-events: none;
+}
+
+/* Backup: si el método anterior no funciona */
+.modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  opacity: 1 !important;
+  z-index: 1050 !important;
+}
+
+/* Triple backup */
+.modal.show {
+  z-index: 1060 !important;
+}
+
+#newUserModal {
+  z-index: 1060 !important;
+}
+</style>
+
+<!-- ============================================== -->
+<!-- SCRIPTS Y FUNCIONALIDAD -->
+<!-- ============================================== -->
+<!-- SCRIPTS Y FUNCIONALIDAD -->
+<!-- ============================================== -->
+
+<style>
+/* Estilo mejorado para el modal */
+#newUserModal .modal-content {
+  border: none;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+#newUserModal .modal-header {
+  border-radius: 15px 15px 0 0;
+}
+
+/* Estilo mejorado para botones de toggle contraseña */
+#toggleNewPassword, 
+#toggleConfirmPassword {
+  cursor: pointer !important;
+  border-left: 1px solid #ced4da !important;
+  background-color: #f8f9fa !important;
+  color: #6c757d !important;
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  z-index: 3 !important;
+  min-width: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+#toggleNewPassword:hover,
+#toggleConfirmPassword:hover {
+  background-color: #e9ecef !important;
+  color: #495057 !important;
+}
+
+#toggleNewPassword:active,
+#toggleConfirmPassword:active {
+  background-color: #dee2e6 !important;
+  transform: scale(0.98) !important;
+}
+
+#toggleNewPassword i,
+#toggleConfirmPassword i {
+  font-size: 1rem !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+/* Asegurar que el input group funcione correctamente */
+.input-group .btn {
+  border-radius: 0 0.375rem 0.375rem 0 !important;
+}
+</style>
+
 </body>
 </html>

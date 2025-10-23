@@ -4,6 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    
+    <!-- CSRF Token para AJAX requests -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    
     <title>TELITO DEVELOPER PORTAL | Organización</title>
     <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
@@ -199,14 +204,11 @@
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
 
-    <header th:replace="~{desarrollador/header :: header}"
-            sec:authorize="hasRole('DEV')"></header>
-    <header th:replace="~{admin/header :: header}"
-            sec:authorize="hasRole('SUPERADMIN')"></header>
-    <header th:replace="~{po/header_po :: header}"
-            sec:authorize="hasRole('PO')"></header>
-    <header th:replace="~{qa/header_qa :: header}"
-            sec:authorize="hasRole('QA')"></header>
+    <!-- Header específico para PO - SIEMPRE usar el header PO en esta vista -->
+    <header th:replace="~{po/header_po :: header}"></header>
+
+    <!-- Banner de impersonación SIMPLE -->
+    <div th:replace="~{components/simple-impersonation-banner :: simple-impersonation-banner}"></div>
 
     <div class="content">
         <div class="organization-container">
@@ -311,5 +313,36 @@
 
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
 <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
+
+<!-- Configuración automática de CSRF para AJAX requests -->
+<script>
+    // Configurar CSRF token automáticamente para todas las requests AJAX
+    document.addEventListener('DOMContentLoaded', function() {
+        const token = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
+        const header = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
+        
+        if (token && header) {
+            // Configurar CSRF para fetch API
+            const originalFetch = window.fetch;
+            window.fetch = function(url, options = {}) {
+                options.headers = options.headers || {};
+                options.headers[header] = token;
+                return originalFetch(url, options);
+            };
+            
+            // Configurar CSRF para XMLHttpRequest
+            const originalOpen = XMLHttpRequest.prototype.open;
+            XMLHttpRequest.prototype.open = function() {
+                originalOpen.apply(this, arguments);
+                this.setRequestHeader(header, token);
+            };
+            
+            console.log('✅ CSRF configurado automáticamente para AJAX requests');
+        } else {
+            console.warn('⚠️ Token CSRF no encontrado');
+        }
+    });
+</script>
+
 </body>
 </html>

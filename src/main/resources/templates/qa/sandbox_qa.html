@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
     <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
     <title>TELITO DEVELOPER PORTAL | QA Testing </title>
+    
+    <!-- ============================================== -->
+    <!-- TOKEN CSRF PARA SEGURIDAD -->
+    <!-- ============================================== -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
     <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
     <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
@@ -65,6 +71,12 @@
 
 <div class="page">
     <div th:replace="qa/header_qa.html :: header"></div>
+    
+    <!-- ============================================== -->
+    <!-- BARRA DE IMPERSONACIÓN (CRÍTICA PARA SEGURIDAD) -->
+    <!-- ============================================== -->
+    <!-- Banner de impersonación SIMPLE -->
+    <div th:replace="~{components/simple-impersonation-banner :: simple-impersonation-banner}"></div>
 
     <div class="page-wrapper">
         <div class="page-header d-print-none">
@@ -412,6 +424,30 @@
 <script src="/tabler/dist/js/tabler.min.js"></script>
 
 <script>
+    // ============================================== 
+    // CONFIGURACIÓN DE CSRF TOKEN PARA SEGURIDAD
+    // ============================================== 
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+    
+    // Configurar CSRF para todas las peticiones AJAX
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options = {}) {
+        if (!options.headers) {
+            options.headers = {};
+        }
+        
+        // Solo agregar CSRF para peticiones POST, PUT, DELETE, PATCH
+        const method = (options.method || 'GET').toUpperCase();
+        if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+            options.headers[csrfHeader] = csrfToken;
+            console.log('🔒 CSRF token agregado a petición:', method, url);
+        }
+        
+        return originalFetch(url, options);
+    };
+    
+    console.log('🔒 CSRF configurado:', { token: csrfToken?.substring(0, 10) + '...', header: csrfHeader });
 
     let qaState = {
         activeToken: null,
