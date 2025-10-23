@@ -75,6 +75,12 @@
                            th:if="${reporte.estado == 'Fallido'}">
                             Generar Issue
                         </a>
+
+                        <a th:href="@{/qa/reportes/pdf/{idReporte}(idReporte=${reporte.idReporte})}"
+                           class="btn btn-primary">
+                            <i class="fas fa-file-pdf me-2"></i>
+                            Descargar PDF
+                        </a>
                     </div>
                 </div>
             </div>

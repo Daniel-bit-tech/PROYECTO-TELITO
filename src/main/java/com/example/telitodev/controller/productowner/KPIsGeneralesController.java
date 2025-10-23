@@ -19,7 +19,6 @@ public class KPIsGeneralesController {
         this.usuarioRepository = usuarioRepository;
     }
 
-    // Dashboard method removed to avoid conflict with PoController
-    // The main dashboard is handled by PoController.showDashboardView()
+
 
 }

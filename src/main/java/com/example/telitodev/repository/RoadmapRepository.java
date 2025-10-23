@@ -1,5 +1,6 @@
 package com.example.telitodev.repository;
 
+import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.Roadmap;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -16,6 +17,8 @@ public interface RoadmapRepository extends JpaRepository<Roadmap, Integer> {
 
     // Encontrar roadmap por API ID
     Optional<Roadmap> findByApiIdApi(Integer apiId);
+
+    List<Roadmap> findByApiIn(List<Api> apis);
 
     // Encontrar todos los roadmaps ordenados por fecha de modificación descendente
     List<Roadmap> findAllByOrderByFechaModificacionDesc();

@@ -422,6 +422,13 @@
                     <div class="col" >
                         <h2 th:text="|Issue de ${issue.reporte.api.nombre}|"></h2>
                     </div>
+                    <div class="col-auto ms-auto d-print-none">
+                        <a th:href="@{/issue/reporte-pdf/{idIssue}/{idReporte}(idIssue=${issue.id.idIssue}, idReporte=${issue.id.idReporte})}"
+                           class="btn btn-primary">
+                            <i class="fas fa-file-pdf me-2"></i>
+                            Descargar PDF
+                        </a>
+                    </div>
                     <!-- Page title actions -->
                 </div>
             </div>
@@ -432,6 +439,13 @@
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">Información</h3>
+                        </div>
+                        <div class="row g-2 align-items-center">
+
+
+
+
+
                         </div>
                         <div class="card-body">
                             <div class="datagrid">

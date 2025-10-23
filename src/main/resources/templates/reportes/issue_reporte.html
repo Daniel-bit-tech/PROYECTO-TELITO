@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Reporte de Issue</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 12px; color: #333; }
+        .container { width: 100%; margin: 0 auto; }
+        h1 { text-align: center; color: #222; border-bottom: 2px solid #f2f2f2; padding-bottom: 10px; }
+        .card { border: 1px solid #ddd; border-radius: 5px; margin-bottom: 20px; padding: 15px; background-color: #ffffff; }
+        .card-title { font-size: 16px; font-weight: bold; margin-top: 0; margin-bottom: 15px; color: #0056b3; }
+        .datagrid { display: table; width: 100%; border-collapse: collapse; }
+        .datagrid-item { display: table-row; }
+        .datagrid-title, .datagrid-content { display: table-cell; padding: 8px; border-bottom: 1px solid #eee; }
+        .datagrid-title { font-weight: bold; width: 150px; background-color: #f9f9f9; }
+        .description { white-space: pre-wrap; word-wrap: break-word; }
+        .comment-card { margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px; }
+        .comment-author { font-weight: bold; }
+        .comment-date { font-size: 10px; color: #777; }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 5px; }
+
+        .comment-image { max-width: 400px; height: auto; border: 1px solid #eee; margin-top: 10px; }
+        .attachment-name { font-size: 11px; font-style: italic; color: #555; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Reporte de Issue</h1>
+
+    <div class="card">
+        <h3 class="card-title">Información del Issue</h3>
+        <div class="datagrid">
+            <div class="datagrid-item">
+                <div class="datagrid-title">API Afectada:</div>
+                <div class="datagrid-content" th:text="${issue.reporte.api.nombre}"></div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Dominio/Tags:</div>
+                <div class="datagrid-content" th:text="|${issue.reporte.api.dominio.nombre} / ${issue.reporte.api.tag.nombre}|"></div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Creado por:</div>
+                <div class="datagrid-content" th:text="${issue.creador != null ? issue.creador.nombre : 'N/A'}"></div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Estado:</div>
+                <div class="datagrid-content" th:text="${issue.estado}"></div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Fecha Creación:</div>
+                <div class="datagrid-content" th:text="${#dates.format(issue.fechaCreacion, 'dd/MM/yyyy HH:mm')}"></div>
+            </div>
+            <div class="datagrid-item">
+                <div class="datagrid-title">Descripción:</div>
+                <div class="datagrid-content description" th:text="${issue.descripcion}"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card" th:if="${not #lists.isEmpty(evidencias)}">
+        <h3 class="card-title">Evidencias Adjuntas (del Reporte)</h3>
+        <ul>
+            <li th:each="evidencia : ${evidencias}" th:text="${evidencia.nombre}">
+                nombre_del_archivo.png
+            </li>
+        </ul>
+    </div>
+    <div class="card" th:if="${#lists.isEmpty(evidencias)}">
+        <h3 class="card-title">Evidencias Adjuntas (del Reporte)</h3>
+        <p>No se adjuntaron evidencias para este reporte.</p>
+    </div>
+
+
+    <div class="card" th:if="${not #lists.isEmpty(issue.comentarios)}">
+        <h3 class="card-title">Foro (Comentarios)</h3>
+        <div th:each="comentario : ${issue.comentarios}" class="comment-card">
+            <div class="comment-author">
+                <span th:text="${comentario.usuario.nombre}"></span>
+                (<span th:text="${comentario.usuario.rol.nombreRol}"></span>)
+            </div>
+            <div class="comment-date" th:text="${#dates.format(comentario.fecha, 'dd/MM/yyyy HH:mm')}"></div>
+            <p th:text="${comentario.comentario}"></p>
+
+            <div th:if="${not #lists.isEmpty(comentario.adjuntos)}">
+                <div th:each="adjunto : ${comentario.adjuntos}">
+                    <div th:if="${imagenesBase64.containsKey(adjunto.idAdjunto)}">
+                        <p class="attachment-name" th:text="${adjunto.nombre}">nombre_imagen.png</p>
+                        <img th:src="|data:image/png;base64,${imagenesBase64.get(adjunto.idAdjunto)}|" class="comment-image"/>
+                    </div>
+                    <div th:unless="${imagenesBase64.containsKey(adjunto.idAdjunto)}">
+                        <p class="attachment-name">
+                            <strong>Adjunto (no imagen): </strong>
+                            <span th:text="${adjunto.nombre}">otro_archivo.log</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card" th:if="${#lists.isEmpty(issue.comentarios)}">
+        <h3 class="card-title">Foro (Comentarios)</h3>
+        <p>No hay comentarios en este issue.</p>
+    </div>
+
+</div>
+</body>
+</html>

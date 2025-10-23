@@ -5,6 +5,8 @@ import com.example.telitodev.entity.Proyecto;
 import com.example.telitodev.entity.ProyectoHasApi;
 import com.example.telitodev.entity.ProyectoHasApiId;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,5 +17,11 @@ public interface ProyectoHasApiRepository extends JpaRepository<ProyectoHasApi, 
     List<ProyectoHasApi> findByProyecto_IdProyecto(Integer id);
 
     ProyectoHasApi findByProyecto_IdProyectoAndApi_IdApi(Integer idProyecto, Integer idApi);
+
+    @Query("SELECT DISTINCT pha.api FROM ProyectoHasApi pha WHERE pha.proyecto IN :proyectos")
+    List<Api> findApisByProyectosIn(@Param("proyectos") List<Proyecto> proyectos);
+
+    @Query("SELECT DISTINCT pha.api FROM ProyectoHasApi pha WHERE pha.proyecto.organizacion.idOrganizacion = :orgId")
+    List<Api> findDistinctApisByOrganizacionId(@Param("orgId") Integer orgId);
 
 }

@@ -11,6 +11,7 @@ import java.util.List;
 @Repository
 public interface ProyectoRepository extends JpaRepository<Proyecto, Integer> {
 
+
     List<Proyecto> findByOrganizacion_Usuarios_Dni(@Param("dni") String dni);
 
     List<Proyecto> findByActivoAndOrganizacion_Usuarios_Dni(Boolean activo, String organizacion_usuarios_dni);
