@@ -120,6 +120,32 @@ public class GestionApisController extends BaseController {
         return "desarrollador/interno/crearVersionApi";
     }
 
+    @PostMapping("/guardarVersionApi")
+    public String guardarVersionApi(Model model, Authentication auth, HttpSession session, @ModelAttribute VersionApi versionApi, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+        Usuario usuario = getCurrentUser(auth, session);
+        model.addAttribute("usuario", usuario);
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
+
+        Optional<Api> apiX = apiRepository.findById(versionApi.getApi().getIdApi());
+        if (apiX.isPresent() && apiX.get().getUsuario().equals(usuario)) {
+            Api api = apiX.get();
+
+            if (bindingResult.hasErrors()) {
+                return "desarrollador/interno/crearVersionApi";
+            }
+
+            versionApiRepository.save(versionApi);
+
+            redirectAttributes.addFlashAttribute("msg", "Creaste la primera version de tu API "+api.getNombre()+" exitosamente");
+
+            return "redirect:/dev/int/"+api.getIdApi()+"/versiones/"+versionApi.getIdVersion()+"/contrato";
+
+        } else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo guardar la version");
+    }
+
+
+
 
     @GetMapping("{idApi}/versiones")
     public String verVersionesApi(Model model, Authentication auth, HttpSession session, @PathVariable("idApi") String idApi) {

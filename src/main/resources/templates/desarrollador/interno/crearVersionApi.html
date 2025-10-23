@@ -53,8 +53,8 @@
                                 <div class="card-subtitle">Defina la primera versión de su API</div>
                             </div>
                             <div class="card-body">
-                                <form th:action="@{/dev/int/versionado/guardar}" th:object="${version}" method="post">
-                                    <input type="hidden" th:field="*{api}"/>
+                                <form th:action="@{/dev/int/guardarVersionApi}" th:object="${version}" method="post">
+                                    <input type="hidden" th:field="*{api.idApi}"/>
 
                                     <div class="row">
                                         <div class="col-md-6">
@@ -161,7 +161,7 @@
                                                 <a th:href="@{/apis}" class="btn btn-ghost-secondary me-2">
                                                     <i class="fas fa-times me-2"></i>Cancelar
                                                 </a>
-                                                <button type="submit" class="btn btn-primary">
+                                                <button type="submit" class="btn btn-primary" disabled>
                                                     <i class="fas fa-save me-2"></i>Guardar y Continuar al Contrato
                                                 </button>
                                             </div>
