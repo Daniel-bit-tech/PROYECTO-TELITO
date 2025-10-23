@@ -99,6 +99,14 @@ public class Api {
         this.endpointUrl = endpointUrl;
     }
 
+    public Api(String nombre, String descripcion, Dominio dominio, Tag tag, String endpointUrl) {
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.dominio = dominio;
+        this.tag = tag;
+        this.endpointUrl = endpointUrl;
+    }
+
     @Override
     public String toString() {
         return nombre;  // O cualquier otro atributo que quieras mostrar, como 'descripcion'

@@ -155,12 +155,9 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         // Obtener rol por defecto para usuarios externos - manejo de duplicados
         Rol rolDefault;
         try {
-            List<Rol> rolesDeveloper = rolRepository.findAll().stream()
-                .filter(r -> DEFAULT_EXTERNAL_ROLE.equals(r.getNombreRol()))
-                .collect(java.util.stream.Collectors.toList());
-                
-            if (!rolesDeveloper.isEmpty()) {
-                rolDefault = rolesDeveloper.get(0); // Usar el primer DEVELOPER encontrado
+            Optional<Rol> rolExt = rolRepository.findByNombreRol(DEFAULT_EXTERNAL_ROLE);
+            if (rolExt.isPresent()) {
+                rolDefault = rolExt.get(); // Usar rol DEVELOPER por defecto para usuarios externos
             } else {
                 // Fallback: buscar cualquier rol disponible
                 Optional<Rol> fallbackRole = rolRepository.findById(2); // DEV como fallback

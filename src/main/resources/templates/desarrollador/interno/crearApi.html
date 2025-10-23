@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TELITO PORTAL | Crear API</title>
+
+  <!-- CSRF Token -->
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+
+  <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
+  <link href="/tabler/dist/css/tabler-flags.css" rel="stylesheet"/>
+  <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
+  <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet"/>
+  <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="/tabler/dist/js/tabler-theme.min.js"></script>
+</head>
+<body>
+<div class="page">
+
+  <div th:replace="desarrollador/header.html :: header"></div>
+
+  <div class="page-wrapper">
+    <div class="page-body">
+      <div class="container-xl">
+
+        <!-- Header con información del paso -->
+        <div class="page-header">
+          <div class="row align-items-center">
+            <div class="col">
+              <h1 class="page-title">Crear Nueva API</h1>
+              <div class="page-pretitle">Paso 1: Información Básica</div>
+            </div>
+            <div class="col-auto">
+              <div class="btn-list">
+                <span class="badge bg-blue-lt">Paso 1 de 5</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">
+                  <i class="fas fa-info-circle me-2 text-blue"></i>
+                  Información Básica
+                </h3>
+                <div class="card-subtitle">Complete los datos fundamentales de la API</div>
+              </div>
+              <div class="card-body">
+                <form th:action="@{/dev/int/guardarApi}" th:object="${apiDto}" method="post">
+                  <div class="row">
+                    <div class="col-md-6">
+                      <!-- Nombre -->
+                      <div class="mb-3">
+                        <label class="form-label required">Nombre de la API</label>
+                        <input type="text" th:field="*{nombre}" class="form-control"
+                               placeholder="Ej: API de Gestión de Usuarios" required maxlength="150">
+                        <small class="form-hint">Nombre único y descriptivo para identificar la API</small>
+                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <!-- Endpoint base -->
+                      <div class="mb-3">
+                        <label class="form-label">Endpoint Base</label>
+                        <input type="text" th:field="*{endpointURL}" class="form-control"
+                               placeholder="https://api.miempresa.com/v1">
+                        <small class="form-hint">URL base donde estará disponible la API</small>
+                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('endpointURL')}" th:errors="*{endpointURL}"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Descripción -->
+                  <div class="mb-3">
+                    <label class="form-label required">Descripción</label>
+                    <textarea th:field="*{descripcion}" class="form-control" rows="4"
+                              placeholder="Describa el propósito y funcionalidades principales de la API..." required></textarea>
+                    <small class="form-hint">Explique claramente qué hace esta API y para qué casos se usa</small>
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"></div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-md-6">
+                      <!-- Dominio -->
+                      <div class="mb-3">
+                        <label class="form-label required">Dominio</label>
+                        <select th:field="*{dominio}" class="form-select" required>
+                          <option value="" disabled selected>Seleccione un dominio</option>
+                          <option th:each="dom : ${listaDominios}"
+                                  th:value="${dom.idDominio}"
+                                  th:text="${dom.nombre}"></option>
+                        </select>
+                        <small class="form-hint">Área funcional principal de la API</small>
+                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('dominio')}" th:errors="*{dominio}"></div>
+                      </div>
+                    </div>
+                    <div class="col-md-6">
+                      <!-- Tag -->
+                      <div class="mb-3">
+                        <label class="form-label required">Tag</label>
+                        <select th:field="*{tag}" class="form-select" required>
+                          <option value="" disabled selected>Seleccione un tag</option>
+                          <option th:each="tag : ${listaTags}"
+                                  th:value="${tag.idTag}"
+                                  th:text="${tag.nombre}"></option>
+                        </select>
+                        <small class="form-hint">Categoría para clasificar y organizar la API</small>
+                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('tag')}" th:errors="*{tag}"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Información de ayuda -->
+                  <div class="alert alert-info mt-4">
+                    <div class="d-flex">
+                      <div class="me-3">
+                        <i class="fas fa-lightbulb fa-lg text-info"></i>
+                      </div>
+                      <div>
+                        <h4 class="alert-title">Consejos para una buena API</h4>
+                        <ul class="mb-0">
+                          <li>Use nombres descriptivos y consistentes</li>
+                          <li>Describa claramente el propósito y casos de uso</li>
+                          <li>Seleccione el dominio y tag correctos para facilitar su búsqueda y visualización</li>
+                          <li>La URL base debe seguir convenciones REST</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Botones -->
+                  <div class="form-footer">
+                    <div class="btn-list justify-content-end">
+                      <a th:href="@{/apis}" class="btn btn-ghost-secondary">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                      </a>
+                      <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>Guardar y Continuar
+                      </button>
+                    </div>
+                  </div>
+
+                </form>
+              </div>
+            </div>
+
+            <!-- Información de los siguientes pasos -->
+            <div class="row mt-4">
+              <div class="col-md-4">
+                <div class="card card-sm">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
+                        <span class="bg-blue text-white avatar">
+                          <i class="fas fa-file-contract"></i>
+                        </span>
+                      </div>
+                      <div class="col">
+                        <div class="font-weight-medium">Paso 2: Versionado</div>
+                        <div class="text-secondary">Configurar versión inicial</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card card-sm">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
+                        <span class="bg-green text-white avatar">
+                          <i class="fas fa-book"></i>
+                        </span>
+                      </div>
+                      <div class="col">
+                        <div class="font-weight-medium">Paso 3: Contrato</div>
+                        <div class="text-secondary">Especificación OpenAPI</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="card card-sm">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-auto">
+                        <span class="bg-orange text-white avatar">
+                          <i class="fas fa-code-branch"></i>
+                        </span>
+                      </div>
+                      <div class="col">
+                        <div class="font-weight-medium">Paso 4: Documentación</div>
+                        <div class="text-secondary">Guías y ejemplos</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-placeholder"></div>
+</div>
+
+<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/tabler/dist/js/tabler.min.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Validación y mejora de la experiencia de usuario
+    const form = document.querySelector('form');
+    const descripcionTextarea = document.querySelector('textarea[th\\:field="*{descripcion}"]');
+
+    // Contador de caracteres para descripción
+    if (descripcionTextarea) {
+      descripcionTextarea.addEventListener('input', function() {
+        const count = this.value.length;
+        const hint = this.parentElement.querySelector('.form-hint');
+        if (hint) {
+          const baseText = 'Explique claramente qué hace esta API y para qué casos se usa';
+          hint.textContent = `${baseText} (${count} caracteres)`;
+        }
+      });
+    }
+
+    // Validación antes del envío
+    form.addEventListener('submit', function(e) {
+      const requiredFields = form.querySelectorAll('[required]');
+      let isValid = true;
+      let errorMessages = [];
+
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          isValid = false;
+          const label = field.closest('.mb-3').querySelector('.form-label');
+          errorMessages.push(`• ${label.textContent.trim()} es requerido`);
+        }
+      });
+
+      if (!isValid) {
+        e.preventDefault();
+        alert('Por favor complete todos los campos requeridos:\n\n' + errorMessages.join('\n'));
+      }
+    });
+  });
+</script>
+</body>
+</html>
