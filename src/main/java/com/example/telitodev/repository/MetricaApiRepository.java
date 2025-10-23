@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -58,6 +59,15 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
 
     @Query("SELECT COALESCE(AVG(m.latenciaPromedio), 0) FROM MetricaApi m")
     Double avgLatencia();
+
+    @Query("SELECT COALESCE(SUM(m.llamadas), 0) FROM MetricaApi m")
+    Long sumLlamadasGlobal();
+
+    @Query("SELECT COALESCE(SUM(m.errores), 0) FROM MetricaApi m")
+    Long sumErroresGlobal();
+
+    @Query("SELECT COALESCE(AVG(m.latenciaPromedio), 0.0) FROM MetricaApi m")
+    Double avgLatenciaGlobal();
 
     /* ---- (d) Donut: Éxito vs Errores ---- */
     @Query("""
@@ -201,5 +211,90 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
 
 
     List<MetricaApi> findByApiIn(List<Api> apis);
+
+    //=============================================================================================
+    // --- NUEVOS MÉTODOS PARA CÁLCULOS POR RANGO ---
+
+
+    @Query("""
+        SELECT COALESCE(AVG(m.latenciaPromedio), 0.0)
+        FROM MetricaApi m
+        WHERE m.latenciaPromedio IS NOT NULL
+          AND (:start IS NULL OR m.fecha >= :start)
+          AND (:end IS NULL OR m.fecha < :end)
+          AND (:idApi IS NULL OR m.api.idApi = :idApi)
+          AND (:idEntorno IS NULL OR m.entorno.idEntorno = :idEntorno)
+    """)
+    Double avgLatenciaBetween(
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end,
+            @Param("idApi") Integer idApi,
+            @Param("idEntorno") Integer idEntorno
+    );
+
+    @Query("""
+        SELECT COALESCE(SUM(m.llamadas), 0L)
+        FROM MetricaApi m
+        WHERE m.llamadas IS NOT NULL
+          AND (:start IS NULL OR m.fecha >= :start)
+          AND (:end IS NULL OR m.fecha < :end)
+          AND (:idApi IS NULL OR m.api.idApi = :idApi)
+          AND (:idEntorno IS NULL OR m.entorno.idEntorno = :idEntorno)
+    """)
+    Long sumLlamadasBetween(
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end,
+            @Param("idApi") Integer idApi,
+            @Param("idEntorno") Integer idEntorno
+    );
+
+    @Query("""
+        SELECT COALESCE(SUM(m.errores), 0L)
+        FROM MetricaApi m
+        WHERE m.errores IS NOT NULL
+          AND (:start IS NULL OR m.fecha >= :start)
+          AND (:end IS NULL OR m.fecha < :end)
+          AND (:idApi IS NULL OR m.api.idApi = :idApi)
+          AND (:idEntorno IS NULL OR m.entorno.idEntorno = :idEntorno)
+    """)
+    Long sumErroresBetween(
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end,
+            @Param("idApi") Integer idApi,
+            @Param("idEntorno") Integer idEntorno
+    );
+
+    @Query("""
+        SELECT COALESCE(SUM(m.costo), 0.0)
+        FROM MetricaApi m
+        WHERE m.costo IS NOT NULL
+          AND (:start IS NULL OR m.fecha >= :start)
+          AND (:end IS NULL OR m.fecha < :end)
+          AND (:idApi IS NULL OR m.api.idApi = :idApi)
+          AND (:idEntorno IS NULL OR m.entorno.idEntorno = :idEntorno)
+    """)
+    BigDecimal sumCostoBetween( // Usar BigDecimal para costos
+                                @Param("start") Timestamp start,
+                                @Param("end") Timestamp end,
+                                @Param("idApi") Integer idApi,
+                                @Param("idEntorno") Integer idEntorno
+    );
+
+    @Query(value = """
+        SELECT COUNT(DISTINCT DATE_FORMAT(m.fecha, '%Y-%m-%d %H:%i'))
+        FROM metricaapi m
+        WHERE m.llamadas > 0
+          AND (:start IS NULL OR m.fecha >= :start)
+          AND (:end IS NULL OR m.fecha < :end)
+          AND (:idApi IS NULL OR m.idAPI = :idApi)
+          AND (:idEntorno IS NULL OR m.idEntorno = :idEntorno)
+    """, nativeQuery = true)
+    Long countMinutesWithCallsBetween(
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end,
+            @Param("idApi") Integer idApi,
+            @Param("idEntorno") Integer idEntorno
+    );
+
 }
 

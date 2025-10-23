@@ -17,15 +17,16 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
+    <!-- Estilos (Incluyendo clases actualizadas) -->
     <style>
         .metrics-container{max-width:1400px;margin:0 auto;padding:0 1rem;}
         .metrics-header{padding:2rem 0 1rem;margin-bottom:1rem;}
         .metrics-title{font-size:1.875rem;font-weight:700;margin-bottom:.5rem;}
         .metrics-subtitle{color:var(--tblr-secondary-color);margin-bottom:1.5rem;}
 
-        .filters-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding:1rem;background:var(--tblr-bg-surface-secondary);border-radius:8px;}
+        .filters-bar{display:flex; flex-wrap: wrap; /* Para responsiveness */ justify-content:space-between;align-items:center;margin-bottom:1.5rem;padding:1rem;background:var(--tblr-bg-surface-secondary);border-radius:8px; gap: 1rem;}
         .filter-group{display:flex;align-items:center;gap:1rem;}
-        .filter-select,.date-input{padding:.5rem;border:1px solid var(--tblr-border-color);border-radius:4px;background:var(--tblr-bg-surface);color:var(--tblr-body-color);}
+        .filter-select,.date-input{padding:.5rem;border:1px solid var(--tblr-border-color);border-radius:4px;background:var(--tblr-bg-surface);color:var(--tblr-body-color); min-width: 150px; /* Ancho mínimo */}
         .date-range{display:flex;align-items:center;gap:.5rem;}
 
         .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.25rem;margin-bottom:1.5rem;}
@@ -36,12 +37,14 @@
         .metric-change{display:flex;align-items:center;gap:.35rem;font-size:.875rem}
         .change-positive{color:var(--tblr-success);}
         .change-negative{color:var(--tblr-danger);}
+        .change-neutral {color: var(--tblr-secondary-color);} /* Para cambios cero */
 
         .charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;margin-bottom:1.5rem;}
         .chart-container,.alerts-container{background:var(--tblr-bg-surface);border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);padding:1.25rem;}
         .chart-header,.alerts-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
         .chart-title,.alerts-title{font-weight:600;font-size:1.125rem;color:var(--tblr-body-color);}
         .chart-canvas{position:relative;height:320px;width:100%;}
+        .no-data { text-align: center; color: var(--tblr-secondary-color); padding: 2rem; } /* Para tablas vacías */
 
         .alert-list .alert-item{display:flex;align-items:center;gap:.75rem;padding:1rem;border-bottom:1px solid var(--tblr-border-color);}
         .alert-item:last-child{border-bottom:0;}
@@ -54,34 +57,27 @@
         .alert-description{font-size:.875rem;color:var(--tblr-secondary-color);}
         .alert-time{font-size:.75rem;color:var(--tblr-secondary-color);white-space:nowrap;}
 
-        /* Tabla a ancho uniforme usando la misma tarjeta */
+        /* Tabla a ancho uniforme */
         .table-card .card-body{padding:0;}
         .table-card table{width:100%;}
         .status-indicator{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:.5rem;}
+        .status-error{background:var(--tblr-danger);}
         .status-warning{background:var(--tblr-warning);}
         .status-success{background:var(--tblr-success);}
+        .status-stable{background:var(--tblr-success);} /* Nuevo estado */
+        .status-degraded{background:var(--tblr-warning);} /* Nuevo estado */
 
-        /* Indicadores de carga */
-        .loading-indicator {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            color: var(--tblr-secondary-color);
-        }
-        .loading-indicator.active {
-            display: block;
-        }
-        .chart-error {
-            display: none;
-            text-align: center;
-            padding: 20px;
-            color: var(--tblr-danger);
-        }
-        .chart-error.active {
-            display: block;
-        }
+        /* Indicadores de carga/error */
+        .loading-indicator, .chart-error, .no-chart-data { display: none; text-align: center; padding: 20px; color: var(--tblr-secondary-color); }
+        .chart-error { color: var(--tblr-danger); }
+        .loading-indicator.active, .chart-error.active, .no-chart-data.active { display: block; }
 
         @media (max-width:1024px){.charts-grid{grid-template-columns:1fr;}}
+        @media (max-width: 768px) { /* Mejoras responsivas para filtros */
+            .filters-bar { flex-direction: column; align-items: stretch; }
+            .filter-group, .date-range { flex-direction: column; width: 100%; align-items: stretch; }
+            .filter-select, .date-input { width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -103,88 +99,104 @@
 
             <!-- KPIs -->
             <div class="metrics-grid">
+                <!-- Total Requests -->
                 <div class="metric-card">
-                    <div class="metric-header">
-                        <h3 class="metric-title"><i class="fas fa-bolt"></i> Total de Requests</h3>
+                    <div class="metric-header"><h3 class="metric-title"><i class="fas fa-bolt"></i> Total de Requests</h3></div>
+                    <div class="metric-value" th:text="${#numbers.formatDecimal(totalLlamadas,0,'POINT',0,'COMMA')} ?: '0'">0</div>
+                    <div class="metric-change" th:classappend="${(totalLlamadasChange ?: 0.0) > 0.0 ? 'change-positive' : ((totalLlamadasChange ?: 0.0) < 0.0 ? 'change-negative' : 'change-neutral')}">
+                        <i th:classappend="${(totalLlamadasChange ?: 0.0) > 0.0 ? 'fas fa-arrow-up' : ((totalLlamadasChange ?: 0.0) < 0.0 ? 'fas fa-arrow-down' : 'fas fa-minus')}"></i>
+                        <span th:text="|${(totalLlamadasChange ?: 0.0) >= 0.0 ? '+' : ''}${ #numbers.formatDecimal(totalLlamadasChange ?: 0.0, 1, 1) }%|">+0.0%</span>
                     </div>
-                    <div class="metric-value" th:text="${#numbers.formatDecimal(totalLlamadas,0,'POINT',0,'COMMA')}">0</div>
-                    <div class="metric-change change-positive"><i class="fas fa-arrow-up"></i> +12.5%</div>
                 </div>
 
+                <!-- Latencia Promedio -->
                 <div class="metric-card">
-                    <div class="metric-header">
-                        <h3 class="metric-title"><i class="fas fa-clock"></i> Latencia Promedio</h3>
+                    <div class="metric-header"><h3 class="metric-title"><i class="fas fa-clock"></i> Latencia Promedio</h3></div>
+                    <div class="metric-value"><span th:text="${latenciaPromedio} ?: '0'">0</span> ms</div>
+                    <div class="metric-change" th:classappend="${(latenciaPromedioChange ?: 0.0) > 0.0 ? 'change-negative' : ((latenciaPromedioChange ?: 0.0) < 0.0 ? 'change-positive' : 'change-neutral')}"> <!-- Invertido -->
+                        <i th:classappend="${(latenciaPromedioChange ?: 0.0) > 0.0 ? 'fas fa-arrow-up' : ((latenciaPromedioChange ?: 0.0) < 0.0 ? 'fas fa-arrow-down' : 'fas fa-minus')}"></i>
+                        <span th:text="|${(latenciaPromedioChange ?: 0.0) >= 0.0 ? '+' : ''}${ #numbers.formatDecimal(latenciaPromedioChange ?: 0.0, 1, 1) }%|">+0.0%</span>
                     </div>
-                    <div class="metric-value"><span th:text="${latenciaPromedio}">0</span> ms</div>
-                    <div class="metric-change change-negative"><i class="fas fa-arrow-down"></i> -8.3%</div>
                 </div>
 
+                <!-- Tasa de Éxito -->
                 <div class="metric-card">
-                    <div class="metric-header">
-                        <h3 class="metric-title"><i class="fas fa-check-circle"></i> Tasa de Éxito</h3>
+                    <div class="metric-header"><h3 class="metric-title"><i class="fas fa-check-circle"></i> Tasa de Éxito</h3></div>
+                    <div class="metric-value"><span th:text="${tasaExito} ?: '100.0'">100.0</span>%</div>
+                    <div class="metric-change" th:classappend="${(tasaExitoChange ?: 0.0) > 0.0 ? 'change-positive' : ((tasaExitoChange ?: 0.0) < 0.0 ? 'change-negative' : 'change-neutral')}">
+                        <i th:classappend="${(tasaExitoChange ?: 0.0) > 0.0 ? 'fas fa-arrow-up' : ((tasaExitoChange ?: 0.0) < 0.0 ? 'fas fa-arrow-down' : 'fas fa-minus')}"></i>
+                        <span th:text="|${(tasaExitoChange ?: 0.0) >= 0.0 ? '+' : ''}${ #numbers.formatDecimal(tasaExitoChange ?: 0.0, 1, 1) }pp|">+0.0pp</span>
                     </div>
-                    <div class="metric-value"><span th:text="${tasaExito}">0</span>%</div>
-                    <div class="metric-change change-positive"><i class="fas fa-arrow-up"></i> +2.1%</div>
                 </div>
 
+                <!-- Tasa de Error -->
                 <div class="metric-card">
-                    <div class="metric-header">
-                        <h3 class="metric-title"><i class="fas fa-exclamation-triangle"></i> Tasa de Error</h3>
+                    <div class="metric-header"><h3 class="metric-title"><i class="fas fa-exclamation-triangle"></i> Tasa de Error</h3></div>
+                    <div class="metric-value"><span th:text="${tasaError} ?: '0.0'">0.0</span>%</div>
+                    <div class="metric-change" th:classappend="${(tasaErrorChange ?: 0.0) > 0.0 ? 'change-negative' : ((tasaErrorChange ?: 0.0) < 0.0 ? 'change-positive' : 'change-neutral')}"> <!-- Invertido -->
+                        <i th:classappend="${(tasaErrorChange ?: 0.0) > 0.0 ? 'fas fa-arrow-up' : ((tasaErrorChange ?: 0.0) < 0.0 ? 'fas fa-arrow-down' : 'fas fa-minus')}"></i>
+                        <span th:text="|${(tasaErrorChange ?: 0.0) >= 0.0 ? '+' : ''}${ #numbers.formatDecimal(tasaErrorChange ?: 0.0, 1, 1) }pp|">+0.0pp</span>
                     </div>
-                    <div class="metric-value"><span th:text="${tasaError}">0</span>%</div>
-                    <div class="metric-change change-negative"><i class="fas fa-arrow-down"></i> -15.7%</div>
                 </div>
 
-                <!-- NUEVOS KPIs -->
+                <!-- Throughput -->
                 <div class="metric-card">
-                    <div class="metric-header">
-                        <h3 class="metric-title"><i class="fas fa-tachometer-alt"></i> Throughput</h3>
+                    <div class="metric-header"><h3 class="metric-title"><i class="fas fa-tachometer-alt"></i> Throughput</h3></div>
+                    <div class="metric-value"><span th:text="${throughput} ?: '0.00'">0.00</span> req/min</div>
+                    <div class="metric-change" th:classappend="${(throughputChange ?: 0.0) > 0.0 ? 'change-positive' : ((throughputChange ?: 0.0) < 0.0 ? 'change-negative' : 'change-neutral')}">
+                        <i th:classappend="${(throughputChange ?: 0.0) > 0.0 ? 'fas fa-arrow-up' : ((throughputChange ?: 0.0) < 0.0 ? 'fas fa-arrow-down' : 'fas fa-minus')}"></i>
+                        <span th:text="|${(throughputChange ?: 0.0) >= 0.0 ? '+' : ''}${ #numbers.formatDecimal(throughputChange ?: 0.0, 1, 1) }%|">+0.0%</span>
                     </div>
-                    <div class="metric-value"><span th:text="${throughput}">0</span> req/min</div>
-                    <div class="metric-change change-positive"><i class="fas fa-arrow-up"></i> +18.4%</div>
                 </div>
 
+                <!-- Disponibilidad -->
                 <div class="metric-card">
-                    <div class="metric-header">
-                        <h3 class="metric-title"><i class="fas fa-shield-alt"></i> Disponibilidad</h3>
+                    <div class="metric-header"><h3 class="metric-title"><i class="fas fa-shield-alt"></i> Disponibilidad</h3></div>
+                    <div class="metric-value"><span th:text="${disponibilidad} ?: '100.00'">100.00</span>%</div>
+                    <div class="metric-change" th:classappend="${(disponibilidadChange ?: 0.0) > 0.0 ? 'change-positive' : ((disponibilidadChange ?: 0.0) < 0.0 ? 'change-negative' : 'change-neutral')}">
+                        <i th:classappend="${(disponibilidadChange ?: 0.0) > 0.0 ? 'fas fa-arrow-up' : ((disponibilidadChange ?: 0.0) < 0.0 ? 'fas fa-arrow-down' : 'fas fa-minus')}"></i>
+                        <span th:text="|${(disponibilidadChange ?: 0.0) >= 0.0 ? '+' : ''}${ #numbers.formatDecimal(disponibilidadChange ?: 0.0, 1, 1) }pp|">+0.0pp</span>
                     </div>
-                    <div class="metric-value"><span th:text="${disponibilidad}">0</span>%</div>
-                    <div class="metric-change change-positive"><i class="fas fa-arrow-up"></i> +0.8%</div>
                 </div>
 
+                <!-- Costo Total -->
                 <div class="metric-card">
-                    <div class="metric-header">
-                        <h3 class="metric-title"><i class="fas fa-dollar-sign"></i> Costo Total</h3>
+                    <div class="metric-header"><h3 class="metric-title"><i class="fas fa-dollar-sign"></i> Costo Total</h3></div>
+                    <div class="metric-value">$<span th:text="${costoTotal} ?: '0.00'">0.00</span></div>
+                    <div class="metric-change" th:classappend="${(costoTotalChange ?: 0.0) > 0.0 ? 'change-negative' : ((costoTotalChange ?: 0.0) < 0.0 ? 'change-positive' : 'change-neutral')}"> <!-- Invertido -->
+                        <i th:classappend="${(costoTotalChange ?: 0.0) > 0.0 ? 'fas fa-arrow-up' : ((costoTotalChange ?: 0.0) < 0.0 ? 'fas fa-arrow-down' : 'fas fa-minus')}"></i>
+                        <span th:text="|${(costoTotalChange ?: 0.0) >= 0.0 ? '+' : ''}${ #numbers.formatDecimal(costoTotalChange ?: 0.0, 1, 1) }%|">+0.0%</span>
                     </div>
-                    <div class="metric-value">$<span th:text="${costoTotal}">0</span></div>
-                    <div class="metric-change change-negative"><i class="fas fa-arrow-up"></i> +5.2%</div>
                 </div>
 
+                <!-- APIs Activas -->
                 <div class="metric-card">
-                    <div class="metric-header">
-                        <h3 class="metric-title"><i class="fas fa-server"></i> APIs Activas</h3>
+                    <div class="metric-header"><h3 class="metric-title"><i class="fas fa-server"></i> APIs Activas (Org)</h3></div>
+                    <div class="metric-value" th:text="${totalApisActivas} ?: '0'">0</div>
+                    <div class="metric-change change-neutral">
+                        <i class="fas fa-minus"></i>
+                        <span th:text="${totalApisActivasChange} ?: '+0'">+0</span>
                     </div>
-                    <div class="metric-value" th:text="${#lists.size(topApis)}">0</div>
-                    <div class="metric-change change-positive"><i class="fas fa-arrow-up"></i> +1 API</div>
                 </div>
             </div>
 
-            <!-- Filtros -->
+            <!-- Filtros (Ahora dinámicos) -->
             <div class="filters-bar">
                 <div class="filter-group">
                     <select class="filter-select" id="api-select">
-                        <option value="all">Todas las APIs</option>
-                        <option value="1">API de Usuarios</option>
-                        <option value="2">API de Pagos</option>
-                        <option value="3">API de Productos</option>
-                        <option value="4">API de Pedidos</option>
+                        <option value="all">Todas las APIs (Organización)</option>
+                        <!-- Opciones de API generadas dinámicamente -->
+                        <option th:each="api : ${listaApis}"
+                                th:value="${api.idApi}"
+                                th:text="${api.nombre}">Nombre API</option>
                     </select>
 
                     <select class="filter-select" id="environment-select">
                         <option value="all">Todos los entornos</option>
-                        <option value="1">Producción</option>
-                        <option value="2">QA</option>
-                        <option value="3">Desarrollo</option>
+                        <!-- Opciones de Entorno generadas dinámicamente -->
+                        <option th:each="entorno : ${listaEntornos}"
+                                th:value="${entorno.idEntorno}"
+                                th:text="${entorno.nombre}">Nombre Entorno</option>
                     </select>
                 </div>
 
@@ -199,50 +211,39 @@
             <div class="charts-grid">
                 <!-- Barras: Latencia promedio por API -->
                 <div class="chart-container">
-                    <div class="chart-header">
-                        <h3 class="chart-title">Latencia por API (ms)</h3>
-                    </div>
+                    <div class="chart-header"><h3 class="chart-title">Latencia por API (ms)</h3></div>
                     <div class="chart-canvas">
-                        <div id="latency-loading" class="loading-indicator">
-                            <i class="fas fa-spinner fa-spin"></i> Cargando datos de latencia...
-                        </div>
-                        <div id="latency-error" class="chart-error">
-                            <i class="fas fa-exclamation-triangle"></i> Error al cargar los datos de latencia
-                        </div>
+                        <div id="latency-loading" class="loading-indicator"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
+                        <div id="latency-error" class="chart-error"><i class="fas fa-exclamation-triangle"></i> Error al cargar datos.</div>
+                        <div id="latency-no-data" class="no-chart-data"><i class="fas fa-chart-bar"></i> No hay datos de latencia para mostrar.</div>
                         <canvas id="latencyChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Alertas (estático de ejemplo) -->
+                <!-- Alertas (Ahora dinámicas) -->
                 <div class="alerts-container">
                     <div class="alerts-header">
                         <h3 class="alerts-title">Alertas Recientes</h3>
-                        <button class="btn btn-sm btn-outline-primary" type="button">Ver todas</button>
+                        <!-- <button class="btn btn-sm btn-outline-primary" type="button">Ver todas</button> -->
                     </div>
                     <div class="alert-list">
-                        <div class="alert-item">
-                            <div class="alert-icon alert-icon-error"><i class="fas fa-exclamation-circle"></i></div>
-                            <div class="alert-content">
-                                <div class="alert-title">Aumento de errores 5xx en API de Pagos</div>
-                                <div class="alert-description">Tasa de error subió del 0.5% al 3.2% (30 min)</div>
+                        <!-- Iterar sobre alertas reales -->
+                        <th:block th:if="${not #lists.isEmpty(alertasRecientes)}">
+                            <div class="alert-item" th:each="alerta : ${alertasRecientes}">
+                                <div class="alert-icon" th:classappend="|alert-icon-${alerta.tipo()}|">
+                                    <i th:classappend="${alerta.tipo() == 'error' ? 'fas fa-exclamation-circle' : (alerta.tipo() == 'warning' ? 'fas fa-clock' : 'fas fa-info-circle')}"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <div class="alert-title" th:text="${alerta.titulo()}">Título Alerta</div>
+                                    <div class="alert-description" th:text="${alerta.descripcion()}">Descripción</div>
+                                </div>
+                                <div class="alert-time" th:text="${alerta.tiempo()}">Tiempo</div>
                             </div>
-                            <div class="alert-time">Hace 15 min</div>
-                        </div>
-                        <div class="alert-item">
-                            <div class="alert-icon alert-icon-warning"><i class="fas fa-clock"></i></div>
-                            <div class="alert-content">
-                                <div class="alert-title">Aumento de latencia en API de Usuarios</div>
-                                <div class="alert-description">p95 pasó de 200ms a 450ms</div>
-                            </div>
-                            <div class="alert-time">Hace 2 h</div>
-                        </div>
-                        <div class="alert-item">
-                            <div class="alert-icon alert-icon-info"><i class="fas fa-info-circle"></i></div>
-                            <div class="alert-content">
-                                <div class="alert-title">Patrón de tráfico inusual</div>
-                                <div class="alert-description">+40% requests a API de Productos</div>
-                            </div>
-                            <div class="alert-time">Ayer 16:32</div>
+                        </th:block>
+                        <!-- Mensaje si no hay alertas -->
+                        <div th:if="${#lists.isEmpty(alertasRecientes)}" class="no-data">
+                            <i class="fas fa-bell-slash fa-2x mb-2"></i><br>
+                            No hay alertas recientes.
                         </div>
                     </div>
                 </div>
@@ -250,97 +251,81 @@
 
             <!-- Gráficos de pastel lado a lado -->
             <div class="charts-grid" style="margin-top: 1.5rem;">
-                <!-- Distribución de Status Codes -->
+                <!-- Distribución de Status Codes (Local) -->
                 <div class="chart-container">
-                    <div class="chart-header">
-                        <h3 class="chart-title">Distribución de Status Codes</h3>
-                    </div>
+                    <div class="chart-header"><h3 class="chart-title">Distribución de Status Codes</h3></div>
                     <div class="chart-canvas" style="height:260px">
-                        <canvas id="statusCodesChart"
-                                th:attr="data-exito=${tasaExito},data-error=${tasaError}"></canvas>
+                        <div id="status-no-data" class="no-chart-data"><i class="fas fa-chart-pie"></i> No hay datos de estado para mostrar.</div>
+                        <!-- Usamos los valores formateados del controlador -->
+                        <canvas id="statusCodesChart" th:attr="data-exito=${tasaExito},data-error=${tasaError}"></canvas>
                     </div>
                 </div>
 
-                <!-- Distribución por entorno -->
+                <!-- Distribución por entorno (Dinámico) -->
                 <div class="chart-container">
-                    <div class="chart-header">
-                        <h3 class="chart-title">Distribución de Uso por Entorno</h3>
-                    </div>
+                    <div class="chart-header"><h3 class="chart-title">Distribución de Uso por Entorno</h3></div>
                     <div class="chart-canvas" style="height:260px">
+                        <div id="env-loading" class="loading-indicator"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
+                        <div id="env-error" class="chart-error"><i class="fas fa-exclamation-triangle"></i> Error al cargar datos.</div>
+                        <div id="env-no-data" class="no-chart-data"><i class="fas fa-chart-pie"></i> No hay datos de entorno para mostrar.</div>
                         <canvas id="environmentChart"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- NUEVOS GRÁFICOS -->
-
-            <!-- Throughput por hora -->
+            <!-- NUEVOS GRÁFICOS (Throughput, Tendencia Latencia) -->
             <div class="charts-grid" style="margin-top: 1.5rem;">
+                <!-- Throughput por hora -->
                 <div class="chart-container">
-                    <div class="chart-header">
-                        <h3 class="chart-title">Throughput por Hora (Últimas 24h)</h3>
+                    <div class="chart-header"><h3 class="chart-title">Throughput por Hora (Últimas 24h)</h3></div>
+                    <div class="chart-canvas">
+                        <div id="throughput-loading" class="loading-indicator"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
+                        <div id="throughput-error" class="chart-error"><i class="fas fa-exclamation-triangle"></i> Error al cargar datos.</div>
+                        <div id="throughput-no-data" class="no-chart-data"><i class="fas fa-chart-line"></i> No hay datos de throughput para mostrar.</div>
+                        <canvas id="throughputChart"></canvas>
                     </div>
-                    <div class="chart-canvas"><canvas id="throughputChart"></canvas></div>
                 </div>
 
                 <!-- Tendencia de latencia -->
                 <div class="chart-container">
-                    <div class="chart-header">
-                        <h3 class="chart-title">Tendencia de Latencia (7 días)</h3>
+                    <div class="chart-header"><h3 class="chart-title">Tendencia de Latencia (7 días)</h3></div>
+                    <div class="chart-canvas">
+                        <div id="latency-trend-loading" class="loading-indicator"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
+                        <div id="latency-trend-error" class="chart-error"><i class="fas fa-exclamation-triangle"></i> Error al cargar datos.</div>
+                        <div id="latency-trend-no-data" class="no-chart-data"><i class="fas fa-chart-line"></i> No hay datos de tendencia para mostrar.</div>
+                        <canvas id="latencyTrendChart"></canvas>
                     </div>
-                    <div class="chart-canvas"><canvas id="latencyTrendChart"></canvas></div>
                 </div>
             </div>
 
-            <!-- APIs más utilizadas y Costos -->
+            <!-- APIs más utilizadas y Costos (Tablas Dinámicas) -->
             <div class="charts-grid" style="margin-top: 1.5rem;">
                 <!-- Top APIs Table -->
                 <div class="chart-container table-card">
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">APIs Más Utilizadas</h3>
-                        </div>
+                        <div class="card-header"><h3 class="card-title">APIs Más Utilizadas (Organización)</h3></div>
                         <div class="card-body">
                             <table class="table table-vcenter card-table">
-                                <thead>
-                                <tr>
-                                    <th>API</th>
-                                    <th>Requests</th>
-                                    <th>Latencia (ms)</th>
-                                    <th>Error Rate (%)</th>
-                                </tr>
-                                </thead>
+                                <thead><tr><th>API</th><th>Requests</th><th>Latencia (ms)</th><th>Error Rate (%)</th></tr></thead>
                                 <tbody>
-                                <tr th:each="api : ${topApis}" th:if="${!#lists.isEmpty(topApis)}">
-                                    <td th:text="${api.nombre}">API</td>
-                                    <td th:text="${#numbers.formatDecimal(api.totalRequests,0,'POINT',0,'COMMA')}">0</td>
-                                    <td th:text="${api.avgLatency}">0</td>
+                                <!-- Iterar sobre topApis -->
+                                <tr th:each="api : ${topApis}">
+                                    <td th:text="${api.nombre()}">API</td>
+                                    <td th:text="${#numbers.formatDecimal(api.totalRequests(),0,'POINT',0,'COMMA')}">0</td>
+                                    <td th:text="${api.avgLatency()}">0</td>
                                     <td>
-                                        <span th:text="${#numbers.formatDecimal(api.errorRate,1,'POINT',1,'COMMA')}">0</span>%
-                                        <span th:class="${api.errorRate > 5.0} ? 'badge bg-red ms-1' : 'badge bg-green ms-1'" th:if="${api.errorRate > 1.0}">
-                                            <span th:if="${api.errorRate > 5.0}">Alto</span>
-                                            <span th:if="${api.errorRate <= 5.0 and api.errorRate > 1.0}">Normal</span>
-                                        </span>
+                                        <span th:text="${#numbers.formatDecimal(api.errorRate(),1,'POINT',1,'COMMA')}">0.0</span>%
+                                        <!-- Badge condicional -->
+                                        <span th:if="${api.errorRate() > 1.0}"
+                                              th:classappend="${api.errorRate() > 5.0 ? 'badge bg-red ms-1' : 'badge bg-yellow ms-1'}"
+                                              th:text="${api.errorRate() > 5.0 ? 'Alto' : 'Medio'}"></span>
+                                        <span th:if="${api.errorRate() <= 1.0}"
+                                              class="badge bg-green ms-1">Bajo</span>
                                     </td>
                                 </tr>
-                                <!-- Datos de demostración cuando no hay datos reales -->
+                                <!-- Mensaje si no hay APIs -->
                                 <tr th:if="${#lists.isEmpty(topApis)}">
-                                    <td>API Usuarios</td>
-                                    <td>12,500</td>
-                                    <td>120</td>
-                                    <td>0.4% <span class="badge bg-green ms-1">Bajo</span></td>
-                                </tr>
-                                <tr th:if="${#lists.isEmpty(topApis)}">
-                                    <td>API Inventario</td>
-                                    <td>8,200</td>
-                                    <td>150</td>
-                                    <td>1.2% <span class="badge bg-green ms-1">Normal</span></td>
-                                </tr>
-                                <tr th:if="${#lists.isEmpty(topApis)}">
-                                    <td>API Pagos</td>
-                                    <td>5,800</td>
-                                    <td>200</td>
-                                    <td>0.8% <span class="badge bg-green ms-1">Bajo</span></td>
+                                    <td colspan="4" class="text-center text-muted">No hay datos de uso de APIs para mostrar.</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -351,28 +336,21 @@
                 <!-- Cost Metrics Table -->
                 <div class="chart-container table-card">
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Métricas de Costo por API</h3>
-                        </div>
+                        <div class="card-header"><h3 class="card-title">Métricas de Costo por API (Organización)</h3></div>
                         <div class="card-body">
                             <table class="table table-vcenter card-table">
-                                <thead>
-                                <tr>
-                                    <th>API</th>
-                                    <th>Costo Total</th>
-                                    <th>Costo Promedio</th>
-                                    <th>Requests</th>
-                                </tr>
-                                </thead>
+                                <thead><tr><th>API</th><th>Costo Total</th><th>Costo Promedio</th><th>Requests</th></tr></thead>
                                 <tbody>
+                                <!-- Iterar sobre costosApis -->
                                 <tr th:each="costo : ${costosApis}">
-                                    <td th:text="${costo.nombre}">API</td>
-                                    <td>$<span th:text="${#numbers.formatDecimal(costo.totalCost,2,'POINT',2,'COMMA')}">0.00</span></td>
-                                    <td>$<span th:text="${#numbers.formatDecimal(costo.avgCost,4,'POINT',4,'COMMA')}">0.0000</span></td>
-                                    <td th:text="${#numbers.formatDecimal(costo.requests,0,'POINT',0,'COMMA')}">0</td>
+                                    <td th:text="${costo.nombre()}">API</td>
+                                    <td>$<span th:text="${#numbers.formatDecimal(costo.totalCost(),2,'POINT',2,'COMMA')}">0.00</span></td>
+                                    <td>$<span th:text="${#numbers.formatDecimal(costo.avgCost(),4,'POINT',4,'COMMA')}">0.0000</span></td>
+                                    <td th:text="${#numbers.formatDecimal(costo.requests(),0,'POINT',0,'COMMA')}">0</td>
                                 </tr>
+                                <!-- Mensaje si no hay costos -->
                                 <tr th:if="${#lists.isEmpty(costosApis)}">
-                                    <td colspan="4" class="text-center text-muted">No hay datos de costos disponibles</td>
+                                    <td colspan="4" class="text-center text-muted">No hay datos de costos disponibles.</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -381,40 +359,29 @@
                 </div>
             </div>
 
-            <!-- Tabla: Rendimiento por API (ancho uniforme) -->
+            <!-- Tabla: Rendimiento por API (Ahora dinámica, usando topApis) -->
             <div class="chart-container table-card" style="margin-top:1.25rem">
                 <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Rendimiento por API</h3>
-                    </div>
+                    <div class="card-header"><h3 class="card-title">Rendimiento por API (Organización)</h3></div>
                     <div class="card-body">
                         <table class="table table-vcenter card-table">
-                            <thead>
-                            <tr>
-                                <th>API</th>
-                                <th>Estado</th>
-                                <th>Requests</th>
-                                <th>Latencia (ms)</th>
-                            </tr>
-                            </thead>
+                            <thead><tr><th>API</th><th>Estado</th><th>Requests</th><th>Latencia (ms)</th></tr></thead>
                             <tbody>
-                            <tr>
-                                <td>API Usuarios</td>
-                                <td><span class="status-indicator status-warning"></span> Con problemas</td>
-                                <td>12,000</td>
-                                <td>120</td>
+                            <!-- Iterar sobre rendimientoApis (que ahora es topApis) -->
+                            <tr th:each="apiPerf : ${rendimientoApis}">
+                                <td th:text="${apiPerf.nombre()}">API</td>
+                                <td>
+                                    <!-- Lógica de Estado (Ejemplo basado en errorRate) -->
+                                    <span class="status-indicator"
+                                          th:classappend="${apiPerf.errorRate() > 5.0 ? 'status-error' : (apiPerf.errorRate() > 1.0 ? 'status-warning' : 'status-success')}"></span>
+                                    <span th:text="${apiPerf.errorRate() > 5.0 ? 'Con Problemas' : (apiPerf.errorRate() > 1.0 ? 'Degradado' : 'Estable')}">Estable</span>
+                                </td>
+                                <td th:text="${#numbers.formatDecimal(apiPerf.totalRequests(),0,'POINT',0,'COMMA')}">0</td>
+                                <td th:text="${apiPerf.avgLatency()}">0</td>
                             </tr>
-                            <tr>
-                                <td>API Pagos</td>
-                                <td><span class="status-indicator status-warning"></span> Con problemas</td>
-                                <td>5,000</td>
-                                <td>200</td>
-                            </tr>
-                            <tr>
-                                <td>API Productos</td>
-                                <td><span class="status-indicator status-success"></span> Estable</td>
-                                <td>8,000</td>
-                                <td>150</td>
+                            <!-- Mensaje si no hay datos -->
+                            <tr th:if="${#lists.isEmpty(rendimientoApis)}">
+                                <td colspan="4" class="text-center text-muted">No hay datos de rendimiento para mostrar.</td>
                             </tr>
                             </tbody>
                         </table>
@@ -433,26 +400,34 @@
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
 <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
 
-<!-- Script principal -->
+<!-- Script principal (Actualizado para manejar estados vacíos/error en JS) -->
 <script th:inline="javascript">
-    // URLs seguras con Thymeleaf (si usas contextPath)
+    // URLs seguras con Thymeleaf
     const CHART_URL = /*[[@{/po/KPIs/chart}]]*/ '/po/KPIs/chart';
     const THROUGHPUT_URL = /*[[@{/po/KPIs/throughput-hour}]]*/ '/po/KPIs/throughput-hour';
     const LATENCY_TREND_URL = /*[[@{/po/KPIs/latency-trend}]]*/ '/po/KPIs/latency-trend';
     const ENV_USAGE_URL = /*[[@{/po/KPIs/environment-usage}]]*/ '/po/KPIs/environment-usage';
 
+    // Guardar referencias a los gráficos para actualizarlos/destruirlos
+    window._charts = {};
+
     document.addEventListener('DOMContentLoaded', () => {
         console.log('Inicializando dashboard de KPIs...');
         initLatencyBarsByApi();
-        initStatusCodesDonutLocal();
+        initStatusCodesDonutLocal(); // Mantiene lógica local
         initThroughputChart();
         initLatencyTrendChart();
         initEnvironmentChart();
 
-        // Recalcular LATENCIA al cambiar filtros
+        // Recalcular GRÁFICOS DINÁMICOS al cambiar filtros
         ['api-select','environment-select','start-date','end-date'].forEach(id=>{
             const el = document.getElementById(id);
-            if (el) el.addEventListener('change', initLatencyBarsByApi);
+            if (el) el.addEventListener('change', () => {
+                // Llama a las funciones que dependen de estos filtros
+                initLatencyBarsByApi();
+                // initStatusCodesDonutRemote(); // Si decides hacerlo dinámico
+                // Podrías llamar a otros si dependen de filtros
+            });
         });
 
         // Establecer fechas por defecto (últimos 7 días)
@@ -460,12 +435,16 @@
     });
 
     function setDefaultDates() {
+        const endDateInput = document.getElementById('end-date');
+        const startDateInput = document.getElementById('start-date');
+        if (!endDateInput || !startDateInput) return;
+
         const endDate = new Date();
         const startDate = new Date();
-        startDate.setDate(startDate.getDate() - 7);
+        startDate.setDate(startDate.getDate() - 7); // Últimos 7 días
 
-        document.getElementById('end-date').value = formatDate(endDate);
-        document.getElementById('start-date').value = formatDate(startDate);
+        endDateInput.value = formatDate(endDate);
+        startDateInput.value = formatDate(startDate);
     }
 
     function formatDate(date) {
@@ -475,18 +454,34 @@
         return `${year}-${month}-${day}`;
     }
 
+    // --- Funciones para mostrar/ocultar estados de carga/error/sin datos ---
+    function showChartState(chartId, state) { // state = 'loading' | 'error' | 'no-data' | 'ready'
+        const canvas = document.getElementById(chartId);
+        const loadingEl = document.getElementById(`${chartId.replace('Chart', '')}-loading`);
+        const errorEl = document.getElementById(`${chartId.replace('Chart', '')}-error`);
+        const noDataEl = document.getElementById(`${chartId.replace('Chart', '')}-no-data`);
+
+        if (!canvas) {
+            console.warn(`Canvas element not found for chart ID: ${chartId}`);
+            return;
+        }
+
+        [loadingEl, errorEl, noDataEl].forEach(el => el?.classList.remove('active'));
+        canvas.style.display = 'none';
+
+        if (state === 'loading' && loadingEl) loadingEl.classList.add('active');
+        else if (state === 'error' && errorEl) errorEl.classList.add('active');
+        else if (state === 'no-data' && noDataEl) noDataEl.classList.add('active');
+        else if (state === 'ready') canvas.style.display = 'block';
+    }
+
     /* ---------- Barras: Latencia promedio por API (dinámico) ---------- */
     async function initLatencyBarsByApi() {
-        const canvas = document.getElementById('latencyChart');
-        const loadingEl = document.getElementById('latency-loading');
-        const errorEl = document.getElementById('latency-error');
-
+        const chartId = 'latencyChart';
+        const canvas = document.getElementById(chartId);
         if (!canvas || typeof Chart === 'undefined') return;
 
-        // Mostrar indicador de carga
-        loadingEl.classList.add('active');
-        errorEl.classList.remove('active');
-        canvas.style.display = 'none';
+        showChartState(chartId, 'loading');
 
         const idApiRaw     = document.getElementById('api-select')?.value;
         const idEntornoRaw = document.getElementById('environment-select')?.value;
@@ -494,418 +489,266 @@
         const end          = document.getElementById('end-date')?.value;
 
         const params = new URLSearchParams();
-        if (idApiRaw && /^\d+$/.test(idApiRaw))         params.append('idApi', idApiRaw);
+        if (idApiRaw && /^\d+$/.test(idApiRaw))       params.append('idApi', idApiRaw);
         if (idEntornoRaw && /^\d+$/.test(idEntornoRaw)) params.append('idEntorno', idEntornoRaw);
         if (start) params.append('startDate', start);
         if (end)   params.append('endDate',   end);
 
         const url = `${CHART_URL}?${params.toString()}`;
         let labels = [], data = [];
+        let hasError = false;
 
         try {
             const res = await fetch(url, { credentials: 'same-origin' });
-            if (!res.ok) throw new Error('Network response was not ok');
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const json = await res.json();
 
-            // Si hay datos reales, úsalos
-            if (json.labels && json.labels.length > 0) {
+            if (json.labels && json.data && json.labels.length > 0 && json.labels.length === json.data.length) {
                 labels = json.labels;
                 data = json.data;
+                showChartState(chartId, 'ready');
             } else {
-                // Datos estáticos atractivos cuando no hay información
-                labels = ['API Usuarios', 'API Pagos', 'API Productos', 'API Pedidos', 'API Notificaciones'];
-                data = [120, 89, 156, 203, 95];
+                showChartState(chartId, 'no-data');
             }
         } catch (e) {
-            console.log('Usando datos de demostración para latencia por API');
-            // Datos de demostración elegantes
-            labels = ['API Usuarios', 'API Pagos', 'API Productos', 'API Pedidos', 'API Notificaciones'];
-            data = [120, 89, 156, 203, 95];
+            console.error('Error fetching latency data:', e);
+            hasError = true;
+            showChartState(chartId, 'error');
         }
 
-        if (!window._latApiChart) {
-            window._latApiChart = new Chart(canvas, {
+        if (hasError || labels.length === 0) {
+            if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
+            return;
+        }
+
+        const backgroundColors = ['#4299e1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6', '#fbbf24'];
+
+        if (!window._charts[chartId]) {
+            window._charts[chartId] = new Chart(canvas, {
                 type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label:'Latencia promedio (ms)',
-                        data: data,
-                        borderWidth:0,
-                        backgroundColor:['#4299e1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
-                    }]
-                },
-                options: {
-                    responsive:true, maintainAspectRatio:false,
-                    plugins:{ legend:{ display:false } },
+                data: { labels, datasets: [{
+                        label:'Latencia promedio (ms)', data, borderWidth:0,
+                        backgroundColor: labels.map((_, i) => backgroundColors[i % backgroundColors.length])
+                    }] },
+                options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
                     scales:{ y:{ beginAtZero:true, grid:{ drawBorder:false } }, x:{ grid:{ display:false } } }
                 }
             });
         } else {
-            window._latApiChart.data.labels = labels;
-            window._latApiChart.data.datasets[0].data = data;
-            window._latApiChart.data.datasets[0].backgroundColor = ['#4299e1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-            window._latApiChart.update();
+            window._charts[chartId].data.labels = labels;
+            window._charts[chartId].data.datasets[0].data = data;
+            window._charts[chartId].data.datasets[0].backgroundColor = labels.map((_, i) => backgroundColors[i % backgroundColors.length]);
+            window._charts[chartId].update();
         }
     }
 
     /* ---------- Donut: Éxito vs Error (sin fetch, con KPIs del modelo) ---------- */
     function initStatusCodesDonutLocal() {
-        const c = document.getElementById('statusCodesChart');
-        if (!c || typeof Chart === 'undefined') return;
+        const chartId = 'statusCodesChart';
+        const canvas = document.getElementById(chartId);
+        if (!canvas || typeof Chart === 'undefined') return;
 
-        let exito = Number(c.dataset.exito ?? 0);
-        let error = Number(c.dataset.error ?? 0);
-        if (!Number.isFinite(exito)) exito = 0;
-        if (!Number.isFinite(error)) error = 0;
-
-        // Normaliza por si no suman 100
-        const total = exito + error;
-        if (total > 0) { exito = (exito/total)*100; error = (error/total)*100; }
+        let exitoStr = canvas.dataset.exito ?? '0.0';
+        let errorStr = canvas.dataset.error ?? '0.0';
+        exitoStr = exitoStr.replace(',', '.');
+        errorStr = errorStr.replace(',', '.');
+        let exito = Number(exitoStr);
+        let error = Number(errorStr);
+        if (!Number.isFinite(exito)) exito = 0.0;
+        if (!Number.isFinite(error)) error = 0.0;
 
         let labels = ['Éxito', 'Error'];
         let data   = [exito, error];
         let colors = ['#2fb344', '#e03131'];
-        if ((exito + error) <= 0) { labels = ['Sin datos']; data = [1]; colors = ['#868e96']; }
 
-        new Chart(c, {
-            type: 'doughnut',
-            data: { labels, datasets: [{ data, backgroundColor: colors }] },
-            options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }
-        });
+        if ((exito + error) <= 0.01) {
+            showChartState(chartId, 'no-data');
+            if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
+            return;
+        } else if (exito >= 99.99 && error <= 0.01) {
+            data = [100]; labels = ['Éxito']; colors = ['#2fb344'];
+            showChartState(chartId, 'ready');
+        } else if (error >= 99.99 && exito <= 0.01) {
+            data = [100]; labels = ['Error']; colors = ['#e03131'];
+            showChartState(chartId, 'ready');
+        } else {
+            showChartState(chartId, 'ready');
+        }
+
+        if (!window._charts[chartId]) {
+            window._charts[chartId] = new Chart(canvas, {
+                type: 'doughnut',
+                data: { labels, datasets: [{ data, backgroundColor: colors }] },
+                options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom' } } }
+            });
+        } else {
+            window._charts[chartId].data.labels = labels;
+            window._charts[chartId].data.datasets[0].data = data;
+            window._charts[chartId].data.datasets[0].backgroundColor = colors;
+            window._charts[chartId].update();
+        }
     }
 
-    /* ---------- NUEVOS GRÁFICOS ---------- */
+    /* ---------- NUEVOS GRÁFICOS (con manejo de estados) ---------- */
 
     /* Throughput por hora */
     async function initThroughputChart() {
-        const canvas = document.getElementById('throughputChart');
+        const chartId = 'throughputChart';
+        const canvas = document.getElementById(chartId);
         if (!canvas || typeof Chart === 'undefined') return;
 
+        showChartState(chartId, 'loading');
         let labels = [], data = [];
+        let hasError = false;
 
         try {
             const res = await fetch(THROUGHPUT_URL, { credentials: 'same-origin' });
-            if (!res.ok) throw new Error('Network response was not ok');
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const json = await res.json();
 
-            // Si hay datos reales, úsalos
-            if (json.labels && json.labels.length > 0) {
+            if (json.labels && json.data && json.labels.length > 0 && json.labels.length === json.data.length) {
                 labels = json.labels;
                 data = json.data;
+                showChartState(chartId, 'ready');
             } else {
-                // Datos estáticos elegantes para las últimas 24 horas
-                labels = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
-                data = [45, 23, 67, 156, 289, 234, 178, 98];
+                showChartState(chartId, 'no-data');
             }
         } catch (e) {
-            console.log('Usando datos de demostración para throughput');
-            // Datos de demostración que simulan actividad diaria típica
-            labels = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
-            data = [45, 23, 67, 156, 289, 234, 178, 98];
+            console.error('Error fetching throughput data:', e);
+            hasError = true;
+            showChartState(chartId, 'error');
         }
 
-        new Chart(canvas, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Requests por hora',
-                    data: data,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#10b981',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, grid: { drawBorder: false } },
-                    x: { grid: { display: false } }
+        if (hasError || labels.length === 0) {
+            if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
+            return;
+        }
+
+        if (!window._charts[chartId]) {
+            window._charts[chartId] = new Chart(canvas, {
+                type: 'line',
+                data: { labels, datasets: [{
+                        label: 'Requests por hora', data, borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4,
+                        pointBackgroundColor: '#10b981', pointBorderColor: '#ffffff', pointBorderWidth: 2, pointRadius: 4
+                    }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { drawBorder: false } }, x: { grid: { display: false } } }
                 }
-            }
-        });
+            });
+        } else {
+            window._charts[chartId].data.labels = labels;
+            window._charts[chartId].data.datasets[0].data = data;
+            window._charts[chartId].update();
+        }
     }
 
     /* Tendencia de latencia */
     async function initLatencyTrendChart() {
-        const canvas = document.getElementById('latencyTrendChart');
+        const chartId = 'latencyTrendChart';
+        const canvas = document.getElementById(chartId);
         if (!canvas || typeof Chart === 'undefined') return;
 
+        showChartState(chartId, 'loading');
         let labels = [], data = [];
+        let hasError = false;
 
         try {
             const res = await fetch(LATENCY_TREND_URL, { credentials: 'same-origin' });
-            if (!res.ok) throw new Error('Network response was not ok');
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const json = await res.json();
 
-            // Si hay datos reales, úsalos
-            if (json.labels && json.labels.length > 0) {
-                labels = json.labels;
+            if (json.labels && json.data && json.labels.length > 0 && json.labels.length === json.data.length) {
+                labels = json.labels.map(label => {
+                    try { return new Date(label + 'T00:00:00').toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }); }
+                    catch(e) { return label; }
+                });
                 data = json.data;
+                showChartState(chartId, 'ready');
             } else {
-                // Datos estáticos para últimos 7 días
-                const today = new Date();
-                labels = [];
-                data = [145, 132, 156, 143, 167, 134, 149];
-
-                for (let i = 6; i >= 0; i--) {
-                    const date = new Date(today);
-                    date.setDate(date.getDate() - i);
-                    labels.push(date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }));
-                }
+                showChartState(chartId, 'no-data');
             }
         } catch (e) {
-            console.log('Usando datos de demostración para tendencia de latencia');
-            // Datos de demostración para 7 días
-            const today = new Date();
-            labels = [];
-            data = [145, 132, 156, 143, 167, 134, 149];
-
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                labels.push(date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }));
-            }
+            console.error('Error fetching latency trend data:', e);
+            hasError = true;
+            showChartState(chartId, 'error');
         }
 
-        new Chart(canvas, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Latencia promedio (ms)',
-                    data: data,
-                    borderColor: '#f59e0b',
-                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#f59e0b',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, grid: { drawBorder: false } },
-                    x: { grid: { display: false } }
+        if (hasError || labels.length === 0) {
+            if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
+            return;
+        }
+
+        if (!window._charts[chartId]) {
+            window._charts[chartId] = new Chart(canvas, {
+                type: 'line',
+                data: { labels, datasets: [{
+                        label: 'Latencia promedio (ms)', data, borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4,
+                        pointBackgroundColor: '#f59e0b', pointBorderColor: '#ffffff', pointBorderWidth: 2, pointRadius: 4
+                    }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: false, grid: { drawBorder: false } }, x: { grid: { display: false } } }
                 }
-            }
-        });
+            });
+        } else {
+            window._charts[chartId].data.labels = labels;
+            window._charts[chartId].data.datasets[0].data = data;
+            window._charts[chartId].update();
+        }
     }
 
     /* Distribución por entorno */
     async function initEnvironmentChart() {
-        const canvas = document.getElementById('environmentChart');
+        const chartId = 'environmentChart';
+        const canvas = document.getElementById(chartId);
         if (!canvas || typeof Chart === 'undefined') return;
+
+        showChartState(chartId, 'loading');
+        let labels = [], data = [];
+        let hasError = false;
 
         try {
             const res = await fetch(ENV_USAGE_URL, { credentials: 'same-origin' });
-            if (!res.ok) return;
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const json = await res.json();
 
-            const labels = json.map(item => item.nombre);
-            const data = json.map(item => item.requests);
-            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-
-            new Chart(canvas, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: colors.slice(0, labels.length)
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
-                }
-            });
-        } catch (e) {
-            console.error('Error environment chart:', e);
-        }
-    }
-
-    /* ---------- NUEVOS GRÁFICOS ---------- */
-
-    /* Throughput por hora */
-    async function initThroughputChart() {
-        const canvas = document.getElementById('throughputChart');
-        if (!canvas || typeof Chart === 'undefined') return;
-
-        let labels = [], data = [];
-
-        try {
-            const res = await fetch(THROUGHPUT_URL, { credentials: 'same-origin' });
-            if (!res.ok) throw new Error('Network response was not ok');
-            const json = await res.json();
-
-            // Si hay datos reales, úsalos
-            if (json.labels && json.labels.length > 0) {
-                labels = json.labels;
-                data = json.data;
+            if (Array.isArray(json) && json.length > 0) {
+                labels = json.map(item => item.nombre);
+                data = json.map(item => item.requests);
+                showChartState(chartId, 'ready');
             } else {
-                // Datos estáticos elegantes para las últimas 24 horas
-                labels = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
-                data = [45, 23, 67, 156, 289, 234, 178, 98];
+                showChartState(chartId, 'no-data');
             }
         } catch (e) {
-            console.log('Usando datos de demostración para throughput');
-            // Datos de demostración que simulan actividad diaria típica
-            labels = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
-            data = [45, 23, 67, 156, 289, 234, 178, 98];
+            console.error('Error fetching environment usage data:', e);
+            hasError = true;
+            showChartState(chartId, 'error');
         }
 
-        new Chart(canvas, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Requests por hora',
-                    data: data,
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#10b981',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, grid: { drawBorder: false } },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
-    }
-
-    /* Tendencia de latencia */
-    async function initLatencyTrendChart() {
-        const canvas = document.getElementById('latencyTrendChart');
-        if (!canvas || typeof Chart === 'undefined') return;
-
-        let labels = [], data = [];
-
-        try {
-            const res = await fetch(LATENCY_TREND_URL, { credentials: 'same-origin' });
-            if (!res.ok) throw new Error('Network response was not ok');
-            const json = await res.json();
-
-            // Si hay datos reales, úsalos
-            if (json.labels && json.labels.length > 0) {
-                labels = json.labels;
-                data = json.data;
-            } else {
-                // Datos estáticos para últimos 7 días
-                const today = new Date();
-                labels = [];
-                data = [145, 132, 156, 143, 167, 134, 149];
-
-                for (let i = 6; i >= 0; i--) {
-                    const date = new Date(today);
-                    date.setDate(date.getDate() - i);
-                    labels.push(date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }));
-                }
-            }
-        } catch (e) {
-            console.log('Usando datos de demostración para tendencia de latencia');
-            // Datos de demostración para 7 días
-            const today = new Date();
-            labels = [];
-            data = [145, 132, 156, 143, 167, 134, 149];
-
-            for (let i = 6; i >= 0; i--) {
-                const date = new Date(today);
-                date.setDate(date.getDate() - i);
-                labels.push(date.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }));
-            }
+        if (hasError || labels.length === 0) {
+            if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
+            return;
         }
 
-        new Chart(canvas, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Latencia promedio (ms)',
-                    data: data,
-                    borderColor: '#f59e0b',
-                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                    fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#f59e0b',
-                    pointBorderColor: '#ffffff',
-                    pointBorderWidth: 2,
-                    pointRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: {
-                    y: { beginAtZero: true, grid: { drawBorder: false } },
-                    x: { grid: { display: false } }
-                }
-            }
-        });
-    }
+        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
-    /* Distribución por entorno */
-    async function initEnvironmentChart() {
-        const canvas = document.getElementById('environmentChart');
-        if (!canvas || typeof Chart === 'undefined') return;
-
-        try {
-            const res = await fetch(ENV_USAGE_URL, { credentials: 'same-origin' });
-            if (!res.ok) return;
-            const json = await res.json();
-
-            const labels = json.map(item => item.nombre);
-            const data = json.map(item => item.requests);
-            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-
-            new Chart(canvas, {
+        if (!window._charts[chartId]) {
+            window._charts[chartId] = new Chart(canvas, {
                 type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: colors.slice(0, labels.length)
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
-                }
+                data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length) }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
             });
-        } catch (e) {
-            console.error('Error environment chart:', e);
+        } else {
+            window._charts[chartId].data.labels = labels;
+            window._charts[chartId].data.datasets[0].data = data;
+            window._charts[chartId].data.datasets[0].backgroundColor = colors.slice(0, labels.length);
+            window._charts[chartId].update();
         }
     }
+
 </script>
 </body>
 </html>
+
+

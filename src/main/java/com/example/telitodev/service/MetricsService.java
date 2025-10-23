@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,47 +19,209 @@ public class MetricsService {
     @Autowired
     private MetricaApiRepository metricaApiRepository;
 
+
+    private double calculatePercentageChange(double current, double previous) {
+        if (previous == 0) {
+            return (current > 0) ? 100.0 : 0.0;
+        }
+        double change = ((current - previous) / previous) * 100.0;
+        return Math.round(change * 10.0) / 10.0;
+    }
+
+
     /* ===== KPIs (versión simple con findAll) ===== */
+
+    //public long getTotalRequests() {
+    //    return metricaApiRepository.findAll().stream()
+    //            .mapToLong(MetricaApi::getLlamadas)
+    //            .sum();
+    //}
+    @Transactional(readOnly = true)
     public long getTotalRequests() {
-        return metricaApiRepository.findAll().stream()
-                .mapToLong(MetricaApi::getLlamadas)
-                .sum();
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp startPeriod = Timestamp.valueOf(LocalDateTime.now().minusDays(1));
+
+        return metricaApiRepository.sumLlamadasBetween(startPeriod, now, null, null);
     }
 
-    public int getAverageLatency() {
-        return (int) metricaApiRepository.findAll().stream()
-                .mapToDouble(MetricaApi::getLatenciaPromedio)
-                .average()
-                .orElse(0.0);
+
+    // public int getAverageLatency() {
+    //    return (int) metricaApiRepository.findAll().stream()
+    //            .mapToDouble(MetricaApi::getLatenciaPromedio)
+    //            .average()
+    //            .orElse(0.0);
+    //}
+    @Transactional(readOnly = true)
+    public double getAverageLatency() {
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp startPeriod = Timestamp.valueOf(LocalDateTime.now().minusDays(1));
+        Double avg = metricaApiRepository.avgLatenciaBetween(startPeriod, now, null, null);
+        return avg != null ? avg : 0.0;
     }
 
+
+
+    //public double getSuccessRate() {
+    //    List<MetricaApi> metricas = metricaApiRepository.findAll();
+    //    long totalLlamadas = metricas.stream().mapToLong(MetricaApi::getLlamadas).sum();
+    //    long totalErrores  = metricas.stream().mapToLong(MetricaApi::getErrores).sum();
+    //    if (totalLlamadas == 0) return 0.0;
+    //    return (double) (totalLlamadas - totalErrores) / totalLlamadas * 100.0;
+    // }
+
+
+    @Transactional(readOnly = true)
     public double getSuccessRate() {
-        List<MetricaApi> metricas = metricaApiRepository.findAll();
-        long totalLlamadas = metricas.stream().mapToLong(MetricaApi::getLlamadas).sum();
-        long totalErrores  = metricas.stream().mapToLong(MetricaApi::getErrores).sum();
-        if (totalLlamadas == 0) return 0.0;
-        return (double) (totalLlamadas - totalErrores) / totalLlamadas * 100.0;
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp startPeriod = Timestamp.valueOf(LocalDateTime.now().minusDays(1));
+
+        Long totalLlamadas = metricaApiRepository.sumLlamadasBetween(startPeriod, now, null, null);
+        Long totalErrores = metricaApiRepository.sumErroresBetween(startPeriod, now, null, null);
+
+        if (totalLlamadas == null || totalLlamadas == 0) return 100.0;
+
+        long exitosas = totalLlamadas - (totalErrores != null ? totalErrores : 0L);
+        double rate = Math.max(0.0, (double) exitosas / totalLlamadas * 100.0);
+        return Math.round(rate * 10.0) / 10.0;
     }
 
+
+    //public double getErrorRate() {
+    //    List<MetricaApi> metricas = metricaApiRepository.findAll();
+    //    long totalLlamadas = metricas.stream().mapToLong(MetricaApi::getLlamadas).sum();
+    //    long totalErrores  = metricas.stream().mapToLong(MetricaApi::getErrores).sum();
+    //    if (totalLlamadas == 0) return 0.0;
+    //    return (double) totalErrores / totalLlamadas * 100.0;
+    //}
+    @Transactional(readOnly = true)
     public double getErrorRate() {
-        List<MetricaApi> metricas = metricaApiRepository.findAll();
-        long totalLlamadas = metricas.stream().mapToLong(MetricaApi::getLlamadas).sum();
-        long totalErrores  = metricas.stream().mapToLong(MetricaApi::getErrores).sum();
-        if (totalLlamadas == 0) return 0.0;
-        return (double) totalErrores / totalLlamadas * 100.0;
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp startPeriod = Timestamp.valueOf(LocalDateTime.now().minusDays(1));
+
+        Long totalLlamadas = metricaApiRepository.sumLlamadasBetween(startPeriod, now, null, null);
+        Long totalErrores = metricaApiRepository.sumErroresBetween(startPeriod, now, null, null);
+
+        if (totalLlamadas == null || totalLlamadas == 0) return 0.0;
+
+        double rate = Math.max(0.0, (double) (totalErrores != null ? totalErrores : 0L) / totalLlamadas * 100.0);
+        return Math.round(rate * 10.0) / 10.0;
     }
 
+    // ===== NUEVOSSS =========
+    @Transactional(readOnly = true)
+    public double getTotalRequestsChange() {
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp yesterday = Timestamp.valueOf(LocalDateTime.now().minusDays(1));
+        Timestamp dayBefore = Timestamp.valueOf(LocalDateTime.now().minusDays(2));
 
+        long current = metricaApiRepository.sumLlamadasBetween(yesterday, now, null, null);
+        long previous = metricaApiRepository.sumLlamadasBetween(dayBefore, yesterday, null, null);
 
+        return calculatePercentageChange(current, previous);
+    }
+    @Transactional(readOnly = true)
+    public double getAverageLatencyChange() {
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp yesterday = Timestamp.valueOf(LocalDateTime.now().minusDays(1));
+        Timestamp dayBefore = Timestamp.valueOf(LocalDateTime.now().minusDays(2));
 
+        Double currentLatency = metricaApiRepository.avgLatenciaBetween(yesterday, now, null, null);
+        Double previousLatency = metricaApiRepository.avgLatenciaBetween(dayBefore, yesterday, null, null);
 
+        return calculatePercentageChange(
+                currentLatency != null ? currentLatency : 0.0,
+                previousLatency != null ? previousLatency : 0.0
+        );
+    }
+    @Transactional(readOnly = true)
+    public double getSuccessRateChange() {
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp yesterday = Timestamp.valueOf(LocalDateTime.now().minusDays(1));
+        Timestamp dayBefore = Timestamp.valueOf(LocalDateTime.now().minusDays(2));
+
+        Long currentCalls = metricaApiRepository.sumLlamadasBetween(yesterday, now, null, null);
+        Long currentErrors = metricaApiRepository.sumErroresBetween(yesterday, now, null, null);
+        double currentSuccessRate = (currentCalls == 0) ? 100.0 : Math.max(0.0, (double)(currentCalls - currentErrors) / currentCalls * 100.0);
+
+        Long previousCalls = metricaApiRepository.sumLlamadasBetween(dayBefore, yesterday, null, null);
+        Long previousErrors = metricaApiRepository.sumErroresBetween(dayBefore, yesterday, null, null);
+        double previousSuccessRate = (previousCalls == 0) ? 100.0 : Math.max(0.0, (double)(previousCalls - previousErrors) / previousCalls * 100.0);
+
+        double change = currentSuccessRate - previousSuccessRate;
+        return Math.round(change * 10.0) / 10.0;
+    }
+    @Transactional(readOnly = true)
+    public double getErrorRateChange() {
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp yesterday = Timestamp.valueOf(LocalDateTime.now().minusDays(1));
+        Timestamp dayBefore = Timestamp.valueOf(LocalDateTime.now().minusDays(2));
+
+        Long currentCalls = metricaApiRepository.sumLlamadasBetween(yesterday, now, null, null);
+        Long currentErrors = metricaApiRepository.sumErroresBetween(yesterday, now, null, null);
+        double currentErrorRate = (currentCalls == 0) ? 0.0 : Math.max(0.0, (double)currentErrors / currentCalls * 100.0);
+
+        Long previousCalls = metricaApiRepository.sumLlamadasBetween(dayBefore, yesterday, null, null);
+        Long previousErrors = metricaApiRepository.sumErroresBetween(dayBefore, yesterday, null, null);
+        double previousErrorRate = (previousCalls == 0) ? 0.0 : Math.max(0.0, (double)previousErrors / previousCalls * 100.0);
+
+        double change = currentErrorRate - previousErrorRate;
+        return Math.round(change * 10.0) / 10.0;
+    }
+    @Transactional(readOnly = true)
+    public double getThroughputChange() {
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp hourAgo = Timestamp.valueOf(LocalDateTime.now().minusHours(1));
+        Timestamp twoHoursAgo = Timestamp.valueOf(LocalDateTime.now().minusHours(2));
+
+        Long currentCalls = metricaApiRepository.sumLlamadasBetween(hourAgo, now, null, null);
+        Long currentMinutes = metricaApiRepository.countMinutesWithCallsBetween(hourAgo, now, null, null);
+        double currentThroughput = (currentMinutes == 0) ? 0.0 : (double)currentCalls / currentMinutes;
+
+        Long previousCalls = metricaApiRepository.sumLlamadasBetween(twoHoursAgo, hourAgo, null, null);
+        Long previousMinutes = metricaApiRepository.countMinutesWithCallsBetween(twoHoursAgo, hourAgo, null, null);
+        double previousThroughput = (previousMinutes == 0) ? 0.0 : (double)previousCalls / previousMinutes;
+
+        return calculatePercentageChange(currentThroughput, previousThroughput);
+    }
+    @Transactional(readOnly = true)
+    public double getAvailabilityChange() {
+
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp yesterday = Timestamp.valueOf(LocalDateTime.now().minusDays(1));
+        Timestamp dayBefore = Timestamp.valueOf(LocalDateTime.now().minusDays(2));
+
+        Long currentCalls = metricaApiRepository.sumLlamadasBetween(yesterday, now, null, null);
+        Long currentErrors = metricaApiRepository.sumErroresBetween(yesterday, now, null, null);
+        double currentAvailability = (currentCalls == 0) ? 100.0 : Math.max(0.0, (double)(currentCalls - currentErrors) / currentCalls * 100.0);
+
+        Long previousCalls = metricaApiRepository.sumLlamadasBetween(dayBefore, yesterday, null, null);
+        Long previousErrors = metricaApiRepository.sumErroresBetween(dayBefore, yesterday, null, null);
+        double previousAvailability = (previousCalls == 0) ? 100.0 : Math.max(0.0, (double)(previousCalls - previousErrors) / previousCalls * 100.0);
+
+        double change = currentAvailability - previousAvailability;
+        return Math.round(change * 10.0) / 10.0;
+    }
+    @Transactional(readOnly = true)
+    public double getTotalCostChange() {
+        Timestamp now = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp yesterday = Timestamp.valueOf(LocalDateTime.now().minusDays(1));
+        Timestamp dayBefore = Timestamp.valueOf(LocalDateTime.now().minusDays(2));
+
+        BigDecimal currentCostBD = metricaApiRepository.sumCostoBetween(yesterday, now, null, null);
+        BigDecimal previousCostBD = metricaApiRepository.sumCostoBetween(dayBefore, yesterday, null, null);
+
+        double currentCost = (currentCostBD != null) ? currentCostBD.doubleValue() : 0.0;
+        double previousCost = (previousCostBD != null) ? previousCostBD.doubleValue() : 0.0;
+
+        return calculatePercentageChange(currentCost, previousCost);
+    }
 
 
     /* ===== DTOs para charts ===== */
     public record ChartSeriesDTO(List<String> labels, List<Double> data) {}
     public record ChartSeriesLongDTO(List<String> labels, List<Long> data) {}
 
-    /* ===== Serie: Latencia promedio por API (barras) ===== */
+
     /* ===== Serie: Latencia promedio por API (barras) ===== */
     @Transactional(readOnly = true)
     public ChartSeriesDTO getLatencyBarsByApi(Integer idApi,
@@ -90,18 +254,13 @@ public class MetricsService {
             System.out.println("Labels extraídos: " + labels);
             System.out.println("Data extraída: " + data);
 
-            // Si no hay datos, devolver datos de ejemplo
-            if (labels.isEmpty()) {
-                System.out.println("⚠️  No se encontraron datos reales en avgLatencyByApi, usando datos de ejemplo");
-                return getSampleLatencyData();
-            }
+
 
             return new ChartSeriesDTO(labels, data);
 
         } catch (Exception e) {
-            System.out.println("❌ Error en getLatencyBarsByApi: " + e.getMessage());
-            e.printStackTrace();
-            return getSampleLatencyData();
+            System.err.println("❌ Error en getLatencyBarsByApi: " + e.getMessage());
+            return new ChartSeriesDTO(new ArrayList<>(), new ArrayList<>());
         }
     }
 
@@ -147,11 +306,7 @@ public class MetricsService {
 
             System.out.println("Éxitos: " + exitos + ", Errores: " + errores);
 
-            // Si no hay datos significativos, usar valores de ejemplo basados en los KPIs
-            if (exitos == 0 && errores == 0) {
-                System.out.println("⚠️  No se encontraron datos reales en successVsErrors, usando datos de ejemplo");
-                return getSampleStatusData();
-            }
+
 
             return new ChartSeriesLongDTO(
                     List.of("Éxito (2xx/3xx)", "Errores (4xx/5xx)"),
@@ -159,14 +314,13 @@ public class MetricsService {
             );
 
         } catch (Exception e) {
-            System.out.println("❌ Error en getStatusDistribution: " + e.getMessage());
-            e.printStackTrace();
-            return getSampleStatusData();
+            System.err.println("❌ Error en getStatusDistribution: " + e.getMessage());
+            return new ChartSeriesLongDTO(new ArrayList<>(), new ArrayList<>());
         }
     }
 
     /* ===== Datos de ejemplo ===== */
-    private ChartSeriesDTO getSampleLatencyData() {
+    /* private ChartSeriesDTO getSampleLatencyData() {
         return new ChartSeriesDTO(
                 List.of("API Usuarios", "API Pagos", "API Productos", "API Pedidos"),
                 List.of(120.0, 200.0, 150.0, 180.0)
@@ -183,6 +337,7 @@ public class MetricsService {
                 List.of(exitos, errores)
         );
     }
+    */
 
     /* ===== NUEVOS KPIs AVANZADOS ===== */
     

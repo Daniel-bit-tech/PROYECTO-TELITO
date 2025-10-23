@@ -1,16 +1,25 @@
 package com.example.telitodev.controller.productowner;
 
 import com.example.telitodev.controller.BaseController;
+import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.Usuario;
+import com.example.telitodev.repository.ApiRepository;
+import com.example.telitodev.repository.EntornoRepository;
+import com.example.telitodev.repository.ProyectoHasApiRepository;
 import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.service.MetricsService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/po")
@@ -19,10 +28,20 @@ public class KPIsController extends BaseController {
 
     private final UsuarioRepository usuarioRepository;
     private final MetricsService metricsService;
+    private final ApiRepository apiRepository;
+    private final EntornoRepository entornoRepository;
+    private final ProyectoHasApiRepository proyectoHasApiRepository;
 
-    public KPIsController(UsuarioRepository usuarioRepository, MetricsService metricsService) {
+    public KPIsController(UsuarioRepository usuarioRepository,
+                          MetricsService metricsService,
+                          ApiRepository apiRepository,
+                          EntornoRepository entornoRepository,
+                          ProyectoHasApiRepository proyectoHasApiRepository) {
         this.usuarioRepository = usuarioRepository;
         this.metricsService = metricsService;
+        this.apiRepository = apiRepository;
+        this.entornoRepository = entornoRepository;
+        this.proyectoHasApiRepository = proyectoHasApiRepository;
     }
 
     /** Vista principal de KPIs (inyecta métricas de cabecera + lista básica) */
@@ -30,43 +49,87 @@ public class KPIsController extends BaseController {
     public String showKPIsView(Model model, Authentication auth, HttpSession session) {
         Usuario usuario = getCurrentUser(auth, session);
 
+        Integer idOrganizacion = usuario.getOrganizacion().getIdOrganizacion();
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
 
         model.addAttribute("usuario", usuario);
 
-        // KPIs (puedes cambiar a las versiones *Fast()* si prefieres agregaciones directas en DB)
+        // --- KPIs BÁSICOS ---
         long totalLlamadas = metricsService.getTotalRequests();
-        double latenciaPromedio = metricsService.getAverageLatency();
-        double tasaExito = metricsService.getSuccessRate();
-        double tasaError = metricsService.getErrorRate();
-
-        System.out.println("=== KPIs CARGADOS ===");
-        System.out.println("Total Requests: " + totalLlamadas);
-        System.out.println("Latencia Promedio: " + latenciaPromedio);
-        System.out.println("Tasa Éxito: " + tasaExito);
-        System.out.println("Tasa Error: " + tasaError);
-
         model.addAttribute("totalLlamadas", totalLlamadas);
+        double latenciaPromedio = metricsService.getAverageLatency();
         model.addAttribute("latenciaPromedio", Math.round(latenciaPromedio));
+        double tasaExito = metricsService.getSuccessRate();
         model.addAttribute("tasaExito", String.format("%.1f", tasaExito));
+        double tasaError = metricsService.getErrorRate();
         model.addAttribute("tasaError", String.format("%.1f", tasaError));
 
-        // NUEVOS KPIs AVANZADOS
-        model.addAttribute("throughput", String.format("%.2f", metricsService.getCurrentThroughput()));
-        model.addAttribute("disponibilidad", String.format("%.2f", metricsService.getSystemAvailability()));
-        model.addAttribute("costoTotal", String.format("%.2f", metricsService.getTotalCost()));
-        
-        // Para tablas y listados
-        model.addAttribute("topApis", metricsService.getTopUsedApis());
-        model.addAttribute("costosApis", metricsService.getCostMetricsByApi());
+        // --- KPIs AVANZADOS ---
+        double throughput = metricsService.getCurrentThroughput();
+        model.addAttribute("throughput", String.format("%.2f", throughput));
+        double disponibilidad = metricsService.getSystemAvailability();
+        model.addAttribute("disponibilidad", String.format("%.2f", disponibilidad));
+        double costoTotal = metricsService.getTotalCost();
+        model.addAttribute("costoTotal", String.format("%.2f", costoTotal));
+
+        // --- CAMBIOS PORCENTUALES (Pasar como Double) ---
+        model.addAttribute("totalLlamadasChange", metricsService.getTotalRequestsChange());
+        model.addAttribute("latenciaPromedioChange", metricsService.getAverageLatencyChange());
+        model.addAttribute("tasaExitoChange", metricsService.getSuccessRateChange());
+        model.addAttribute("tasaErrorChange", metricsService.getErrorRateChange());
+        model.addAttribute("throughputChange", metricsService.getThroughputChange());
+        model.addAttribute("disponibilidadChange", metricsService.getAvailabilityChange());
+        model.addAttribute("costoTotalChange", metricsService.getTotalCostChange());
+
+        // --- DATOS PARA TABLAS Y GRÁFICOS ---
+        List<Api> apisDeLaOrganizacion = Collections.emptyList();
+        if (proyectoHasApiRepository != null) {
+            try {
+                apisDeLaOrganizacion = proyectoHasApiRepository.findDistinctApisByOrganizacionId(idOrganizacion);
+            } catch (Exception e) {
+                System.err.println("Error al obtener APIs de la organización: " + e.getMessage());
+            }
+        } else {
+            System.err.println("ProyectoHasApiRepository no fue inyectado correctamente.");
+        }
+
+        model.addAttribute("totalApisActivas", apisDeLaOrganizacion.size());
+        model.addAttribute("totalApisActivasChange", "+0");
+
+        final List<Api> finalApisDeOrg = apisDeLaOrganizacion;
+        List<MetricsService.TopApiDTO> topApis = metricsService.getTopUsedApis().stream()
+                .filter(apiDto -> finalApisDeOrg.stream().anyMatch(api -> api.getNombre().equals(apiDto.nombre())))
+                .collect(Collectors.toList());
+        model.addAttribute("topApis", topApis);
+
+        List<MetricsService.CostApiDTO> costosApis = metricsService.getCostMetricsByApi().stream()
+                .filter(costoDto -> finalApisDeOrg.stream().anyMatch(api -> api.getNombre().equals(costoDto.nombre())))
+                .collect(Collectors.toList());
+        model.addAttribute("costosApis", costosApis);
+
         model.addAttribute("usoEntornos", metricsService.getUsageByEnvironment());
 
-        // Para tablas u otros listados (opcional)
-        model.addAttribute("metricas", metricsService.getAllMetrics());
+        // --- DATOS PARA FILTROS DINÁMICOS ---
+        model.addAttribute("listaApis", apisDeLaOrganizacion);
+        model.addAttribute("listaEntornos", entornoRepository.findAll());
+
+
+        // --- DATOS PARA ALERTAS  ---
+        List<AlertaDTO> alertas = List.of(
+                new AlertaDTO("error", "Aumento de errores 5xx en API de Pagos", "Tasa de error subió del 0.5% al 3.2%", "Hace 15 min"),
+                new AlertaDTO("warning", "Aumento de latencia en API de Usuarios", "p95 pasó de 200ms a 450ms", "Hace 2 h"),
+                new AlertaDTO("info", "Patrón de tráfico inusual", "+40% requests a API de Productos", "Ayer 16:32")
+        );
+        model.addAttribute("alertasRecientes", alertas);
+
+        // --- DATOS PARA TABLA RENDIMIENTO ---
+        model.addAttribute("rendimientoApis", topApis);
 
         return "po/KPIs";
     }
+
+    public record AlertaDTO(String tipo, String titulo, String descripcion, String tiempo) {}
 
     /** Serie para Chart.js (barras): Latencia promedio por API (filtros opcionales) */
     @GetMapping("/KPIs/chart")
@@ -97,7 +160,7 @@ public class KPIsController extends BaseController {
         System.out.println("Labels: " + result.labels());
         System.out.println("Data: " + result.data());
 
-        return result;
+        return metricsService.getLatencyBarsByApi(idApi, idEntorno, start, end);
     }
 
 
@@ -165,4 +228,8 @@ public class KPIsController extends BaseController {
     public java.util.List<MetricsService.EnvironmentUsageDTO> getEnvironmentUsage() {
         return metricsService.getUsageByEnvironment();
     }
+
+
+
+
 }
