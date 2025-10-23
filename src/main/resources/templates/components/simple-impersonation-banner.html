@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+
+<!-- Fragment: Banner de impersonación SIMPLIFICADO -->
+<div th:fragment="simple-impersonation-banner">
+    <!-- Banner que aparece cuando isImpersonating es true -->
+    <div th:if="${isImpersonating}" class="simple-impersonation-banner">
+        <div class="container-fluid">
+            <div class="row align-items-center py-2">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-secret text-warning me-2"></i>
+                        <span class="fw-bold text-white">
+                            🎭 MODO IMPERSONACIÓN ACTIVA
+                        </span>
+                        <span class="text-light ms-2">
+                            - Viendo como: 
+                            <strong th:text="${impersonatedUserDni ?: 'Usuario'}">DNI</strong>
+                            (<span th:text="${impersonatedUserName ?: 'Nombre'}">Nombre</span>)
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button id="simpleStopImpersonationBtn" 
+                            class="btn btn-warning btn-sm fw-bold">
+                        <i class="fas fa-sign-out-alt me-1"></i>
+                        Volver a SuperAdmin
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Estilos CSS -->
+    <style th:if="${isImpersonating}">
+    .simple-impersonation-banner {
+        background: linear-gradient(135deg, #d63384 0%, #dc3545 100%);
+        border-bottom: 3px solid #ffc107;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 9999;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        animation: pulse-border 2s infinite;
+    }
+
+    .simple-impersonation-banner .text-white {
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+
+    .simple-impersonation-banner .btn-warning {
+        background: #ffc107;
+        border: 2px solid #fff;
+        color: #212529;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .simple-impersonation-banner .btn-warning:hover {
+        background: #ffcd39;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    @keyframes pulse-border {
+        0% { border-bottom-color: #ffc107; }
+        50% { border-bottom-color: #fff; }
+        100% { border-bottom-color: #ffc107; }
+    }
+
+    /* Ajuste para que el contenido no se superponga */
+    body {
+        padding-top: 60px !important;
+    }
+    </style>
+    
+    <!-- JavaScript SIMPLIFICADO -->
+    <script th:if="${isImpersonating}">
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('🎭 Banner de impersonación SIMPLE cargado');
+        
+        const stopBtn = document.getElementById('simpleStopImpersonationBtn');
+        
+        if (stopBtn) {
+            stopBtn.addEventListener('click', function() {
+                console.log('🔄 Botón volver a SuperAdmin clickeado');
+                
+                if (confirm('¿Estás seguro de que quieres volver a tu sesión de SuperAdmin?')) {
+                    simpleStopImpersonation();
+                }
+            });
+            console.log('✅ Event listener configurado para botón simple');
+        } else {
+            console.error('❌ No se encontró el botón simpleStopImpersonationBtn');
+        }
+        
+        function simpleStopImpersonation() {
+            console.log('🚪 Deteniendo impersonación (método simple)...');
+            
+            // Obtener tokens CSRF
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+            
+            console.log('🔑 CSRF Token encontrado:', !!csrfToken);
+            console.log('🔑 CSRF Header encontrado:', !!csrfHeader);
+            
+            if (!csrfToken || !csrfHeader) {
+                console.error('❌ CSRF tokens no encontrados');
+                alert('❌ Error: Tokens de seguridad no encontrados.\\n\\nIntentando redirección directa...');
+                window.location.href = '/admin/gestion-usuarios';
+                return;
+            }
+            
+            // Mostrar indicador de carga
+            stopBtn.disabled = true;
+            stopBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Procesando...';
+            
+            console.log('📡 Enviando petición simple a /admin/gestion-usuarios/stop-impersonation');
+            
+            fetch('/admin/gestion-usuarios/stop-impersonation', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeader]: csrfToken
+                }
+            })
+            .then(response => {
+                console.log('📡 Respuesta recibida:', response.status, response.statusText);
+                
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            })
+            .then(data => {
+                console.log('✅ Impersonación detenida exitosamente:', data);
+                alert('✅ ' + (data.mensaje || 'Impersonación terminada exitosamente'));
+                
+                // Redirección simple y directa
+                console.log('🚀 Redirigiendo a admin...');
+                window.location.href = '/admin/gestion-usuarios';
+            })
+            .catch(error => {
+                console.error('❌ Error al detener impersonación:', error);
+                alert('❌ Error: ' + error.message + '\\n\\nRedirigiendo a admin...');
+                
+                // En caso de error, redirección de emergencia
+                window.location.href = '/admin/gestion-usuarios';
+            })
+            .finally(() => {
+                // Restaurar botón si algo falla
+                setTimeout(() => {
+                    stopBtn.disabled = false;
+                    stopBtn.innerHTML = '<i class="fas fa-sign-out-alt me-1"></i> Volver a SuperAdmin';
+                }, 1000);
+            });
+        }
+    });
+    </script>
+</div>
+
+</body>
+</html>

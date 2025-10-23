@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Ticket - QA/DEV</title>
+    
+    <!-- CSRF tokens para JavaScript -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .main-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1.5rem;
+        }
+        
+        .card-header h2 {
+            margin: 0;
+            font-weight: 300;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 2rem;
+            font-weight: 500;
+        }
+        
+        .btn-secondary {
+            border-radius: 8px;
+            padding: 0.75rem 2rem;
+            font-weight: 500;
+        }
+        
+        .impersonation-banner {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Banner de impersonación -->
+    <div th:if="${isImpersonating}" class="impersonation-banner">
+        <div class="container-fluid d-flex justify-content-between align-items-center">
+            <span>
+                <i class="fas fa-user-secret me-2"></i>
+                <strong>Modo Impersonación:</strong> Actuando como 
+                <span th:text="${impersonatedUserName}">Usuario</span>
+            </span>
+            <button type="button" class="btn btn-outline-light btn-sm" onclick="detenerImpersonacion()">
+                <i class="fas fa-sign-out-alt me-1"></i>Volver a Admin
+            </button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="fas fa-ticket-alt me-2"></i>Crear Nuevo Ticket</h2>
+                <p class="mb-0">Reporta un problema o solicita soporte técnico</p>
+            </div>
+            
+            <div class="card-body p-4">
+                <form th:action="@{/qa-dev/tickets/guardar}" method="post" th:object="${ticket}">
+                    <!-- Token CSRF -->
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label for="asunto" class="form-label">
+                                <i class="fas fa-tag me-1"></i>Asunto <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" id="asunto" th:field="*{asunto}" 
+                                   placeholder="Describe brevemente el problema o solicitud" required>
+                        </div>
+                        
+                        <div class="col-12 mb-3">
+                            <label for="descripcion" class="form-label">
+                                <i class="fas fa-align-left me-1"></i>Descripción <span class="text-danger">*</span>
+                            </label>
+                            <textarea class="form-control" id="descripcion" th:field="*{descripcion}" 
+                                      rows="6" placeholder="Proporciona una descripción detallada del problema, pasos para reproducir, comportamiento esperado vs actual, etc." required></textarea>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="api" class="form-label">
+                                <i class="fas fa-code me-1"></i>API Relacionada
+                            </label>
+                            <select class="form-select" id="api" th:field="*{api}">
+                                <option value="">Seleccionar API (opcional)</option>
+                                <option th:each="api : ${apis}" 
+                                        th:value="${api.idApi}" 
+                                        th:text="${api.nombre}">API</option>
+                            </select>
+                            <div class="form-text">Selecciona la API relacionada con tu consulta</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">
+                                <i class="fas fa-user me-1"></i>Usuario Solicitante
+                            </label>
+                            <input type="text" class="form-control" 
+                                   th:value="${usuario.nombre + ' ' + usuario.apellidoPaterno + ' (' + usuario.correo + ')'}" 
+                                   readonly>
+                            <div class="form-text">Tu información de usuario</div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Información importante</h6>
+                        <ul class="mb-0">
+                            <li>El ticket será procesado por el equipo de soporte técnico</li>
+                            <li>Recibirás actualizaciones sobre el estado de tu ticket</li>
+                            <li>Para problemas críticos, contacta directamente al administrador</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="/qa/home" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i>Crear Ticket
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Obtener tokens CSRF
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        
+        console.log('CSRF Token cargado:', csrfToken ? 'Sí' : 'No');
+        console.log('CSRF Header cargado:', csrfHeader ? 'Sí' : 'No');
+        
+        // Función para detener impersonación
+        async function detenerImpersonacion() {
+            if (!confirm('¿Estás seguro de que quieres volver al panel de administración?')) {
+                return;
+            }
+            
+            try {
+                console.log('Deteniendo impersonación...');
+                
+                const response = await fetch('/admin/gestion-usuarios/stop-impersonation', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken
+                    }
+                });
+                
+                const result = await response.json();
+                console.log('Respuesta:', result);
+                
+                if (response.ok) {
+                    // Mostrar mensaje de éxito
+                    alert(result.mensaje || 'Impersonación terminada correctamente');
+                    
+                    // Redirigir al panel de administración
+                    window.location.href = result.redirectUrl || '/admin/gestion-usuarios';
+                } else {
+                    console.error('Error al detener impersonación:', result);
+                    alert('Error al detener la impersonación: ' + (result.error || 'Error desconocido'));
+                }
+                
+            } catch (error) {
+                console.error('Error completo:', error);
+                alert('Error al detener la impersonación: ' + error.message);
+            }
+        }
+        
+        // Validación de formulario
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const asuntoInput = document.getElementById('asunto');
+            const descripcionInput = document.getElementById('descripcion');
+            
+            form.addEventListener('submit', function(e) {
+                if (asuntoInput.value.trim().length < 5) {
+                    e.preventDefault();
+                    alert('El asunto debe tener al menos 5 caracteres');
+                    asuntoInput.focus();
+                    return;
+                }
+                
+                if (descripcionInput.value.trim().length < 20) {
+                    e.preventDefault();
+                    alert('La descripción debe tener al menos 20 caracteres para ser útil');
+                    descripcionInput.focus();
+                    return;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

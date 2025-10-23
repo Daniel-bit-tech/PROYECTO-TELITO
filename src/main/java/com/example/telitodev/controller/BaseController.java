@@ -113,16 +113,25 @@ public abstract class BaseController {
      * Obtiene la URL de redirección apropiada para un rol
      */
     protected String getRedirectUrlForRole(String role) {
+        System.out.println("🔍 BaseController.getRedirectUrlForRole() recibió: '" + role + "'");
+        
         switch (role) {
             case "SUPERADMIN":
+                System.out.println("   → Redirigiendo a /admin/home");
                 return "redirect:/admin/home";
             case "QA":
+                System.out.println("   → Redirigiendo a /qa/home");
                 return "redirect:/qa/home";
             case "PO":
+            case "PRODUCT_OWNER":
+                System.out.println("   → Redirigiendo a /po/home");
                 return "redirect:/po/home";
+            case "DEV":
             case "DEVELOPER":
+                System.out.println("   → Redirigiendo a /dev/home");
                 return "redirect:/dev/home";
             default:
+                System.out.println("   ⚠️ Rol no reconocido, redirigiendo a /login");
                 return "redirect:/login";
         }
     }

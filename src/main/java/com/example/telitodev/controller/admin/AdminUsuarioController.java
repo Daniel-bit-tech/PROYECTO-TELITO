@@ -1042,7 +1042,15 @@ public class AdminUsuarioController extends BaseController {
                 return ResponseEntity.badRequest().body("Error al iniciar la impersonación");
             }
             
-            String redirectUrl = getRedirectUrlForRole(usuario.getRol().getNombreRol()).replace("redirect:", "");
+            // DEBUG: Mostrar información del rol
+            String roleName = usuario.getRol().getNombreRol();
+            System.out.println("🔍 DEBUG INFO:");
+            System.out.println("   Rol encontrado: " + roleName);
+            System.out.println("   Rol clase: " + roleName.getClass().getSimpleName());
+            
+            String redirectUrl = getRedirectUrlForRole(roleName).replace("redirect:", "");
+            System.out.println("   URL base del método: " + getRedirectUrlForRole(roleName));
+            System.out.println("   URL final (sin redirect:): " + redirectUrl);
             System.out.println("🔄 Redirigiendo a: " + redirectUrl);
             
             return ResponseEntity.ok(Map.of(
@@ -1949,17 +1957,12 @@ public class AdminUsuarioController extends BaseController {
                 System.out.println("Después de filtro estado (" + estado + "): " + usuarios.size());
             }
             
-            // Aplicar filtro de rol
+            // Aplicar filtro de rol - CAMBIADO PARA USAR NOMBRE EN LUGAR DE ID
             if (rol != null && !rol.trim().isEmpty()) {
-                try {
-                    Integer rolId = Integer.parseInt(rol);
-                    usuarios = usuarios.stream()
-                        .filter(usuario -> usuario.getRol() != null && usuario.getRol().getIdRol().equals(rolId))
-                        .collect(Collectors.toList());
-                    System.out.println("Después de filtro rol (ID " + rolId + "): " + usuarios.size());
-                } catch (NumberFormatException e) {
-                    System.err.println("Error parseando rol ID: " + rol);
-                }
+                usuarios = usuarios.stream()
+                    .filter(usuario -> usuario.getRol() != null && rol.equals(usuario.getRol().getNombreRol()))
+                    .collect(Collectors.toList());
+                System.out.println("Después de filtro rol (" + rol + "): " + usuarios.size());
             }
             
             return usuarios;
