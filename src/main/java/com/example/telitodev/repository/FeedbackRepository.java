@@ -1,5 +1,6 @@
 package com.example.telitodev.repository;
 
+import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.Feedback;
 import com.example.telitodev.entity.Usuario;
 import org.springframework.data.domain.Page;
@@ -15,4 +16,5 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
     List<Feedback> findByApi_Usuario_Dni(String dniUsuario);
     // NUEVO: Método que soporta paginación
     Page<Feedback> findByUsuario(Usuario usuario, Pageable pageable);
+    List<Feedback> findByApiIn(List<Api> apis);
 }

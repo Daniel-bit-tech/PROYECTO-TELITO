@@ -47,6 +47,12 @@ public class MetricsService {
         return (double) totalErrores / totalLlamadas * 100.0;
     }
 
+
+
+
+
+
+
     /* ===== DTOs para charts ===== */
     public record ChartSeriesDTO(List<String> labels, List<Double> data) {}
     public record ChartSeriesLongDTO(List<String> labels, List<Long> data) {}

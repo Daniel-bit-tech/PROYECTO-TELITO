@@ -273,7 +273,7 @@
             </div>
 
             <!-- NUEVOS GRÁFICOS -->
-            
+
             <!-- Throughput por hora -->
             <div class="charts-grid" style="margin-top: 1.5rem;">
                 <div class="chart-container">
@@ -282,7 +282,7 @@
                     </div>
                     <div class="chart-canvas"><canvas id="throughputChart"></canvas></div>
                 </div>
-                
+
                 <!-- Tendencia de latencia -->
                 <div class="chart-container">
                     <div class="chart-header">
@@ -501,12 +501,12 @@
 
         const url = `${CHART_URL}?${params.toString()}`;
         let labels = [], data = [];
-        
+
         try {
             const res = await fetch(url, { credentials: 'same-origin' });
             if (!res.ok) throw new Error('Network response was not ok');
             const json = await res.json();
-            
+
             // Si hay datos reales, úsalos
             if (json.labels && json.labels.length > 0) {
                 labels = json.labels;
@@ -528,10 +528,10 @@
                 type: 'bar',
                 data: {
                     labels: labels,
-                    datasets: [{ 
-                        label:'Latencia promedio (ms)', 
-                        data: data, 
-                        borderWidth:0, 
+                    datasets: [{
+                        label:'Latencia promedio (ms)',
+                        data: data,
+                        borderWidth:0,
                         backgroundColor:['#4299e1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
                     }]
                 },
@@ -576,7 +576,7 @@
     }
 
     /* ---------- NUEVOS GRÁFICOS ---------- */
-    
+
     /* Throughput por hora */
     async function initThroughputChart() {
         const canvas = document.getElementById('throughputChart');
@@ -588,7 +588,7 @@
             const res = await fetch(THROUGHPUT_URL, { credentials: 'same-origin' });
             if (!res.ok) throw new Error('Network response was not ok');
             const json = await res.json();
-            
+
             // Si hay datos reales, úsalos
             if (json.labels && json.labels.length > 0) {
                 labels = json.labels;
@@ -645,7 +645,7 @@
             const res = await fetch(LATENCY_TREND_URL, { credentials: 'same-origin' });
             if (!res.ok) throw new Error('Network response was not ok');
             const json = await res.json();
-            
+
             // Si hay datos reales, úsalos
             if (json.labels && json.labels.length > 0) {
                 labels = json.labels;
@@ -655,7 +655,7 @@
                 const today = new Date();
                 labels = [];
                 data = [145, 132, 156, 143, 167, 134, 149];
-                
+
                 for (let i = 6; i >= 0; i--) {
                     const date = new Date(today);
                     date.setDate(date.getDate() - i);
@@ -668,7 +668,7 @@
             const today = new Date();
             labels = [];
             data = [145, 132, 156, 143, 167, 134, 149];
-            
+
             for (let i = 6; i >= 0; i--) {
                 const date = new Date(today);
                 date.setDate(date.getDate() - i);
@@ -742,7 +742,7 @@
     }
 
     /* ---------- NUEVOS GRÁFICOS ---------- */
-    
+
     /* Throughput por hora */
     async function initThroughputChart() {
         const canvas = document.getElementById('throughputChart');
@@ -754,7 +754,7 @@
             const res = await fetch(THROUGHPUT_URL, { credentials: 'same-origin' });
             if (!res.ok) throw new Error('Network response was not ok');
             const json = await res.json();
-            
+
             // Si hay datos reales, úsalos
             if (json.labels && json.labels.length > 0) {
                 labels = json.labels;
@@ -811,7 +811,7 @@
             const res = await fetch(LATENCY_TREND_URL, { credentials: 'same-origin' });
             if (!res.ok) throw new Error('Network response was not ok');
             const json = await res.json();
-            
+
             // Si hay datos reales, úsalos
             if (json.labels && json.labels.length > 0) {
                 labels = json.labels;
@@ -821,7 +821,7 @@
                 const today = new Date();
                 labels = [];
                 data = [145, 132, 156, 143, 167, 134, 149];
-                
+
                 for (let i = 6; i >= 0; i--) {
                     const date = new Date(today);
                     date.setDate(date.getDate() - i);
@@ -834,7 +834,7 @@
             const today = new Date();
             labels = [];
             data = [145, 132, 156, 143, 167, 134, 149];
-            
+
             for (let i = 6; i >= 0; i--) {
                 const date = new Date(today);
                 date.setDate(date.getDate() - i);

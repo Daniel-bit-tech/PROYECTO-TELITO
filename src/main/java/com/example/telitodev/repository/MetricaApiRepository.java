@@ -1,5 +1,6 @@
 package com.example.telitodev.repository;
 
+import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.MetricaApi;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -197,5 +198,8 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
         ORDER BY requests DESC
     """, nativeQuery = true)
     List<Object[]> getUsageByEnvironment();
+
+
+    List<MetricaApi> findByApiIn(List<Api> apis);
 }
 

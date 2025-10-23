@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
+    <title>Dashboard Product Owner - TelitoDev</title>
+    <!-- CSS de Tabler -->
+    <link href="/tabler/dist/css/tabler.min.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-vendors.min.css" rel="stylesheet"/>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <!-- Navbar (Añade tu header de PO aquí) -->
+    <!-- <div th:replace="~{po/header :: header}"></div> -->
+
+    <div class="page-wrapper">
+        <!-- Page header -->
+        <div class="page-header d-print-none">
+            <div class="container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col">
+                        <h2 class="page-title">
+                            Dashboard Product Owner
+                        </h2>
+                        <div class="text-secondary mt-1" th:text="${po.idOrganizacion.nombre}">
+                            Telito Solutions
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Page body -->
+        <div class="page-body">
+            <div class="container-xl">
+
+                <!-- Fila 1: Tarjetas de KPIs -->
+                <div class="row row-deck row-cards">
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-primary text-white avatar"><i class="ti ti-briefcase"></i></span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="${dashboard.totalProyectos}">0</div>
+                                        <div class="text-secondary">Proyectos Activos</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-green text-white avatar"><i class="ti ti-api"></i></span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="${dashboard.apisUtilizadas}">0</div>
+                                        <div class="text-secondary">APIs Utilizadas</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-twitter text-white avatar"><i class="ti ti-device-analytics"></i></span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="${#numbers.formatInteger(dashboard.totalLlamadas, 0, 'POINT')}">0</div>
+                                        <div class="text-secondary">Llamadas Totales (Mes)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-danger text-white avatar"><i class="ti ti-alert-circle"></i></span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="${dashboard.totalErrores}">0</div>
+                                        <div class="text-secondary">Errores (Mes)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-warning text-white avatar"><i class="ti ti-clock"></i></span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="${#numbers.formatDecimal(dashboard.latenciaPromedio, 1, 1)} + ' ms'">0 ms</div>
+                                        <div class="text-secondary">Latencia Promedio</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="card card-sm">
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="bg-success text-white avatar"><i class="ti ti-currency-dollar"></i></span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="'S/ ' + ${#numbers.formatDecimal(dashboard.costoTotal, 1, 2)}">S/ 0.00</div>
+                                        <div class="text-secondary">Costo Total (Mes)</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fila 2: Gráficos -->
+                <div class="row row-cards mt-4">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Volumen de Llamadas (últimos días)</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="apiCallsChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Estado de Roadmap (APIs)</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="chart-container">
+                                    <canvas id="roadmapChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fila 3: Tablas -->
+                <div class="row row-cards mt-4">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header"><h3 class="card-title">Feedback Reciente</h3></div>
+                            <div class="table-responsive">
+                                <table class="table card-table table-vcenter text-nowrap datatable">
+                                    <thead>
+                                    <tr>
+                                        <th>API</th>
+                                        <th>Rating</th>
+                                        <th>Comentario</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="fb : ${dashboard.feedbackRecientes}">
+                                        <td th:text="${fb.apiNombre}">API Usuarios</td>
+                                        <td>
+                                            <span th:text="${fb.calificacion}">5</span> <i class="ti ti-star-filled text-warning"></i>
+                                        </td>
+                                        <td th:text="${fb.comentario}">Muy útil...</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-header"><h3 class="card-title">Backlog Activo</h3></div>
+                            <div class="table-responsive">
+                                <table class="table card-table table-vcenter text-nowrap datatable">
+                                    <thead>
+                                    <tr>
+                                        <th>API</th>
+                                        <th>Asunto</th>
+                                        <th>Prioridad</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="item : ${dashboard.backlogActivos}">
+                                        <td th:text="${item.apiNombre}">API Pagos</td>
+                                        <td th:text="${item.asunto}">--</td>
+                                        <td th:text="${item.prioridad}">Alta</td>
+                                        <td><span class="badge bg-warning me-1"></span> <span th:text="${item.estado}">desarrollo</span></td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- Footer (Añade tu footer aquí) -->
+        <!-- <div th:replace="~{po/footer :: footer}"></div> -->
+    </div>
+</div>
+
+<!-- SCRIPTS DE TABLER Y CHART.JS -->
+<script src="/tabler/dist/js/tabler.min.js" defer></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // Obtenemos los datos pasados desde el controlador
+    const llamadasData = /*[[${dashboard.llamadasPorDia}]]*/ {};
+    const roadmapData = /*[[${dashboard.roadmapStatus}]]*/ {};
+    /*]]>*/
+
+    document.addEventListener("DOMContentLoaded", function () {
+        // --- Gráfico de Llamadas (Líneas) ---
+        const lineCtx = document.getElementById('apiCallsChart').getContext('2d');
+        new Chart(lineCtx, {
+            type: 'line',
+            data: {
+                labels: Object.keys(llamadasData),
+                datasets: [{
+                    label: 'Llamadas por Día',
+                    data: Object.values(llamadasData),
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // --- Gráfico de Roadmap (Dona) ---
+        const doughnutCtx = document.getElementById('roadmapChart').getContext('2d');
+        new Chart(doughnutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(roadmapData),
+                datasets: [{
+                    label: 'Estado de Roadmap',
+                    data: Object.values(roadmapData),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.7)',  // Nueva
+                        'rgba(54, 162, 235, 0.7)',  // En desarrollo
+                        'rgba(255, 206, 86, 0.7)',  // Próxima
+                        'rgba(75, 192, 192, 0.7)'   // (otro estado)
+                    ],
+                    borderColor: '#ffffff',
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                    }
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>
