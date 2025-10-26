@@ -1,15 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>TELITO PORTAL | Versionado API</title>
-
-    <!-- CSRF Token -->
+    <title>TELITO PORTAL | Versión y Contrato API</title>
     <meta name="_csrf" th:content="${_csrf.token}">
     <meta name="_csrf_header" th:content="${_csrf.headerName}">
-
     <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
     <link href="/tabler/dist/css/tabler-flags.css" rel="stylesheet"/>
     <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
@@ -24,136 +20,184 @@
     <div th:replace="desarrollador/header.html :: header"></div>
 
     <div class="page-wrapper">
+        <div class="page-header d-print-none">
+            <div class="container container-xl">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h1 class="page-title" th:text="'Crear Versión y Contrato: '+${versionContratoDto.nombreAPI}">Crear Versión y Contrato</h1>
+                        <div class="page-pretitle" th:if="${paso2}">Paso 2: Versión y Contrato</div>
+                        <div class="page-pretitle" th:unless="${paso2}">Crear nueva versión con contrato</div>
+                    </div>
+                </div>
+            </div>
+        </div>
         <div class="page-body">
             <div class="container-xl">
-
-                <!-- Header con información del paso -->
-                <div class="page-header">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <h1 class="page-title">Versionado de API</h1>
-                            <div class="page-pretitle">Paso 2: Configurar Versión Inicial</div>
-                        </div>
-                        <div class="col-auto">
-                            <div class="btn-list">
-                                <span class="badge bg-blue-lt">Paso 2 de 5</span>
-                            </div>
-                        </div>
+                <div class="card mb-4" th:if="${paso2}">
+                    <div class="card-body">
+                        <ul class="steps steps-green steps-counter my-4">
+                            <li class="step-item"
+                                data-bs-trigger="hover"
+                                data-bs-toggle="popover"
+                                data-bs-placement="top"
+                                title="Paso 1: Información Básica"
+                                data-bs-content="Datos fundamentales de la API.">Información Básica</li>
+                            <li class="step-item active"
+                                data-bs-trigger="hover"
+                                data-bs-toggle="popover"
+                                data-bs-placement="top"
+                                title="Paso 2: Versionado y Contrato"
+                                data-bs-content="Configurar versión inicial y especificación OpenAPI.">Versión y Contrato</li>
+                            <li class="step-item"
+                                data-bs-trigger="hover"
+                                data-bs-toggle="popover"
+                                data-bs-placement="top"
+                                title="Paso 3: Documentación Adicional"
+                                data-bs-content="Agregar documentación técnica y de alto nivel..">Documentación Adicional</li>
+                            <li class="step-item"
+                                data-bs-trigger="hover"
+                                data-bs-toggle="popover"
+                                data-bs-placement="top"
+                                title="Paso 4: Revisión Final"
+                                data-bs-content="Confirmar y publicar la API.">Revisión Final</li>
+                        </ul>
                     </div>
                 </div>
 
                 <div class="row justify-content-center">
-                    <div class="col-lg-8">
+                    <div class="col-lg-9 col-md-8">
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title">
-                                    <i class="fas fa-code-branch me-2 text-orange"></i>
-                                    Configuración de Versión
-                                </h3>
-                                <div class="card-subtitle">Defina la primera versión de su API</div>
+                                <div>
+                                    <h3 class="card-title">
+                                        <i class="fas fa-code-branch me-2 text-orange"></i>
+                                        Versión y Contrato API
+                                    </h3>
+                                    <p class="card-subtitle">Configure la versión y cargue el contrato OpenAPI</p>
+                                </div>
                             </div>
                             <div class="card-body">
-                                <form th:action="@{/dev/int/guardarVersionApi}" th:object="${version}" method="post">
-                                    <input type="hidden" th:field="*{api.idApi}"/>
+                                <form th:action="@{/dev/int/guardarVersionApi}" th:object="${versionContratoDto}" method="post" enctype="multipart/form-data">
+                                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                                    <input type="hidden" th:field="*{idAPI}"/>
+                                    <input type="hidden" th:field="*{desdeArchivo}" id="desdeArchivoInput"/>
 
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <!-- Número de Versión -->
-                                            <div class="mb-3">
-                                                <label class="form-label required">Número de Versión</label>
-                                                <input type="text" th:field="*{version}" class="form-control"
-                                                       placeholder="Ej: 1.0.0, v2.1, 2024.1" required maxlength="45">
-                                                <small class="form-hint">Use el formato semántico: mayor.menor.parche</small>
-                                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('version')}" th:errors="*{version}"></div>
+                                    <!-- Sección de Versión -->
+                                    <div class="mb-4">
+                                        <h4 class="card-title mb-3">
+                                            <i class="fas fa-tag me-2 text-blue"></i>
+                                            Información de la Versión
+                                        </h4>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <!-- Número de Versión -->
+                                                <div class="mb-3">
+                                                    <label class="form-label required">Número de Versión</label>
+                                                    <input type="text" th:field="*{version}" class="form-control"
+                                                           placeholder="Ej: 1.0.0, v2.1" required maxlength="40">
+                                                    <small class="form-hint">Use el formato semántico: mayor.menor.parche</small>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('version')}" th:errors="*{version}"></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <!-- Estado de Versión -->
+                                                <div class="mb-3">
+                                                    <label for="estadoVersion" class="form-label required">Estado de la Versión</label>
+                                                    <select id="estadoVersion" class="form-select" th:field="*{estadoVersion}" required>
+                                                        <option value="" disabled selected>-- Seleccione un estado --</option>
+                                                        <option th:each="e : ${estadosVer}"
+                                                                th:value="${e}"
+                                                                th:text="${e.label}"></option>
+                                                    </select>
+                                                    <small class="form-hint">Estado actual del ciclo de vida de esta versión</small>
+                                                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('estadoVersion')}" th:errors="*{estadoVersion}"></div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="col-md-6">
-                                            <!-- Estado de Versión -->
-                                            <div class="mb-3">
-                                                <label class="form-label required">Estado de la Versión</label>
-                                                <select th:field="*{estadoVersion}" class="form-select" required>
-                                                    <option value="" disabled>Seleccione un estado</option>
-                                                    <option value="ESTABLE">Estable</option>
-                                                    <option value="PRUEBAS">En pruebas</option>
-                                                    <option value="CONSTRUCCIÓN" selected>En construcción</option>
-                                                    <option value="DEPRECADA">Deprecada</option>
-                                                    <option value="RETIRADA">Retirada</option>
-                                                </select>
-                                                <small class="form-hint">Estado actual del ciclo de vida de esta versión</small>
-                                                <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('estadoVersion')}" th:errors="*{estadoVersion}"></div>
-                                            </div>
+
+                                        <!-- Fecha de Publicación -->
+                                        <div class="mb-3">
+                                            <label class="form-label required">Fecha de Publicación</label>
+                                            <input type="date" th:field="*{fechaPublicacion}" class="form-control" required>
+                                            <small class="form-hint">Fecha cuando esta versión estará disponible</small>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fechaPublicacion')}" th:errors="*{fechaPublicacion}"></div>
                                         </div>
                                     </div>
 
-                                    <!-- Fecha de Publicación -->
-                                    <div class="mb-3">
-                                        <label class="form-label required">Fecha de Publicación</label>
-                                        <input type="date" th:field="*{fechaPublicacion}" class="form-control" required>
-                                        <small class="form-hint">Fecha cuando esta versión estará disponible</small>
-                                        <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fechaPublicacion')}" th:errors="*{fechaPublicacion}"></div>
-                                    </div>
+                                    <!-- Sección de Contrato -->
+                                    <div class="mb-4">
+                                        <h4 class="card-title mb-3">
+                                            <i class="fas fa-file-contract me-2 text-green"></i>
+                                            Contrato OpenAPI
+                                        </h4>
 
-
-                                    <!-- Información de versionado semántico -->
-                                    <div class="alert alert-info mt-4">
-                                        <div class="d-flex">
-                                            <div class="me-3">
-                                                <i class="fas fa-info-circle fa-lg text-info"></i>
+                                        <!-- Selector de método de carga -->
+                                        <div class="mb-3">
+                                            <label class="form-label required">Método de Carga</label>
+                                            <div class="form-selectgroup">
+                                                <label class="form-selectgroup-item">
+                                                    <input type="radio" name="metodoCarga" value="archivo" class="form-selectgroup-input" th:checked="${versionContratoDto.desdeArchivo == null || versionContratoDto.desdeArchivo}">
+                                                    <span class="form-selectgroup-label">
+                                                        <i class="fas fa-upload me-2"></i>
+                                                        Subir archivo
+                                                    </span>
+                                                </label>
+                                                <label class="form-selectgroup-item">
+                                                    <input type="radio" name="metodoCarga" value="texto" class="form-selectgroup-input" th:checked="${versionContratoDto.desdeArchivo != null && !versionContratoDto.desdeArchivo}">
+                                                    <span class="form-selectgroup-label">
+                                                        <i class="fas fa-paste me-2"></i>
+                                                        Pegar contenido
+                                                    </span>
+                                                </label>
                                             </div>
-                                            <div>
-                                                <h4 class="alert-title">Guía de Versionado Semántico</h4>
-                                                <div class="row">
-                                                    <div class="col-md-4">
-                                                        <strong>Versión Mayor</strong>
-                                                        <div class="text-secondary small">Cambios incompatibles</div>
-                                                        <span class="badge bg-red">X.0.0</span>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <strong>Versión Menor</strong>
-                                                        <div class="text-secondary small">Nuevas características compatibles</div>
-                                                        <span class="badge bg-yellow">1.X.0</span>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <strong>Parche</strong>
-                                                        <div class="text-secondary small">Corrección de bugs</div>
-                                                        <span class="badge bg-green">1.0.X</span>
-                                                    </div>
+                                        </div>
+
+                                        <!-- Carga por archivo -->
+                                        <div id="carga-archivo" class="mb-3">
+                                            <label class="form-label required">Archivo OpenAPI</label>
+                                            <input type="file" th:field="*{archivo}" class="form-control"
+                                                   accept=".yaml,.yml,.json" id="archivoInput">
+                                            <small class="form-hint">Formatos aceptados: YAML (.yaml, .yml) o JSON (.json)</small>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('archivo')}" th:errors="*{archivo}"></div>
+                                        </div>
+
+                                        <!-- Carga por texto -->
+                                        <div id="carga-texto" class="mb-3" style="display: none;">
+                                            <label class="form-label required">Contenido OpenAPI</label>
+                                            <textarea th:field="*{contenido}" class="form-control"
+                                                      rows="12" placeholder="Pegue aquí el contenido de su especificación OpenAPI..."
+                                                      id="textoInput"></textarea>
+                                            <small class="form-hint">Pegue el contenido YAML o JSON de su especificación OpenAPI</small>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('contenido')}" th:errors="*{contenido}"></div>
+                                        </div>
+
+                                        <!-- Formato del contrato -->
+                                        <div class="mb-3">
+                                            <label for="formato" class="form-label required">Formato del Contrato</label>
+                                            <select id="formato" class="form-select form-" th:field="*{formato}" required>
+                                                <option value="" disabled selected>-- Seleccione un formato --</option>
+                                                <option th:each="f : ${formatosCont}"
+                                                        th:value="${f}"
+                                                        th:text="${f}"></option>
+                                            </select>
+                                            <small class="form-hint">Formato de la especificación OpenAPI</small>
+                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('formato')}" th:errors="*{formato}"></div>
+                                        </div>
+
+                                        <!-- Validación previa -->
+                                        <div class="alert alert-warning" id="alert-validacion" style="display: none;">
+                                            <div class="d-flex">
+                                                <div class="me-3">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </div>
+                                                <div>
+                                                    <h4 class="alert-title">Validación de Contrato</h4>
+                                                    <div id="mensaje-validacion"></div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <!-- Estados de Versión -->
-                                    <div class="card mt-4">
-                                        <div class="card-header">
-                                            <h4 class="card-title">Estados de Versión</h4>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-6">
-                                                    <div class="d-flex align-items-center mb-3">
-                                                        <span class="badge bg-blue me-3">EN CONSTRUCCIÓN</span>
-                                                        <div class="text-secondary small">En desarrollo activo, no estable</div>
-                                                    </div>
-                                                    <div class="d-flex align-items-center mb-3">
-                                                        <span class="badge bg-yellow me-3">EN PRUEBAS</span>
-                                                        <div class="text-secondary small">En pruebas o staging</div>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-6">
-                                                    <div class="d-flex align-items-center mb-3">
-                                                        <span class="badge bg-green me-3">ESTABLE</span>
-                                                        <div class="text-secondary small">Estable y lista para uso productivo</div>
-                                                    </div>
-                                                    <div class="d-flex align-items-center mb-3">
-                                                        <span class="badge bg-orange me-3">DEPRECADA</span>
-                                                        <div class="text-secondary small">Próxima a retirar, migrar a nueva versión</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                     <!-- Botones -->
                                     <div class="form-footer mt-4">
                                         <div class="btn-list justify-content-between">
@@ -161,55 +205,119 @@
                                                 <a th:href="@{/apis}" class="btn btn-ghost-secondary me-2">
                                                     <i class="fas fa-times me-2"></i>Cancelar
                                                 </a>
-                                                <button type="submit" class="btn btn-primary" disabled>
-                                                    <i class="fas fa-save me-2"></i>Guardar y Continuar al Contrato
+                                                <button type="submit" class="btn btn-primary" id="btn-submit">
+                                                    <i class="fas fa-save me-2"></i>Guardar y Continuar
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
-
                                 </form>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- Información de los siguientes pasos -->
-                        <div class="row mt-4">
-                            <div class="col-md-6">
-                                <div class="card card-sm">
-                                    <div class="card-body">
-                                        <div class="row align-items-center">
-                                            <div class="col-auto">
-                        <span class="bg-blue text-white avatar">
-                          <i class="fas fa-file-contract"></i>
-                        </span>
+                    <div class="col-lg-3 col-md-4 mb-4 mb-md-0" th:if="${paso2}">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">
+                                    <i class="fas fa-lightbulb fa-lg text-info me-2"></i>
+                                    Consejos
+                                </h3>
+
+                                <!-- Información de versionado semántico -->
+                                <div class="alert alert-info mt-4">
+                                    <div class="d-flex">
+                                        <div class="me-3">
+                                            <i class="fas fa-info-circle fa-lg text-info"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="alert-title">Guía de Versionado Semántico</h4>
+                                            <div class="d-inline-block mb-2">
+                                                <strong>Versión Mayor</strong>
+                                                <span class="badge bg-red text-bg-red ms-auto">X.0.0</span>
+                                                <div class="text-secondary small">Cambios incompatibles</div>
                                             </div>
-                                            <div class="col">
-                                                <div class="font-weight-medium">Paso 3: Contrato API</div>
-                                                <div class="text-secondary">Especificación OpenAPI/Swagger</div>
+                                            <div class="d-inline-block mb-2">
+                                                <strong class="ms-0">Versión Menor</strong>
+                                                <span class="badge bg-yellow text-bg-yellow ms-auto">1.X.0</span>
+                                                <div class="text-secondary small">Nuevas características compatibles</div>
+                                            </div>
+                                            <div class="d-inline-block">
+                                                <strong>Parche</strong>
+                                                <span class="badge bg-green text-bg-green ms-auto">1.0.X</span>
+                                                <div class="text-secondary small">Corrección de bugs</div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card card-sm">
-                                    <div class="card-body">
-                                        <div class="row align-items-center">
-                                            <div class="col-auto">
-                        <span class="bg-green text-white avatar">
-                          <i class="fas fa-book"></i>
-                        </span>
+
+                                <!-- Estados de Versión - Con Iconos -->
+                                <div class="alert alert-indigo mt-4">
+                                    <div class="d-flex">
+                                        <div class="me-3">
+                                            <i class="fas fa-layer-group fa-lg text-indigo"></i>
+                                        </div>
+                                        <div class="flex-fill">
+                                            <h4 class="alert-title mb-2">Estados - Ciclo de Vida</h4>
+                                            <div class="row g-2">
+                                                <div class="col-12 text-truncate">
+                                                    <div class="align-items-center">
+                                                        <span class="badge bg-blue text-bg-blue me-2"><i class="fas fa-hammer fa-xs"></i>En Construcción</span>
+                                                        <div>
+                                                            <div class="text-secondary small">Desarrollo activo</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="align-items-center">
+                                                        <span class="badge bg-yellow text-bg-yellow me-2"><i class="fas fa-vial fa-xs"></i>En Pruebas</span>
+                                                        <div>
+                                                            <div class="text-secondary small">Fase de testing</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="align-items-center">
+                                                        <span class="badge bg-green text-bg-green me-2"><i class="fas fa-check-circle fa-xs"></i>Estable</span>
+                                                        <div>
+                                                            <div class="text-secondary small">Lista para producción</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="align-items-center">
+                                                        <span class="badge bg-orange text-bg-orange me-2"><i class="fas fa-exclamation-triangle fa-xs"></i>Deprecada</span>
+                                                        <div>
+                                                            <div class="text-secondary small">Migrar a nueva versión</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div class="col">
-                                                <div class="font-weight-medium">Paso 4: Documentación</div>
-                                                <div class="text-secondary">Guías detalladas y ejemplos</div>
-                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Información de Contrato -->
+                                <div class="alert alert-info">
+                                    <div class="d-flex">
+                                        <div class="me-3">
+                                            <i class="fas fa-info-circle fa-lg text-info"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="alert-title">Requisitos del Contrato OpenAPI</h4>
+                                            <ul class="mb-0">
+                                                <li>Debe ser una especificación OpenAPI 3.0+ válida</li>
+                                                <li>Incluir todos los endpoints, parámetros y respuestas</li>
+                                                <li>Definir esquemas de seguridad y autenticación</li>
+                                                <li>Especificar tipos de contenido (application/json)</li>
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
@@ -218,76 +326,335 @@
     <div id="footer-placeholder"></div>
 </div>
 
-<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/tabler/dist/js/tabler.min.js"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Validación de fecha futura
-        const fechaInput = document.querySelector('input[th\\:field="*{fecha_publicacion}"]');
-        const hoy = new Date().toISOString().split('T')[0];
+        // Elementos del DOM
+        const metodoCargaRadios = document.querySelectorAll('input[name="metodoCarga"]');
+        const cargaArchivoDiv = document.getElementById('carga-archivo');
+        const cargaTextoDiv = document.getElementById('carga-texto');
+        const archivoInput = document.getElementById('archivoInput');
+        const textoInput = document.getElementById('textoInput');
+        const formatoSelect = document.getElementById('formato');
+        const desdeArchivoInput = document.getElementById('desdeArchivoInput');
+        const alertValidacion = document.getElementById('alert-validacion');
+        const mensajeValidacion = document.getElementById('mensaje-validacion');
+        const btnSubmit = document.getElementById('btn-submit');
+        const form = document.querySelector('form');
 
+        // Función para cambiar entre métodos de carga
+        function cambiarMetodoCarga(esArchivo) {
+            if (esArchivo) {
+                cargaArchivoDiv.style.display = 'block';
+                cargaTextoDiv.style.display = 'none';
+                archivoInput.required = true;
+                textoInput.required = false;
+                desdeArchivoInput.value = 'true';
+            } else {
+                cargaArchivoDiv.style.display = 'none';
+                cargaTextoDiv.style.display = 'block';
+                archivoInput.required = false;
+                textoInput.required = true;
+                desdeArchivoInput.value = 'false';
+            }
+            resetValidacion();
+        }
+
+        // Inicializar vista según el estado actual (para cuando hay errores de validación)
+        function inicializarVista() {
+            // Determinar el método de carga inicial basado en el valor del campo oculto
+            const desdeArchivo = desdeArchivoInput.value === 'true';
+
+            // Si el valor no está establecido, verificar si hay contenido en el textarea
+            if (desdeArchivoInput.value === '' && textoInput.value.trim() !== '') {
+                // Si hay contenido en el textarea, mostrar esa sección
+                cambiarMetodoCarga(false);
+                document.querySelector('input[name="metodoCarga"][value="texto"]').checked = true;
+            } else {
+                cambiarMetodoCarga(desdeArchivo);
+                document.querySelector(`input[name="metodoCarga"][value="${desdeArchivo ? 'archivo' : 'texto'}"]`).checked = true;
+            }
+        }
+
+        // Cambiar entre métodos de carga al seleccionar radio buttons
+        metodoCargaRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                cambiarMetodoCarga(this.value === 'archivo');
+            });
+        });
+
+        // Detectar formato desde archivo
+        archivoInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const fileName = file.name.toLowerCase();
+                if (fileName.endsWith('.yaml') || fileName.endsWith('.yml')) {
+                    formatoSelect.value = 'YAML';
+                } else if (fileName.endsWith('.json')) {
+                    formatoSelect.value = 'JSON';
+                }
+                validarArchivo(file);
+            }
+        });
+
+        // Validar contenido de texto
+        textoInput.addEventListener('input', function() {
+            validarContenido(this.value);
+        });
+
+        // Validación de fecha futura
+        const fechaInput = document.querySelector('input[th\\:field="*{fechaPublicacion}"]');
         if (fechaInput) {
-            // Establecer fecha mínima como hoy
+            const hoy = new Date().toISOString().split('T')[0];
             fechaInput.min = hoy;
 
             fechaInput.addEventListener('change', function() {
                 const selectedDate = new Date(this.value);
                 const today = new Date();
+                today.setHours(0, 0, 0, 0); // Ignorar hora
 
                 if (selectedDate < today) {
-                    alert('La fecha de publicación no puede ser en el pasado');
+                    mostrarErrorFecha('La fecha de publicación no puede ser en el pasado');
                     this.value = hoy;
+                } else {
+                    limpiarErrorFecha();
                 }
             });
         }
 
         // Validación de formato de versión
         const versionInput = document.querySelector('input[th\\:field="*{version}"]');
-
         if (versionInput) {
             versionInput.addEventListener('blur', function() {
-                const version = this.value.trim();
-                const versionRegex = /^(v?(\d+)(\.\d+)*(\.\d+)?(-[a-zA-Z0-9]+)?)$/;
+                validarVersion(this.value.trim());
+            });
 
-                if (version && !versionRegex.test(version)) {
-                    const hint = this.parentElement.querySelector('.form-hint');
-                    if (hint) {
-                        hint.innerHTML = '<span class="text-red">Formato recomendado: 1.0.0 o v1.0.0</span>';
-                    }
+            versionInput.addEventListener('input', function() {
+                // Limpiar mensaje de error mientras el usuario escribe
+                const hint = this.parentElement.querySelector('.form-hint');
+                if (hint && hint.classList.contains('text-red')) {
+                    hint.innerHTML = 'Use el formato semántico: mayor.menor.parche';
+                    hint.classList.remove('text-red');
                 }
             });
         }
 
+        // Funciones de validación específicas
+        function validarArchivo(file) {
+            resetValidacion();
+
+            if (!file) {
+                return;
+            }
+
+            const maxSize = 10 * 1024 * 1024; // 10MB
+
+            if (file.size > maxSize) {
+                mostrarError('El archivo es demasiado grande. Tamaño máximo: 10MB');
+                return;
+            }
+
+            // Validación básica de extensión
+            const fileName = file.name.toLowerCase();
+            const extensionesValidas = ['.yaml', '.yml', '.json'];
+            const extensionValida = extensionesValidas.some(ext => fileName.endsWith(ext));
+
+            if (!extensionValida) {
+                mostrarError('Formato de archivo no válido. Use YAML (.yaml, .yml) o JSON (.json)');
+                return;
+            }
+
+            // Validar tipo MIME básico
+            const tipoValido = file.type === '' ||
+                file.type.includes('yaml') ||
+                file.type.includes('yml') ||
+                file.type.includes('json');
+
+            if (!tipoValido) {
+                mostrarAdvertencia('El tipo de archivo podría no ser válido. Asegúrese de que sea YAML o JSON.');
+                return;
+            }
+
+            mostrarExito('Archivo válido detectado');
+        }
+
+        function validarContenido(contenido) {
+            resetValidacion();
+
+            if (!contenido.trim()) {
+                return;
+            }
+
+            // Validación básica de contenido
+            if (contenido.length < 50) {
+                mostrarAdvertencia('El contenido parece demasiado corto para ser una especificación OpenAPI válida');
+                return;
+            }
+
+            // Detectar formato automáticamente
+            const contenidoTrim = contenido.trim();
+            if ((contenidoTrim.startsWith('{') && contenidoTrim.endsWith('}')) ||
+                (contenidoTrim.startsWith('[') && contenidoTrim.endsWith(']'))) {
+                formatoSelect.value = 'JSON';
+            } else if (contenidoTrim.includes('openapi:') || contenidoTrim.includes('swagger:')) {
+                formatoSelect.value = 'YAML';
+            }
+
+            // Validación básica de estructura OpenAPI
+            if (!contenidoTrim.includes('openapi') && !contenidoTrim.includes('swagger') &&
+                !contenidoTrim.includes('"openapi"') && !contenidoTrim.includes('"swagger"')) {
+                mostrarAdvertencia('El contenido no parece ser una especificación OpenAPI válida. Falta el campo "openapi" o "swagger".');
+                return;
+            }
+
+            mostrarExito('Contenido válido detectado');
+        }
+
+        function validarVersion(version) {
+            if (!version) {
+                return;
+            }
+
+            const versionRegex = /^(v?(\d+)(\.\d+)*(\.\d+)?(-[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?(\+[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)*)?)$/;
+            const hint = versionInput.parentElement.querySelector('.form-hint');
+
+            if (!versionRegex.test(version)) {
+                if (hint) {
+                    hint.innerHTML = '<span class="text-red">Formato recomendado: 1.0.0, v2.1.5, 3.0.0-beta.1</span>';
+                }
+                return false;
+            } else {
+                if (hint) {
+                    hint.innerHTML = 'Formato válido. Use el formato semántico: mayor.menor.parche';
+                }
+                return true;
+            }
+        }
+
+        function mostrarError(mensaje) {
+            alertValidacion.style.display = 'block';
+            alertValidacion.className = 'alert alert-danger';
+            mensajeValidacion.innerHTML = `<i class="fas fa-times-circle me-2"></i>${mensaje}`;
+            btnSubmit.disabled = true;
+        }
+
+        function mostrarAdvertencia(mensaje) {
+            alertValidacion.style.display = 'block';
+            alertValidacion.className = 'alert alert-warning';
+            mensajeValidacion.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${mensaje}`;
+            btnSubmit.disabled = false;
+        }
+
+        function mostrarExito(mensaje) {
+            alertValidacion.style.display = 'block';
+            alertValidacion.className = 'alert alert-success';
+            mensajeValidacion.innerHTML = `<i class="fas fa-check-circle me-2"></i>${mensaje}`;
+            btnSubmit.disabled = false;
+        }
+
+        function resetValidacion() {
+            alertValidacion.style.display = 'none';
+            btnSubmit.disabled = false;
+        }
+
+        function mostrarErrorFecha(mensaje) {
+            // Crear o mostrar mensaje de error para fecha
+            let errorDiv = fechaInput.parentElement.querySelector('.error-fecha');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'text-red small mt-1 error-fecha';
+                fechaInput.parentElement.appendChild(errorDiv);
+            }
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-circle me-1"></i>${mensaje}`;
+        }
+
+        function limpiarErrorFecha() {
+            const errorDiv = fechaInput.parentElement.querySelector('.error-fecha');
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+        }
+
         // Validación antes del envío
-        const form = document.querySelector('form');
         form.addEventListener('submit', function(e) {
             const requiredFields = form.querySelectorAll('[required]');
             let isValid = true;
             let errorMessages = [];
 
+            // Validar campos requeridos
             requiredFields.forEach(field => {
-                if (!field.value.trim()) {
+                if (!field.value.trim() && field.style.display !== 'none') {
                     isValid = false;
-                    const label = field.closest('.mb-3').querySelector('.form-label');
-                    errorMessages.push(`• ${label.textContent.trim()} es requerido`);
+                    const label = field.closest('.mb-3')?.querySelector('.form-label');
+                    if (label) {
+                        const labelText = label.textContent.trim().replace('*', '');
+                        errorMessages.push(`• ${labelText} es requerido`);
+                    }
                 }
             });
 
+            // Validar que al menos un método de carga tenga contenido
+            const metodoActivo = document.querySelector('input[name="metodoCarga"]:checked').value;
+            if (metodoActivo === 'archivo' && !archivoInput.files[0]) {
+                isValid = false;
+                errorMessages.push('• Debe seleccionar un archivo OpenAPI');
+            } else if (metodoActivo === 'texto' && !textoInput.value.trim()) {
+                isValid = false;
+                errorMessages.push('• Debe ingresar el contenido OpenAPI');
+            }
+
             // Validar formato de versión
             if (versionInput && versionInput.value.trim()) {
-                const versionRegex = /^(v?(\d+)(\.\d+)*(\.\d+)?(-[a-zA-Z0-9]+)?)$/;
-                if (!versionRegex.test(versionInput.value.trim())) {
+                if (!validarVersion(versionInput.value.trim())) {
                     isValid = false;
-                    errorMessages.push('• El formato de versión no es válido. Use: 1.0.0 o v1.0.0');
+                    errorMessages.push('• El formato de versión no es válido. Use: 1.0.0, v2.1.5, 3.0.0-beta.1');
+                }
+            }
+
+            // Validar fecha
+            if (fechaInput && fechaInput.value) {
+                const selectedDate = new Date(fechaInput.value);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                if (selectedDate < today) {
+                    isValid = false;
+                    errorMessages.push('• La fecha de publicación no puede ser en el pasado');
                 }
             }
 
             if (!isValid) {
                 e.preventDefault();
-                alert('Por favor complete los campos requeridos:\n\n' + errorMessages.join('\n'));
+                // Mostrar alerta con errores
+                const alertaHTML = `
+                    <div class="alert alert-danger">
+                        <h4 class="alert-title">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Errores de validación
+                        </h4>
+                        <div class="mt-2">
+                            ${errorMessages.join('<br>')}
+                        </div>
+                    </div>
+                `;
+
+                // Insertar alerta al inicio del formulario
+                const primeraSeccion = form.querySelector('.mb-4');
+                if (primeraSeccion) {
+                    primeraSeccion.insertAdjacentHTML('beforebegin', alertaHTML);
+
+                    // Hacer scroll a la alerta
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
             }
         });
+
+        // Inicializar la vista cuando se carga la página
+        inicializarVista();
     });
 </script>
 </body>

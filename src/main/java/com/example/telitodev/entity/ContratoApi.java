@@ -11,27 +11,29 @@ public class ContratoApi {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idContratoAPI")
     private Integer idContratoApi;
-    
+
+    public enum FormatoContrato {JSON, YAML}    //Limita opciones de formato
+    @Enumerated(EnumType.STRING)
     @Column(name = "formato", nullable = false)
-    private String formato;
+    private FormatoContrato  formato;
 
     @Column(name = "url_contrato", nullable = true, length = 45)
     private String urlContrato;
 
     @Column(name = "fecha_modificacion")
-    private Timestamp fechaModificacion;
+    private Timestamp fechaModificacion= new Timestamp(System.currentTimeMillis());
 
     @Column(name = "contenido", columnDefinition = "JSON")
     private String contenido;
     
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idVersion", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "idVersion", nullable = false, unique = true)
     private VersionApi versionApi;
     
     // Constructores
     public ContratoApi() {}
     
-    public ContratoApi(String formato, String urlContrato, Timestamp fechaModificacion, VersionApi versionApi) {
+    public ContratoApi(FormatoContrato formato, String urlContrato, Timestamp fechaModificacion, VersionApi versionApi) {
         this.formato = formato;
         this.urlContrato = urlContrato;
         this.fechaModificacion = fechaModificacion;
@@ -47,11 +49,11 @@ public class ContratoApi {
         this.idContratoApi = idContratoApi;
     }
     
-    public String getFormato() {
+    public FormatoContrato getFormato() {
         return formato;
     }
     
-    public void setFormato(String formato) {
+    public void setFormato(FormatoContrato formato) {
         this.formato = formato;
     }
     

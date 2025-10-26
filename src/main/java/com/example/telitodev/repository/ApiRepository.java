@@ -22,6 +22,7 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
     List<Api> findByTag_IdTag(Integer idTag);
 
+    Api findByNombreIgnoreCase(String nombre);
     List<Api> findByNombreContainingIgnoreCase(String nombre);
 
     @Query(value = "SELECT a.* FROM api a " +

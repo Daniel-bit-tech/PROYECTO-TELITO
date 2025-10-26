@@ -3,6 +3,7 @@ package com.example.telitodev.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -10,17 +11,34 @@ import java.util.List;
 public class VersionApi {
     
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idVersion")
     private Integer idVersion;
     
     @Column(name = "version", length = 45)
     private String version;
-    
+
+    public enum EstadoVersion {     //Limita opciones de estado de Version
+        ESTABLE("Estable"),
+        EN_PRUEBAS("En Pruebas"),
+        EN_CONSTRUCCION("En Construcción"),
+        DEPRECADA("Deprecada"),
+        RETIRADA("Retirada");
+
+        private final String label;
+        EstadoVersion(String label) {
+            this.label = label;
+        }
+        public String getLabel() {
+            return label;
+        }
+    }
+    @Enumerated(EnumType.STRING)
     @Column(name = "estado_version", length = 45)
-    private String estadoVersion;
+    private EstadoVersion estadoVersion;
     
     @Column(name = "fecha_publicacion")
-    private Timestamp fechaPublicacion;
+    private LocalDate fechaPublicacion;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
@@ -33,15 +51,15 @@ public class VersionApi {
     @JsonIgnore
     private List<Documentacion> documentaciones;
 
-    @OneToMany(mappedBy = "versionApi", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "versionApi", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JsonIgnore
-    private List<ContratoApi> contratosApi;
+    private ContratoApi contratoApi;
     
     // Constructores
     public VersionApi() {}
     
-    public VersionApi(Integer idVersion, String version, String estadoVersion, 
-                     Timestamp fechaPublicacion, Api api) {
+    public VersionApi(Integer idVersion, String version, EstadoVersion estadoVersion,
+                      LocalDate fechaPublicacion, Api api) {
         this.idVersion = idVersion;
         this.version = version;
         this.estadoVersion = estadoVersion;
@@ -66,19 +84,19 @@ public class VersionApi {
         this.version = version;
     }
     
-    public String getEstadoVersion() {
+    public EstadoVersion getEstadoVersion() {
         return estadoVersion;
     }
     
-    public void setEstadoVersion(String estadoVersion) {
+    public void setEstadoVersion(EstadoVersion estadoVersion) {
         this.estadoVersion = estadoVersion;
     }
     
-    public Timestamp getFechaPublicacion() {
+    public LocalDate getFechaPublicacion() {
         return fechaPublicacion;
     }
     
-    public void setFechaPublicacion(Timestamp fechaPublicacion) {
+    public void setFechaPublicacion(LocalDate fechaPublicacion) {
         this.fechaPublicacion = fechaPublicacion;
     }
     
@@ -98,11 +116,11 @@ public class VersionApi {
         this.documentaciones = documentaciones;
     }
 
-    public List<ContratoApi> getContratosApi() {
-        return contratosApi;
+    public ContratoApi getContratoApi() {
+        return contratoApi;
     }
 
-    public void setContratosApi(List<ContratoApi> contratosApi) {
-        this.contratosApi = contratosApi;
+    public void setContratosApi(ContratoApi contratoApi) {
+        this.contratoApi = contratoApi;
     }
 }
