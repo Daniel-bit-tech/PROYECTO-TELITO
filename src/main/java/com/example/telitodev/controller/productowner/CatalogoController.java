@@ -67,6 +67,9 @@ public class CatalogoController {
         model.addAttribute("selDominios", selDominios);
         model.addAttribute("nombre", nombre);
 
+        System.out.println("Tags" + selTags);
+        System.out.println("Dominios" + dominios);
+
         return "po/catalogo";
     }
 

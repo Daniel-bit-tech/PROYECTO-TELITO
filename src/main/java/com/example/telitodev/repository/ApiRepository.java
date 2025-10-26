@@ -29,12 +29,12 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
             "WHERE pha.idAPI IS NULL", nativeQuery = true)
     List<Api> findApisNotAssociatedWithProyecto(@Param("idProy") Integer idProyecto);
 
-    @Query(value = "SELECT a.* FROM api a " +
-            "LEFT JOIN dominio d ON a.idDominio = d.idDominio " +
-            "LEFT JOIN tag t ON a.idTag = t.idTag " +
+    @Query("SELECT a FROM Api a " +
+            "LEFT JOIN a.dominio d " +
+            "LEFT JOIN a.tag t " +
             "WHERE (:search IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-            "AND (:idDominios IS NULL OR d.idDominio IN (:idDominios)) " +
-            "AND (:idTags IS NULL OR t.idTag IN (:idTags))", nativeQuery = true)
+            "AND (:idDominios IS NULL OR d.idDominio IN :idDominios) " +
+            "AND (:idTags IS NULL OR t.idTag IN :idTags)")
     List<Api> findByFilters(@Param("search") String search,
                             @Param("idDominios") List<Integer> idDominios,
                             @Param("idTags") List<Integer> idTags);

@@ -194,8 +194,8 @@
 
                             <div class="card-footer bg-transparent mt-auto">
                                 <div class="btn-list justify-content-end">
-                                    <!-- Formulario para registrar el Feedback en el Backlog -->
-                                    <form id="backlogForm" action="/po/registrarFeedbackEnBacklog" method="POST" class="btn-form">
+                                    <!-- Mostrar formulario SOLO si NO está registrado en backlog -->
+                                    <form th:if="${!feedback.registradoBacklog}" id="backlogForm" action="/po/registrarFeedbackEnBacklog" method="POST" class="btn-form">
                                         <!-- Enviar el id del Feedback -->
                                         <input type="hidden" name="idFeedback" th:value="${feedback.idFeedback}" />
 
@@ -208,17 +208,20 @@
                                         </button>
                                     </form>
 
-                                    <!-- Estado del registro (se muestra después de registrar) -->
-                                    <div id="registeredStatus" class="status-badge status-registered" style="display: none;">
+                                    <!-- Mostrar estado SOLO si YA está registrado en backlog -->
+                                    <div th:if="${feedback.registradoBacklog}" class="status-badge status-registered">
                                         <i class="fas fa-check-circle"></i> Registrado en Backlog
                                     </div>
 
-                                    <!-- Botón para volver a la vista anterior -->
+                                    <!-- Botón para volver (siempre visible) -->
                                     <a th:href="@{/po/feedback}" class="btn btn-custom" style="background-color: #6c757d; border-color: #6c757d;">
                                         <i class="fas fa-arrow-left"></i> Volver
                                     </a>
                                 </div>
                             </div>
+
+                            <!-- Contenedor para mensajes de alerta -->
+                            <div id="alertContainer"></div>
 
                         </div>
                     </div>
@@ -283,79 +286,52 @@
     document.addEventListener('DOMContentLoaded', function() {
         const backlogForm = document.getElementById('backlogForm');
         const backlogBtn = document.getElementById('backlogBtn');
-        const registeredStatus = document.getElementById('registeredStatus');
         const alertContainer = document.getElementById('alertContainer');
 
-        // Verificar si ya fue registrado (usando localStorage)
-        const feedbackId = document.querySelector('input[name="idFeedback"]').value;
-        const storageKey = `feedback_${feedbackId}_registered`;
+        // Solo aplicar JavaScript si el formulario existe (es decir, si NO está registrado)
+        if (backlogForm && backlogBtn) {
+            let isSubmitting = false;
 
-        // Si ya estaba registrado, mostrar estado
-        if (localStorage.getItem(storageKey)) {
-            disableBacklogButton();
-        }
-
-        backlogForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            // Deshabilitar el botón inmediatamente
-            disableBacklogButton();
-
-            // Mostrar estado de procesando
-            showAlert('Procesando registro en backlog...', 'info');
-
-            // Crear un pequeño delay para que el usuario vea el cambio
-            setTimeout(() => {
-                // Marcar como registrado en localStorage
-                localStorage.setItem(storageKey, 'true');
-
-                // Mostrar mensaje de éxito
-                showAlert('¡Feedback registrado exitosamente en el backlog!', 'success');
-
-                // Enviar el formulario después de mostrar el feedback visual
-                backlogForm.submit();
-            }, 1500);
-        });
-
-        function disableBacklogButton() {
-            backlogBtn.disabled = true;
-            backlogBtn.innerHTML = '<i class="fas fa-ban"></i> Ya registrado';
-            backlogBtn.classList.add('btn-registered');
-            backlogForm.style.display = 'none';
-            registeredStatus.style.display = 'inline-flex';
-        }
-
-        function showAlert(message, type) {
-            const alertClass = type === 'success' ? 'alert-success' : 'alert-info';
-            const icon = type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
-
-            const alertDiv = document.createElement('div');
-            alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
-            alertDiv.innerHTML = `
-            <i class="fas ${icon} me-2"></i>
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-
-            alertContainer.appendChild(alertDiv);
-
-            // Auto-remover después de 5 segundos
-            setTimeout(() => {
-                if (alertDiv.parentNode) {
-                    alertDiv.remove();
+            backlogForm.addEventListener('submit', function(e) {
+                if (isSubmitting) {
+                    e.preventDefault();
+                    return;
                 }
-            }, 5000);
-        }
+                isSubmitting = true;
 
-        // Prevenir doble clic accidental
-        let isSubmitting = false;
-        backlogForm.addEventListener('submit', function(e) {
-            if (isSubmitting) {
-                e.preventDefault();
-                return;
+                // Deshabilitar el botón inmediatamente y mostrar estado de procesando
+                backlogBtn.disabled = true;
+                backlogBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+
+                // Mostrar alerta de procesamiento
+                showAlert('Procesando registro en backlog...', 'info');
+
+                // El formulario se enviará normalmente
+                // No necesitamos hacer nada más porque el backend actualiza la BD
+            });
+
+            function showAlert(message, type) {
+                const alertClass = type === 'success' ? 'alert-success' : 'alert-info';
+                const icon = type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
+                alertDiv.innerHTML = `
+                    <i class="fas ${icon} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                `;
+
+                alertContainer.appendChild(alertDiv);
+
+                // Auto-remover después de 5 segundos
+                setTimeout(() => {
+                    if (alertDiv.parentNode) {
+                        alertDiv.remove();
+                    }
+                }, 5000);
             }
-            isSubmitting = true;
-        });
+        }
     });
 </script>
 </body>

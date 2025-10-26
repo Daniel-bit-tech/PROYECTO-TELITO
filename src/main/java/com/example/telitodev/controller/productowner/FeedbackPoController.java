@@ -90,13 +90,15 @@ public class FeedbackPoController {
                 model.addAttribute("feedbackYaRegistrado", true);
                 model.addAttribute("feedbackRegistrado", false);
             } else {
+                // ✅ Este método ahora actualiza automáticamente registradoBacklog
                 feedbackService.registrarFeedbackEnBacklog(idFeedback, asunto, usuario);
+
                 model.addAttribute("success", "Feedback registrado exitosamente en el backlog");
                 model.addAttribute("feedbackRegistrado", true);
                 model.addAttribute("feedbackYaRegistrado", false);
             }
 
-            // Cargar el feedback nuevamente para mostrar la página
+            // Cargar el feedback actualizado (con registradoBacklog = true)
             Optional<Feedback> feedbackOptional = feedbackRepository.findById(idFeedback);
             if (feedbackOptional.isPresent()) {
                 model.addAttribute("feedback", feedbackOptional.get());
@@ -109,6 +111,13 @@ public class FeedbackPoController {
             model.addAttribute("error", "Error al registrar en el backlog: " + e.getMessage());
             return "po/error";
         }
+    }
+
+
+    @PostMapping("/feedback/{id}/registrar-backlog")
+    public String registrarEnBacklog(@PathVariable Integer id) {
+        feedbackRepository.marcarComoRegistradoEnBacklog(id);
+        return "redirect:/po/feedback"; // o a donde quieras redirigir
     }
 
 
