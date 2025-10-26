@@ -5,6 +5,7 @@ import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.entity.Notificacion;
 import com.example.telitodev.entity.ActividadReciente; // Importa esta clase
+import com.example.telitodev.repository.NotificacionRepository;
 import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.service.ApiService;
 import com.example.telitodev.service.NotificacionService;
@@ -33,15 +34,17 @@ public class PoController extends BaseController {
     final NotificacionService notificacionService;
     final ActividadRecienteService actividadRecienteService;
     final OnboardingService onboardingService;
+    final NotificacionRepository notificacionRepository;
 
     public PoController(UsuarioRepository usuarioRepository, ApiService apiService, 
                        NotificacionService notificacionService, ActividadRecienteService actividadRecienteService,
-                       OnboardingService onboardingService) {
+                       OnboardingService onboardingService, NotificacionRepository notificacionRepository) {
         this.usuarioRepository = usuarioRepository;
         this.apiService = apiService;
         this.notificacionService = notificacionService;
         this.actividadRecienteService = actividadRecienteService;
         this.onboardingService = onboardingService;
+        this.notificacionRepository = notificacionRepository;
     }
     
     @GetMapping("/Dashboard")
@@ -80,9 +83,9 @@ public class PoController extends BaseController {
         // Agregar información de impersonación al modelo
         addImpersonationAttributes(model, session);
 
-
-        List<Notificacion> notificaciones = notificacionService.obtenerNotificacionesPorUsuario(usuario.getDni());
-        model.addAttribute("notificaciones", notificaciones);
+        // Implementando notificaciones para el PO (solo lista de notificaciones)
+        List<Notificacion> notis = notificacionRepository.findByUsuario_Dni(usuario.getDni());
+        model.addAttribute("notificaciones", notis);
 
 
         List<ActividadReciente> actividadesRecientes = actividadRecienteService.obtenerActividadesRecientesPorUsuario(usuario.getDni());
