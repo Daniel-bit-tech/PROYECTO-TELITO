@@ -7,6 +7,9 @@ import com.example.telitodev.repository.*;
 import com.example.telitodev.repository.po.ActividadRecienteRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -66,8 +69,14 @@ public class QaController extends BaseController {
         Usuario usuario = getCurrentUser(auth, session);
         Integer NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(),true);
         List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_Dni(usuario.getDni());
-        List<Notificacion> notis = notificacionRepository.findByUsuario_Dni(usuario.getDni());
+
+
+        // --- INICIO: Lógica de Notificaciones Actualizada (Dashboard) ---
+        // Buscando solo las 5 últimas notificaciones NO LEÍDAS
+        List<Notificacion> notis = notificacionRepository.findTop5ByUsuarioDniAndLeidoOrderByFechaDesc(usuario.getDni(), false);
+        // Contando la cantidad de notificaciones que no han sido leídas
         Integer Nnotis = notificacionRepository.countByUsuario_DniAndLeido(usuario.getDni(),false);
+        // --- FIN: Lógica de Notificaciones Actualizada ---
         
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
@@ -101,18 +110,18 @@ public class QaController extends BaseController {
                 String tiempoTranscurrido = "";
                 if (days > 365) {
                     long years = days / 365;
-                    tiempoTranscurrido = years + " años";
+                    tiempoTranscurrido = "Hace" + years + " años";
                 } else if (days > 30) {
                     long months = days / 30;
-                    tiempoTranscurrido = months + " meses";
+                    tiempoTranscurrido = "Hace" + months + " meses";
                 } else if (days > 0) {
-                    tiempoTranscurrido = days + " días";
+                    tiempoTranscurrido = "Hace" + days + " días";
                 } else if (hours > 0) {
-                    tiempoTranscurrido = hours + " horas";
+                    tiempoTranscurrido = "Hace" + hours + " horas";
                 } else if (minutes > 0) {
-                    tiempoTranscurrido = minutes + " minutos";
+                    tiempoTranscurrido = "Hace" + minutes + " minutos";
                 } else {
-                    tiempoTranscurrido = "Hace poco";
+                    tiempoTranscurrido = "Hace un momento";
                 }
 
                 // Asignamos el tiempo transcurrido a la propiedad
@@ -137,18 +146,18 @@ public class QaController extends BaseController {
                 String tiempoTranscurrido = "";
                 if (days > 365) {
                     long years = days / 365;
-                    tiempoTranscurrido = years + " años";
+                    tiempoTranscurrido = "Hace" + years + " años";
                 } else if (days > 30) {
                     long months = days / 30;
-                    tiempoTranscurrido = months + " meses";
+                    tiempoTranscurrido = "Hace" + months + " meses";
                 } else if (days > 0) {
-                    tiempoTranscurrido = days + " días";
+                    tiempoTranscurrido = "Hace" + days + " días";
                 } else if (hours > 0) {
-                    tiempoTranscurrido = hours + " horas";
+                    tiempoTranscurrido = "Hace" + hours + " horas";
                 } else if (minutes > 0) {
-                    tiempoTranscurrido = minutes + " minutos";
+                    tiempoTranscurrido = "Hace" + minutes + " minutos";
                 } else {
-                    tiempoTranscurrido = "Hace poco";
+                    tiempoTranscurrido = "Hace un momento";
                 }
 
                 // Asignamos el tiempo transcurrido a la propiedad de la actividad
@@ -521,8 +530,6 @@ public class QaController extends BaseController {
             return new ArrayList<>();
         }
     }
-
-
 
 
 }

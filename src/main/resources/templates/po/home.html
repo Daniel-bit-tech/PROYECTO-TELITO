@@ -411,7 +411,7 @@
             <div class="welcome-banner">
                 <div class="welcome-content">
                     <h2 class="welcome-title">¡Hola otra vez, <span th:text="${usuario.nombre}">María</span>!</h2>
-                    <p class="welcome-text">Tienes <span></span> APIs con credenciales activas y <span></span> notificaciones sin leer.</p>
+                    <p class="welcome-text">Tienes <span></span> APIs con credenciales activas y <span th:text="${Nnotis}"></span> notificaciones sin leer.</p>
                     <div class="welcome-actions">
                         <a class="btn btn-primary" th:href="@{/proyectos/nuevo}">
                             <i class="fas fa-rocket"></i> Crear nuevo proyecto
@@ -458,9 +458,9 @@
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-bell"></i> Notificaciones</h3>
-                        <!--            <div class="card-actions">-->
-                        <!--              <button class="btn btn-sm btn-outline-secondary">Ver todas</button>-->
-                        <!--            </div>-->
+                                    <div class="card-actions">
+                                        <a th:href="@{/notificaciones}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+                                    </div>
                     </div>
 
                     <ul class="notification-list">
@@ -480,8 +480,8 @@
                         <!-- Mostrar mensaje si la lista está vacía -->
                         <li th:if="${#lists.isEmpty(notificaciones)}">
                             <div class="activity-content">
-                                <div class="activity-title">No hay actividades recientes</div>
-                                <div class="activity-description">Aún no se han registrado actividades.</div>
+                                <div class="activity-title">¡Todo al día!</div>
+                                <div class="activity-description">No tienes notificaciones nuevas.</div>
                             </div>
                         </li>
 

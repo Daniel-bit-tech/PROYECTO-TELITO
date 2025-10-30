@@ -493,9 +493,9 @@
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-bell"></i> Notificaciones</h3>
-                        <!--            <div class="card-actions">-->
-                        <!--              <button class="btn btn-sm btn-outline-secondary">Ver todas</button>-->
-                        <!--            </div>-->
+                                    <div class="card-actions">
+                                        <a th:href="@{/notificaciones}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+                                    </div>
                     </div>
 
                     <ul class="notification-list">
@@ -515,8 +515,8 @@
                         <!-- Mostrar mensaje si la lista está vacía -->
                         <li th:if="${#lists.isEmpty(notificaciones)}">
                             <div class="activity-content">
-                                <div class="activity-title">No hay actividades recientes</div>
-                                <div class="activity-description">Aún no se han registrado actividades.</div>
+                                <div class="activity-title">¡Todo al día!</div>
+                                <div class="activity-description">No tienes notificaciones nuevas.</div>
                             </div>
                         </li>
 

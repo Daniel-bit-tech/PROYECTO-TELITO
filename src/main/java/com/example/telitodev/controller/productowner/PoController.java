@@ -14,16 +14,21 @@ import com.example.telitodev.service.OnboardingService;
 import com.example.telitodev.dto.SolicitudAccesoDecisionRequest;
 import com.example.telitodev.dto.SolicitudAccesoResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.Map;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/po")
@@ -83,8 +88,13 @@ public class PoController extends BaseController {
         // Agregar información de impersonación al modelo
         addImpersonationAttributes(model, session);
 
-        // Implementando notificaciones para el PO (solo lista de notificaciones)
-        List<Notificacion> notis = notificacionRepository.findByUsuario_Dni(usuario.getDni());
+        // --- INICIO: Lógica de Notificaciones Actualizada (Dashboard) ---
+        // Buscando solo las 5 últimas notificaciones NO LEÍDAS
+        List<Notificacion> notis = notificacionRepository.findTop5ByUsuarioDniAndLeidoOrderByFechaDesc(usuario.getDni(), false);
+        // Contando la cantidad de notificaciones que no han sido leídas
+        Integer Nnotis = notificacionRepository.countByUsuario_DniAndLeido(usuario.getDni(),false);
+        // --- FIN: Lógica de Notificaciones Actualizada ---
+        model.addAttribute("Nnotis", Nnotis);
         model.addAttribute("notificaciones", notis);
 
 
