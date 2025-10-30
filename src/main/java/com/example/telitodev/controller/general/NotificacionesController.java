@@ -61,9 +61,9 @@ public class NotificacionesController extends BaseController {
             case "PO":
                 viewName = "po/notis_po"; // Plantilla para PO
                 break;
-            // case "DEV":
-            //     viewName = "dev/notis_dev"; // Ejemplo para futura expansión
-            //     break;
+            case "DEV":
+                viewName = "desarrollador/notis_dev"; // Ejemplo para futura expansión
+                break;
             default:
                 // Una vista genérica por si el rol no tiene una específica
                 viewName = "general/notificaciones";

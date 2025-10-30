@@ -77,7 +77,7 @@
                                     <div class="col-auto">
                                         <!-- AQUÍ LA LÓGICA: Botón condicional -->
                                         <div th:if="${!noti.leido}">
-                                            <a th:href="@{/qa/notificaciones/marcarLeido/{id}(id=${noti.idNotificacion})}"
+                                            <a th:href="@{/notificaciones/marcarLeido/{id}(id=${noti.idNotificacion})}"
                                                class="btn btn-sm btn-outline-primary">
                                                 Marcar Leído
                                             </a>
@@ -92,13 +92,13 @@
                     <nav aria-label="Page navigation" class="mt-4 p-3" th:if="${notificacionPage.totalPages > 1}">
                         <ul class="pagination justify-content-center">
                             <li class="page-item" th:classappend="${notificacionPage.isFirst()} ? 'disabled'">
-                                <a class="page-link" th:href="@{/qa/notificaciones(page=${notificacionPage.number - 1}, size=${notificacionPage.size})}">Anterior</a>
+                                <a class="page-link" th:href="@{/notificaciones(page=${notificacionPage.number - 1}, size=${notificacionPage.size})}">Anterior</a>
                             </li>
                             <li class="page-item" th:each="i : ${#numbers.sequence(0, notificacionPage.totalPages - 1)}" th:classappend="${i == notificacionPage.number} ? 'active'">
-                                <a class="page-link" th:href="@{/qa/notificaciones(page=${i}, size=${notificacionPage.size})}" th:text="${i + 1}"></a>
+                                <a class="page-link" th:href="@{/notificaciones(page=${i}, size=${notificacionPage.size})}" th:text="${i + 1}"></a>
                             </li>
                             <li class="page-item" th:classappend="${notificacionPage.isLast()} ? 'disabled'">
-                                <a class="page-link" th:href="@{/qa/notificaciones(page=${notificacionPage.number + 1}, size=${notificacionPage.size})}">Siguiente</a>
+                                <a class="page-link" th:href="@{/notificaciones(page=${notificacionPage.number + 1}, size=${notificacionPage.size})}">Siguiente</a>
                             </li>
                         </ul>
                     </nav>

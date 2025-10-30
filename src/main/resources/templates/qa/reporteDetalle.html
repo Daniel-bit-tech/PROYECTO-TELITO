@@ -139,7 +139,7 @@
                             <ul class="list-group">
                                 <li class="list-group-item" th:each="evidencia : ${evidencias}">
                                     <span th:text="${evidencia.nombre}"></span>
-                                    <a th:href="@{/qa/evidencias/descargar/{idEvidencia}(idEvidencia=${evidencia.idEvidencia})}"
+                                    <a th:href="@{/evidencias/descargar/{idEvidencia}(idEvidencia=${evidencia.idEvidencia})}"
                                        class="btn btn-link btn-sm"> <span th:text="${evidencia.nombre}"></span></a>
                                 </li>
                             </ul>
