@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TELITO PORTAL | Mis APIs</title>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-flags.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet"/>
+    <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/tabler/dist/js/tabler-theme.min.js"></script>
+</head>
+<body>
+<div class="page">
+
+    <div th:replace="desarrollador/header.html :: header"></div>
+
+    <div class="page-wrapper">
+        <div class="page-header d-print-none">
+            <div class="container container-xl">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h1 class="page-title">Mis APIs</h1>
+                        <div class="page-pretitle" th:text="'Usted a creado: ' + ${#lists.size(listaApis)} + ' APIs'"></div>
+                    </div>
+                    <div class="col-auto">
+                        <a th:href="@{/dev/int/misApis/nuevaApi}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Nueva API
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-body">
+            <div class="container-xl">
+                <div class="row">
+                    <!-- Botón para mostrar sidebar en móviles -->
+                    <div class="d-lg-none mb-3">
+                        <button class="btn btn-outline-primary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarFiltros">
+                            <i class="fas fa-filter me-2"></i> Ver Filtros
+                        </button>
+                    </div>
+
+                    <!-- Sidebar -->
+                    <div class="col-lg-3">
+                        <div class="collapse d-lg-block" id="sidebarFiltros">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title d-lg-none">Filtros</h3>
+                                    <div class="card-actions btn-actions">
+                                        <button type="submit" class="btn btn-primary me-1">
+                                            <i class="fas fa-filter me-1"></i> Aplicar Filtros
+                                        </button>
+                                        <a th:href="@{/dev/int/misApis}" class="btn btn-ghost-secondary"><i class="fas fa-times me-1"></i>Limpiar Filtros</a>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <form th:action="@{/dev/int/misApis}" method="get" id="filter-form">
+
+                                        <!-- Búsqueda -->
+                                        <div class="mb-3">
+                                            <label class="form-label">Buscar por nombre</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" class="form-control" name="nombre" th:value="${param.nombre}" placeholder="Nombre de API...">
+                                                <button class="btn btn-outline-secondary" type="button" onclick="clearSearch()">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <!-- Estados -->
+                                        <div class="mb-3">
+                                            <h4 class="filter-section-title text-green">
+                                                <i class="fas fa-play"></i> Estados
+                                            </h4>
+                                            <div class="form-selectgroup form-selectgroup-pills">
+                                                <label class="form-selectgroup-item" th:each="estado : ${listaEstados}">
+                                                    <input type="checkbox" name="estados" th:value="${estado.idEstado}"
+                                                           class="form-selectgroup-input"
+                                                           th:checked="${param.estados!=null and param.estados.contains(estado.idEstado)}">
+                                                    <span class="form-selectgroup-label status" th:classappend="${estado.estado=='Activo'}?'status-green' : (${estado.estado=='Desarrollo'} ? 'status-yellow' : 'status-red')">
+                                                        <span class="status-dot status-dot-animated"></span>
+                                                        <span th:text="${estado.estado}"></span>
+                                                    </span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Dominios -->
+                                        <div class="mb-3">
+                                            <h4 class="filter-section-title text-azure">
+                                                <i class="fas fa-signal "></i> Dominios
+                                            </h4>
+                                            <div class="form-selectgroup form-selectgroup-pills">
+                                                <label class="form-selectgroup-item" th:each="dom : ${listaDominios}">
+                                                    <input type="checkbox" name="dominios" th:value="${dom.idDominio}"
+                                                           class="form-selectgroup-input"
+                                                           th:checked="${param.dominios!=null and param.dominios.contains(dom.idDominio)}">
+                                                    <span class="form-selectgroup-label p-2 small" th:text="${dom.nombre}">Dominio</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Tags -->
+                                        <div class="mb-3">
+                                            <h4 class="filter-section-title text-purple">
+                                                <i class="fas fa-tag"></i> Tags
+                                            </h4>
+                                            <div class="form-selectgroup form-selectgroup-pills">
+                                                <label class="form-selectgroup-item" th:each="tag : ${listaTags}">
+                                                    <input type="checkbox" name="tags" th:value="${tag.idTag}"
+                                                           class="form-selectgroup-input"
+                                                           th:checked="${param.tags != null and param.tags.contains(tag.idTag)}">
+                                                    <span class="form-selectgroup-label p-2 small" th:text="${tag.nombre}">Tag</span>
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <!-- Botones -->
+                                        <div class="btn-list">
+                                            <button type="submit" class="btn btn-primary w-100">
+                                                <i class="fas fa-search me-2"></i>Aplicar Filtros
+                                            </button>
+                                            <a th:href="@{/dev/int/misApis}" class="btn btn-ghost-secondary w-100 mt-2">
+                                                <i class="fas fa-times me-2"></i>Limpiar
+                                            </a>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contenido Principal -->
+                    <div class="col-lg-9">
+                        <!-- Estadísticas rápidas -->
+                        <div class="row mb-4" th:if="${not #lists.isEmpty(listaApis)}">
+                            <div class="col-md-3">
+                                <div class="card card-sm">
+                                    <div class="card-status-bottom bg-green"></div>
+                                    <div class="card-body">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="bg-green text-white avatar"><i class="fas fa-check"></i></span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="font-weight-medium" th:text="${#lists.size(listaApis.?[estadoApi.estado == 'Activo'])}">0</div>
+                                                <div class="text-secondary">Activas</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card card-sm">
+                                    <div class="card-status-bottom bg-yellow"></div>
+                                    <div class="card-body">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="bg-yellow text-white avatar"><i class="fas fa-tools"></i></span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="font-weight-medium" th:text="${#lists.size(listaApis.?[estadoApi.estado == 'Desarrollo'])}">0</div>
+                                                <div class="text-secondary">En desarrollo</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card card-sm">
+                                    <div class="card-status-bottom bg-red"></div>
+                                    <div class="card-body">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                                <span class="bg-red text-white avatar"><i class="fas fa-exclamation-circle"></i></span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="font-weight-medium" th:text="${#lists.size(listaApis.?[estadoApi.estado == 'Inactivo'])}">0</div>
+                                                <div class="text-secondary">Inactivas</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Grid de APIs -->
+                        <div class="row row-cards" id="apis-container">
+                            <div class="col-sm-6 col-lg-4" th:each="api : ${listaApis}">
+                                <div class="card card-hover shadow-sm h-100 border-0">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <span class="avatar avatar-sm bg-blue-lt text-blue me-2">
+                                                <i class="fas fa-plug"></i>
+                                            </span>
+                                            <div>
+                                                <h3 class="card-title mb-0 text-truncate" th:text="${api.nombre}">Nombre API</h3>
+                                                <small class="text-muted text-truncate" th:text="${api.dominio.nombre}">Dominio</small>
+                                            </div>
+                                        </div>
+                                        <span th:classappend="${api.estadoApi.estado=='Activo'}?'status status-green' : (${api.estadoApi.estado=='Desarrollo'} ? 'status status-yellow' : 'status status-red')">
+                                            <span class="status-dot status-dot-animated"></span>
+                                            <span th:text="${api.estadoApi.estado}">Estado</span>
+                                        </span>
+                                    </div>
+
+                                    <!-- Body -->
+                                    <div class="card-body">
+                                        <p class="text-muted mb-3 small" th:text="${api.descripcion} ?: 'Sin descripción'">Descripción breve de la API...</p>
+
+                                        <div class="d-flex align-items-center mb-2" th:if="${api.endpointUrl}">
+                                            <i class="fas fa-link text-blue me-2"></i>
+                                            <span class="text-truncate small" style="max-width: 100%;" th:text="${api.endpointUrl}">https://api.miempresa.com/v1</span>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <span class="badge bg-azure-lt me-1" th:text="${api.dominio.nombre}">Dominio</span>
+                                            <span class="badge bg-purple-lt" th:text="${api.tag.nombre}">Tag</span>
+                                        </div>
+
+                                        <div class="d-flex justify-content-between text-muted small mt-3">
+                                            <div>
+                                                <i class="fas fa-calendar text-orange me-1"></i>
+                                                <span th:text="${#dates.format(api.fechaCreacion, 'dd/MM/yyyy')}">01/01/2025</span>
+                                            </div>
+                                            <div>
+                                                <i class="fas fa-code-branch text-teal me-1"></i>
+                                                <span th:text="${#lists.size(api.versionesApi)}">0</span> versiones
+                                            </div>
+                                            <div>
+                                                <i class="fas fa-file-alt text-indigo me-1"></i>
+                                                <span th:text="${#lists.size(api.documentaciones)}">0</span> docs
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Footer -->
+                                    <div class="card-footer bg-transparent d-flex justify-content-between align-items-center pt-2">
+                                        <a th:href="@{'/apis/'+${api.idApi}+'/docs'}" class="btn btn-sm btn-primary w-50 me-1">
+                                            <i class="fas fa-eye me-1"></i> Ver
+                                        </a>
+                                        <a th:href="@{'/dev/int/misApis/'+${api.idApi}}" class="btn btn-sm btn-outline-secondary w-50">
+                                            <i class="fas fa-edit me-1"></i> Gestionar
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Estado vacío -->
+                        <div class="empty" th:if="${#lists.isEmpty(listaApis)}">
+                            <div class="empty-icon">
+                                <i class="fas fa-database fa-2x text-muted"></i>
+                            </div>
+                            <p class="empty-title">No se encontraron APIs</p>
+                            <p class="empty-subtitle text-muted">
+                                Intenta ajustar tus filtros de búsqueda o crea una nueva API.
+                            </p>
+                            <div class="empty-action">
+                                <a th:href="@{/dev/int/misApis/nuevaApi}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Crear primera API
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/tabler/dist/js/tabler.min.js"></script>
+
+<script>
+    // Funciones para manejar filtros
+    function clearSearch() {
+        document.querySelector('input[name="nombre"]').value = '';
+    }
+
+    function clearFilters() {
+        // Limpiar todos los campos del formulario
+        const form = document.getElementById('filter-form');
+        form.reset();
+
+        // Enviar formulario vacío
+        form.submit();
+    }
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>TELITO PORTAL | Gestión de API</title>
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+  <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
+  <link href="/tabler/dist/css/tabler-flags.css" rel="stylesheet"/>
+  <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
+  <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet"/>
+  <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div class="page">
+
+  <div th:replace="desarrollador/header.html :: header"></div>
+
+  <div class="page-wrapper">
+    <div class="page-body">
+      <div class="container-fluid">
+        <div class="row">
+
+          <div th:replace="desarrollador/interno/gestionSidebar :: gestionApi-sidebar(${api.idApi}, ${currentView}, ${subView})"></div>
+
+          <!-- Contenedor dinámico -->
+            <div id="content-area" class="mt-3">
+              <!-- Aquí se cargan las vistas parciales vía fetch -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script th:inline="javascript">
+
+  const idApi = [[${api.idApi}]];
+  // Manejo de tabs internos (header secundario)
+  document.addEventListener("DOMContentLoaded", () => {
+    const tabs = document.querySelectorAll("[data-section]");
+    const contentArea = document.getElementById("content-area");
+
+    tabs.forEach(tab => {
+      tab.addEventListener("click", (e) => {
+        e.preventDefault();
+        tabs.forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        const section = tab.getAttribute("data-section");
+
+        if (idApi) {}
+        // Simulación de fetch dinámico
+        fetch(`/dev/int/misApis/${idApi}/section/${section}`)
+                .then(res => res.text())
+                .then(html => {
+                  contentArea.innerHTML = html;
+                })
+                .catch(() => {
+                  contentArea.innerHTML = "<div class='alert alert-danger'>Error cargando sección</div>";
+                });
+      });
+    });
+  });
+</script>
+</body>
+</html>

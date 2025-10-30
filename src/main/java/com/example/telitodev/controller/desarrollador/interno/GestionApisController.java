@@ -29,7 +29,6 @@ import java.util.Optional;
 @RequestMapping(value = {"/dev/int","/dev/int/misApis"})
 public class GestionApisController extends BaseController {
 
-    private final ContratoApiService contratoApiService;
 //    private final S3DocsApiService s3DocsApiService;
 
     final ApiRepository apiRepository;
@@ -42,8 +41,7 @@ public class GestionApisController extends BaseController {
     final ProyectoRepository proyectoRepository;
     final ContratoRepository contratoRepository;
 
-    public GestionApisController(ContratoApiService contratoApiService, ApiRepository apiRepository, UsuarioRepository usuarioRepository, DocumentacionRepository documentacionRepository, DominioRepository dominioRepository, TagRepository tagRepository, EstadoApiRepository estadoApiRepository, VersionApiRepository versionApiRepository, ProyectoRepository proyectoRepository, ContratoRepository contratoRepository) {
-        this.contratoApiService = contratoApiService;
+    public GestionApisController(ApiRepository apiRepository, UsuarioRepository usuarioRepository, DocumentacionRepository documentacionRepository, DominioRepository dominioRepository, TagRepository tagRepository, EstadoApiRepository estadoApiRepository, VersionApiRepository versionApiRepository, ProyectoRepository proyectoRepository, ContratoRepository contratoRepository) {
         this.apiRepository = apiRepository;
         this.usuarioRepository = usuarioRepository;
         this.documentacionRepository = documentacionRepository;
@@ -55,265 +53,107 @@ public class GestionApisController extends BaseController {
         this.contratoRepository = contratoRepository;
     }
 
-    @GetMapping("/nuevaApi")    //Paso 1
-    public String vistaCreacionApi(Model model, Authentication auth, HttpSession session) {
+
+    @GetMapping()
+    public String listaApisDeUsuario(@RequestParam(value = "dominios",required = false) List<Integer> selDominios,
+                                     @RequestParam(value = "tags", required = false) List<Integer> selTags,
+                                     @RequestParam(value = "nombre", required = false) String nombre,
+                                     @RequestParam(value = "estados", required = false) List<Integer> selEstado,
+                                     Model model, Authentication auth, HttpSession session) {
+        String dominios = selDominios == null ? null : selDominios.toString();
+        String tags = selTags == null ? null : selTags.toString();
+        System.out.println("Doms: "+dominios + " \nTags: " + tags);
+
         Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
 
-        ApiCreacionDTO apiDto = new ApiCreacionDTO();
-        model.addAttribute("apiDto", apiDto);
+        List<Api> listaApis = apiRepository.findByFilterAndDniUsuario(nombre, selDominios, selTags,usuario.getDni());
+        model.addAttribute("listaApis", listaApis);
 
         model.addAttribute("listaDominios", dominioRepository.findAll());
         model.addAttribute("listaTags", tagRepository.findAll());
-        model.addAttribute("hoy", LocalDateTime.now());
+        model.addAttribute("listaEstados", estadoApiRepository.findAll());
 
-        return "desarrollador/interno/crearApi";
+
+        return "desarrollador/interno/listaMisApis";
+
     }
 
-    @PostMapping("/guardarApi")
-    public String crearApi(Model model, Authentication auth, HttpSession session, @ModelAttribute("apiDto") ApiCreacionDTO apiDto, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
+
+    @GetMapping("/{idApi}")
+    public String verDetalleApi(Model model, Authentication auth, HttpSession session, @PathVariable("idApi") Integer idApi) {
         Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
 
-        Api apiExistente = apiRepository.findByNombreIgnoreCase(apiDto.getNombre());
-        if (bindingResult.hasErrors() || apiExistente != null) {
-            model.addAttribute("listaDominios", dominioRepository.findAll());
-            model.addAttribute("listaTags", tagRepository.findAll());
-            if (apiExistente != null) {
-                model.addAttribute("duplicado", true);
-                bindingResult.rejectValue("nombre", "duplicado","Ya se tiene registrada una API con ese nombre, pruebe con otro.");
+        Optional<Api> apiX = apiRepository.findById(idApi);
+        if (apiX.isPresent() && apiX.get().getUsuario().equals(usuario)) {
+            Api api = apiX.get();
+            model.addAttribute("api", api);
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se pudo encontrar la API solicitada");
+
+
+        model.addAttribute("currentView", "listado");
+        model.addAttribute("subView", "general");
+        return "desarrollador/interno/gestionApiBase";
+    }
+
+    /*
+
+     */
+    @GetMapping("/{idApi}/section/{section}")
+    public String cargarSeccion(@PathVariable Integer idApi, @PathVariable String section,
+                                Model model, Authentication auth, HttpSession session) {
+
+        System.out.println("Solicitud de seccion de API: "+idApi+" a SECCION: "+section);
+
+        Usuario usuario = getCurrentUser(auth, session);
+
+        Optional<Api> apiX = apiRepository.findById(idApi);
+        if (apiX.isPresent() && apiX.get().getUsuario().equals(usuario)) {
+            model.addAttribute("api", apiX.get());
+
+            switch (section) {
+                case "general": return "desarrollador/interno/secciones :: general";
+                case "versionado": return "desarrollador/interno/secciones :: versionado";
+                case "documentacion": return "desarrollador/interno/secciones :: documentacion";
+                case "comunidad":
+                    return "desarrollador/interno/sections/comunidad";
+                default:
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sección no encontrada");
             }
-            return "desarrollador/interno/crearApi";
+        } else {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para ver esta API");
         }
-
-        Api api = new Api(apiDto.getNombre(), apiDto.getDescripcion(), apiDto.getDominio(), apiDto.getTag(), apiDto.getEndpointURL());
-        api.setEstadoApi(estadoApiRepository.getByEstado("Inactivo"));
-        api.setUsuario(usuario);
-        api.setFechaCreacion(Timestamp.valueOf(LocalDateTime.now()));
-
-        apiRepository.save(api);
-
-        redirectAttributes.addFlashAttribute("msg", "Api "+api.getNombre()+" creada exitosamente");
-
-        return "redirect:/dev/int/"+api.getIdApi()+"/nuevaVersion";
-    }
-
-    @GetMapping("/{idApi}/nuevaVersion")    //Paso 2 o acaso una nueva versión
-    public String vistaCrearVersionApi(Model model, Authentication auth, HttpSession session, @PathVariable("idApi") Integer idApi) {
-        Usuario usuario = getCurrentUser(auth, session);
-        model.addAttribute("usuario", usuario);
-        // Agregar atributos de impersonación
-        addImpersonationAttributes(model, session);
-
-        Optional<Api> apiX = apiRepository.findById(idApi);
-        if (apiX.isPresent() && apiX.get().getUsuario().equals(usuario)) {
-            Api api = apiX.get();
-            model.addAttribute("paso2", false);
-            if (api.getVersionesApi().isEmpty()) {
-                model.addAttribute("paso2", true);
-            }
-
-            VersionContratoDTO versionContratoDto = new VersionContratoDTO();
-            versionContratoDto.setIdAPI(api.getIdApi());
-            versionContratoDto.setNombreAPI(api.getNombre());
-            versionContratoDto.setEstadoVersion(VersionApi.EstadoVersion.EN_CONSTRUCCION);
-            model.addAttribute("versionContratoDto", versionContratoDto);
-            model.addAttribute("formatosCont", ContratoApi.FormatoContrato.values());
-            model.addAttribute("estadosVer", VersionApi.EstadoVersion.values());
-
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la API solicitada");
-
-
-        return "desarrollador/interno/crearVersionApi";
-    }
-
-    @PostMapping("/guardarVersionApi")
-    public String guardarVersionApi(Model model, Authentication auth, HttpSession session, @ModelAttribute VersionContratoDTO versionContratoDto, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
-        Usuario usuario = getCurrentUser(auth, session);
-        model.addAttribute("usuario", usuario);
-        // Agregar atributos de impersonación
-        addImpersonationAttributes(model, session);
-
-        Optional<Api> apiX = apiRepository.findById(versionContratoDto.getIdAPI());
-        if (apiX.isPresent() && apiX.get().getUsuario().equals(usuario)) {
-            Api api = apiX.get();
-            versionContratoDto.setNombreAPI(api.getNombre());
-
-            if (bindingResult.hasErrors()) {
-                versionContratoDto.setIdAPI(api.getIdApi());
-                versionContratoDto.setNombreAPI(api.getNombre());
-                model.addAttribute("versionContratoDto", versionContratoDto);
-                model.addAttribute("estadosVer", VersionApi.EstadoVersion.values());
-                model.addAttribute("formatosCont", ContratoApi.FormatoContrato.values());
-                return "desarrollador/interno/crearVersionApi";
-            }
-
-            // Validar y procesar contrato
-            String contenidoContrato;
-            try {
-                contenidoContrato = contratoApiService.validarYProcesarContrato(versionContratoDto);
-            } catch (Exception e) {
-                versionContratoDto.setIdAPI(api.getIdApi());
-                versionContratoDto.setNombreAPI(api.getNombre());
-                bindingResult.rejectValue("contenido", "error.contrato", e.getMessage());
-                model.addAttribute("estadosVer", VersionApi.EstadoVersion.values());
-                model.addAttribute("formatosCont", ContratoApi.FormatoContrato.values());
-                return "desarrollador/interno/crearVersionApi";
-            }
-
-            VersionApi versionApi = new VersionApi();
-            ContratoApi contratoApi = new ContratoApi();
-
-            if (api.getVersionesApi().isEmpty()) {      // si es primera version: PASO2
-                versionApi.setApi(api);
-                versionApi.setVersion(versionContratoDto.getVersion());
-                versionApi.setFechaPublicacion(versionContratoDto.getFechaPublicacion());
-                versionApi.setEstadoVersion(versionContratoDto.getEstadoVersion());
-
-                contratoApi.setVersionApi(versionApi);
-                contratoApi.setFormato(versionContratoDto.getFormato());
-                contratoApi.setContenido(contenidoContrato);
-
-            } else {    // si hay más versiones: no es PASO2
-
-            }
-
-            contratoRepository.save(contratoApi);
-
-            redirectAttributes.addFlashAttribute("msg", "Creaste la primera version de tu API "+api.getNombre()+" exitosamente");
-
-            return "redirect:/dev/int/"+api.getIdApi()+"/versiones/"+versionApi.getIdVersion()+"/docs";
-
-        } else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo guardar la version");
-    }
-
-    @GetMapping("/{idApi}/versiones/{idVersion}/docs")
-    public String vistaDocsVersionApi (Model model, Authentication auth, HttpSession session, @PathVariable("idApi") Integer idApi, @PathVariable("idVersion") Integer idVersion) {
-
-        Usuario usuario = getCurrentUser(auth, session);
-        model.addAttribute("usuario", usuario);
-        // Agregar atributos de impersonación
-        addImpersonationAttributes(model, session);
-
-        Optional<Api> apiX = apiRepository.findById(idApi);
-        if (apiX.isPresent() && apiX.get().getUsuario().equals(usuario)) {
-            Api api = apiX.get();
-
-            Optional<VersionApi> versionApiX = versionApiRepository.findById(idVersion);
-            if (versionApiX.isPresent() && versionApiX.get().getApi().equals(api)) {
-                VersionApi versionApi = versionApiX.get();
-
-                model.addAttribute("paso3", false);
-                if (versionApi.getDocumentaciones().isEmpty()) {
-                    model.addAttribute("paso3", true);
-                }
-
-                DocGeneralDTO docGeneralDto = new DocGeneralDTO();
-                docGeneralDto.setIdApi(api.getIdApi());
-                docGeneralDto.setNombreApi(api.getNombre());
-                docGeneralDto.setIdVersion(versionApi.getIdVersion());
-                docGeneralDto.setNumeroVersion(versionApi.getVersion());
-
-                model.addAttribute("docGeneralDto", docGeneralDto);
-
-
-
-            } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la versión solicitada");
-
-        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la API solicitada");
-
-
-        return "desarrollador/interno/crearDocGeneral";
-
-    }
-
-    @PostMapping("/guardarDocsApi")
-    public String guardarDocGeneralesApi(Model model, Authentication auth, HttpSession session, @ModelAttribute DocGeneralDTO docGeneralDto, BindingResult bindingResult, RedirectAttributes redirectAttributes) {
-        Usuario usuario = getCurrentUser(auth, session);
-        model.addAttribute("usuario", usuario);
-        // Agregar atributos de impersonación
-        addImpersonationAttributes(model, session);
-
-        Optional<Api> apiX = apiRepository.findById(docGeneralDto.getIdApi());
-        Optional<VersionApi> versionApiX = versionApiRepository.findById(docGeneralDto.getIdVersion());
-        if (apiX.isPresent() && apiX.get().getUsuario().equals(usuario)) {
-            Api api = apiX.get();
-            docGeneralDto.setNombreApi(api.getNombre());
-
-            if (!(versionApiX.isPresent() && versionApiX.get().getApi().equals(api))) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo guardar la documentación");
-            }
-            VersionApi versionApi = versionApiX.get();
-
-            if (bindingResult.hasErrors()) {
-                model.addAttribute("docGeneralDto", docGeneralDto);
-                model.addAttribute("estadosVer", VersionApi.EstadoVersion.values());
-                model.addAttribute("formatosCont", ContratoApi.FormatoContrato.values());
-                return "desarrollador/interno/crearVersionApi";
-            }
-
-            // Validar y procesar archivos
-            List<String> urlsDocs = new ArrayList<>();
-            String contenidoContrato;
-            try {
-//                urlsDocs = ;
-            } catch (Exception e) {
-                bindingResult.rejectValue("contenido", "error.contrato", e.getMessage());
-                model.addAttribute("estadosVer", VersionApi.EstadoVersion.values());
-                model.addAttribute("formatosCont", ContratoApi.FormatoContrato.values());
-                return "desarrollador/interno/crearVersionApi";
-            }
-
-            Documentacion documentacion = new Documentacion();
-            List<Documentacion> docsApi = new ArrayList<>();
-            doc_alto_nivel docAltoNivel = new doc_alto_nivel();
-
-            if (versionApi.getDocumentaciones().isEmpty()) {      // si es primera docs: PASO3
-
-
-
-            } else {    // si hay más versiones: no es PASO2
-
-            }
-
-
-            redirectAttributes.addFlashAttribute("msg", "Creaste la documentación de la versión "+versionApi.getVersion()+" de tu API "+api.getNombre()+" exitosamente");
-
-            return "redirect:/dev/int/"+api.getIdApi()+"/versiones/"+versionApi.getIdVersion()+"/docs";
-
-        } else throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo guardar la documentación");
-    }
-
-
-
-
-
-
-    @GetMapping("{idApi}/versiones")
-    public String verVersionesApi(Model model, Authentication auth, HttpSession session, @PathVariable("idApi") String idApi) {
-        Usuario usuario = getCurrentUser(auth, session);
-        model.addAttribute("usuario", usuario);
-        // Agregar atributos de impersonación
-        addImpersonationAttributes(model, session);
-
-        // FALTA
-
-        return "desarrollador/interno/versionesApi";
-
     }
 
     @GetMapping("{idApi}/versiones/{idVersion}")
-    public String verVersionesApi(Model model, Authentication auth, HttpSession session, @PathVariable("idApi") String idApi, @PathVariable("idVersion") String idVersion) {
+    public String verVersionesApi(Model model, Authentication auth, HttpSession session, RedirectAttributes redirectAttributes,
+                                  @PathVariable("idApi") Integer idApi, @PathVariable("idVersion") Integer idVersion) {
         Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
 
-        // FALTA
+        Optional<Api> apiX = apiRepository.findById(idApi);
+        if (apiX.isPresent() && apiX.get().getUsuario().equals(usuario)) {
+            Api api = apiX.get();
+
+            List<VersionApi> versiones = versionApiRepository.findByApi_IdApi(idApi);
+            if (!versiones.isEmpty()) {
+                model.addAttribute("versiones", versiones);
+                if (versiones.stream().anyMatch(version -> version.getIdVersion().equals(idVersion))) {
+                    model.addAttribute("versionActiva",idVersion);
+                } else model.addAttribute("versionActiva",versiones.get(0).getIdVersion());
+            } else {
+                redirectAttributes.addFlashAttribute("msg","Debe crear su primera version para la API "+ api.getNombre());
+                return "redirect:/dev/int/"+api.getIdApi()+"/nuevaVersion";
+            }
+
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se pudo encontrar la API solicitada");
 
         return null;
     }

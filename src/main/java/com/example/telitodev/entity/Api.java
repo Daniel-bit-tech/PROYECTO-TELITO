@@ -82,6 +82,8 @@ public class Api {
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<VersionApi> versionesApi;
 
+    @OneToOne(mappedBy = "api", cascade = CascadeType.ALL)
+    private doc_alto_nivel docAltoNivel;
 
 
 
@@ -271,5 +273,12 @@ public class Api {
 
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
+    }
+
+    public doc_alto_nivel getDocAltoNivel() {
+        return docAltoNivel;
+    }
+    public void setDocAltoNivel(doc_alto_nivel docAltoNivel) {
+        this.docAltoNivel = docAltoNivel;
     }
 }

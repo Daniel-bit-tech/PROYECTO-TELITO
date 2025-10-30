@@ -26,7 +26,7 @@ public class Documentacion {
     private String contenido;
     
     @Column(name = "fecha_modificacion", nullable = false)
-    private Timestamp fechaCreacion;
+    private Timestamp fechaCreacion  = new Timestamp(System.currentTimeMillis());
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idAPI", nullable = false)
@@ -36,8 +36,10 @@ public class Documentacion {
     @JoinColumn(name = "idVersion", nullable = false)
     private VersionApi versionApi;
 
+    public enum FormatoDoc {PDF, MARKDOWN,JSON, YAML}    //Limita opciones de formato
+    @Enumerated(EnumType.STRING)
     @Column(name = "formato", nullable = true)
-    private String formato;
+    private FormatoDoc formato;
 
     // Relaciones
     @OneToMany(mappedBy = "documentacion", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -116,5 +118,21 @@ public class Documentacion {
 
     public void setVersionApi(VersionApi versionApi) {
         this.versionApi = versionApi;
+    }
+
+    public String getUrlDocumento() {
+        return urlDocumento;
+    }
+
+    public void setUrlDocumento(String urlDocumento) {
+        this.urlDocumento = urlDocumento;
+    }
+
+    public FormatoDoc getFormato() {
+        return formato;
+    }
+
+    public void setFormato(FormatoDoc formato) {
+        this.formato = formato;
     }
 }

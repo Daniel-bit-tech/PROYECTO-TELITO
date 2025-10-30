@@ -113,8 +113,10 @@
 
                   <!-- Descripción -->
                   <div class="mb-3">
-                    <label class="form-label required">Descripción</label>
-                    <textarea th:field="*{descripcion}" class="form-control" rows="4"
+                    <label class="form-label required">
+                      Descripción
+                    </label>
+                    <textarea th:field="*{descripcion}" class="form-control" rows="4" maxlength="150" minlength="20"
                               placeholder="Describa el propósito y funcionalidades principales de la API..." required></textarea>
                     <small class="form-hint">Explique claramente qué hace esta API y para qué casos se usa</small>
                     <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('descripcion')}" th:errors="*{descripcion}"></div>

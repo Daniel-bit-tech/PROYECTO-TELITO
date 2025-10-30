@@ -23,6 +23,19 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
     List<Api> findByTag_IdTag(Integer idTag);
 
     Api findByNombreIgnoreCase(String nombre);
+
+    @Query(value = "SELECT a.* FROM api a " +
+            "LEFT JOIN dominio d ON a.idDominio = d.idDominio " +
+            "LEFT JOIN tag t ON a.idTag = t.idTag " +
+            "WHERE (:search IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+            "AND (:idDominios IS NULL OR d.idDominio IN (:idDominios)) " +
+            "AND (:idTags IS NULL OR t.idTag IN (:idTags)) " +
+            "AND a.idUsuario=(:dniUsuario)", nativeQuery = true)
+    List<Api> findByFilterAndDniUsuario(@Param("search") String search,
+                                        @Param("idDominios") List<Integer> idDominios,
+                                        @Param("idTags") List<Integer> idTags,
+                                        @Param("dniUsuario") String dniUsuario);
+
     List<Api> findByNombreContainingIgnoreCase(String nombre);
 
     @Query(value = "SELECT a.* FROM api a " +
@@ -35,7 +48,8 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
             "LEFT JOIN tag t ON a.idTag = t.idTag " +
             "WHERE (:search IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :search, '%'))) " +
             "AND (:idDominios IS NULL OR d.idDominio IN (:idDominios)) " +
-            "AND (:idTags IS NULL OR t.idTag IN (:idTags))", nativeQuery = true)
+            "AND (:idTags IS NULL OR t.idTag IN (:idTags)) " +
+            "AND a.idEstado!=2", nativeQuery = true)
     List<Api> findByFilters(@Param("search") String search,
                             @Param("idDominios") List<Integer> idDominios,
                             @Param("idTags") List<Integer> idTags);

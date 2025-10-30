@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <div th:fragment="general(api)">
+        <h4><i class="fas fa-info-circle text-blue me-2"></i> Información General</h4>
+        <p><strong>Nombre:</strong> <span th:text="${api.nombre}"></span></p>
+        <p><strong>Descripción:</strong> <span th:text="${api.descripcion}"></span></p>
+        <p><strong>Dominio:</strong> <span th:text="${api.dominio.nombre}"></span></p>
+        <p><strong>Tag:</strong> <span th:text="${api.tag.nombre}"></span></p>
+        <p><strong>Endpoint:</strong> <span th:text="${api.endpointUrl}"></span></p>
+    </div>
+
+
+    <div th:fragment="versionado(api)">
+        <h4><i class="fas fa-code-branch text-teal me-2"></i> Versionado</h4>
+        <table class="table table-sm">
+            <thead><tr><th>Versión</th><th>Estado</th><th>Fecha</th></tr></thead>
+            <tbody>
+            <tr th:each="ver : ${api.versionesApi}">
+                <td th:text="${ver.version}"></td>
+                <td th:text="${ver.estadoVersion}"></td>
+                <td th:text="${#temporals.format(ver.fechaPublicacion,'dd/MM/yyyy')}"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div th:fragment="documentacion(api)">
+        <h4>Documentación</h4>
+        <ul>
+            <li th:each="doc : ${api.documentaciones}" th:text="${doc.descripcion}"></li>
+        </ul>
+    </div>
+
+
+</body>
+</html>

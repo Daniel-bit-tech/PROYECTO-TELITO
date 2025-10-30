@@ -125,7 +125,7 @@ public class SecurityConfig {
                 .rememberMe(remember -> remember
                         .key("remember-me")
                         .rememberMeParameter("remember-me")
-                        .tokenValiditySeconds(86400)
+                        .tokenValiditySeconds(7200)
                         .userDetailsService(usuarioDetailService))      //.tokenRepository(persistentTokenRepository(dataSource)) para cookies persistentes
 //                .exceptionHandling(exception -> exception
 //                        .accessDeniedPage("/acceso-denegado")
