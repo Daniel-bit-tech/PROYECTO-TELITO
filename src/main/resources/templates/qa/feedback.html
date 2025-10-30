@@ -120,9 +120,11 @@
                                         <span th:each="i : ${#numbers.sequence(1, feedback.calificacion)}" class="text-warning"><i class="fas fa-star"></i></span>
                                         <span th:each="i : ${#numbers.sequence(feedback.calificacion + 1, 5)}" class="text-muted"><i class="far fa-star"></i></span>
                                     </p>
+                                    <!--
                                     <div class="mt-4">
                                         <a th:href="@{'/qa/feedbackDetalle/' + ${feedback.idFeedback}}" class="btn btn-primary w-100">Ver Detalle</a>
                                     </div>
+                                    -->
                                 </div>
                             </div>
                         </div>
