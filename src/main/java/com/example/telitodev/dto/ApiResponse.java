@@ -8,14 +8,14 @@ public class ApiResponse {
     private Integer idApi;
     private String nombre;
     private String descripcion;
-    private Dominio dominio;
-    private Tag tipoApi;     // tag es tipoApi?
+    private String dominio;
+    private String tipoApi;
     private String endpointUrl;
     
     // Constructores
     public ApiResponse() {}
     
-    public ApiResponse(Integer idApi, String nombre, String descripcion, Dominio dominio, Tag tipoApi, String endpointUrl) {
+    public ApiResponse(Integer idApi, String nombre, String descripcion, String dominio, String tipoApi, String endpointUrl) {
         this.idApi = idApi;
         this.nombre = nombre;
         this.descripcion = descripcion;
@@ -49,19 +49,19 @@ public class ApiResponse {
         this.descripcion = descripcion;
     }
     
-    public Dominio getDominio() {
+    public String getDominio() {
         return dominio;
     }
     
-    public void setDominio(Dominio dominio) {
+    public void setDominio(String dominio) {
         this.dominio = dominio;
     }
     
-    public Tag getTipoApi() {
+    public String getTipoApi() {
         return tipoApi;
     }
     
-    public void setTipoApi(Tag tipoApi) {
+    public void setTipoApi(String tipoApi) {
         this.tipoApi = tipoApi;
     }
     

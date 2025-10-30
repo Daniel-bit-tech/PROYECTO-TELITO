@@ -81,11 +81,11 @@ public class DeveloperController extends BaseController {
             // Agregar información de impersonación al modelo usando BaseController
             addImpersonationAttributes(model, session);
 
-            System.out.println("✅ Devolviendo vista: desarrollador/developer");
+            System.out.println(" Devolviendo vista: desarrollador/developer");
             return "desarrollador/developer";
 
         } catch (Exception e) {
-            System.err.println("❌ Error en DeveloperController: " + e.getMessage());
+            System.err.println("Error en DeveloperController: " + e.getMessage());
             e.printStackTrace();
             return "error/403";
         }

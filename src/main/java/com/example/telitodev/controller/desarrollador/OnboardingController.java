@@ -61,7 +61,7 @@ public class OnboardingController extends BaseController {
 
         // Obtener datos adicionales para la vista
         try {
-            List<ApiResponse> apisDisponibles = onboardingService.obtenerApisDisponibles();
+            List<ApiResponse> apisDisponibles = onboardingService.obtenerApisDisponibles(usuario.getDni());
             List<CredencialApiResponse> misCredenciales = onboardingService.obtenerCredencialesUsuario(usuario.getDni());
 
             model.addAttribute("apisDisponibles", apisDisponibles);
@@ -99,7 +99,7 @@ public class OnboardingController extends BaseController {
                 return ResponseEntity.status(403).build();
             }
 
-            List<ApiResponse> apisDisponibles = onboardingService.obtenerApisDisponibles();
+            List<ApiResponse> apisDisponibles = onboardingService.obtenerApisDisponibles(usuario.getDni());
             return ResponseEntity.ok(apisDisponibles);
 
         } catch (Exception e) {

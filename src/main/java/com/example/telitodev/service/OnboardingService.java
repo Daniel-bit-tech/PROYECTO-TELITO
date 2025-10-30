@@ -30,6 +30,7 @@ public class OnboardingService {
 
 
 
+
     public OnboardingService(SolicitudAccesoRepository solicitudAccesoRepository,
                              CredencialApiRepository credencialApiRepository,
                              ApiRepository apiRepository,
@@ -164,8 +165,18 @@ public class OnboardingService {
                 .collect(Collectors.toList());
     }
 
-    public List<ApiResponse> obtenerApisDisponibles() {
-        List<Api> apis = apiRepository.findAll();
+
+    public List<ApiResponse> obtenerApisDisponibles(String dniUsuario) {
+        Usuario usuario = usuarioRepository.findByDni(dniUsuario);
+        if (usuario == null || usuario.getOrganizacion() == null) {
+            System.err.println("ADVERTENCIA: No se pueden obtener APIs disponibles. El usuario " + dniUsuario + " no tiene una organización asignada.");
+            return List.of();
+        }
+
+        Integer idOrganizacion = usuario.getOrganizacion().getIdOrganizacion();
+
+        List<Api> apis = apiRepository.findApisDisponiblesPorOrganizacion(idOrganizacion);
+
         return apis.stream()
                 .map(this::mapearAApiResponse)
                 .collect(Collectors.toList());
@@ -348,12 +359,15 @@ public class OnboardingService {
     }
 
     private ApiResponse mapearAApiResponse(Api api) {
+        String nombreDominio = (api.getDominio() != null) ? api.getDominio().getNombre() : "N/A";
+        String nombreTag = (api.getTag() != null) ? api.getTag().getNombre() : "N/A";
+
         return new ApiResponse(
                 api.getIdApi(),
                 api.getNombre(),
                 api.getDescripcion(),
-                api.getDominio(),
-                api.getTag(),
+                nombreDominio,
+                nombreTag,
                 api.getEndpointUrl()
         );
     }
