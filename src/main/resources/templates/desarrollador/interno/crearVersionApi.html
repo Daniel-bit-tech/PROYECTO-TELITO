@@ -418,6 +418,12 @@
 
         // Detectar formato desde archivo
         if (archivoInput) {
+            // Permitir re-seleccionar el mismo archivo en navegadores que no disparan change
+            archivoInput.addEventListener('click', function() {
+                // Al hacer click limpiamos el valor para que la selección del mismo archivo vuelva a disparar 'change'
+                this.value = null;
+            });
+
             archivoInput.addEventListener('change', function() {
                 console.debug('[crearVersionApi] archivoInput change event');
                 const file = this.files[0];
@@ -429,6 +435,9 @@
                         formatoSelect.value = 'JSON';
                     }
                     validarArchivo(file);
+                } else {
+                    // Si se anuló la selección, limpiamos la validación visual
+                    resetValidacion();
                 }
             });
         } else {
@@ -572,29 +581,50 @@
         }
 
         function mostrarError(mensaje) {
+            if (!alertValidacion || !mensajeValidacion) return;
             alertValidacion.style.display = 'block';
             alertValidacion.className = 'alert alert-danger';
             mensajeValidacion.innerHTML = `<i class="fas fa-times-circle me-2"></i>${mensaje}`;
-            btnSubmit.disabled = true;
+            if (btnSubmit) btnSubmit.disabled = true;
+            // También eliminar cualquier alerta insertada por el submit del cliente
+            const clientAlert = document.getElementById('alerta-client-errors');
+            if (clientAlert) clientAlert.remove();
         }
 
         function mostrarAdvertencia(mensaje) {
+            if (!alertValidacion || !mensajeValidacion) return;
             alertValidacion.style.display = 'block';
             alertValidacion.className = 'alert alert-warning';
             mensajeValidacion.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${mensaje}`;
-            btnSubmit.disabled = false;
+            if (btnSubmit) btnSubmit.disabled = false;
+            const clientAlert = document.getElementById('alerta-client-errors');
+            if (clientAlert) clientAlert.remove();
         }
 
         function mostrarExito(mensaje) {
+            if (!alertValidacion || !mensajeValidacion) return;
             alertValidacion.style.display = 'block';
             alertValidacion.className = 'alert alert-success';
             mensajeValidacion.innerHTML = `<i class="fas fa-check-circle me-2"></i>${mensaje}`;
-            btnSubmit.disabled = false;
+            if (btnSubmit) btnSubmit.disabled = false;
+            const clientAlert = document.getElementById('alerta-client-errors');
+            if (clientAlert) clientAlert.remove();
         }
 
         function resetValidacion() {
-            alertValidacion.style.display = 'none';
-            btnSubmit.disabled = false;
+            // Remover cualquier alerta insertada por la validación del cliente (submit)
+            const clientAlert = document.getElementById('alerta-client-errors');
+            if (clientAlert) clientAlert.remove();
+
+            // Si el contenedor de validación del cliente existe, limpiarlo
+            if (alertValidacion && mensajeValidacion) {
+                alertValidacion.style.display = 'none';
+                // Restaurar clase base para evitar quedarse con clases anteriores (danger/warning)
+                alertValidacion.className = 'alert';
+                mensajeValidacion.innerHTML = '';
+            }
+
+            if (btnSubmit) btnSubmit.disabled = false;
         }
 
         function mostrarErrorFecha(mensaje) {
@@ -663,30 +693,37 @@
                 }
             }
 
-            if (!isValid) {
+                        if (!isValid) {
                 e.preventDefault();
                 // Mostrar alerta con errores
-                const alertaHTML = `
-                    <div class="alert alert-danger" th:if="${errorBack != null}">
-                      <h4 class="alert-title">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        Error de validación de contrato
-                      </h4>
-                      <div th:text="${errorBack}">Ocurrió un error.</div>
-                    </div>
-                `;
+                                // Insertar una alerta CLIENTE (con id para poder removerla después)
+                                const alertaHTML = `
+                                        <div id="alerta-client-errors" class="alert alert-danger">
+                                            <h4 class="alert-title">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                Error de validación de contrato
+                                            </h4>
+                                            <div>
+                                                ${errorMessages.map(m => '<div>'+m+'</div>').join('')}
+                                            </div>
+                                        </div>
+                                `;
 
-                // Insertar alerta al inicio del formulario
-                const primeraSeccion = form.querySelector('.mb-4');
-                if (primeraSeccion) {
-                    primeraSeccion.insertAdjacentHTML('beforebegin', alertaHTML);
+                                // Remover cualquier alerta previa del cliente antes de insertar
+                                const existingClientAlert = document.getElementById('alerta-client-errors');
+                                if (existingClientAlert) existingClientAlert.remove();
 
-                    // Hacer scroll a la alerta
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
-                }
+                                // Insertar alerta al inicio del formulario
+                                const primeraSeccion = form.querySelector('.mb-4');
+                                if (primeraSeccion) {
+                                        primeraSeccion.insertAdjacentHTML('beforebegin', alertaHTML);
+
+                                        // Hacer scroll a la alerta
+                                        window.scrollTo({
+                                                top: 0,
+                                                behavior: 'smooth'
+                                        });
+                                }
             }
         });
 

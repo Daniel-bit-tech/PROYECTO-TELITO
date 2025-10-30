@@ -3,32 +3,104 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Revisión Final - Telito</title>
-    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <title>TELITO PORTAL | Revisión Final</title>
+    <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-flags.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet"/>
+    <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
 </head>
 <body>
-<div class="container mt-4">
-    <div class="row">
-        <div class="col-12">
-            <h1>Paso 4: Revisión Final</h1>
-            <p class="text-muted">Revisa los datos finales antes de publicar tu versión.</p>
-
-            <div class="card mb-3">
-                <div class="card-body">
-                    <h5 class="card-title">API: <span th:text="${apiObj.nombre}">Nombre API</span></h5>
-                    <p class="card-text">Versión: <strong th:text="${versionObj.version}">vX.Y</strong></p>
-                    <p class="card-text">Estado: <strong th:text="${versionObj.estadoVersion}">EN_CONSTRUCCION</strong></p>
+<div class="page">
+    <div class="page-wrapper">
+        <div class="page-header d-print-none">
+            <div class="container container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col">
+                        <h1 class="page-title">Paso 4: Revisión Final</h1>
+                        <div class="page-pretitle">Revisa los datos antes de confirmar la publicación</div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <div class="mb-3">
-                <a th:href="@{'/dev/int/' + ${apiObj.idApi} + '/versiones/' + ${versionObj.idVersion} + '/docs'}" class="btn btn-secondary">Volver a Documentación</a>
-                <!-- Aquí podrías añadir un botón para publicar la versión si ya existe esa acción -->
+        <div class="page-body">
+            <div class="container-xl">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-check-circle me-2 text-green"></i>
+                                    Revisión Final
+                                </h3>
+                                <div class="card-subtitle">Confirma que todo está correcto antes de publicar</div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h4 class="mb-2">API</h4>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="text-muted">Nombre</div>
+                                            <div class="fw-bold" th:text="${apiObj.nombre}">Nombre API</div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="text-muted">Versión</div>
+                                            <div class="fw-bold" th:text="${versionObj.version}">vX.Y</div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="text-muted">Estado</div>
+                                            <div>
+                                                <span th:if="${versionObj.estadoVersion.name() == 'EN_CONSTRUCCION'}" class="badge bg-blue text-bg-blue">En Construcción</span>
+                                                <span th:if="${versionObj.estadoVersion.name() == 'EN_PRUEBAS'}" class="badge bg-yellow text-bg-yellow">En Pruebas</span>
+                                                <span th:if="${versionObj.estadoVersion.name() == 'ESTABLE'}" class="badge bg-green text-bg-green">Estable</span>
+                                                <span th:if="${versionObj.estadoVersion.name() == 'DEPRECATED'}" class="badge bg-orange text-bg-orange">Deprecada</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <h5>Contrato OpenAPI</h5>
+                                    <p class="text-muted">Formato: <span th:text="${versionObj.contratoApi != null ? versionObj.contratoApi.formato : 'N/A'}">JSON</span></p>
+                                    <div class="small text-muted">Si necesitas cambiar algo vuelve atrás a Documentación o Contrato.</div>
+                                </div>
+
+                                <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between">
+                                <div>
+                                    <a th:href="@{'/dev/int/' + ${apiObj.idApi} + '/versiones/' + ${versionObj.idVersion} + '/docs'}" class="btn btn-ghost-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Volver a Documentación
+                                    </a>
+                                </div>
+                                <div>
+                                    <a th:href="@{/dev/int}" class="btn btn-primary">
+                                        <i class="fas fa-check me-2"></i>Confirmar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h3 class="card-title">Consejos</h3>
+                                <div class="text-muted small">
+                                    Verifica que todos los endpoints y esquemas estén correctos. Después de confirmar, podrás ver la API en la lista y su estado.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-
-            <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
         </div>
     </div>
+
+    <div id="footer-placeholder"></div>
 </div>
+
+<script src="/tabler/dist/js/tabler.min.js"></script>
 </body>
 </html>

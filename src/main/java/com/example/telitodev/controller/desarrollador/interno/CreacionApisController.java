@@ -221,16 +221,19 @@ public class CreacionApisController extends BaseController {
         versionApi.setVersion(versionContratoDto.getVersion());
         versionApi.setFechaPublicacion(versionContratoDto.getFechaPublicacion());
         versionApi.setEstadoVersion(versionContratoDto.getEstadoVersion());
+    // Persistir la versión primero para asegurarnos de tener un id válido
+    versionApiRepository.save(versionApi);
 
-        ContratoApi contratoApi = new ContratoApi();
-        contratoApi.setVersionApi(versionApi);
-        contratoApi.setFormato(versionContratoDto.getFormato());
-        contratoApi.setContenido(contenidoContrato);
-        contratoRepository.save(contratoApi);
+    ContratoApi contratoApi = new ContratoApi();
+    contratoApi.setVersionApi(versionApi);
+    contratoApi.setFormato(versionContratoDto.getFormato());
+    contratoApi.setContenido(contenidoContrato);
+    contratoRepository.save(contratoApi);
 
-        redirectAttributes.addFlashAttribute("msg",
-                "Creaste la primera versión de tu API " + api.getNombre() + " exitosamente");
-        return "redirect:/dev/int/" + api.getIdApi() + "/versiones/" + versionApi.getIdVersion() + "/docs";
+    redirectAttributes.addFlashAttribute("msg",
+        "Creaste la primera versión de tu API " + api.getNombre() + " exitosamente");
+    // Redirigir directamente a Revisión Final (Paso 4)
+    return "redirect:/dev/int/" + api.getIdApi() + "/versiones/" + versionApi.getIdVersion() + "/revisionFinal";
 
 
     }
