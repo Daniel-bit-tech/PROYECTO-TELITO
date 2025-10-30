@@ -77,7 +77,7 @@
                                     <div class="col-auto">
                                         <!-- AQUÍ LA LÓGICA: Botón condicional -->
                                         <div th:if="${!noti.leido}">
-                                            <a th:href="@{/qa/notificaciones/marcarLeido/{id}(id=${noti.idNotificacion})}"
+                                            <a th:href="@{/notificaciones/marcarLeido/{id}(id=${noti.idNotificacion})}"
                                                class="btn btn-sm btn-outline-primary">
                                                 Marcar Leído
                                             </a>

@@ -22,7 +22,7 @@ import java.util.Optional;
 
 
 @Controller
-@PreAuthorize("isAuthenticated()") // Accesible para cualquier usuario logueado
+@PreAuthorize("isAuthenticated()")
 public class NotificacionesController extends BaseController {
 
     private final UsuarioRepository usuarioRepository;
@@ -33,15 +33,11 @@ public class NotificacionesController extends BaseController {
         this.notificacionRepository = notificacionRepository;
     }
 
-    /**
-     * Muestra la página dedicada con TODAS las notificaciones (leídas y no leídas)
-     * de forma paginada.
-     * URL ahora es genérica: /notificaciones
-     */
+
     @GetMapping("/notificaciones")
     public String showAllNotificaciones(Model model, Authentication auth, HttpSession session,
                                         @RequestParam(defaultValue = "0") int page,
-                                        @RequestParam(defaultValue = "15") int size) {
+                                        @RequestParam(defaultValue = "20") int size) {
 
         Usuario usuario = getCurrentUser(auth, session);
         addImpersonationAttributes(model, session);
@@ -142,8 +138,4 @@ public class NotificacionesController extends BaseController {
 
         return "redirect:/qa/notificaciones";
     }
-
-
-
-
  */
