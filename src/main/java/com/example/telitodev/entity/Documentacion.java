@@ -1,6 +1,9 @@
 package com.example.telitodev.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -24,9 +27,14 @@ public class Documentacion {
 
     @Column(name = "contenido", columnDefinition = "JSON")
     private String contenido;
-    
+
+    @CreationTimestamp
+    @Column(name = "fecha_creacion", updatable = false, nullable = false)
+    private Timestamp fechaCreacion;
+
+    @UpdateTimestamp
     @Column(name = "fecha_modificacion", nullable = false)
-    private Timestamp fechaCreacion  = new Timestamp(System.currentTimeMillis());
+    private Timestamp fechaModificacion;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idAPI", nullable = false)
@@ -87,14 +95,12 @@ public class Documentacion {
     public void setContenido(String contenido) {
         this.contenido = contenido;
     }
-    
-    public Timestamp getFechaCreacion() {
-        return fechaCreacion;
-    }
-    
-    public void setFechaCreacion(Timestamp fechaCreacion) {
-        this.fechaCreacion = fechaCreacion;
-    }
+
+    public Timestamp getFechaCreacion() { return fechaCreacion; }
+    public void setFechaCreacion(Timestamp fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+
+    public Timestamp getFechaModificacion() { return fechaModificacion; }
+    public void setFechaModificacion(Timestamp fechaModificacion) { this.fechaModificacion = fechaModificacion; }
     
     public Api getApi() {
         return api;

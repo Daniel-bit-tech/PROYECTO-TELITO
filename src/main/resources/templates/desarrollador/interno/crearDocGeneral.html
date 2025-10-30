@@ -77,7 +77,7 @@
                 </div>
               </div>
               <div class="card-body">
-                <form th:action="@{/dev/int/guardarDocumentacion}" th:object="${docGeneralDto}" method="post" enctype="multipart/form-data">
+                <form th:action="@{/dev/int/guardarDocsApi}" th:object="${docGeneralDto}" method="post" enctype="multipart/form-data">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                   <input type="hidden" th:field="*{idApi}"/>
                   <input type="hidden" th:field="*{idVersion}"/>

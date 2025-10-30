@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Revisión Final - Telito</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+</head>
+<body>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1>Paso 4: Revisión Final</h1>
+            <p class="text-muted">Revisa los datos finales antes de publicar tu versión.</p>
+
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">API: <span th:text="${apiObj.nombre}">Nombre API</span></h5>
+                    <p class="card-text">Versión: <strong th:text="${versionObj.version}">vX.Y</strong></p>
+                    <p class="card-text">Estado: <strong th:text="${versionObj.estadoVersion}">EN_CONSTRUCCION</strong></p>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <a th:href="@{'/dev/int/' + ${apiObj.idApi} + '/versiones/' + ${versionObj.idVersion} + '/docs'}" class="btn btn-secondary">Volver a Documentación</a>
+                <!-- Aquí podrías añadir un botón para publicar la versión si ya existe esa acción -->
+            </div>
+
+            <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
