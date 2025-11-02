@@ -9,15 +9,15 @@
 <div th:fragment="simple-impersonation-banner">
     <!-- Banner que aparece cuando isImpersonating es true -->
     <div th:if="${isImpersonating}" class="simple-impersonation-banner">
-        <div class="container-fluid">
-            <div class="row align-items-center py-2">
+        <div class="container-fluid py-0">
+            <div class="row align-items-center" style="min-height: 36px;">
                 <div class="col-md-8">
                     <div class="d-flex align-items-center">
-                        <i class="fas fa-user-secret text-warning me-2"></i>
-                        <span class="fw-bold text-white">
+                        <i class="fas fa-user-secret text-warning me-2" style="font-size: 0.875rem;"></i>
+                        <span class="fw-bold text-white" style="font-size: 0.875rem;">
                             🎭 MODO IMPERSONACIÓN ACTIVA
                         </span>
-                        <span class="text-light ms-2">
+                        <span class="text-light ms-2" style="font-size: 0.8125rem;">
                             - Viendo como: 
                             <strong th:text="${impersonatedUserDni ?: 'Usuario'}">DNI</strong>
                             (<span th:text="${impersonatedUserName ?: 'Nombre'}">Nombre</span>)
@@ -26,7 +26,7 @@
                 </div>
                 <div class="col-md-4 text-end">
                     <button id="simpleStopImpersonationBtn" 
-                            class="btn btn-warning btn-sm fw-bold">
+                            class="btn btn-warning btn-impersonation-simple fw-bold">
                         <i class="fas fa-sign-out-alt me-1"></i>
                         Volver a SuperAdmin
                     </button>
@@ -53,16 +53,24 @@
         text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
     }
 
-    .simple-impersonation-banner .btn-warning {
+    .simple-impersonation-banner .btn-impersonation-simple {
         background: #ffc107;
         border: 2px solid #fff;
         color: #212529;
-        font-weight: bold;
+        font-weight: 600;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        padding: 5px 8px;
+        font-size: 0.75rem;
+        line-height: 16px;
+        height: 26px;
+        min-width: 137.562px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
-    .simple-impersonation-banner .btn-warning:hover {
+    .simple-impersonation-banner .btn-impersonation-simple:hover {
         background: #ffcd39;
         transform: translateY(-1px);
         box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -76,7 +84,7 @@
 
     /* Ajuste para que el contenido no se superponga */
     body {
-        padding-top: 60px !important;
+        padding-top: 36px !important;
     }
     </style>
     
