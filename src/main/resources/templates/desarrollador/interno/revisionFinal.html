@@ -9,9 +9,12 @@
     <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
     <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet"/>
     <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <div class="page">
+
+    <div th:replace="desarrollador/header.html :: header"></div>
     <div class="page-wrapper">
         <div class="page-header d-print-none">
             <div class="container container-xl">
@@ -30,11 +33,11 @@
                     <div class="col-lg-8">
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title">
+                                <h3 class="card-title mb-1">
                                     <i class="fas fa-check-circle me-2 text-green"></i>
                                     Revisión Final
                                 </h3>
-                                <div class="card-subtitle">Confirma que todo está correcto antes de publicar</div>
+                                <div class="card-subtitle text-muted">Confirma que todo está correcto antes de publicar</div>
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
@@ -101,6 +104,52 @@
     <div id="footer-placeholder"></div>
 </div>
 
+<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/tabler/dist/js/tabler.min.js"></script>
+<script>
+    // Tooltips (Bootstrap) and theme-switcher initialization — same logic used in header fragment
+    try {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    } catch (e) {
+        // bootstrap may not be available yet; ignore silently
+    }
+
+    document.querySelectorAll('.theme-switcher').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const theme = this.classList.contains('hide-theme-dark') ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-bs-theme', theme);
+            localStorage.setItem('theme', theme);
+        });
+    });
+
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-bs-theme', savedTheme);
+
+    // Active nav-link highlighting (copied from header)
+    document.addEventListener("DOMContentLoaded", function() {
+        let path = window.location.pathname;
+        let page = path.substring(path.lastIndexOf("/") + 1);
+
+        if (page === "" || page === "/") page = "developer.html";
+
+        const links = document.querySelectorAll('.nav-link');
+        links.forEach(link => {
+            let href = link.getAttribute('href');
+            if (!href) return;
+
+            href = href.substring(href.lastIndexOf("/") + 1);
+
+            if (href.replace(".html","") === page.replace(".html","")) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    });
+</script>
 </body>
 </html>

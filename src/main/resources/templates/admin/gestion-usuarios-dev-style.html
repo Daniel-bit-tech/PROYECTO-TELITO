@@ -1332,7 +1332,7 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Scripts de Tabler (igual que dashboard.html) -->
 <script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620|"></script>
 <script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
 
@@ -2226,32 +2226,59 @@ function initializeNewUserValidation() {
     const confirmPassword = confirmPasswordField.value;
     const errorDiv = document.getElementById('passwordMismatchError');
     
-    if (confirmPassword && password !== confirmPassword) {
+    // Si la confirmación está vacía, no es válido
+    if (!confirmPassword) {
+      confirmPasswordField.classList.remove('is-invalid');
+      errorDiv.style.display = 'none';
+      return false;
+    }
+    
+    // Si las contraseñas no coinciden
+    if (password !== confirmPassword) {
       confirmPasswordField.classList.add('is-invalid');
       errorDiv.style.display = 'block';
       return false;
-    } else {
-      confirmPasswordField.classList.remove('is-invalid');
-      errorDiv.style.display = 'none';
-      return true;
     }
+    
+    // Todo bien, las contraseñas coinciden
+    confirmPasswordField.classList.remove('is-invalid');
+    confirmPasswordField.classList.add('is-valid');
+    errorDiv.style.display = 'none';
+    return true;
   }
   
   // Validación general del formulario
   function validateForm() {
+    console.log('🔍 Validando formulario...');
     const formData = new FormData(form);
     const dni = formData.get('dni');
     const email = formData.get('correo');
     const password = formData.get('contrasena');
+    const confirmPassword = confirmPasswordField.value;
     const nombre = formData.get('nombre');
     const apellidoPaterno = formData.get('apellidoPaterno');
     const rol = formData.get('idRol');
     
+    const passwordsMatch = validatePasswords();
+    
     const isValid = dni && dni.length === 8 && 
                    email && email.includes('@') &&
                    password && password.length >= 8 &&
+                   confirmPassword && confirmPassword.length >= 8 &&
                    nombre && apellidoPaterno && rol &&
-                   validatePasswords();
+                   passwordsMatch;
+    
+    console.log('Validación:', {
+      dni: dni?.length === 8,
+      email: email?.includes('@'),
+      password: password?.length >= 8,
+      confirmPassword: confirmPassword?.length >= 8,
+      passwordsMatch,
+      nombre: !!nombre,
+      apellidoPaterno: !!apellidoPaterno,
+      rol: !!rol,
+      isValid
+    });
     
     submitButton.disabled = !isValid;
     return isValid;
@@ -2259,7 +2286,10 @@ function initializeNewUserValidation() {
   
   // Event listeners para validación en tiempo real
   form.addEventListener('input', validateForm);
-  confirmPasswordField.addEventListener('input', validatePasswords);
+  confirmPasswordField.addEventListener('input', () => {
+    validatePasswords();
+    validateForm();
+  });
   
   // Solo números en DNI
   document.getElementById('newUserDni').addEventListener('input', function(e) {
@@ -2308,19 +2338,33 @@ function forceCleanModals() {
 async function cerrarModalCompletamente(modalId) {
   return new Promise((resolve) => {
     const modalElement = document.getElementById(modalId);
-    const modalInstance = bootstrap.Modal.getInstance(modalElement);
     
-    if (modalInstance) {
-      // Listener para cuando el modal se haya cerrado completamente
-      modalElement.addEventListener('hidden.bs.modal', function onHidden() {
-        modalElement.removeEventListener('hidden.bs.modal', onHidden);
+    try {
+      const modalInstance = bootstrap.Modal.getInstance(modalElement);
+      
+      if (modalInstance) {
+        // Listener para cuando el modal se haya cerrado completamente
+        modalElement.addEventListener('hidden.bs.modal', function onHidden() {
+          modalElement.removeEventListener('hidden.bs.modal', onHidden);
+          limpiarBackdropCompletamente();
+          resolve();
+        });
+        
+        modalInstance.hide();
+      } else {
+        // No hay instancia, cerrar manualmente
+        modalElement.style.display = 'none';
+        modalElement.classList.remove('show');
+        modalElement.setAttribute('aria-hidden', 'true');
+        modalElement.removeAttribute('aria-modal');
+        modalElement.removeAttribute('role');
+        
         limpiarBackdropCompletamente();
         resolve();
-      });
-      
-      modalInstance.hide();
-    } else {
-      // Limpieza manual
+      }
+    } catch (error) {
+      // Si hay error (por ejemplo, Bootstrap no disponible), limpiar manualmente
+      console.warn('Error cerrando modal, usando limpieza manual:', error);
       modalElement.style.display = 'none';
       modalElement.classList.remove('show');
       modalElement.setAttribute('aria-hidden', 'true');
@@ -2343,6 +2387,13 @@ function limpiarBackdropCompletamente() {
   // Remover todos los backdrops
   const backdrops = document.querySelectorAll('.modal-backdrop');
   backdrops.forEach(backdrop => backdrop.remove());
+  
+  // Remover el overlay simple si existe
+  const simpleOverlay = document.getElementById('simple-overlay');
+  if (simpleOverlay) {
+    simpleOverlay.remove();
+    console.log('✅ Simple overlay removido');
+  }
   
   // Asegurar que no hay estilos residuales
   const modalElements = document.querySelectorAll('.modal.show');
@@ -2452,7 +2503,7 @@ async function createUserWithConfirmation() {
     if (result.mostrarModalConfirmacion === true) {
       console.log('📧 Email falló - mostrando modal de confirmación manual');
       
-      // Configurar modal de confirmación solo si el backend lo indica
+      // Configurar modal de confirmación
       pendingUserEmail = userData.correo;
       document.getElementById('confirmEmailDisplay').textContent = userData.correo;
       document.getElementById('confirmEmail').value = userData.correo;
@@ -2589,6 +2640,12 @@ document.getElementById('editUserFromModal').addEventListener('click', function(
 // SIMPLE: Agregar fondo OPACO cuando se abre el modal
 document.getElementById('newUserModal').addEventListener('show.bs.modal', function() {
   console.log('📱 Modal abriendo - Agregando fondo opaco');
+  
+  // Remover overlay previo si existe
+  const existingOverlay = document.getElementById('simple-overlay');
+  if (existingOverlay) {
+    existingOverlay.remove();
+  }
   
   // Crear overlay opaco simple
   const overlay = document.createElement('div');
