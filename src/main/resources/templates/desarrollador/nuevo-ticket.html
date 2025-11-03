@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta th:name="_csrf" th:content="${_csrf.token}"/>
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>TELITO DEVELOPER PORTAL | Nuevo Ticket</title>
+    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url("https://rsms.me/inter/inter.css");
+        
+        .ticket-form-container {
+            max-width: 900px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .chatbot-helper {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            max-height: 500px;
+            background: var(--tblr-bg-surface);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+        }
+        
+        .chatbot-helper.active {
+            display: flex;
+        }
+        
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--tblr-primary);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 999;
+        }
+        
+        .chatbot-helper-header {
+            padding: 1rem;
+            background: var(--tblr-primary);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chatbot-helper-messages {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            max-height: 300px;
+        }
+        
+        .helper-message {
+            background: var(--tblr-bg-surface-secondary);
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+
+<body>
+<!-- Banner de impersonación -->
+<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+
+<script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
+<div class="page">
+
+    <div th:replace="desarrollador/header.html :: header"></div>
+
+    <!-- Main Content -->
+    <div class="page-wrapper">
+        <div class="page-body">
+            <div class="ticket-form-container">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fas fa-ticket-alt me-2"></i>
+                            Crear Nuevo Ticket de Soporte
+                        </h2>
+                    </div>
+                    <div class="card-body">
+                        <form action="/dev/soporte/crear-ticket" method="post" id="ticketForm">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                            
+                            <div class="mb-3">
+                                <label class="form-label required">Asunto</label>
+                                <input type="text" class="form-control" name="asunto" id="asunto" 
+                                       placeholder="Breve descripción del problema" required maxlength="150">
+                                <small class="form-hint">Máximo 150 caracteres</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label required">API Relacionada</label>
+                                <select class="form-select" name="idApi" id="idApi" required>
+                                    <option value="">Selecciona una API...</option>
+                                    <option th:each="api : ${apis}" 
+                                            th:value="${api.idApi}" 
+                                            th:text="${api.nombre}">
+                                    </option>
+                                </select>
+                                <small class="form-hint">Selecciona la API con la que tienes problemas</small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label required">Descripción Detallada</label>
+                                <textarea class="form-control" name="descripcion" id="descripcion" 
+                                          rows="6" placeholder="Describe el problema en detalle..." required></textarea>
+                                <small class="form-hint">
+                                    Incluye: qué estabas intentando hacer, qué error recibiste, 
+                                    pasos para reproducir el problema
+                                </small>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Información Adicional (Opcional)</label>
+                                <textarea class="form-control" name="infoAdicional" id="infoAdicional" 
+                                          rows="3" placeholder="Logs, capturas de pantalla, códigos de error, etc."></textarea>
+                            </div>
+                            
+                            <div class="card bg-azure-lt mb-3">
+                                <div class="card-body">
+                                    <h4 class="card-title">
+                                        <i class="fas fa-lightbulb me-2"></i>
+                                        Consejos para un mejor ticket
+                                    </h4>
+                                    <ul class="mb-0">
+                                        <li>Sé específico sobre el problema</li>
+                                        <li>Incluye mensajes de error completos</li>
+                                        <li>Menciona qué has intentado para resolverlo</li>
+                                        <li>Indica cuándo comenzó el problema</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Enviar Ticket
+                                </button>
+                                <a href="/dev/soporte" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i>
+                                    Cancelar
+                                </a>
+                                <button type="button" class="btn btn-info ms-auto" id="askChatbotBtn">
+                                    <i class="fas fa-robot me-2"></i>
+                                    Pedir Ayuda al Asistente
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot Helper (Flotante) -->
+    <button class="chatbot-toggle" id="chatbotToggle">
+        <i class="fas fa-robot"></i>
+    </button>
+    
+    <div class="chatbot-helper" id="chatbotHelper">
+        <div class="chatbot-helper-header">
+            <span><i class="fas fa-robot me-2"></i>Asistente</span>
+            <button type="button" class="btn-close btn-close-white" id="closeChatbot"></button>
+        </div>
+        <div class="chatbot-helper-messages" id="helperMessages">
+            <div class="helper-message">
+                👋 ¡Hola! Estoy aquí para ayudarte a crear un ticket efectivo. 
+                ¿Necesitas ayuda describiendo tu problema?
+            </div>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+</div>
+
+<script>
+    // Chatbot Helper
+    const chatbotToggle = document.getElementById('chatbotToggle');
+    const chatbotHelper = document.getElementById('chatbotHelper');
+    const closeChatbot = document.getElementById('closeChatbot');
+    const askChatbotBtn = document.getElementById('askChatbotBtn');
+    const helperMessages = document.getElementById('helperMessages');
+    
+    chatbotToggle.addEventListener('click', () => {
+        chatbotHelper.classList.toggle('active');
+        chatbotToggle.style.display = chatbotHelper.classList.contains('active') ? 'none' : 'block';
+    });
+    
+    closeChatbot.addEventListener('click', () => {
+        chatbotHelper.classList.remove('active');
+        chatbotToggle.style.display = 'block';
+    });
+    
+    askChatbotBtn.addEventListener('click', () => {
+        chatbotHelper.classList.add('active');
+        chatbotToggle.style.display = 'none';
+        
+        // Analizar campos y dar sugerencias
+        const asunto = document.getElementById('asunto').value;
+        const descripcion = document.getElementById('descripcion').value;
+        const api = document.getElementById('idApi').value;
+        
+        let suggestions = [];
+        
+        if (!asunto) {
+            suggestions.push('📝 El <strong>asunto</strong> debe ser breve pero descriptivo. Ejemplo: "Error 404 en endpoint GET /users"');
+        }
+        
+        if (!api) {
+            suggestions.push('🔌 No olvides seleccionar la <strong>API</strong> relacionada con tu problema');
+        }
+        
+        if (!descripcion) {
+            suggestions.push('📋 La <strong>descripción</strong> debe incluir:<br>- ¿Qué estabas haciendo?<br>- ¿Qué esperabas que pasara?<br>- ¿Qué pasó en realidad?');
+        } else if (descripcion.length < 50) {
+            suggestions.push('💡 Tu descripción es muy breve. Intenta agregar más detalles sobre el problema');
+        }
+        
+        if (suggestions.length === 0) {
+            suggestions.push('✅ ¡Tu ticket se ve bien! Incluye todos los campos necesarios. ¿Hay algo más que quieras agregar?');
+        }
+        
+        // Mostrar sugerencias
+        suggestions.forEach(sug => {
+            const msg = document.createElement('div');
+            msg.className = 'helper-message';
+            msg.innerHTML = sug;
+            helperMessages.appendChild(msg);
+        });
+        
+        helperMessages.scrollTop = helperMessages.scrollHeight;
+    });
+    
+    // Validación del formulario
+    document.getElementById('ticketForm').addEventListener('submit', function(e) {
+        const asunto = document.getElementById('asunto').value.trim();
+        const descripcion = document.getElementById('descripcion').value.trim();
+        
+        if (asunto.length < 10) {
+            e.preventDefault();
+            alert('El asunto debe tener al menos 10 caracteres');
+            return false;
+        }
+        
+        if (descripcion.length < 20) {
+            e.preventDefault();
+            alert('La descripción debe tener al menos 20 caracteres para que podamos entender mejor tu problema');
+            return false;
+        }
+        
+        return true;
+    });
+</script>
+
+<script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620|"></script>
+<script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
+</body>
+</html>
