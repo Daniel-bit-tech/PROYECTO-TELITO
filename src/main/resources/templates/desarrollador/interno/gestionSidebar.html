@@ -1,48 +1,51 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 <body>
-<!-- Fragmento de navegación para Studio -->
-<div th:fragment="gestionApi-sidebar(idApi, currentView, subView)">
-    <div class="row">
-
-        <!-- Sidebar -->
-        <div class="col-lg-2">
-            <div class="list-group">
-                <a th:href="@{'/dev/int/misApis/' + ${idApi} + '/listado'}"
-                   th:classappend="${currentView == 'listado'} ? ' active'"
-                   class="list-group-item list-group-item-action">
-                    <i class="fas fa-list me-2"></i> Listado
-                </a>
-                <a th:href="@{'/dev/int/misApis/' + ${idApi} + '/testing'}"
-                   th:classappend="${currentView == 'testing'} ? ' active'"
-                   class="list-group-item list-group-item-action">
-                    <i class="fas fa-vial me-2"></i> Testing
-                </a>
-                <a th:href="@{'/dev/int/misApis/' + ${idApi} + '/indicadores'}"
-                   th:classappend="${currentView == 'indicadores'} ? ' active'"
-                   class="list-group-item list-group-item-action">
-                    <i class="fas fa-chart-line me-2"></i> Indicadores
-                </a>
-                <a th:href="@{'/dev/int/misApis/' + ${idApi} + '/ajustes'}"
-                   th:classappend="${currentView == 'ajustes'} ? ' active'"
-                   class="list-group-item list-group-item-action">
-                    <i class="fas fa-cog me-2"></i> Ajustes
-                </a>
-            </div>
+<!-- Fragmento de navegación para Mis Apis -->
+    <!-- Sidebar -->
+    <div th:fragment="gestionApi-sidebar(idApi, currentView, subView)">
+        <div class="list-group">
+            <a th:href="@{'/dev/int/misApis/' + ${idApi}}"
+               th:classappend="${currentView == 'listado'} ? ' active'"
+               class="list-group-item list-group-item-action">
+                <i class="fas fa-list me-2"></i> Listado
+            </a>
+            <a th:href="@{'/dev/int/misApis/' + ${idApi} + '/versiones'}"
+               th:classappend="${currentView == 'versionado'} ? ' active'"
+               class="list-group-item list-group-item-action">
+                <i class="fas fa-code-branch me-2"></i> Versionado
+            </a>
+    <!--                <a th:href="@{'/dev/int/misApis/' + ${idApi} + '/testing'}"-->
+    <!--                   th:classappend="${currentView == 'testing'} ? ' active'"-->
+    <!--                   class="list-group-item list-group-item-action">-->
+    <!--                    <i class="fas fa-vial me-2"></i> Testing-->
+    <!--                </a>-->
+    <!--                <a th:href="@{'/dev/int/misApis/' + ${idApi} + '/indicadores'}"-->
+    <!--                   th:classappend="${currentView == 'indicadores'} ? ' active'"-->
+    <!--                   class="list-group-item list-group-item-action">-->
+    <!--                    <i class="fas fa-chart-line me-2"></i> Indicadores-->
+    <!--                </a>-->
+            <a th:href="@{'/dev/int/misApis/' + ${idApi} + '/ajustes'}"
+               th:classappend="${currentView == 'ajustes'} ? ' active'"
+               class="list-group-item list-group-item-action">
+                <i class="fas fa-cog me-2"></i> Ajustes
+            </a>
         </div>
+    </div>
 
-        <!-- Contenido principal -->
-        <div class="col-lg-10">
+    <!-- Contenido principal -->
+    <div class="col-lg-10">
 
-            <!-- Header secundario dinámico -->
+        <!-- Header secundario dinámico -->
+        <div th:fragment="gestionApi-navbar(idApi, currentView, subView)">
             <div th:if="${currentView == 'listado'}" class="mb-3">
                 <ul class="nav nav-tabs">
                     <li class="nav-item">
                         <a class="nav-link" th:classappend="${subView == 'general'} ? ' active'" data-section="general" href="#">General</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:classappend="${subView == 'versionado'} ? ' active'" data-section="versionado" href="#">Versionado</a>
-                    </li>
+    <!--                        <li class="nav-item">-->
+    <!--                            <a class="nav-link" th:classappend="${subView == 'versionado'} ? ' active'" data-section="versionado" href="#">Versionado</a>-->
+    <!--                        </li>-->
                     <li class="nav-item">
                         <a class="nav-link" th:classappend="${subView == 'documentacion'} ? ' active'" data-section="documentacion" href="#">Documentación</a>
                     </li>
@@ -65,8 +68,8 @@
                     </li>
                 </ul>
             </div>
+
         </div>
     </div>
-</div>
 </body>
 </html>

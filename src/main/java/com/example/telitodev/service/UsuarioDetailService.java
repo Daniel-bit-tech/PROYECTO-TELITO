@@ -11,6 +11,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -54,10 +56,16 @@ public class UsuarioDetailService implements UserDetailsService {
         String nombreRol = usuario.getRol().getNombreRol();
         System.out.println("Usuario activo encontrado: " + usuario.getCorreo() + " - Rol: " + nombreRol);
 
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + nombreRol));
+        if(usuario.getCorreo().equals("dev@gmail.com")) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_DEVINT"));
+        }
+
         return User.withUsername(usuario.getCorreo())
                 .password(usuario.getContrasena())
                 .disabled(false) // Ya verificamos que está activo
-                .authorities(new SimpleGrantedAuthority("ROLE_" + nombreRol))
+                .authorities(authorities)
                 .build();
     }
 }

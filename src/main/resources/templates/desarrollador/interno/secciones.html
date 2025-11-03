@@ -3,23 +3,99 @@
 <body>
 
     <div th:fragment="general(api)">
-        <h4><i class="fas fa-info-circle text-blue me-2"></i> Información General</h4>
-        <p><strong>Nombre:</strong> <span th:text="${api.nombre}"></span></p>
-        <p><strong>Descripción:</strong> <span th:text="${api.descripcion}"></span></p>
-        <p><strong>Dominio:</strong> <span th:text="${api.dominio.nombre}"></span></p>
-        <p><strong>Tag:</strong> <span th:text="${api.tag.nombre}"></span></p>
-        <p><strong>Endpoint:</strong> <span th:text="${api.endpointUrl}"></span></p>
-    </div>
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h3 class="card-title" th:text="${api.nombre}">Formulario API</h3>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/dev/int/misApis/guardar}" th:object="${api}" method="post" class="row g-3">
 
+                    <!-- Campo oculto ID -->
+                    <input type="hidden" th:field="*{idApi}"/>
+
+
+                    <!-- Endpoint -->
+                    <div class="col-md-6">
+                        <label class="form-label">Endpoint URL</label>
+                        <input type="text" th:field="*{endpointUrl}" class="form-control" placeholder="https://api.miempresa.com/v1" required>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="col-12">
+                        <label class="form-label">Descripción</label>
+                        <textarea th:field="*{descripcion}" class="form-control" rows="3" placeholder="Describe brevemente la API..." required></textarea>
+                    </div>
+
+                    <!-- Dominio -->
+                    <div class="col-md-4">
+                        <label class="form-label">Dominio</label>
+                        <select th:field="*{dominio.idDominio}" class="form-select" required>
+                            <option value="" disabled th:selected="*{dominio == null}">Seleccione un dominio</option>
+                            <option th:each="dom : ${listaDominios}"
+                                    th:value="${dom.idDominio}"
+                                    th:text="${dom.nombre}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Tag -->
+                    <div class="col-md-4">
+                        <label class="form-label">Tag</label>
+                        <select th:field="*{tag.idTag}" class="form-select" required>
+                            <option value="" disabled th:selected="*{tag == null}">Seleccione un tag</option>
+                            <option th:each="tagItem : ${listaTags}"
+                                    th:value="${tagItem.idTag}"
+                                    th:text="${tagItem.nombre}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Estado -->
+                    <div class="col-md-4">
+                        <label class="form-label">Estado</label>
+                        <select th:field="*{estadoApi.idEstado}" class="form-select" required>
+                            <option value="" disabled th:selected="*{estadoApi == null}">Seleccione un estado</option>
+                            <option th:each="estado : ${listaEstados}"
+                                    th:value="${estado.idEstado}"
+                                    th:text="${estado.estado}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Fecha de creación -->
+<!--                    <div class="col-md-6">-->
+<!--                        <label class="form-label">Fecha de creación</label>-->
+<!--                        <input type="date" th:field="*{fechaCreacion}" class="form-control" readonly>-->
+<!--                    </div>-->
+
+                    <!-- Botones -->
+                    <div class="col-12 text-end mt-3">
+                        <button onclick="window.location.reload();" class="btn btn-outline-secondary me-2">
+                            <i class="fas fa-arrow-left"></i> Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <div th:fragment="versionado(api)">
         <h4><i class="fas fa-code-branch text-teal me-2"></i> Versionado</h4>
         <table class="table table-sm">
-            <thead><tr><th>Versión</th><th>Estado</th><th>Fecha</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Versión</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                </tr>
+            </thead>
             <tbody>
             <tr th:each="ver : ${api.versionesApi}">
                 <td th:text="${ver.version}"></td>
-                <td th:text="${ver.estadoVersion}"></td>
+                <td th:text="${ver.estadoVersion.label}"></td>
                 <td th:text="${#temporals.format(ver.fechaPublicacion,'dd/MM/yyyy')}"></td>
             </tr>
             </tbody>

@@ -1,7 +1,8 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" data-bs-theme="dark">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>TELITO PORTAL | Gestión de API</title>
   <meta name="_csrf" th:content="${_csrf.token}">
   <meta name="_csrf_header" th:content="${_csrf.headerName}">
@@ -11,6 +12,7 @@
   <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet"/>
   <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="/tabler/dist/js/tabler-theme.min.js"></script>
 </head>
 <body>
 <div class="page">
@@ -19,17 +21,23 @@
 
   <div class="page-wrapper">
     <div class="page-body">
-      <div class="container-fluid">
+      <div class="container-xl">
         <div class="row">
 
-          <div th:replace="desarrollador/interno/gestionSidebar :: gestionApi-sidebar(${api.idApi}, ${currentView}, ${subView})"></div>
+          <!-- Sidebar -->
+          <div class="col-lg-2">
+            <div th:replace="desarrollador/interno/gestionSidebar :: gestionApi-sidebar(${api.idApi}, ${currentView}, ${subView})"></div>
+          </div>
 
-          <!-- Contenedor dinámico -->
+          <div class="col-lg-10">
+            <!-- Header secundario dinámico -->
+            <div th:replace="desarrollador/interno/gestionSidebar :: gestionApi-navbar(${api.idApi}, ${currentView}, ${subView})"></div>
+
+            <!-- Contenedor dinámico -->
             <div id="content-area" class="mt-3">
               <!-- Aquí se cargan las vistas parciales vía fetch -->
             </div>
           </div>
-
         </div>
       </div>
     </div>
@@ -37,31 +45,48 @@
 </div>
 
 <script th:inline="javascript">
-
-  const idApi = [[${api.idApi}]];
-  // Manejo de tabs internos (header secundario)
   document.addEventListener("DOMContentLoaded", () => {
+    const idApi = [[${api.idApi}]];
     const tabs = document.querySelectorAll("[data-section]");
     const contentArea = document.getElementById("content-area");
+    const themeToggle = document.querySelector('[data-bs-toggle="theme"]');
 
+    // Función para cargar secciones dinámicamente
+    function loadSection(section) {
+      fetch(`/dev/int/misApis/${idApi}/section/${section}`)
+              .then(res => res.text())
+              .then(html => {
+                contentArea.innerHTML = html;
+                localStorage.setItem("lastSection", section);
+              })
+              .catch(() => {
+                contentArea.innerHTML = "<div class='alert alert-danger'>Error cargando sección</div>";
+              });
+    }
+
+    // Restaurar última sección
+    const lastSection = localStorage.getItem("lastSection");
+    if (lastSection) {
+      const lastTab = document.querySelector(`[data-section="${lastSection}"]`);
+      if (lastTab) {
+        tabs.forEach(t => t.classList.remove("active"));
+        lastTab.classList.add("active");
+        loadSection(lastSection);
+      }
+    } else if (tabs.length > 0) {
+      const first = tabs[0];
+      first.classList.add("active");
+      loadSection(first.getAttribute("data-section"));
+    }
+
+    // Asignar eventos a tabs
     tabs.forEach(tab => {
-      tab.addEventListener("click", (e) => {
+      tab.addEventListener("click", e => {
         e.preventDefault();
         tabs.forEach(t => t.classList.remove("active"));
         tab.classList.add("active");
-
         const section = tab.getAttribute("data-section");
-
-        if (idApi) {}
-        // Simulación de fetch dinámico
-        fetch(`/dev/int/misApis/${idApi}/section/${section}`)
-                .then(res => res.text())
-                .then(html => {
-                  contentArea.innerHTML = html;
-                })
-                .catch(() => {
-                  contentArea.innerHTML = "<div class='alert alert-danger'>Error cargando sección</div>";
-                });
+        loadSection(section);
       });
     });
   });

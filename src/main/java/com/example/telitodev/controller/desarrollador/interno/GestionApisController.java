@@ -101,15 +101,35 @@ public class GestionApisController extends BaseController {
         return "desarrollador/interno/gestionApiBase";
     }
 
-    /*
+    @GetMapping("/{idApi}/ajustes")
+    public String verDetalleConfigApi(Model model, Authentication auth, HttpSession session, @PathVariable("idApi") Integer idApi) {
+        Usuario usuario = getCurrentUser(auth, session);
+        model.addAttribute("usuario", usuario);
+        // Agregar atributos de impersonación
+        addImpersonationAttributes(model, session);
 
+        Optional<Api> apiX = apiRepository.findById(idApi);
+        if (apiX.isPresent() && apiX.get().getUsuario().equals(usuario)) {
+            model.addAttribute("api", apiX.get());
+            model.addAttribute("listaEstados", estadoApiRepository.findAll());
+        } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se pudo encontrar la API solicitada");
+
+        model.addAttribute("currentView", "ajustes");
+        return "desarrollador/interno/ajustesApi";
+    }
+
+    /***
+     * Enpoint para renderizar sección de navbar secundario
+     * @param idApi es el ID de la Api a buscar
+     * @param section es el nombre de la seccion a mostrar
+     * @param model
+     * @param auth
+     * @param session
+     * @return un html dinámico de la sección con info de la Api
      */
     @GetMapping("/{idApi}/section/{section}")
     public String cargarSeccion(@PathVariable Integer idApi, @PathVariable String section,
                                 Model model, Authentication auth, HttpSession session) {
-
-        System.out.println("Solicitud de seccion de API: "+idApi+" a SECCION: "+section);
-
         Usuario usuario = getCurrentUser(auth, session);
 
         Optional<Api> apiX = apiRepository.findById(idApi);
@@ -117,11 +137,17 @@ public class GestionApisController extends BaseController {
             model.addAttribute("api", apiX.get());
 
             switch (section) {
-                case "general": return "desarrollador/interno/secciones :: general";
-                case "versionado": return "desarrollador/interno/secciones :: versionado";
+                case "general":
+                    model.addAttribute("listaDominios", dominioRepository.findAll());
+                    model.addAttribute("listaTags", tagRepository.findAll());
+                    model.addAttribute("listaEstados", estadoApiRepository.findAll());
+                    return "desarrollador/interno/secciones :: general";
+                case "versionado":
+
+                    return "desarrollador/interno/secciones :: versionado";
                 case "documentacion": return "desarrollador/interno/secciones :: documentacion";
                 case "comunidad":
-                    return "desarrollador/interno/sections/comunidad";
+                    return "desarrollador/interno/secciones :: comunidad";
                 default:
                     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sección no encontrada");
             }
@@ -132,7 +158,7 @@ public class GestionApisController extends BaseController {
 
     @GetMapping("{idApi}/versiones/{idVersion}")
     public String verVersionesApi(Model model, Authentication auth, HttpSession session, RedirectAttributes redirectAttributes,
-                                  @PathVariable("idApi") Integer idApi, @PathVariable("idVersion") Integer idVersion) {
+                                  @PathVariable("idApi") Integer idApi, @PathVariable(value = "idVersion", required = false) Integer idVersion) {
         Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
         // Agregar atributos de impersonación
@@ -155,7 +181,7 @@ public class GestionApisController extends BaseController {
 
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se pudo encontrar la API solicitada");
 
-        return null;
+        return "desarrollador/interno/gestion/versionesApi";
     }
 
 }

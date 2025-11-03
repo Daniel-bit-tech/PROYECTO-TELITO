@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TELITO PORTAL - Ajustes de API</title>
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+  <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
+  <link href="/tabler/dist/css/tabler-flags.css" rel="stylesheet"/>
+  <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
+  <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet"/>
+  <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="/tabler/dist/js/tabler-theme.min.js"></script>
+</head>
+
+<body >
+<div class="page">
+
+  <div th:replace="desarrollador/header.html :: header"></div>
+
+
+  <div class="page-wrapper">
+    <div class="page-body">
+      <div class="container-xl">
+        <div class="row justify-content-center">
+
+          <!-- Sidebar -->
+          <div class="col-lg-2">
+            <div th:replace="desarrollador/interno/gestionSidebar :: gestionApi-sidebar(${api.idApi}, ${currentView}, ${subView})"></div>
+          </div>
+
+          <!-- Contenido principal -->
+          <div class="col-lg-10">
+
+            <!-- Título principal -->
+            <div class="mb-4">
+              <h2 class="fw-bold">Ajustes de la API</h2>
+<!--              <p class="text-muted">-->
+<!--                Aquí puedes modificar la visibilidad y el estado operativo de tu API o eliminarla permanentemente del sistema.-->
+<!--              </p>-->
+            </div>
+
+            <!-- ====== Sección Estado ====== -->
+            <div class="card border shadow-sm mb-4">
+              <div class="card-body">
+                <h3 class="card-title mb-2">Visibilidad y Estado de la API</h3>
+                <p class="text-muted mb-4">
+                  Las APIs <strong>inactivas</strong> no aparecen listadas en el catálogo público ni pueden ser utilizadas por nuevos usuarios.
+                </p>
+
+                <form th:action="@{'/dev/int/misApis/' + ${api.idApi} + '/estado'}" method="post" th:object="${api}">
+                  <div class="p-3 rounded border d-flex align-items-start">
+                    <div class="me-3">
+                      <span class="avatar bg-blue-lt">
+                        <i class="fas fa-lock"></i>
+                      </span>
+                    </div>
+                    <div class="flex-fill">
+                      <h4 class="mb-1" th:text="${api.estadoApi.estado == 'Activo' ? 'La API está activa' : 'La API está inactiva'}">
+                        Estado actual
+                      </h4>
+                      <p class="text-muted mb-2">
+                        <span th:if="${api.estadoApi.estado!='Inactivo'}">
+                          Actualmente está disponible en el catálogo y accesible para los usuarios.
+                        </span>
+                        <span th:if="${api.estadoApi.estado=='Inactivo'}">
+                          No está visible en el catálogo ni disponible para nuevos accesos.
+                        </span>
+                      </p>
+
+                      <div class="form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" id="estadoToggle"
+                               th:checked="${api.estadoApi.estado == 'Activo'}"
+                               onchange="document.getElementById('estadoSelect').value = this.checked ? '1' : '2';">
+                        <label class="form-check-label" for="estadoToggle">
+                          <span th:text="${api.estadoApi.estado == 'Activo' ? 'Activo' : 'Inactivo'}"></span>
+                        </label>
+                      </div>
+
+                      <input type="hidden" th:field="*{estadoApi.idEstado}" id="estadoSelect"/>
+
+                      <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirmCambio" required>
+                        <label class="form-check-label" for="confirmCambio">
+                          Confirmo que deseo cambiar el estado de esta API.
+                        </label>
+                      </div>
+
+                      <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Guardar estado
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- ====== Sección Eliminación ====== -->
+            <div class="card border shadow-sm">
+              <div class="card-body">
+                <h3 class="card-title mb-2 text-danger">
+                  <i class="fas fa-trash-alt me-2"></i> Eliminar API
+                </h3>
+
+                <!-- Sección de eliminación definitiva -->
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                  <i class="fas fa-triangle-exclamation me-2"></i>
+                  <div>
+                    <strong>Precaución:</strong> Esta acción eliminará permanentemente la API
+                    <span class="fw-bold" th:text="${api.nombre}">Nombre API</span> y todos sus datos relacionados.
+<!--                    Esta API da soporte para <span class="fw-bold" th:text="${contProyectos}+'proyectos'">0</span>-->
+                  </div>
+                </div>
+
+                <p class="text-muted">
+                  Eliminar esta API borrará todos sus datos, versiones y documentación asociada. Esta acción <strong>no es reversible</strong>.
+                </p>
+
+                <form th:action="@{'/dev/int/misApis/' + ${api.idApi} + '/eliminar'}"
+                      method="post"
+                      onsubmit="return confirm('¿Seguro que deseas eliminar esta API permanentemente? Es usada');">
+                  <input type="hidden" name="_method" value="delete"/>
+                  <button type="submit" class="btn btn-danger mt-2">
+                    <i class="fas fa-trash me-1"></i> Eliminar permanentemente
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- Botón de regreso -->
+            <div class="mt-4 text-center">
+              <a th:href="@{'/dev/int/misApis/' + ${api.idApi}}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JS de Tabler -->
+<script src="/tabler/dist/js/tabler.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TELITO PORTAL | Gestión de Versiones</title>
+    <meta name="_csrf" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:content="${_csrf.headerName}">
+    <link href="/tabler/dist/css/tabler.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-flags.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet"/>
+    <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet"/>
+    <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/tabler/dist/js/tabler-theme.min.js"></script>
+</head>
+<body>
+<div class="page">
+    <div th:replace="desarrollador/header.html :: header"></div>
+
+    <div class="page-wrapper">
+        <div class="page-body">
+            <div class="container-xl">
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <!-- Selector de Versiones -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-code-branch text-teal me-2"></i>
+                                    Versiones Disponibles
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Seleccionar Versión</label>
+                                    <select class="form-select" id="versionSelector">
+                                        <option value="">-- Selecciona una versión --</option>
+                                        <option th:each="version : ${versiones}"
+                                                th:value="${version.idVersion}"
+                                                th:text="${version.version + ' - ' + version.estadoVersion.label}">
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-primary" id="btnViewVersion">
+                                        <i class="fas fa-eye me-2"></i>Ver Detalles
+                                    </button>
+                                    <button class="btn btn-success" id="btnNewVersion">
+                                        <i class="fas fa-plus me-2"></i>Nueva Versión
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Resumen de Versiones -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h4 class="card-title">Resumen</h4>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-4">
+                                        <div class="text-blue">
+                                            <i class="fas fa-check-circle fa-2x"></i>
+                                            <div class="mt-2">
+                                                <span class="h4" th:text="${#lists.size(versiones.?[estadoVersion == 'ACTIVA'])}">0</span>
+                                                <div class="text-muted small">Activas</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="text-orange">
+                                            <i class="fas fa-flask fa-2x"></i>
+                                            <div class="mt-2">
+                                                <span class="h4" th:text="${#lists.size(versiones.?[estadoVersion == 'BETA'])}">0</span>
+                                                <div class="text-muted small">Beta</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="text-red">
+                                            <i class="fas fa-archive fa-2x"></i>
+                                            <div class="mt-2">
+                                                <span class="h4" th:text="${#lists.size(versiones.?[estadoVersion == 'DEPRECADA'])}">0</span>
+                                                <div class="text-muted small">Deprecadas</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <!-- Detalles de la Versión Seleccionada -->
+                        <div class="card" id="versionDetails" style="display: none;">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h3 class="card-title" id="detailTitle">Detalles de Versión</h3>
+                                    <div class="btn-list">
+                                        <button class="btn btn-warning btn-sm" id="btnEditVersion">
+                                            <i class="fas fa-edit me-1"></i>Editar
+                                        </button>
+                                        <button class="btn btn-danger btn-sm" id="btnDeleteVersion">
+                                            <i class="fas fa-trash me-1"></i>Eliminar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td class="w-25"><strong>Versión:</strong></td>
+                                                <td id="detailVersion">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Estado:</strong></td>
+                                                <td>
+                                                    <span class="badge" id="detailStatus">-</span>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Fecha Publicación:</strong></td>
+                                                <td id="detailDate">-</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td class="w-25"><strong>Cambios:</strong></td>
+                                                <td id="detailChanges">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Endpoints:</strong></td>
+                                                <td id="detailEndpoints">-</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
+                                    <h5>Documentación</h5>
+                                    <div id="detailDocumentation" class="bg-light p-3 rounded">
+                                        No hay documentación adicional disponible.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lista de Todas las Versiones -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title">Todas las Versiones</h3>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-vcenter card-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Versión</th>
+                                        <th>Estado</th>
+                                        <th>Fecha Publicación</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="version : ${versiones}">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-tag text-blue me-2"></i>
+                                                <strong th:text="${version.version}">v1.0</strong>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <th:block th:switch="${version.estadoVersion}">
+                                                <span th:case="'ESTABLE'" class="badge bg-success">Activa</span>
+                                                <span th:case="'EN_PRUEBAS'" class="badge bg-warning">En pruebas</span>
+                                                <span th:case="'DEPRECADA'" class="badge bg-danger">Deprecada</span>
+                                                <span th:case="'RETIRADA'" class="badge bg-danger">Retirada</span>
+                                                <span th:case="'EN_CONSTRUCCION'" class="badge bg-info">En Construcción</span>
+                                                <span th:case="*" class="badge bg-secondary" th:text="${version.estadoVersion}"></span>
+                                            </th:block>
+                                        </td>
+                                        <td th:text="${#temporals.format(version.fechaPublicacion, 'dd/MM/yyyy')}">01/01/2023</td>
+                                        <td>
+                                            <div class="btn-list">
+                                                <button class="btn btn-sm btn-outline-primary" th:onclick="|selectVersion(${version.idVersion})|">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-warning">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal para Nueva Versión (placeholder) -->
+                <div class="modal fade" id="newVersionModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Nueva Versión</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Formulario para crear nueva versión iría aquí.</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-primary">Crear Versión</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Datos de ejemplo para las versiones (en un caso real vendrían del servidor)
+    const versionData = {
+        1: {
+            version: "v1.2.0",
+            estado: "ACTIVA",
+            fecha: "15/10/2023",
+            cambios: "Implementación de nuevos endpoints para gestión de usuarios",
+            endpoints: "15 endpoints activos",
+            documentacion: "Se ha añadido documentación completa para los nuevos endpoints de autenticación y gestión de perfiles."
+        },
+        2: {
+            version: "v1.1.5",
+            estado: "BETA",
+            fecha: "01/09/2023",
+            cambios: "Mejoras de rendimiento y corrección de errores menores",
+            endpoints: "12 endpoints activos",
+            documentacion: "Versión en fase de pruebas con mejoras significativas en el tiempo de respuesta."
+        },
+        3: {
+            version: "v1.0.0",
+            estado: "DEPRECADA",
+            fecha: "15/03/2023",
+            cambios: "Versión inicial de la API",
+            endpoints: "8 endpoints activos",
+            documentacion: "Versión inicial con funcionalidades básicas. Se recomienda migrar a v1.2.0"
+        }
+    };
+
+    // Mapeo de estados a clases Bootstrap
+    const statusClasses = {
+        'ACTIVA': 'bg-success',
+        'BETA': 'bg-warning',
+        'DEPRECADA': 'bg-danger',
+        'PLANIFICADA': 'bg-info'
+    };
+
+    // Seleccionar versión desde el dropdown
+    document.getElementById('btnViewVersion').addEventListener('click', function() {
+        const selector = document.getElementById('versionSelector');
+        const selectedId = selector.value;
+
+        if (!selectedId) {
+            alert('Por favor, selecciona una versión');
+            return;
+        }
+
+        selectVersion(selectedId);
+    });
+
+    // Función para mostrar detalles de versión
+    function selectVersion(versionId) {
+        const detailsCard = document.getElementById('versionDetails');
+        const data = versionData[versionId];
+
+        if (data) {
+            document.getElementById('detailTitle').textContent = `Detalles: ${data.version}`;
+            document.getElementById('detailVersion').textContent = data.version;
+            document.getElementById('detailStatus').textContent = data.estado;
+            document.getElementById('detailStatus').className = `badge ${statusClasses[data.estado] || 'bg-secondary'}`;
+            document.getElementById('detailDate').textContent = data.fecha;
+            document.getElementById('detailChanges').textContent = data.cambios;
+            document.getElementById('detailEndpoints').textContent = data.endpoints;
+            document.getElementById('detailDocumentation').textContent = data.documentacion;
+
+            detailsCard.style.display = 'block';
+
+            // Actualizar el selector
+            document.getElementById('versionSelector').value = versionId;
+        } else {
+            alert('No se encontraron datos para esta versión');
+        }
+    }
+
+    // Nueva versión
+    document.getElementById('btnNewVersion').addEventListener('click', function() {
+        const modal = new bootstrap.Modal(document.getElementById('newVersionModal'));
+        modal.show();
+    });
+
+    // Botones de acción en la tarjeta de detalles
+    document.getElementById('btnEditVersion').addEventListener('click', function() {
+        alert('Funcionalidad de edición en desarrollo');
+    });
+
+    document.getElementById('btnDeleteVersion').addEventListener('click', function() {
+        if (confirm('¿Estás seguro de que deseas eliminar esta versión?')) {
+            alert('Versión eliminada (acción simulada)');
+            document.getElementById('versionDetails').style.display = 'none';
+            document.getElementById('versionSelector').value = '';
+        }
+    });
+</script>
+</body>
+</html>
