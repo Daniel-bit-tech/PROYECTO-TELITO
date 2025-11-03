@@ -73,8 +73,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/apis/**").authenticated()
 
                         //  la página y la API del Sandbox
-                        .requestMatchers("/sandbox", "/qa/api/sandbox/**").hasAnyRole("DEV", "QA", "SUPERADMIN")
-
+                        .requestMatchers("/sandbox", "/qa/api/sandbox/**", "/api/sandbox/execute").hasAnyRole("DEV", "QA", "SUPERADMIN")
 
                         // API endpoints - requieren autenticación pero sin CSRF
                         .requestMatchers("/api/onboarding/**").authenticated()
@@ -133,8 +132,7 @@ public class SecurityConfig {
 //                        .accessDeniedPage("/acceso-denegado")
 //                )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/qa/**","/api/onboarding/**","po/registrarFeedbackEnBacklog")
-                )
+                        .ignoringRequestMatchers("/qa/**","/api/onboarding/**","po/registrarFeedbackEnBacklog", "/api/sandbox/**")                )
                 // Control de sesiones concurrentes y seguridad de sesión - SIMPLIFICADO PARA OAUTH2
                 .sessionManagement(session -> session
                         .sessionFixation().migrateSession() // Prevenir session fixation attacks

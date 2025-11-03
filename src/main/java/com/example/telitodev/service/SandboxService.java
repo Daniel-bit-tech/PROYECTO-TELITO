@@ -1,6 +1,6 @@
 package com.example.telitodev.service;
 
-
+import java.net.URI;
 import com.example.telitodev.dto.SandboxApiDetailsDto;
 import com.example.telitodev.dto.SandboxEnvironmentDto;
 import com.example.telitodev.dto.SandboxRequestDto;
@@ -36,13 +36,10 @@ public class SandboxService {
     @Autowired private ApiHasEntornoRepository apiHasEntornoRepository;
     @Autowired private CredencialApiRepository credencialApiRepository;
     @Autowired private RestTemplate restTemplate;
-    @Autowired private ObjectMapper objectMapper; // Para manejar JSON
+    @Autowired private ObjectMapper objectMapper;
 
-    /**
-     * Lógica para el endpoint "Bibliotecario".
-     */
+
     public SandboxApiDetailsDto getApiDetails(Integer apiId, String userDni) {
-        // 1. Obtener datos de la API
 
         credencialApiRepository
                 .findFirstByUsuario_DniAndApi_IdApiAndEstado(userDni, apiId, true)
@@ -55,9 +52,6 @@ public class SandboxService {
                 .orElseThrow(() -> new RuntimeException("Documentación no encontrada para la API con ID: " + apiId));
 
 
-
-
-        // 3. Obtener entornos de prueba
         List<ApiHasEntorno> entornosRel = apiHasEntornoRepository.findByApi_IdApi(apiId);
         List<SandboxEnvironmentDto> entornosDto = entornosRel.stream()
                 .filter(rel -> !rel.getEntorno().getNombre().equalsIgnoreCase("Producción"))
@@ -65,12 +59,10 @@ public class SandboxService {
                 .map(rel -> new SandboxEnvironmentDto(rel.getEntorno().getNombre(), rel.getUrlBase()))
                 .collect(Collectors.toList());
 
-        // 4. Construir el DTO de respuesta
         SandboxApiDetailsDto detailsDto = new SandboxApiDetailsDto();
         detailsDto.setNombre(api.getNombre());
         detailsDto.setEntornos(entornosDto);
         try {
-            // Convertimos el string JSON del campo 'contenido' a un Map
             Map<String, Object> spec = objectMapper.readValue(doc.getContenido(), Map.class);
             detailsDto.setSpec(spec);
         } catch (Exception e) {
@@ -80,9 +72,7 @@ public class SandboxService {
         return detailsDto;
     }
 
-    /**
-     * Lógica para el endpoint "Proxy".
-     */
+
     public SandboxResponseDto executeRequest(SandboxRequestDto requestDto, String userDni) {
         CredencialApi credencial = credencialApiRepository
                 .findFirstByUsuario_DniAndApi_IdApiAndEstado(userDni, requestDto.getApiId(), true)
@@ -96,11 +86,11 @@ public class SandboxService {
         headers.set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
         HttpEntity<String> entity = new HttpEntity<>(requestDto.getBody(), headers);
         HttpMethod method = HttpMethod.valueOf(requestDto.getMethod().toUpperCase());
-
+        URI uri = URI.create(requestDto.getTargetUrl());
         long startTime = System.currentTimeMillis();
         ResponseEntity<String> response;
         try {
-            response = restTemplate.exchange(requestDto.getTargetUrl(), method, entity, String.class);
+            response = restTemplate.exchange(uri, method, entity, String.class);
 
         } catch (HttpClientErrorException e) {
             response = new ResponseEntity<>(e.getResponseBodyAsString(), e.getStatusCode());
