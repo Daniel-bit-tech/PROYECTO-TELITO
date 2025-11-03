@@ -10,6 +10,8 @@ import com.example.telitodev.repository.TicketRepository;
 import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.service.ChatbotService;
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,6 +26,8 @@ import java.util.Map;
 @Controller
 @RequestMapping("/dev")
 public class SoporteController extends BaseController {
+
+    private static final Logger logger = LoggerFactory.getLogger(SoporteController.class);
 
     final UsuarioRepository usuarioRepository;
     final TicketRepository ticketRepository;
@@ -90,14 +94,28 @@ public class SoporteController extends BaseController {
     @GetMapping("/soporte/nuevo-ticket")
     public String showNuevoTicket(Model model, Authentication auth, HttpSession session) {
         
-        // Cargar la lista de APIs disponibles para el dropdown
-        List<Api> apis = apiRepository.findAll();
-        model.addAttribute("apis", apis);
-        
-        // Agregar información de impersonación al modelo
-        addImpersonationAttributes(model, session);
-        
-        return "desarrollador/nuevo-ticket";
+        try {
+            // Cargar la lista de APIs disponibles para el dropdown
+            List<Api> apis = apiRepository.findAll();
+            logger.info("APIs cargadas: " + (apis != null ? apis.size() : "null"));
+            
+            if (apis == null || apis.isEmpty()) {
+                logger.warn("No hay APIs disponibles en la base de datos");
+                apis = new java.util.ArrayList<>();
+            }
+            
+            model.addAttribute("apis", apis);
+            
+            // Agregar información de impersonación al modelo
+            addImpersonationAttributes(model, session);
+            
+            return "desarrollador/nuevo-ticket";
+            
+        } catch (Exception e) {
+            logger.error("Error al cargar formulario de nuevo ticket", e);
+            model.addAttribute("errorMessage", "Error al cargar el formulario: " + e.getMessage());
+            return "error/500";
+        }
     }
 
     /**
@@ -113,12 +131,19 @@ public class SoporteController extends BaseController {
                              RedirectAttributes redirectAttributes) {
         
         try {
+            logger.info("=== CREANDO TICKET ===");
+            logger.info("Asunto: " + asunto);
+            logger.info("ID API: " + idApi);
+            logger.info("Descripción length: " + descripcion.length());
+            
             // Obtener el usuario actual
             Usuario usuario = getCurrentUser(auth, session);
+            logger.info("Usuario: " + usuario.getDni());
             
             // Buscar la API seleccionada
             Api api = apiRepository.findById(idApi).orElseThrow(() -> 
                 new RuntimeException("API no encontrada"));
+            logger.info("API encontrada: " + api.getNombre());
             
             // Crear el nuevo ticket
             Ticket ticket = new Ticket();
@@ -131,7 +156,8 @@ public class SoporteController extends BaseController {
             ticket.setApi(api);
             
             // Guardar el ticket
-            ticketRepository.save(ticket);
+            Ticket savedTicket = ticketRepository.save(ticket);
+            logger.info("Ticket guardado con ID: " + savedTicket.getIdTicket());
             
             redirectAttributes.addFlashAttribute("successMessage", 
                 "Ticket creado exitosamente. Un miembro del equipo de QA lo atenderá pronto.");
@@ -139,6 +165,7 @@ public class SoporteController extends BaseController {
             return "redirect:/dev/soporte";
             
         } catch (Exception e) {
+            logger.error("ERROR AL CREAR TICKET: " + e.getMessage(), e);
             redirectAttributes.addFlashAttribute("errorMessage", 
                 "Error al crear el ticket: " + e.getMessage());
             return "redirect:/dev/soporte/nuevo-ticket";
