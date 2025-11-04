@@ -2,6 +2,7 @@ package com.example.telitodev.controller.productowner;
 
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -74,7 +75,6 @@ public class RoadmapController {
 
                     switch(estadoActual) {
                         case "Próxima":
-                            // Próxima: empieza cuando se asignó el estado, dura 15 días
                             startDate = fechaModificacion;
                             Calendar cal = Calendar.getInstance();
                             cal.setTime(fechaModificacion);
@@ -83,8 +83,7 @@ public class RoadmapController {
                             break;
 
                         case "En desarrollo":
-                            // En desarrollo: empieza CUANDO SE CAMBIÓ a este estado, dura 30 días
-                            startDate = fechaModificacion; // Fecha cuando se cambió a "En desarrollo"
+                            startDate = fechaModificacion;
                             Calendar cal2 = Calendar.getInstance();
                             cal2.setTime(fechaModificacion);
                             cal2.add(Calendar.DAY_OF_MONTH, 30);
@@ -92,8 +91,7 @@ public class RoadmapController {
                             break;
 
                         case "Nueva":
-                            // Nueva: empieza CUANDO SE CAMBIÓ a este estado, dura 15 días
-                            startDate = fechaModificacion; // Fecha cuando se cambió a "Nueva"
+                            startDate = fechaModificacion;
                             Calendar cal3 = Calendar.getInstance();
                             cal3.setTime(fechaModificacion);
                             cal3.add(Calendar.DAY_OF_MONTH, 15);
@@ -133,27 +131,39 @@ public class RoadmapController {
         return "po/roadmap";
     }
 
-    // Endpoint para cambiar el estado de una API
-    @PatchMapping("/roadmap/{apiId}/estado")
+    @PostMapping("/roadmap/{apiId}/estado")
     @ResponseBody
     public ResponseEntity<?> cambiarEstadoApi(
             @PathVariable Integer apiId,
-            @RequestBody Map<String, String> request) {
+            @RequestBody Map<String, String> request,
+            HttpServletRequest httpRequest) {
 
-        System.out.println("🔄 Cambiando estado de API: " + apiId);
+        System.out.println("=== 🚀 SOLICITUD CAMBIAR ESTADO ===");
+        System.out.println("📝 API ID: " + apiId);
+        System.out.println("🌐 Método: " + httpRequest.getMethod());
+        System.out.println("📍 URL: " + httpRequest.getRequestURL());
+        System.out.println("📦 Request Body: " + request);
 
         try {
             String nuevoEstado = request.get("nuevoEstado");
-            System.out.println("🎯 Nuevo estado: " + nuevoEstado);
+
+            System.out.println("🎯 Nuevo estado recibido: " + nuevoEstado);
+
+            if (nuevoEstado == null || nuevoEstado.trim().isEmpty()) {
+                System.out.println("❌ ERROR: Estado nulo o vacío");
+                return ResponseEntity.badRequest().body("El campo 'nuevoEstado' es requerido");
+            }
 
             // Validar estado
             if (!isEstadoValido(nuevoEstado)) {
+                System.out.println("❌ ERROR: Estado no válido: " + nuevoEstado);
                 return ResponseEntity.badRequest().body("Estado no válido: " + nuevoEstado);
             }
 
             // Buscar la API
             Optional<Api> apiOpt = apiRepository.findById(apiId);
             if (!apiOpt.isPresent()) {
+                System.out.println("❌ ERROR: API no encontrada con ID: " + apiId);
                 return ResponseEntity.notFound().build();
             }
 
@@ -169,6 +179,7 @@ public class RoadmapController {
                 roadmap = roadmapOpt.get();
                 System.out.println("📝 Actualizando roadmap existente - Estado anterior: " + roadmap.getEstado());
                 roadmap.setEstado(nuevoEstado);
+                roadmap.setFechaModificacion(new Date());
             } else {
                 // Crear nuevo roadmap
                 System.out.println("🆕 Creando nuevo roadmap");
@@ -178,25 +189,31 @@ public class RoadmapController {
             Roadmap saved = roadmapRepository.save(roadmap);
             System.out.println("💾 Roadmap guardado - ID: " + saved.getId() + ", Estado: " + saved.getEstado());
 
-            return ResponseEntity.ok().body(Map.of(
+            Map<String, Object> response = Map.of(
                     "message", "Estado actualizado correctamente",
                     "apiId", apiId,
-                    "nuevoEstado", nuevoEstado
-            ));
+                    "nuevoEstado", nuevoEstado,
+                    "apiNombre", api.getNombre()
+            );
+
+            System.out.println("✅ RESPUESTA EXITOSA: " + response);
+            return ResponseEntity.ok().body(response);
 
         } catch (Exception e) {
-            System.out.println("❌ Error al actualizar estado: " + e.getMessage());
+            System.out.println("❌ ERROR EXCEPCIÓN: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError()
                     .body("Error al actualizar estado: " + e.getMessage());
         }
     }
 
-    // Endpoint para restablecer una API a "Sin estado"
     @PostMapping("/roadmap/{apiId}/restablecer")
     @ResponseBody
-    public ResponseEntity<?> restablecerApi(@PathVariable Integer apiId) {
-        System.out.println("🔄 Restableciendo API: " + apiId);
+    public ResponseEntity<?> restablecerApi(@PathVariable Integer apiId, HttpServletRequest httpRequest) {
+        System.out.println("=== 🔄 SOLICITUD RESTABLECER API ===");
+        System.out.println("📝 API ID: " + apiId);
+        System.out.println("🌐 Método: " + httpRequest.getMethod());
+        System.out.println("📍 URL: " + httpRequest.getRequestURL());
 
         try {
             // Buscar si existe un roadmap para esta API
@@ -206,19 +223,23 @@ public class RoadmapController {
                 Roadmap roadmap = roadmapOpt.get();
                 System.out.println("📝 Roadmap encontrado - Estado anterior: " + roadmap.getEstado());
                 roadmap.setEstado("Sin estado");
+                roadmap.setFechaModificacion(new Date());
                 Roadmap saved = roadmapRepository.save(roadmap);
                 System.out.println("💾 Roadmap actualizado - Estado nuevo: " + saved.getEstado());
             } else {
                 System.out.println("ℹ️ No existe roadmap, ya está en estado por defecto");
             }
 
-            return ResponseEntity.ok().body(Map.of(
+            Map<String, Object> response = Map.of(
                     "message", "API restablecida a 'Sin estado'",
                     "apiId", apiId
-            ));
+            );
+
+            System.out.println("✅ RESPUESTA EXITOSA: " + response);
+            return ResponseEntity.ok().body(response);
 
         } catch (Exception e) {
-            System.out.println("❌ Error al restablecer API: " + e.getMessage());
+            System.out.println("❌ ERROR EXCEPCIÓN: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.internalServerError()
                     .body("Error al restablecer API: " + e.getMessage());

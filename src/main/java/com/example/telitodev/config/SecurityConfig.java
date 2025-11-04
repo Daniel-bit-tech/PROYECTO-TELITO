@@ -131,7 +131,12 @@ public class SecurityConfig {
 //                        .accessDeniedPage("/acceso-denegado")
 //                )
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/qa/**","/api/onboarding/**","po/registrarFeedbackEnBacklog")
+                        .ignoringRequestMatchers(
+                                "/qa/**",
+                                "/api/onboarding/**",
+                                "/po/registrarFeedbackEnBacklog",
+                                "/po/roadmap/**"  // ✅ AGREGAR ESTA LÍNEA
+                        )
                 )
                 // Control de sesiones concurrentes y seguridad de sesión - SIMPLIFICADO PARA OAUTH2
                 .sessionManagement(session -> session

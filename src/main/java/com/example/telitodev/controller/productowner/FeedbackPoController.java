@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.productowner;
 
+import com.example.telitodev.repository.po.ActividadRecienteRepository;
 import com.example.telitodev.service.*;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -27,13 +29,17 @@ public class FeedbackPoController {
     final UsuarioRepository usuarioRepository;
     final FeedbackRepository feedbackRepository;
     final BacklogRepository backlogRepository;
+    final ActividadRecienteRepository actividadRecienteRepository;
 
-    public FeedbackPoController(BacklogRepository backlogRepository,UsuarioRepository usuarioRepository, FeedbackRepository feedbackRepository, BacklogService backlogService, FeedbackService feedbackService) {
+    public FeedbackPoController(BacklogRepository backlogRepository,UsuarioRepository usuarioRepository,
+                                FeedbackRepository feedbackRepository, BacklogService backlogService,
+                                FeedbackService feedbackService, ActividadRecienteRepository actividadRecienteRepository) {
         this.usuarioRepository = usuarioRepository;
         this.feedbackRepository = feedbackRepository;
         this.backlogService = backlogService;
         this.feedbackService = feedbackService;
         this.backlogRepository = backlogRepository;
+        this.actividadRecienteRepository = actividadRecienteRepository;
         }
 
     @GetMapping("/feedback")
@@ -120,6 +126,24 @@ public class FeedbackPoController {
             } else {
                 // ✅ Este método ahora actualiza automáticamente registradoBacklog
                 feedbackService.registrarFeedbackEnBacklog(idFeedback, asunto, usuario);
+
+                // === ACTIVIDAD RECIENTE ===
+                Optional<Feedback> feedbackOpt = feedbackRepository.findById(idFeedback);
+                if (feedbackOpt.isPresent()) {
+                    Feedback feedback = feedbackOpt.get();
+
+                    ActividadReciente actividad = new ActividadReciente();
+                    actividad.setTitulo("Feedback Registrado en Backlog");
+                    actividad.setDescripcion("Has registrado en backlog el feedback de " +
+                            feedback.getUsuario().getNombre() + " " +
+                            feedback.getUsuario().getApellidoPaterno() +
+                            " para la API: " + feedback.getApi().getNombre());
+                    actividad.setUsuario(usuario);
+                    actividad.setFecha(new Timestamp(System.currentTimeMillis()).toLocalDateTime());
+                    actividadRecienteRepository.save(actividad);
+
+                    System.out.println("✅ Feedback registrado en backlog - Actividad registrada para PO: " + usuario.getCorreo());
+                }
 
                 model.addAttribute("success", "Feedback registrado exitosamente en el backlog");
                 model.addAttribute("feedbackRegistrado", true);

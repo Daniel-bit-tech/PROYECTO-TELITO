@@ -1,7 +1,15 @@
 package com.example.telitodev.controller.desarrollador;
 
 import com.example.telitodev.controller.BaseController;
+
+import java.sql.Timestamp;
 import java.util.List;
+
+import com.example.telitodev.entity.*;
+import com.example.telitodev.repository.*;
+import com.example.telitodev.repository.SolicitudAccesoRepository;
+import com.example.telitodev.repository.po.ActividadRecienteRepository;
+import com.example.telitodev.service.UsuarioService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -34,10 +42,20 @@ public class OnboardingController extends BaseController {
 
     final UsuarioRepository usuarioRepository;
     final OnboardingService onboardingService;
+    final SolicitudAccesoRepository solicitudAccesoRepository;
+    final NotificacionRepository notificacionRepository;
+    final UsuarioService usuarioService;
+    final ActividadRecienteRepository actividadRecienteRepository;
 
-    public OnboardingController(UsuarioRepository usuarioRepository, OnboardingService onboardingService) {
+    public OnboardingController(UsuarioRepository usuarioRepository, OnboardingService onboardingService,
+                                SolicitudAccesoRepository solicitudAccesoRepository, NotificacionRepository notificacionRepository, UsuarioService usuarioService,
+                                UsuarioRepository userRepository, ActividadRecienteRepository actividadRecienteRepository) {
         this.usuarioRepository = usuarioRepository;
         this.onboardingService = onboardingService;
+        this.solicitudAccesoRepository = solicitudAccesoRepository;
+        this.notificacionRepository = notificacionRepository;
+        this.usuarioService = usuarioService;
+        this.actividadRecienteRepository = actividadRecienteRepository;
     }
 
     @GetMapping("/onboarding")
@@ -187,23 +205,52 @@ public class OnboardingController extends BaseController {
             // Crear la solicitud usando el servicio
             SolicitudAccesoResponse response = onboardingService.crearSolicitudAcceso(usuario.getDni(), solicitudRequest);
 
+            // Obtener la solicitud creada para la notificación
+            SolicitudAcceso solicitudCreada = solicitudAccesoRepository.findById(response.getIdSolicitudAcceso())
+                    .orElseThrow(() -> new RuntimeException("Solicitud no encontrada después de creación"));
+
+            // === NOTIFICACIÓN PARA EL PO ===
+            // USAR LA ORGANIZACIÓN DEL DEV QUE ENVÍA LA SOLICITUD
+            if (usuario.getOrganizacion() != null) {
+
+                // Buscar al PO de la organización del DEV
+                Usuario po = usuarioRepository.findPoByOrganizacion(usuario.getOrganizacion().getIdOrganizacion());
+
+                if (po != null) {
+                    // Crear notificación para el PO
+                    Notificacion notificacion = new Notificacion();
+                    notificacion.setMensaje("Solicitud de API Key: El desarrollador " + usuario.getNombre() + " " + usuario.getApellidoPaterno() +
+                            " ha solicitado acceso a la API: " + solicitudCreada.getApi().getNombre() +
+                            " - Proyecto: " + solicitudRequest.getNombreProyecto());
+                    notificacion.setLeido(false);
+                    notificacion.setFecha(new Timestamp(System.currentTimeMillis()));
+                    notificacion.setUsuario(po);
+
+                    notificacionRepository.save(notificacion);
+
+                    System.out.println("✅ Notificación de solicitud API Key enviada al PO: " + po.getCorreo());
+                    System.out.println("   Organización: " + usuario.getOrganizacion().getNombre());
+                } else {
+                    System.out.println("⚠️ No se encontró PO en la organización: " + usuario.getOrganizacion().getNombre());
+                }
+            } else {
+                System.out.println("ℹ️ El DEV no tiene organización asignada - No se envía notificación");
+            }
+
             return ResponseEntity.ok(response);
 
         } catch (com.example.telitodev.exception.ApiYaActivaException e) {
-            // Manejar específicamente la excepción de API ya activa
             System.err.println("API ya activa: " + e.getMessage());
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            System.err.println("Enviando ErrorResponse: " + errorResponse.getError());
             return ResponseEntity.status(400).body(errorResponse);
         } catch (RuntimeException e) {
             System.err.println("Error al crear solicitud de acceso: " + e.getMessage());
-            e.printStackTrace(); // Agregar stack trace para debug
+            e.printStackTrace();
             ErrorResponse errorResponse = new ErrorResponse(e.getMessage());
-            System.err.println("Enviando ErrorResponse: " + errorResponse.getError());
             return ResponseEntity.status(400).body(errorResponse);
         } catch (Exception e) {
             System.err.println("Error interno al crear solicitud: " + e.getMessage());
-            e.printStackTrace(); // Agregar stack trace para debug
+            e.printStackTrace();
             return ResponseEntity.status(500).body(new ErrorResponse("Error interno del servidor"));
         }
     }

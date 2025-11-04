@@ -455,25 +455,37 @@
                     </ul>
                 </div>
 
-                <div class="card">
+                <div class="dashboard-card">
                     <div class="card-header">
-                        <h3 class="card-title">Notificaciones Recientes</h3>
+                        <h3 class="card-title"><i class="fas fa-bell"></i> Notificaciones</h3>
                         <div class="card-actions">
-                            <a href="#" class="btn btn-sm btn-ghost">Ver todas</a>
+                            <a th:href="@{/notificaciones}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
                         </div>
                     </div>
-                    <div class="list-group list-group-flush">
-                        <div th:if="${#lists.isEmpty(notificaciones)}" class="list-group-item text-center text-muted">
-                            <span class="text-secondary">No tienes notificaciones para mostrar.</span>
-                        </div>
-                        <a th:each="notificacion : ${notificaciones}" href="#" class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1" th:text="${notificacion.titulo}">Título de la Notificación</h5>
-                                <small class="text-muted" th:text="${#dates.format(notificacion.fecha, 'dd-MM-yyyy HH:mm')}">hace 5 minutos</small>
+
+                    <ul class="notification-list">
+                        <li class="notification-item" th:each="noti : ${notificaciones}">
+                            <div class="notification-icon"
+                                 th:style="'background-color: rgba(var(--tblr-' + ${noti.leido ? 'success' : 'primary'} + '-rgb), 0.1); color: var(--tblr-' + ${noti.leido ? 'success' : 'primary'} + ');'">
+                                <i class="fas" th:classappend="${noti.leido ? 'fa-envelope-open' : 'fa-envelope'}"></i>
                             </div>
-                            <p class="mb-1" th:text="${notificacion.mensaje}">Contenido del mensaje de la notificación.</p>
-                        </a>
-                    </div>
+
+                            <div class="notification-content">
+                                <div class="notification-title" th:text="${#strings.substringBefore(noti.mensaje, ':')}">Título</div>
+                                <div class="notification-description" th:text="${#strings.substringAfter(noti.mensaje, ':')}">Descripción</div>
+                            </div>
+
+                            <div class="notification-time" th:text="${#temporals.format(noti.fecha.toLocalDateTime(), 'dd MMM HH:mm')}">Hace 2h</div>
+                        </li>
+                        <!-- Mostrar mensaje si la lista está vacía -->
+                        <li th:if="${#lists.isEmpty(notificaciones)}">
+                            <div class="activity-content">
+                                <div class="activity-title">¡Todo al día!</div>
+                                <div class="activity-description">No tienes notificaciones nuevas.</div>
+                            </div>
+                        </li>
+
+                    </ul>
                 </div>
 
                 <div class="card">
