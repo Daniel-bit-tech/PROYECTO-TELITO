@@ -211,8 +211,8 @@
                                         <div class="d-flex align-items-center">
                                             <label for="items-per-page" class="form-label me-2 mb-0">Mostrar:</label>
                                             <select id="items-per-page" class="form-select form-select-sm" style="width: auto;">
-                                                <option value="5">5</option>
-                                                <option value="10" selected>10</option>
+                                                <option value="5" selected>5</option>
+                                                <option value="10">10</option>
                                                 <option value="15">15</option>
                                                 <option value="20">20</option>
                                             </select>
@@ -391,16 +391,20 @@
                             <div class="status-line ${getStatusClass(control.currentEstado, 'line')}" style="width: 100px;"></div>
                         </div>
                     </div>
-                    <div class="ms-3 api-buttons">
-                        <button class="btn btn-sm btn-primary change-status-btn" data-api-id="${control.apiId}">
-                            Cambiar Estado
-                        </button>
-                        ${control.currentEstado !== 'Sin estado' ?
-                `<button class="btn btn-sm btn-secondary reset-status-btn" data-api-id="${control.apiId}">
-                                Restablecer
-                            </button>` : ''
+                   <div class="ms-3 api-buttons">
+    <button class="btn btn-sm btn-primary change-status-btn"
+            data-api-id="${control.apiId}"
+            onclick="cambiarEstadoApiConConfirm('${control.apiId}')">
+        Cambiar Estado
+    </button>
+    ${control.currentEstado !== 'Sin estado' ?
+                `<button class="btn btn-sm btn-secondary reset-status-btn"
+                data-api-id="${control.apiId}"
+                onclick="restablecerApiConConfirm('${control.apiId}')">
+            Restablecer
+        </button>` : ''
             }
-                    </div>
+</div>
                 </div>
             `;
         });
@@ -509,7 +513,29 @@
 
     // REEMPLAZA LAS FUNCIONES cambiarEstadoApi y restablecerApi CON ESTAS VERSIONES MEJORADAS
 
+    // REEMPLAZA LAS FUNCIONES cambiarEstadoApi y restablecerApi CON ESTAS VERSIONES
+
+
+    // NUEVAS FUNCIONES CON CONFIRMACIÓN
+    function cambiarEstadoApiConConfirm(apiId) {
+        if (confirm('¿Está seguro de cambiar el estado de esta API?')) {
+            cambiarEstadoApi(apiId);
+        }
+    }
+
+    function restablecerApiConConfirm(apiId) {
+        if (confirm('¿Está seguro de restablecer el estado de esta API?')) {
+            restablecerApi(apiId);
+        }
+    }
+
+
     function cambiarEstadoApi(apiId) {
+        // Primero mostrar confirmación
+        if (!confirm('¿Está seguro de cambiar el estado de esta API?')) {
+            return; // Si el usuario cancela, no hacer nada
+        }
+
         console.log('🔍 INICIANDO cambiarEstadoApi...');
         console.log('📝 API ID:', apiId);
         console.log('📍 URL completa:', `${window.location.origin}/po/roadmap/${apiId}/estado`);
@@ -573,6 +599,11 @@
     }
 
     function restablecerApi(apiId) {
+        // Primero mostrar confirmación
+        if (!confirm('¿Está seguro de restablecer el estado de esta API?')) {
+            return; // Si el usuario cancela, no hacer nada
+        }
+
         console.log('🔍 INICIANDO restablecerApi...');
         console.log('📝 API ID:', apiId);
         console.log('📍 URL completa:', `${window.location.origin}/po/roadmap/${apiId}/restablecer`);

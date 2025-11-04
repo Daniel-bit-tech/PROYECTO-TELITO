@@ -459,7 +459,7 @@
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-bell"></i> Notificaciones</h3>
                         <div class="card-actions">
-                            <a th:href="@{/notificaciones}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+                            <a href="#" class="btn btn-sm btn-outline-secondary">Ver todas</a>
                         </div>
                     </div>
 
@@ -490,22 +490,88 @@
 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Actividad Reciente</h3>
+                        <h3 class="card-title"><i class="fas fa-history me-2"></i>Actividad Reciente</h3>
                         <div class="card-actions">
-                            <a th:href="@{/po/actividad}" class="btn btn-sm btn-ghost">Ver todas</a>
+                            <a href="#" class="btn btn-sm btn-ghost">Ver todas</a>
                         </div>
                     </div>
-                    <div class="list-group list-group-flush">
-                        <div th:if="${#lists.isEmpty(actividadesRecientes)}" class="list-group-item text-center text-muted">
-                            <span class="text-secondary">No hay actividad reciente para mostrar.</span>
-                        </div>
-                        <a th:each="actividad : ${actividadesRecientes}" href="#" class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1" th:text="${actividad.titulo}"></h5>
-                                <small class="text-muted" th:text="${#temporals.format(actividad.fecha, 'dd-MM-yyyy HH:mm')}"></small>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            <div th:if="${#lists.isEmpty(actividadesRecientes)}" class="list-group-item text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-2x text-secondary mb-2"></i>
+                                <p class="mb-1">No hay actividades recientes</p>
+                                <small class="text-secondary">Aún no se han registrado actividades.</small>
                             </div>
-                            <p class="mb-1" th:text="${actividad.descripcion}"></p>
-                        </a>
+
+                            <!-- Mostrar solo las primeras 5 actividades -->
+                            <div th:each="actividad, stat : ${actividadesRecientes}"
+                                 th:if="${stat.index < 5}"
+                                 class="list-group-item">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                        <span class="avatar avatar-sm bg-primary-lt">
+                            <i class="fas fa-tasks text-primary"></i>
+                        </span>
+                                    </div>
+                                    <div class="col">
+                                        <div class="font-weight-medium" th:text="${actividad.titulo}">Solicitud de API Key</div>
+                                        <div class="text-muted" th:text="${actividad.descripcion}">El desarrollador Andrés Salino ha solicitado acceso a la API: API Usuarios - Proyecto: RedesUnificadas - LinkUP!</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <small class="text-muted" th:text="${#temporals.format(actividad.fecha, 'dd MMM HH:mm')}">04 nov 01:58</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Mostrar mensaje si hay más de 5 actividades -->
+                            <div th:if="${#lists.size(actividadesRecientes) > 5}" class="list-group-item text-center">
+                                <button class="btn btn-sm btn-outline-primary" onclick="cargarTodasActividades()">
+                                    <i class="fas fa-chevron-down me-1"></i>
+                                    Mostrar todas las actividades (<span th:text="${#lists.size(actividadesRecientes) - 5}"></span> más)
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal para mostrar todas las actividades -->
+                <div class="modal modal-blur fade" id="modalTodasActividades" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title"><i class="fas fa-history me-2"></i>Todas las Actividades</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="list-group list-group-flush">
+                                    <div th:if="${#lists.isEmpty(actividadesRecientes)}" class="list-group-item text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x text-secondary mb-2"></i>
+                                        <p class="mb-1">No hay actividades</p>
+                                        <small class="text-secondary">Aún no se han registrado actividades.</small>
+                                    </div>
+
+                                    <div th:each="actividad : ${actividadesRecientes}" class="list-group-item">
+                                        <div class="row align-items-center">
+                                            <div class="col-auto">
+                                <span class="avatar avatar-sm bg-primary-lt">
+                                    <i class="fas fa-tasks text-primary"></i>
+                                </span>
+                                            </div>
+                                            <div class="col">
+                                                <div class="font-weight-medium" th:text="${actividad.titulo}">Solicitud de API Key</div>
+                                                <div class="text-muted" th:text="${actividad.descripcion}">El desarrollador Andrés Salino ha solicitado acceso a la API: API Usuarios - Proyecto: RedesUnificadas - LinkUP!</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <small class="text-muted" th:text="${#temporals.format(actividad.fecha, 'dd MMM HH:mm')}">04 nov 01:58</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -513,7 +579,7 @@
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-ticket-alt"></i> Tickets de Soporte</h3>
                         <div class="card-actions">
-                            <a th:href="@{/po/tickets}" class="btn btn-sm btn-outline-secondary">Ver todos</a>
+                            <a href="#" class="btn btn-sm btn-outline-secondary">Ver todos</a>
                         </div>
                     </div>
                     <ul class="activity-list">
@@ -588,7 +654,16 @@
 </script>
 
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
-<script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
+<script src="/tabler/dist/js/tabler.min.js?1757307620">
+
+    function cargarTodasActividades() {
+        // Mostrar el modal con todas las actividades
+        const modal = new bootstrap.Modal(document.getElementById('modalTodasActividades'));
+        modal.show();
+    }
+
+
+</script>
 
 
 

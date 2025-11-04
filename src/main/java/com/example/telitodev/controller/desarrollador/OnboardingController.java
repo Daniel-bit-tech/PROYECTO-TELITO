@@ -220,8 +220,7 @@ public class OnboardingController extends BaseController {
                     // Crear notificación para el PO
                     Notificacion notificacion = new Notificacion();
                     notificacion.setMensaje("Solicitud de API Key: El desarrollador " + usuario.getNombre() + " " + usuario.getApellidoPaterno() +
-                            " ha solicitado acceso a la API: " + solicitudCreada.getApi().getNombre() +
-                            " - Proyecto: " + solicitudRequest.getNombreProyecto());
+                            " ha solicitado acceso a la: " + solicitudCreada.getApi().getNombre());
                     notificacion.setLeido(false);
                     notificacion.setFecha(new Timestamp(System.currentTimeMillis()));
                     notificacion.setUsuario(po);

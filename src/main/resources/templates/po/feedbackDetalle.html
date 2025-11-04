@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="es" data-bs-theme="dark" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
@@ -202,8 +203,8 @@
                                         <!-- El asunto por defecto es "--", no editable en esta vista -->
                                         <input type="hidden" name="asunto" value="--" />
 
-                                        <!-- Botón para enviar el formulario -->
-                                        <button type="submit" id="backlogBtn" class="btn btn-custom">
+                                        <!-- Botón con confirmación simple -->
+                                        <button type="submit" class="btn btn-custom" onclick="return confirm('¿Está seguro de registrar este feedback en el backlog?')">
                                             <i class="fas fa-plus-circle"></i> Registrar en Backlog
                                         </button>
                                     </form>
@@ -281,58 +282,5 @@
 </div>
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="/tabler/dist/js/tabler.min.js"></script>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const backlogForm = document.getElementById('backlogForm');
-        const backlogBtn = document.getElementById('backlogBtn');
-        const alertContainer = document.getElementById('alertContainer');
-
-        // Solo aplicar JavaScript si el formulario existe (es decir, si NO está registrado)
-        if (backlogForm && backlogBtn) {
-            let isSubmitting = false;
-
-            backlogForm.addEventListener('submit', function(e) {
-                if (isSubmitting) {
-                    e.preventDefault();
-                    return;
-                }
-                isSubmitting = true;
-
-                // Deshabilitar el botón inmediatamente y mostrar estado de procesando
-                backlogBtn.disabled = true;
-                backlogBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-
-                // Mostrar alerta de procesamiento
-                showAlert('Procesando registro en backlog...', 'info');
-
-                // El formulario se enviará normalmente
-                // No necesitamos hacer nada más porque el backend actualiza la BD
-            });
-
-            function showAlert(message, type) {
-                const alertClass = type === 'success' ? 'alert-success' : 'alert-info';
-                const icon = type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
-
-                const alertDiv = document.createElement('div');
-                alertDiv.className = `alert ${alertClass} alert-dismissible fade show`;
-                alertDiv.innerHTML = `
-                    <i class="fas ${icon} me-2"></i>
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                `;
-
-                alertContainer.appendChild(alertDiv);
-
-                // Auto-remover después de 5 segundos
-                setTimeout(() => {
-                    if (alertDiv.parentNode) {
-                        alertDiv.remove();
-                    }
-                }, 5000);
-            }
-        }
-    });
-</script>
 </body>
 </html>
