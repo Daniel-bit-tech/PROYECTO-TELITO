@@ -103,4 +103,9 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
         // NUEVO: Verificar si usuario tiene organización asignada
         @Query("SELECT COUNT(u) > 0 FROM Usuario u WHERE u.dni = :dni AND u.organizacion IS NOT NULL")
         boolean tieneOrganizacionAsignada(@Param("dni") String dni);
+
+        @Query("SELECT u FROM Usuario u WHERE u.organizacion.idOrganizacion = :idOrganizacion AND u.rol.nombreRol = 'PO'")
+        Usuario findPoByOrganizacion(@Param("idOrganizacion") Integer idOrganizacion);
+
+
 }

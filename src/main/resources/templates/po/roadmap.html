@@ -407,7 +407,7 @@
 
         controlsList.innerHTML = html;
         attachEventListeners();
-        
+
         // Actualizar información de paginación
         updatePaginationInfo(startIndex + 1, endIndex, totalItems);
         updatePaginationControls(Math.ceil(totalItems / itemsPerPage));
@@ -426,14 +426,14 @@
     // Actualizar controles de paginación
     function updatePaginationControls(totalPages) {
         const paginationControls = document.getElementById('pagination-controls');
-        
+
         if (totalPages <= 1) {
             paginationControls.innerHTML = '';
             return;
         }
 
         let html = '';
-        
+
         // Botón anterior
         html += `
             <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
@@ -447,7 +447,7 @@
         const maxVisiblePages = 5;
         let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
         let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-        
+
         if (endPage - startPage + 1 < maxVisiblePages) {
             startPage = Math.max(1, endPage - maxVisiblePages + 1);
         }
@@ -507,54 +507,118 @@
         });
     }
 
-    // Cambiar estado de API
+    // REEMPLAZA LAS FUNCIONES cambiarEstadoApi y restablecerApi CON ESTAS VERSIONES MEJORADAS
+
     function cambiarEstadoApi(apiId) {
+        console.log('🔍 INICIANDO cambiarEstadoApi...');
+        console.log('📝 API ID:', apiId);
+        console.log('📍 URL completa:', `${window.location.origin}/po/roadmap/${apiId}/estado`);
+
         const control = roadmapControls.find(c => c.apiId == apiId);
-        if (!control) return;
+        if (!control) {
+            console.error('❌ Control no encontrado para API ID:', apiId);
+            alert('Error: No se encontró la API');
+            return;
+        }
 
         const nextStatus = getNextStatus(control.currentEstado);
+        console.log('🔄 Cambiando estado:', `${control.currentEstado} → ${nextStatus}`);
+
+        // Mostrar loading en el botón
+        const button = document.querySelector(`[data-api-id="${apiId}"].change-status-btn`);
+        const originalText = button.innerHTML;
+        button.innerHTML = '<span class="loading-spinner"></span> Procesando...';
+        button.disabled = true;
 
         fetch(`/po/roadmap/${apiId}/estado`, {
-            method: 'PATCH',
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             },
             body: JSON.stringify({ nuevoEstado: nextStatus })
         })
             .then(response => {
-                if (!response.ok) throw new Error('Error en la respuesta');
+                console.log('📨 Respuesta HTTP recibida');
+                console.log('Status:', response.status);
+                console.log('OK:', response.ok);
+                console.log('Headers:', Object.fromEntries(response.headers.entries()));
+
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('❌ Error en respuesta:', text);
+                        throw new Error(`Error ${response.status}: ${text}`);
+                    });
+                }
                 return response.json();
             })
             .then(data => {
-                console.log('✅ Estado cambiado:', data);
-                // Recargar para ver cambios
-                window.location.reload();
+                console.log('✅ ÉXITO - Datos recibidos:', data);
+                alert(`✅ Estado cambiado exitosamente a: ${nextStatus}`);
+                // Recargar después de un breve delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
             })
             .catch(error => {
-                console.error('❌ Error:', error);
-                alert('Error al cambiar el estado');
+                console.error('❌ ERROR COMPLETO:', error);
+                console.error('❌ Mensaje:', error.message);
+                console.error('❌ Stack:', error.stack);
+
+                button.innerHTML = originalText;
+                button.disabled = false;
+
+                alert(`❌ Error al cambiar estado:\n${error.message}`);
             });
     }
 
-    // Restablecer API
     function restablecerApi(apiId) {
+        console.log('🔍 INICIANDO restablecerApi...');
+        console.log('📝 API ID:', apiId);
+        console.log('📍 URL completa:', `${window.location.origin}/po/roadmap/${apiId}/restablecer`);
+
+        // Mostrar loading en el botón
+        const button = document.querySelector(`[data-api-id="${apiId}"].reset-status-btn`);
+        const originalText = button.innerHTML;
+        button.innerHTML = '<span class="loading-spinner"></span> Procesando...';
+        button.disabled = true;
+
         fetch(`/po/roadmap/${apiId}/restablecer`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
             .then(response => {
-                if (!response.ok) throw new Error('Error en la respuesta');
+                console.log('📨 Respuesta HTTP recibida');
+                console.log('Status:', response.status);
+                console.log('OK:', response.ok);
+
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('❌ Error en respuesta:', text);
+                        throw new Error(`Error ${response.status}: ${text}`);
+                    });
+                }
                 return response.json();
             })
             .then(data => {
-                console.log('✅ API restablecida:', data);
-                window.location.reload();
+                console.log('✅ ÉXITO - Datos recibidos:', data);
+                alert('✅ API restablecida exitosamente');
+                // Recargar después de un breve delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
             })
             .catch(error => {
-                console.error('❌ Error:', error);
-                alert('Error al restablecer la API');
+                console.error('❌ ERROR COMPLETO:', error);
+                console.error('❌ Mensaje:', error.message);
+
+                button.innerHTML = originalText;
+                button.disabled = false;
+
+                alert(`❌ Error al restablecer API:\n${error.message}`);
             });
     }
 
@@ -650,6 +714,29 @@
         initializeRoadmap();
     });
     /*]]>*/
+
+    // CÓDIGO DE DIAGNÓSTICO - AGREGAR AL FINAL
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('=== 🚀 DIAGNÓSTICO INICIADO ===');
+        console.log('📍 URL actual:', window.location.href);
+        console.log('📍 Pathname:', window.location.pathname);
+        console.log('📍 Origen:', window.location.origin);
+        console.log('📊 roadmapData:', roadmapData);
+        console.log('🎮 roadmapControls:', roadmapControls);
+        console.log('=== 🔍 DIAGNÓSTICO COMPLETADO ===');
+
+        // Verificar que los event listeners estén funcionando
+        setTimeout(() => {
+            const testButton = document.querySelector('.change-status-btn');
+            if (testButton) {
+                console.log('✅ Botones encontrados correctamente');
+                console.log('✅ Primer botón data-api-id:', testButton.getAttribute('data-api-id'));
+            } else {
+                console.error('❌ No se encontraron botones change-status-btn');
+            }
+        }, 1000);
+    });
+
 </script>
 </body>
 </html>
