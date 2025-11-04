@@ -21,13 +21,14 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
     Page<Feedback> findByUsuario(Usuario usuario, Pageable pageable);
     List<Feedback> findByApiIn(List<Api> apis);
 
-
-
     @Modifying
     @Query("UPDATE Feedback f SET f.registradoBacklog = true WHERE f.idFeedback = :idFeedback")
     void marcarComoRegistradoEnBacklog(@Param("idFeedback") Integer idFeedback);
 
     List<Feedback> findByRegistradoBacklog(Boolean registradoBacklog);
+
+    @Query("SELECT f FROM Feedback f JOIN f.usuario u WHERE u.organizacion.idOrganizacion = :organizacionId")
+    List<Feedback> findByUsuarioOrganizacionId(@Param("organizacionId") Integer organizacionId);
 
 
 }

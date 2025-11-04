@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import jakarta.servlet.http.HttpSession;
@@ -39,7 +40,34 @@ public class FeedbackPoController {
     public String showFeedbackView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        List<Feedback> listaFeedback = feedbackRepository.findAll();
+
+        // Obtener la organización del PO
+        Organizacion organizacion = usuario.getOrganizacion();
+
+        List<Feedback> listaFeedback;
+
+        if (organizacion != null) {
+            // Filtrar feedbacks solo de la organización del PO
+            listaFeedback = feedbackRepository.findByUsuarioOrganizacionId(organizacion.getIdOrganizacion());
+
+            // Debug mejorado
+            System.out.println("=== DEBUG FEEDBACK ORGANIZACIÓN ===");
+            System.out.println("PO: " + usuario.getCorreo());
+            System.out.println("Organización: " + organizacion.getNombre());
+            System.out.println("Total feedbacks encontrados: " + listaFeedback.size());
+
+            for (Feedback feedback : listaFeedback) {
+                System.out.println("Feedback ID: " + feedback.getIdFeedback() +
+                        " | API: " + feedback.getApi().getNombre() +
+                        " | Usuario: " + feedback.getUsuario().getCorreo() +
+                        " | Calificación: " + feedback.getCalificacion());
+            }
+        } else {
+            // Si el PO no tiene organización, mostrar lista vacía
+            listaFeedback = new ArrayList<>();
+            System.out.println("ADVERTENCIA: El PO no tiene organización asignada");
+        }
+
         model.addAttribute("listaFeedback", listaFeedback);
         return "po/feedback";
     }

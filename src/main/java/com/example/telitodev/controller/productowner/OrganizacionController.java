@@ -21,18 +21,22 @@
         private final ProyectoRepository proyectoRepository;
         private final SolAccesoOrgService solAccesoOrgService;
         private final OrganizacionService organizacionService;
+        private final ApiRepository apiRepository;;
+
     
         // AGREGAR los nuevos servicios al constructor
         public OrganizacionController(UsuarioRepository usuarioRepository,
                                       OrganizacionRepository organizacionRepository,
                                       ProyectoRepository proyectoRepository,
                                       SolAccesoOrgService solAccesoOrgService,
-                                      OrganizacionService organizacionService) {
+                                      OrganizacionService organizacionService,
+                                      ApiRepository apiRepository) {
             this.usuarioRepository = usuarioRepository;
             this.organizacionRepository = organizacionRepository;
             this.proyectoRepository = proyectoRepository;
             this.solAccesoOrgService = solAccesoOrgService;
             this.organizacionService = organizacionService;
+            this.apiRepository = apiRepository;
         }
     
         @GetMapping("/organizacion")
@@ -61,7 +65,8 @@
                 model.addAttribute("proyectosActivos", proyectosActivos);
     
                 // 5. Obtener APIs únicas de la organización
-                List<Api> apisUnicas = obtenerApisUnicasDeOrganizacion(organizacion);
+                // En el controller, reemplaza la línea:
+                List<Api> apisUnicas = apiRepository.findByOrganizacionId(organizacion.getIdOrganizacion());
                 model.addAttribute("apis", apisUnicas);
     
                 return "po/organizacion";
@@ -72,6 +77,9 @@
                 model.addAttribute("usuario", usuario);
                 return "po/organizacion";
             }
+
+
+
         }
     
         // metodo para mostrar el historial de solicitudes de acceso
@@ -179,39 +187,7 @@
                 return "po/solicitudAcceso";
             }
         }
-    
-        // Método auxiliar para obtener APIs únicas de la organización
-        private List<Api> obtenerApisUnicasDeOrganizacion(Organizacion organizacion) {
-            try {
-                // Opción 1: Usar el método del repository si existe
-                List<Proyecto> proyectosConApis = proyectoRepository.findByOrganizacionIdWithApis(organizacion.getIdOrganizacion());
-    
-                if (proyectosConApis != null && !proyectosConApis.isEmpty()) {
-                    return proyectosConApis.stream()
-                            .filter(proyecto -> proyecto.getProyectoHasApis() != null)
-                            .flatMap(proyecto -> proyecto.getProyectoHasApis().stream())
-                            .map(ProyectoHasApi::getApi)
-                            .distinct()
-                            .collect(Collectors.toList());
-                }
-    
-                // Opción 2: Si no hay proyectos con APIs, usar las relaciones lazy
-                if (organizacion.getProyectos() != null) {
-                    return organizacion.getProyectos().stream()
-                            .filter(proyecto -> proyecto.getProyectoHasApis() != null)
-                            .flatMap(proyecto -> proyecto.getProyectoHasApis().stream())
-                            .map(ProyectoHasApi::getApi)
-                            .distinct()
-                            .collect(Collectors.toList());
-                }
-    
-            } catch (Exception e) {
-                // Si hay error de lazy loading, devolver lista vacía
-            }
-    
-            return new ArrayList<>();
-        }
-    
+
     
         // ==============================================
         // MÉTODOS NUEVOS PARA SOLICITUDES DE ACCESO

@@ -509,7 +509,7 @@
                             <div th:unless="${#lists.isEmpty(evidencias)}">
                                 <ul>
                                     <li th:each="evidencia : ${evidencias}">
-                                        <a th:href="@{/qa/evidencias/{idEvidencia}(idEvidencia=${evidencia.idEvidencia})}">
+                                        <a th:href="@{/evidencias/descargar/{idEvidencia}(idEvidencia=${evidencia.idEvidencia})}">
                                             <span th:text="${evidencia.nombre}"></span>
                                         </a>
                                     </li>
@@ -581,7 +581,7 @@
                                                 <div th:if="${comentario.adjuntos != null && comentario.adjuntos.size() > 0}" class="comment-attachments">
                                                     <i class="ti ti-paperclip me-1 text-secondary"></i>
                                                     <a th:each="adjunto : ${comentario.adjuntos}"
-                                                       th:href="@{/qa/archivos/verAdjunto/{idAdjunto}(idAdjunto=${adjunto.idAdjunto})}"
+                                                       th:href="@{/archivos/verAdjunto/{idAdjunto}(idAdjunto=${adjunto.idAdjunto})}"
                                                        class="btn btn-link p-0 text-decoration-none me-2">
                                                         <span th:text="${adjunto.nombre}"></span>
                                                     </a>

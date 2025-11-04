@@ -1,19 +1,22 @@
 package com.example.telitodev.controller.qualityassurance;
 
+import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.EvidenciaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/qa/evidencias")
-public class EvidenciaController {
+@PreAuthorize("isAuthenticated()")
+@RequestMapping("/evidencias")
+public class EvidenciaController extends BaseController {
 
     @Autowired
     private EvidenciaRepository evidenciaRepository;

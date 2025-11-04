@@ -52,7 +52,7 @@ public class DeveloperController extends BaseController {
             Integer NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(),true);
             List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
 
-            List<Notificacion> notis = notificacionRepository.findByUsuario_Dni(usuario.getDni());
+            List<Notificacion> notis = notificacionRepository.findTop5ByUsuarioDniAndLeidoOrderByFechaDesc(usuario.getDni(), false);
             Integer Nnotis = notificacionRepository.countByUsuario_DniAndLeido(usuario.getDni(),false);
 
             List<Ticket> tickets = ticketRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
