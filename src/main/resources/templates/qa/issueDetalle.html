@@ -4,7 +4,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>Detalles del issue</title>
+    <!-- CSRF tokens para impersonación -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>TELITO DEVELOPER PORTAL | Detalles del issue</title>
     <!-- BEGIN GLOBAL MANDATORY STYLES -->
     <link href="/tabler/dist/css/tabler.css?1757307617" rel="stylesheet" />
     <!-- END GLOBAL MANDATORY STYLES -->
@@ -422,6 +425,8 @@
 <div class="page">
     <!-- BEGIN NAVBAR  -->
     <div th:replace="qa/header_qa.html :: header"></div>
+    <!-- Banner de impersonación -->
+    <div th:replace="components/impersonation-banner.html :: impersonation-banner"></div>
 
     <!-- END NAVBAR  -->
     <div class="page-wrapper">
