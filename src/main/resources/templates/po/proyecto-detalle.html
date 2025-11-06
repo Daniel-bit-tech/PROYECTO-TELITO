@@ -228,7 +228,7 @@
                 <h5 class="modal-title">Agregar API al Proyecto</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar" onclick="closeModal()"></button>
             </div>
-            <form th:action="@{/proyectos/{id}/addApis(id=${proyecto.idProyecto})}"
+            <form th:action="@{/po/proyectos/{id}/addApis(id=${proyecto.idProyecto})}"
                   method="post" th:object="${nuevaAsociacion}">
                 <div class="modal-body">
                     <div class="row g-3">
@@ -256,7 +256,11 @@
                             <select class="form-select" th:field="*{entorno.idEntorno}" required>
                                 <option th:each="ent : ${entornosDisponibles}"
                                         th:value="${ent.idEntorno}"
-                                        th:text="${ent.nombre}">
+                                        th:text="${ent.nombre}"
+
+                                        th:if="${ent.idEntorno == 2}"
+
+                                        th:selected="${ent.idEntorno == 2}">
                                 </option>
                             </select>
                         </div>
@@ -280,6 +284,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- Modal para Cambiar Entorno -->
 <div class="modal fade" id="modalCambiarEntorno" tabindex="-1" aria-hidden="true">
@@ -328,7 +333,6 @@
     }
 
     function abrirModalCambiarEntorno(idApi) {
-        // Guardar el idApi en el formulario como data attribute
         const form = document.getElementById('formCambiarEntorno');
         form.setAttribute('data-api-id', idApi);
 
@@ -336,7 +340,6 @@
         modal.show();
     }
 
-    // Manejar envío del formulario de cambiar entorno
     document.getElementById('formCambiarEntorno').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -348,10 +351,8 @@
             return;
         }
 
-        // Construir URL dinámica según el controller
         const url = `/po/proyectos/${idProyecto}/api/${idApi}/cambiar-entorno`;
 
-        // Enviar formulario programáticamente
         const formData = new FormData();
         formData.append('idEntorno', idEntorno);
         formData.append('_csrf', document.querySelector('input[name="_csrf"]').value);
@@ -363,41 +364,53 @@
                 'Content-Type': 'application/x-www-form-urlencoded',
             }
         })
-        .then(response => {
-            if (!response.ok) throw new Error('Error al cambiar el entorno');
-            return response.json();
-        })
+            .then(response => {
+                if (!response.ok) {
+
+                    return response.text().then(text => {
+
+                        let errorMessage = 'Error desconocido al cambiar el entorno.';
+                        try {
+                            const errorJson = JSON.parse(text);
+                            errorMessage = errorJson.message || text;
+                        } catch (e) {
+
+                            errorMessage = text.substring(0, 200) + '... (Revise la consola para detalles)';
+                        }
+
+                        throw new Error(text);
+
+                    });
+                }
+                return response.json();
+            })
         .then(data => {
-            // Mostrar toast con el mensaje
             document.getElementById('toastMessage').textContent = data.message;
 
             const toast = new bootstrap.Toast(document.getElementById('successToast'));
             toast.show();
 
-            // Cerrar modal
+
             bootstrap.Modal.getInstance(document.getElementById('modalCambiarEntorno')).hide();
 
-            // Recargar después de un breve delay
             setTimeout(() => location.reload(), 1500);
         })
         .catch(error => {
             console.error(error);
+            const finalMessage = error.message.includes("No se encontró el proyecto") ?
+                "Error al comunicarse con el servidor." : error.message;
             alert('Error al cambiar el entorno');
         });
     });
 
-    // function closeModal() {
-    //     document.getElementById('project-modal').style.display = 'none';
-    // }
 
-    // Código existente para cargar versiones
     document.getElementById('apiSelect').addEventListener('change', function() {
         const apiId = this.value;
         const versionSelect = document.getElementById('versionSelect');
         versionSelect.innerHTML = '<option value="">Cargando...</option>';
 
         if (apiId) {
-            fetch(`/apis/${apiId}/versiones`) // endpoint de versiones en JSON
+            fetch(`/apis/${apiId}/versiones`)
                 .then(resp => resp.json())
                 .then(data => {
                     versionSelect.innerHTML = '<option value="">Seleccione una versión</option>';

@@ -33,6 +33,7 @@ public class CredencialApi {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "idAPI", nullable = false)
     private Api api;
+
     
     // Constructores
     public CredencialApi() {}
@@ -45,7 +46,7 @@ public class CredencialApi {
         this.usuario = usuario;
         this.api = api;
     }
-    
+
     // Getters y Setters
     public Integer getIdCredencialApi() {
         return idCredencialApi;

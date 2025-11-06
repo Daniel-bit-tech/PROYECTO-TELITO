@@ -25,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,6 +38,7 @@ public class SandboxService {
     @Autowired private CredencialApiRepository credencialApiRepository;
     @Autowired private RestTemplate restTemplate;
     @Autowired private ObjectMapper objectMapper;
+
 
 
     public SandboxApiDetailsDto getApiDetails(Integer apiId, String userDni) {
@@ -55,7 +57,7 @@ public class SandboxService {
         List<ApiHasEntorno> entornosRel = apiHasEntornoRepository.findByApi_IdApi(apiId);
         List<SandboxEnvironmentDto> entornosDto = entornosRel.stream()
                 .filter(rel -> !rel.getEntorno().getNombre().equalsIgnoreCase("Producción"))
-                .filter(rel -> !rel.getEntorno().getNombre().equalsIgnoreCase("QA")) // <-- FILTRO AÑADIDO
+                .filter(rel -> !rel.getEntorno().getNombre().equalsIgnoreCase("QA"))
                 .map(rel -> new SandboxEnvironmentDto(rel.getEntorno().getNombre(), rel.getUrlBase()))
                 .collect(Collectors.toList());
 
@@ -78,6 +80,7 @@ public class SandboxService {
                 .findFirstByUsuario_DniAndApi_IdApiAndEstado(userDni, requestDto.getApiId(), true)
                 .orElseThrow(() -> new RuntimeException("No tienes una API Key activa para esta API."));
 
+        // ... (Tu lógica de ejecución de request) ...
         RestTemplate restTemplate = new RestTemplate();
         HttpHeaders headers = new HttpHeaders();
         requestDto.getHeaders().forEach(headers::add);
