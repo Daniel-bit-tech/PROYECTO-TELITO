@@ -3,6 +3,7 @@ package com.example.telitodev.controller.desarrollador;
 import com.example.telitodev.controller.BaseController;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
+import com.example.telitodev.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.*;
@@ -39,6 +40,8 @@ public class IssueDevController extends BaseController{
     private EvidenciaRepository evidenciaRepository;
     @Autowired
     private NotificacionRepository notificacionRepository;
+    @Autowired
+    private EmailService emailService;
 
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024;
 
@@ -204,12 +207,19 @@ public class IssueDevController extends BaseController{
 
         // Crear la notificación
         Notificacion notif = new Notificacion();
-        notif.setMensaje("El desarrollador " + usuario.getNombre() +
-                " respondió en el foro del Issue: " + issue.getReporte().getApi().getNombre());
+        String mensajeNotificacion = "El desarrollador " + usuario.getNombre() +
+                " respondió en el foro del Issue: " + issue.getReporte().getApi().getNombre();
+        notif.setMensaje(mensajeNotificacion);
         notif.setLeido(false);
         notif.setFecha(new Timestamp(System.currentTimeMillis()));
         notif.setUsuario(qaCreador); // receptor de la notificación
         notificacionRepository.save(notif);
+
+        // INICIO: Enviar Email de Notificación
+        // Verificamos que el creador del issue (QA) existe antes de enviar el email
+        if (qaCreador != null) {
+            emailService.enviarEmailNotificacion(qaCreador, mensajeNotificacion);
+        }
 
         // Redirigir de nuevo al detalle del Issue
         return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
