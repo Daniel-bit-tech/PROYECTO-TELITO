@@ -1,99 +1,630 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestión de Usuarios - TELITO Admin</title>
-    <!-- CSRF tokens for AJAX requests -->
-    <meta name="_csrf" th:content="${_csrf.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    
-    <!-- Control de caché y seguridad -->
-    <div th:replace="~{components/security-cache-control :: security-cache-control}"></div>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        /* Asegurar que el dropdown funcione correctamente */
-        .dropdown-menu {
-            z-index: 1050 !important;
-        }
-        .page-wrapper {
-            padding-top: 0;
-        }
-        .page-header {
-            margin-top: 2rem;
-        }
-        
-        /* Estilos adicionales para asegurar funcionalidad del dropdown */
-        .nav-item.dropdown {
-            position: relative;
-        }
-        
-        .dropdown-toggle::after {
-            display: inline-block;
-            margin-left: 0.255em;
-            vertical-align: 0.255em;
-            content: "";
-            border-top: 0.3em solid;
-            border-right: 0.3em solid transparent;
-            border-bottom: 0;
-            border-left: 0.3em solid transparent;
-        }
-        
-        .dropdown-menu.show {
-            display: block !important;
-        }
-        
-        .dropdown-toggle:hover {
-            cursor: pointer;
-        }
-        
-        /* Asegurar que el avatar sea clickeable */
-        .user-avatar {
-            cursor: pointer;
-        }
-        
-        .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            z-index: 1000;
-            display: none;
-            min-width: 10rem;
-            padding: 0.5rem 0;
-            margin: 0;
-            font-size: 1rem;
-            color: #212529;
-            text-align: left;
-            list-style: none;
-            background-color: #fff;
-            background-clip: padding-box;
-            border: 1px solid rgba(0,0,0,.15);
-            border-radius: 0.375rem;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <title>TELITO ADMIN | Gestión de Usuarios</title>
+  <link th:href="|/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-flags.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-socials.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-payments.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-vendors.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-marketing.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-themes.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/preview/css/demo.css?1757307620|" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url("https://rsms.me/inter/inter.css");
+
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .dashboard-header {
+      margin-top: 2rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+
+    .dashboard-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .dashboard-subtitle {
+      color: #6c757d;
+      margin-bottom: 1.5rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    /* Stats Cards Base Styles */
+    .stat-card {
+      border-radius: 8px;
+      padding: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.3s ease;
+      /* Default para tema claro */
+      background-color: #ffffff !important;
+      border: 1px solid #e9ecef !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    }
+
+    .stat-value {
+      color: #212529 !important;
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .stat-label {
+      color: #6c757d !important;
+      font-size: 0.875rem;
+      margin: 0;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    /* Tema claro explícito */
+    [data-bs-theme="light"] .stat-card,
+    html[data-bs-theme="light"] .stat-card {
+      background-color: #ffffff !important;
+      border: 1px solid #e9ecef !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08) !important;
+    }
+
+    [data-bs-theme="light"] .stat-value,
+    html[data-bs-theme="light"] .stat-value {
+      color: #212529 !important;
+    }
+
+    [data-bs-theme="light"] .stat-label,
+    html[data-bs-theme="light"] .stat-label {
+      color: #6c757d !important;
+    }
+
+    /* Iconos en tema claro */
+    [data-bs-theme="light"] .stat-icon-primary,
+    html[data-bs-theme="light"] .stat-icon-primary {
+      background-color: rgba(67, 97, 238, 0.1) !important;
+      color: #4361ee !important;
+    }
+
+    [data-bs-theme="light"] .stat-icon-success,
+    html[data-bs-theme="light"] .stat-icon-success {
+      background-color: rgba(40, 167, 69, 0.1) !important;
+      color: #28a745 !important;
+    }
+
+    [data-bs-theme="light"] .stat-icon-warning,
+    html[data-bs-theme="light"] .stat-icon-warning {
+      background-color: rgba(255, 193, 7, 0.1) !important;
+      color: #ffc107 !important;
+    }
+
+    [data-bs-theme="light"] .stat-icon-danger,
+    html[data-bs-theme="light"] .stat-icon-danger {
+      background-color: rgba(220, 53, 69, 0.1) !important;
+      color: #dc3545 !important;
+    }
+
+    /* Tema oscuro */
+    [data-bs-theme="dark"] .stat-card,
+    html[data-bs-theme="dark"] .stat-card {
+      background-color: #1e293b !important;
+      border: 1px solid #334155 !important;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+    }
+
+    [data-bs-theme="dark"] .stat-value,
+    html[data-bs-theme="dark"] .stat-value {
+      color: #f1f5f9 !important;
+    }
+
+    [data-bs-theme="dark"] .stat-label,
+    html[data-bs-theme="dark"] .stat-label {
+      color: #94a3b8 !important;
+    }
+
+    /* Iconos en tema oscuro */
+    [data-bs-theme="dark"] .stat-icon-primary,
+    html[data-bs-theme="dark"] .stat-icon-primary {
+      background-color: rgba(67, 97, 238, 0.2) !important;
+      color: #6366f1 !important;
+    }
+
+    [data-bs-theme="dark"] .stat-icon-success,
+    html[data-bs-theme="dark"] .stat-icon-success {
+      background-color: rgba(34, 197, 94, 0.2) !important;
+      color: #22c55e !important;
+    }
+
+    [data-bs-theme="dark"] .stat-icon-warning,
+    html[data-bs-theme="dark"] .stat-icon-warning {
+      background-color: rgba(245, 158, 11, 0.2) !important;
+      color: #f59e0b !important;
+    }
+
+    [data-bs-theme="dark"] .stat-icon-danger,
+    html[data-bs-theme="dark"] .stat-icon-danger {
+      background-color: rgba(239, 68, 68, 0.2) !important;
+      color: #ef4444 !important;
+    }
+
+    /* Hover effects para stats cards */
+    .stat-card:hover {
+      transform: translateY(-2px);
+      transition: all 0.3s ease;
+    }
+
+    [data-bs-theme="light"] .stat-card:hover,
+    html[data-bs-theme="light"] .stat-card:hover {
+      box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important;
+    }
+
+    [data-bs-theme="dark"] .stat-card:hover,
+    html[data-bs-theme="dark"] .stat-card:hover {
+      box-shadow: 0 8px 25px rgba(0,0,0,0.4) !important;
+      border-color: #475569 !important;
+    }
+
+    /* Estilos base para iconos */
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .stat-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .stat-content {
+      flex: 1;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-card {
+      background-color: var(--tblr-bg-surface);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 1.125rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .user-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .user-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid var(--tblr-border-color);
+      gap: 1rem;
+    }
+
+    .user-item:last-child {
+      border-bottom: none;
+    }
+
+    .user-avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+      background-size: cover;
+      background-position: center;
+    }
+
+    .user-info {
+      flex: 1;
+    }
+
+    .user-name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+      font-size: 1rem;
+    }
+
+    .user-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.875rem;
+      color: var(--tblr-secondary-color);
+      flex-wrap: wrap;
+    }
+
+    .user-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .user-action {
+      padding: 0.5rem 1rem;
+      background-color: var(--tblr-primary);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .user-action:hover {
+      background-color: var(--tblr-primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .user-action.secondary {
+      background-color: var(--tblr-secondary);
+    }
+
+    .user-action.danger {
+      background-color: var(--tblr-danger);
+    }
+
+    /* Estilos para Toggle Switch Profesional */
+    .toggle-switch-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 80px;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .toggle-switch-container .form-switch {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 0;
+    }
+
+    .toggle-switch-container .form-check-input {
+      margin: 0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .toggle-switch-container .form-check-input:checked {
+      background-color: var(--tblr-success);
+      border-color: var(--tblr-success);
+    }
+
+    .toggle-switch-container .form-check-input:not(:checked) {
+      background-color: var(--tblr-muted);
+      border-color: var(--tblr-muted);
+    }
+
+    .toggle-switch-container .form-check-label {
+      font-size: 0.7rem;
+      margin: 0;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    .toggle-switch-container:hover .form-check-input {
+      transform: scale(1.1);
+      box-shadow: 0 0 0 0.2rem rgba(var(--tblr-primary-rgb), 0.25);
+    }
+
+    .status-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .status-activo {
+      background-color: rgba(var(--tblr-success-rgb), 0.1);
+      color: var(--tblr-success);
+    }
+
+    .status-inactivo {
+      background-color: rgba(var(--tblr-danger-rgb), 0.1);
+      color: var(--tblr-danger);
+    }
+
+    .status-badge.pending {
+      background-color: rgba(var(--tblr-warning-rgb), 0.1);
+      color: var(--tblr-warning);
+    }
+
+    .status-badge.inactive {
+      background-color: rgba(var(--tblr-danger-rgb), 0.1);
+      color: var(--tblr-danger);
+    }
+
+    .user-token {
+      display: block;
+      font-size: 0.875rem;
+      color: var(--tblr-muted);
+      margin-top: 2px;
+    }
+
+    .user-token code {
+      background-color: rgba(var(--tblr-primary-rgb), 0.1);
+      color: var(--tblr-primary);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .role-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      background-color: rgba(var(--tblr-primary-rgb), 0.1);
+      color: var(--tblr-primary);
+    }
+
+    .search-filters {
+      background-color: var(--tblr-bg-surface);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: 2fr 180px 180px 160px 140px;
+      gap: 1rem;
+      align-items: end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-label {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--tblr-body-color);
+    }
+
+    .form-control {
+      padding: 0.75rem;
+      border: 1px solid var(--tblr-border-color);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      transition: all 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--tblr-primary);
+      box-shadow: 0 0 0 3px rgba(var(--tblr-primary-rgb), 0.1);
+      outline: none;
+    }
+
+    /* Mejorar visibilidad de selects y opciones */
+    .form-control select,
+    select.form-control {
+      color: var(--tblr-body-color) !important;
+      background-color: var(--tblr-bg-surface) !important;
+    }
+
+    .form-control select option,
+    select.form-control option {
+      color: #212529 !important;
+      background-color: white !important;
+      padding: 8px 12px;
+    }
+
+    .form-control select option:checked,
+    select.form-control option:checked {
+      background-color: var(--tblr-primary) !important;
+      color: white !important;
+    }
+
+    /* Estilos específicos para tema oscuro */
+    [data-bs-theme="dark"] .form-control select,
+    [data-bs-theme="dark"] select.form-control {
+      color: #f8f9fa !important;
+      background-color: #1e293b !important;
+    }
+
+    [data-bs-theme="dark"] .form-control select option,
+    [data-bs-theme="dark"] select.form-control option {
+      color: #f8f9fa !important;
+      background-color: #1e293b !important;
+    }
+
+    @media (max-width: 1024px) {
+      .filter-row {
+        grid-template-columns: 1fr;
+      }
+      
+      .dashboard-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .user-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .user-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .user-meta {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    }
+
+    /* Estilos específicos de gestión de usuarios */
+
+    /* ===== CORRECCIÓN DE BADGES SECUNDARIOS ===== */
+    /* Mejorar visibilidad de badges secundarios que se ven muy grises */
+    .badge.bg-secondary {
+      background-color: #495057 !important;
+      color: #ffffff !important;
+      font-weight: 600 !important;
+      border: 1px solid #6c757d !important;
+    }
+
+    /* Tema claro - badges más visibles y contrastantes */
+    [data-bs-theme="light"] .badge.bg-secondary,
+    html[data-bs-theme="light"] .badge.bg-secondary,
+    body[data-bs-theme="light"] .badge.bg-secondary {
+      background-color: #374151 !important;
+      color: #ffffff !important;
+      border: 1px solid #d1d5db !important;
+      font-weight: 600 !important;
+    }
+
+    /* Tema oscuro - badges contrastantes */
+    [data-bs-theme="dark"] .badge.bg-secondary,
+    html[data-bs-theme="dark"] .badge.bg-secondary,
+    body[data-bs-theme="dark"] .badge.bg-secondary {
+      background-color: #6366f1 !important;
+      color: #ffffff !important;
+      border: 1px solid #4f46e5 !important;
+      font-weight: 600 !important;
+    }
+
+    /* Badge específico para indicadores de filtros (como "Rol ID: X") */
+    .badge.bg-secondary.ms-2 {
+      background-color: #4338ca !important;
+      color: #ffffff !important;
+      font-weight: 600 !important;
+      border: none !important;
+      padding: 0.375rem 0.75rem !important;
+      font-size: 0.75rem !important;
+    }
+
+    /* Hover effects para badges secundarios */
+    .badge.bg-secondary:hover {
+      background-color: #343a40 !important;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: all 0.2s ease;
+    }
+
+    /* Asegurar que otros badges mantengan buena visibilidad */
+    .badge.bg-primary {
+      background-color: #4361ee !important;
+      color: #ffffff !important;
+      font-weight: 600 !important;
+    }
+
+    .badge.bg-success {
+      background-color: #28a745 !important;
+      color: #ffffff !important;
+      font-weight: 600 !important;
+    }
+
+    .badge.bg-warning {
+      background-color: #ffc107 !important;
+      color: #212529 !important;
+      font-weight: 600 !important;
+    }
+
+    /* Mejorar contraste de badges en alertas */
+    .alert .badge {
+      font-size: 0.75rem !important;
+      padding: 0.25rem 0.5rem !important;
+      margin-left: 0.25rem !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    /* Badge de rol específicamente */
+    .badge.bg-secondary.ms-2 {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      color: #ffffff !important;
+      font-weight: 600 !important;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+  </style>
 </head>
 <body>
-    <!-- Banner de impersonación -->
-    <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+<!-- Banner de impersonación -->
+<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
 
-    <div class="page">
-        <!-- Header compartido -->
-        <div th:replace="admin/header.html :: header"></div>
-    </div>
+<script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
+<div class="page">
 
-    <!-- Contenido principal -->
-    <div class="page-wrapper">
-        <div class="page-header d-print-none">
-            <div class="container-xl">
-                <div class="row g-2 align-items-center">
-                    <div class="col">
-                        <h2 class="page-title">
-                            <i class="fas fa-users me-2"></i>
-                            Gestión de Usuarios
-                        </h2>
-                        <div class="text-muted mt-1">Administra los usuarios del sistema TELITO Developer Portal</div>
-                    </div>
+  <!-- Header compartido -->
+  <div th:replace="~{admin/header.html :: header}"></div>
+
+  <!-- Main -->
+  <div class="content">
+    <div class="dashboard-container">
                 </div>
             </div>
         </div>
@@ -309,9 +840,8 @@
                         </ul>
                     </nav>
                 </div>
-            </div>
-        </div>
-    </div>
+            </div> <!-- /container-xl -->
+        </div> <!-- /page-body -->
 
     <!-- Modal para Nuevo Usuario -->
     <div class="modal fade" id="nuevoUsuarioModal" tabindex="-1">
@@ -369,7 +899,8 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap ya está incluido en admin/header.html -->
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
     
     <script>
         // Función para probar conectividad y permisos
@@ -751,70 +1282,14 @@
 
         console.log('Sistema de gestión de usuarios cargado correctamente');
     </script>
+    
+    </div> <!-- Cierre de dashboard-container -->
+  </div> <!-- Cierre de content -->
+</div> <!-- Cierre de page -->
 
-    <!-- Script para hacer el dropdown interactivo -->
-    <script>
-        // Función para forzar la interactividad del dropdown
-        function initializeDropdown() {
-            console.log('Inicializando dropdown del usuario...');
-            
-            // Buscar el dropdown del usuario
-            const dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
-            const dropdownMenu = document.querySelector('.dropdown-menu');
-            
-            if (dropdownToggle && dropdownMenu) {
-                console.log('Elementos del dropdown encontrados');
-                
-                // Remover cualquier evento previo
-                dropdownToggle.removeEventListener('click', handleDropdownClick);
-                
-                // Agregar evento click
-                dropdownToggle.addEventListener('click', handleDropdownClick);
-                
-                // Marcar como inicializado
-                dropdownToggle.setAttribute('data-dropdown-initialized', 'true');
-                
-                console.log('Dropdown inicializado correctamente');
-            } else {
-                console.error('No se encontraron los elementos del dropdown');
-            }
-        }
-        
-        function handleDropdownClick(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const dropdownMenu = this.nextElementSibling;
-            if (dropdownMenu) {
-                // Toggle la clase show
-                dropdownMenu.classList.toggle('show');
-                console.log('Dropdown toggled, show:', dropdownMenu.classList.contains('show'));
-            }
-        }
-        
-        // Cerrar dropdown al hacer click fuera
-        document.addEventListener('click', function(e) {
-            const dropdownMenu = document.querySelector('.dropdown-menu.show');
-            const dropdownToggle = document.querySelector('[data-bs-toggle="dropdown"]');
-            
-            if (dropdownMenu && dropdownToggle && !dropdownToggle.contains(e.target)) {
-                dropdownMenu.classList.remove('show');
-            }
-        });
-        
-        // Inicializar cuando el DOM esté listo
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initializeDropdown);
-        } else {
-            initializeDropdown();
-        }
-        
-        // Reinicializar después de un breve delay para asegurar que Bootstrap esté cargado
-        setTimeout(initializeDropdown, 1000);
-    </script>
-
-    <!-- Script para funcionalidades de impersonación -->
-    <script th:replace="~{components/impersonation-banner :: impersonation-script}"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620|"></script>
+<script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
 
 </body>
 </html>

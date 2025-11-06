@@ -17,7 +17,15 @@
 <body>
 <div class="page">
 
-    <div th:replace="desarrollador/header.html :: header"></div>
+    <!-- ❌ Mostrar errores del SERVIDOR -->
+    <div class="alert alert-danger" th:if="${errorBack != null}">
+        <h4 class="alert-title">
+            <i class="fas fa-exclamation-triangle me-2"></i> Error de validación de contrato
+        </h4>
+        <div th:text="${errorBack}">Ocurrió un error.</div>
+    </div>
+
+    <!-- ✅ Mensajes del cliente: el contenedor se define DENTRO del formulario (evitar duplicados) -->
 
     <div class="page-wrapper">
         <div class="page-header d-print-none">
@@ -185,18 +193,32 @@
                                             <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('formato')}" th:errors="*{formato}"></div>
                                         </div>
 
-                                        <!-- Validación previa -->
-                                        <div class="alert alert-warning" id="alert-validacion" style="display: none;">
+                                <!-- Mensaje de validación que refleja el resultado DEL SERVIDOR -->
+                                <div th:if="${hasServerErrors}"
+                                    class="alert alert-danger">
                                             <div class="d-flex">
-                                                <div class="me-3">
-                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                <div class="me-3"><i class="fas fa-times-circle"></i></div>
+                                                <div>
+                                                    <h4 class="alert-title">Validación de Contrato</h4>
+                                                    <p th:if="${#fields.hasErrors('archivo')}"   th:errors="*{archivo}"></p>
+                                                    <p th:if="${#fields.hasErrors('contenido')}" th:errors="*{contenido}"></p>
                                                 </div>
+                                            </div>
+                                        </div>
+
+                                <!-- Contenedor que usa SOLO la validación del cliente (JS) cuando NO hay errores del servidor -->
+                                <!-- Usar la bandera hasServerErrors enviada por el controlador -->
+                                <div th:if="${!hasServerErrors}"
+                                    class="alert" id="alert-validacion" style="display:none;">
+                                            <div class="d-flex">
+                                                <div class="me-3"><i class="fas fa-info-circle"></i></div>
                                                 <div>
                                                     <h4 class="alert-title">Validación de Contrato</h4>
                                                     <div id="mensaje-validacion"></div>
                                                 </div>
                                             </div>
                                         </div>
+
                                     </div>
                                     <!-- Botones -->
                                     <div class="form-footer mt-4">
@@ -330,18 +352,26 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Elementos del DOM
-        const metodoCargaRadios = document.querySelectorAll('input[name="metodoCarga"]');
-        const cargaArchivoDiv = document.getElementById('carga-archivo');
-        const cargaTextoDiv = document.getElementById('carga-texto');
-        const archivoInput = document.getElementById('archivoInput');
-        const textoInput = document.getElementById('textoInput');
-        const formatoSelect = document.getElementById('formato');
-        const desdeArchivoInput = document.getElementById('desdeArchivoInput');
-        const alertValidacion = document.getElementById('alert-validacion');
-        const mensajeValidacion = document.getElementById('mensaje-validacion');
-        const btnSubmit = document.getElementById('btn-submit');
-        const form = document.querySelector('form');
+    // 🔹 Si hay errores del servidor, ocultar mensaje verde del cliente
+    // Evaluamos la bandera inyectada por el controlador
+    const hasServerErrors = /*[[${hasServerErrors}]]*/ false;
+        if (hasServerErrors) {
+            const alertValidacion = document.getElementById('alert-validacion');
+            if (alertValidacion) alertValidacion.style.display = 'none';
+        }
+    // Elementos del DOM (con guards)
+    const metodoCargaRadios = document.querySelectorAll('input[name="metodoCarga"]');
+    const cargaArchivoDiv = document.getElementById('carga-archivo');
+    const cargaTextoDiv = document.getElementById('carga-texto');
+    const archivoInput = document.getElementById('archivoInput');
+    const textoInput = document.getElementById('textoInput');
+    const formatoSelect = document.getElementById('formato');
+    const desdeArchivoInput = document.getElementById('desdeArchivoInput');
+    // alert-validacion is defined inside the form; we will query it later after ensuring form exists
+    const form = document.querySelector('form');
+    const alertValidacion = form ? form.querySelector('#alert-validacion') : null;
+    const mensajeValidacion = form ? form.querySelector('#mensaje-validacion') : null;
+    const btnSubmit = document.getElementById('btn-submit');
 
         // Función para cambiar entre métodos de carga
         function cambiarMetodoCarga(esArchivo) {
@@ -377,31 +407,49 @@
             }
         }
 
-        // Cambiar entre métodos de carga al seleccionar radio buttons
-        metodoCargaRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                cambiarMetodoCarga(this.value === 'archivo');
+        // Cambiar entre métodos de carga al seleccionar radio buttons (guard)
+        if (metodoCargaRadios && metodoCargaRadios.length) {
+            metodoCargaRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    cambiarMetodoCarga(this.value === 'archivo');
+                });
             });
-        });
+        }
 
         // Detectar formato desde archivo
-        archivoInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const fileName = file.name.toLowerCase();
-                if (fileName.endsWith('.yaml') || fileName.endsWith('.yml')) {
-                    formatoSelect.value = 'YAML';
-                } else if (fileName.endsWith('.json')) {
-                    formatoSelect.value = 'JSON';
+        if (archivoInput) {
+            // Permitir re-seleccionar el mismo archivo en navegadores que no disparan change
+            archivoInput.addEventListener('click', function() {
+                // Al hacer click limpiamos el valor para que la selección del mismo archivo vuelva a disparar 'change'
+                this.value = null;
+            });
+
+            archivoInput.addEventListener('change', function() {
+                console.debug('[crearVersionApi] archivoInput change event');
+                const file = this.files[0];
+                if (file) {
+                    const fileName = file.name.toLowerCase();
+                    if (fileName.endsWith('.yaml') || fileName.endsWith('.yml')) {
+                        formatoSelect.value = 'YAML';
+                    } else if (fileName.endsWith('.json')) {
+                        formatoSelect.value = 'JSON';
+                    }
+                    validarArchivo(file);
+                } else {
+                    // Si se anuló la selección, limpiamos la validación visual
+                    resetValidacion();
                 }
-                validarArchivo(file);
-            }
-        });
+            });
+        } else {
+            console.debug('[crearVersionApi] archivoInput not found');
+        }
 
         // Validar contenido de texto
-        textoInput.addEventListener('input', function() {
-            validarContenido(this.value);
-        });
+        if (textoInput) {
+            textoInput.addEventListener('input', function() {
+                validarContenido(this.value);
+            });
+        }
 
         // Validación de fecha futura
         const fechaInput = document.querySelector('input[th\\:field="*{fechaPublicacion}"]');
@@ -533,29 +581,50 @@
         }
 
         function mostrarError(mensaje) {
+            if (!alertValidacion || !mensajeValidacion) return;
             alertValidacion.style.display = 'block';
             alertValidacion.className = 'alert alert-danger';
             mensajeValidacion.innerHTML = `<i class="fas fa-times-circle me-2"></i>${mensaje}`;
-            btnSubmit.disabled = true;
+            if (btnSubmit) btnSubmit.disabled = true;
+            // También eliminar cualquier alerta insertada por el submit del cliente
+            const clientAlert = document.getElementById('alerta-client-errors');
+            if (clientAlert) clientAlert.remove();
         }
 
         function mostrarAdvertencia(mensaje) {
+            if (!alertValidacion || !mensajeValidacion) return;
             alertValidacion.style.display = 'block';
             alertValidacion.className = 'alert alert-warning';
             mensajeValidacion.innerHTML = `<i class="fas fa-exclamation-triangle me-2"></i>${mensaje}`;
-            btnSubmit.disabled = false;
+            if (btnSubmit) btnSubmit.disabled = false;
+            const clientAlert = document.getElementById('alerta-client-errors');
+            if (clientAlert) clientAlert.remove();
         }
 
         function mostrarExito(mensaje) {
+            if (!alertValidacion || !mensajeValidacion) return;
             alertValidacion.style.display = 'block';
             alertValidacion.className = 'alert alert-success';
             mensajeValidacion.innerHTML = `<i class="fas fa-check-circle me-2"></i>${mensaje}`;
-            btnSubmit.disabled = false;
+            if (btnSubmit) btnSubmit.disabled = false;
+            const clientAlert = document.getElementById('alerta-client-errors');
+            if (clientAlert) clientAlert.remove();
         }
 
         function resetValidacion() {
-            alertValidacion.style.display = 'none';
-            btnSubmit.disabled = false;
+            // Remover cualquier alerta insertada por la validación del cliente (submit)
+            const clientAlert = document.getElementById('alerta-client-errors');
+            if (clientAlert) clientAlert.remove();
+
+            // Si el contenedor de validación del cliente existe, limpiarlo
+            if (alertValidacion && mensajeValidacion) {
+                alertValidacion.style.display = 'none';
+                // Restaurar clase base para evitar quedarse con clases anteriores (danger/warning)
+                alertValidacion.className = 'alert';
+                mensajeValidacion.innerHTML = '';
+            }
+
+            if (btnSubmit) btnSubmit.disabled = false;
         }
 
         function mostrarErrorFecha(mensaje) {
@@ -624,32 +693,37 @@
                 }
             }
 
-            if (!isValid) {
+                        if (!isValid) {
                 e.preventDefault();
                 // Mostrar alerta con errores
-                const alertaHTML = `
-                    <div class="alert alert-danger">
-                        <h4 class="alert-title">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Errores de validación
-                        </h4>
-                        <div class="mt-2">
-                            ${errorMessages.join('<br>')}
-                        </div>
-                    </div>
-                `;
+                                // Insertar una alerta CLIENTE (con id para poder removerla después)
+                                const alertaHTML = `
+                                        <div id="alerta-client-errors" class="alert alert-danger">
+                                            <h4 class="alert-title">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                Error de validación de contrato
+                                            </h4>
+                                            <div>
+                                                ${errorMessages.map(m => '<div>'+m+'</div>').join('')}
+                                            </div>
+                                        </div>
+                                `;
 
-                // Insertar alerta al inicio del formulario
-                const primeraSeccion = form.querySelector('.mb-4');
-                if (primeraSeccion) {
-                    primeraSeccion.insertAdjacentHTML('beforebegin', alertaHTML);
+                                // Remover cualquier alerta previa del cliente antes de insertar
+                                const existingClientAlert = document.getElementById('alerta-client-errors');
+                                if (existingClientAlert) existingClientAlert.remove();
 
-                    // Hacer scroll a la alerta
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
-                }
+                                // Insertar alerta al inicio del formulario
+                                const primeraSeccion = form.querySelector('.mb-4');
+                                if (primeraSeccion) {
+                                        primeraSeccion.insertAdjacentHTML('beforebegin', alertaHTML);
+
+                                        // Hacer scroll a la alerta
+                                        window.scrollTo({
+                                                top: 0,
+                                                behavior: 'smooth'
+                                        });
+                                }
             }
         });
 
