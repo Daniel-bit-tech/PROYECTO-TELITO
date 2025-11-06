@@ -29,8 +29,10 @@ public class VersionContratoDTO {
     // Campos de ContratoApi
     private Integer idContrato=0;
 
-    @NotNull(message = "Debe elegir un formato")
     private ContratoApi.FormatoContrato formato;
+
+    public enum MetodoCarga {archivo, texto, url}
+    private MetodoCarga metodoCarga;
 
     private String contenido; // contenido del contrato si se pega
     private String urlContrato;
@@ -39,8 +41,12 @@ public class VersionContratoDTO {
     private boolean desdeArchivo=true; // indica si se subió archivo o se pegó contenido
 
 
-
-
+    public MetodoCarga getMetodoCarga() {
+        return metodoCarga;
+    }
+    public void setMetodoCarga(MetodoCarga metodoCarga) {
+        this.metodoCarga = metodoCarga;
+    }
 
     public boolean isDesdeArchivo() {
         return desdeArchivo;

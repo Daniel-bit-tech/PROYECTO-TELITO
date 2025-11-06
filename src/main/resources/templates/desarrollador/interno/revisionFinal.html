@@ -29,6 +29,30 @@
 
         <div class="page-body">
             <div class="container-xl">
+
+                <div class="card mb-4" th:if="${paso4}">
+                    <div class="card-body">
+                        <ul class="steps steps-green steps-counter my-4">
+                            <li class="step-item"
+                                data-bs-trigger="hover" data-bs-toggle="popover" data-bs-placement="top"
+                                title="Paso 1: Información Básica"
+                                data-bs-content="Datos fundamentales de la API.">Información Básica</li>
+                            <li class="step-item"
+                                data-bs-trigger="hover" data-bs-toggle="popover" data-bs-placement="top"
+                                title="Paso 2: Versionado y Contrato"
+                                data-bs-content="Configurar versión inicial y especificación OpenAPI.">Versión y Contrato</li>
+                            <li class="step-item"
+                                data-bs-trigger="hover" data-bs-toggle="popover" data-bs-placement="top"
+                                title="Paso 3: Documentación Adicional"
+                                data-bs-content="Agregar documentación técnica y de alto nivel..">Documentación Adicional</li>
+                            <li class="step-item active"
+                                data-bs-trigger="hover" data-bs-toggle="popover" data-bs-placement="top"
+                                title="Paso 4: Revisión Final"
+                                data-bs-content="Confirmar y publicar la API.">Revisión Final</li>
+                        </ul>
+                    </div>
+                </div>
+
                 <div class="row">
                     <div class="col-lg-8">
                         <div class="card">

@@ -19,6 +19,13 @@
 
   <div th:replace="desarrollador/header.html :: header"></div>
 
+  <div class="alert alert-danger" th:if="${errorBack != null}">
+    <h4 class="alert-title">
+      <i class="fas fa-exclamation-triangle me-2"></i> Error de validación de archivos
+    </h4>
+    <div th:text="${errorBack}">Ocurrió un error.</div>
+  </div>
+
   <div class="page-wrapper">
     <div class="page-header d-print-none">
       <div class="container container-xl">
@@ -33,7 +40,7 @@
     </div>
     <div class="page-body">
       <div class="container-xl">
-        <div class="card mb-4">
+        <div class="card mb-4" th:if="${paso3}">
           <div class="card-body">
             <ul class="steps steps-green steps-counter my-4">
               <li class="step-item"
@@ -101,6 +108,7 @@
                           <textarea th:field="*{beneficios}" class="form-control" rows="4"
                                     placeholder="Describa los beneficios de usar esta API..."></textarea>
                           <small class="form-hint">¿Qué ventajas ofrece esta API a los consumidores?</small>
+                          <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('beneficios')}" th:errors="*{beneficios}"></div>
                         </div>
                         <!-- Limitaciones -->
                         <div class="mb-3 col-md-6 col-12">
@@ -108,6 +116,7 @@
                           <textarea th:field="*{limitaciones}" class="form-control" rows="4"
                                     placeholder="Describa las limitaciones conocidas de la API..."></textarea>
                           <small class="form-hint">¿Existen límites de uso, restricciones técnicas o funcionales?</small>
+                          <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('limitaciones')}" th:errors="*{limitaciones}"></div>
                         </div>
 
                         <!-- Flujo Funcional -->
@@ -116,6 +125,7 @@
                           <textarea th:field="*{flujoFuncional}" class="form-control" rows="4"
                                     placeholder="Describa el flujo funcional de la API..."></textarea>
                           <small class="form-hint">¿Cómo interactúa el usuario o sistema con la API? Describa el flujo.</small>
+                          <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('flujoFuncional')}" th:errors="*{flujoFuncional}"></div>
                         </div>
                         <!-- SLA -->
                         <div class="mb-3 col-md-6 col-12">
@@ -123,6 +133,7 @@
                           <textarea th:field="*{sla}" class="form-control" rows="4"
                                     placeholder="Describa los acuerdos de nivel de servicio..."></textarea>
                           <small class="form-hint">Disponibilidad, tiempo de respuesta, soporte, etc.</small>
+                          <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('sla')}" th:errors="*{sla}"></div>
                         </div>
 
                         <!-- Costos -->
@@ -131,6 +142,7 @@
                           <textarea th:field="*{costos}" class="form-control" rows="4"
                                     placeholder="Describa la estructura de costos asociada..."></textarea>
                           <small class="form-hint">¿Existen costos de uso? Describa la estructura de precios si aplica.</small>
+                          <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('costos')}" th:errors="*{costos}"></div>
                         </div>
 
                         <!-- Ejemplos de Integración -->
@@ -139,6 +151,7 @@
                           <textarea th:field="*{ejemplosIntegracion}" class="form-control" rows="4"
                                     placeholder="Proporcione ejemplos de cómo integrar con la API..."></textarea>
                           <small class="form-hint">Incluya ejemplos de código, escenarios de uso, etc.</small>
+                          <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('ejemplosIntegracion')}" th:errors="*{ejemplosIntegracion}"></div>
                         </div>
                     </div>
                   </div>

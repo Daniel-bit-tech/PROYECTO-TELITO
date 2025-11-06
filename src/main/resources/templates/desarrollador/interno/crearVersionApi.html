@@ -16,6 +16,7 @@
 </head>
 <body>
 <div class="page">
+    <div th:replace="desarrollador/header.html :: header"></div>
 
     <!-- ❌ Mostrar errores del SERVIDOR -->
     <div class="alert alert-danger" th:if="${errorBack != null}">
@@ -127,7 +128,7 @@
                                         <!-- Fecha de Publicación -->
                                         <div class="mb-3">
                                             <label class="form-label required">Fecha de Publicación</label>
-                                            <input type="date" th:field="*{fechaPublicacion}" class="form-control" required>
+                                            <input type="date" th:field="*{fechaPublicacion}" class="form-control" th:min="${#temporals.format(#temporals.createToday(), 'yyyy-MM-dd')}" required>
                                             <small class="form-hint">Fecha cuando esta versión estará disponible</small>
                                             <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('fechaPublicacion')}" th:errors="*{fechaPublicacion}"></div>
                                         </div>
@@ -158,6 +159,13 @@
                                                         Pegar contenido
                                                     </span>
                                                 </label>
+<!--                                                <label class="form-selectgroup-item">-->
+<!--                                                    <input type="radio" name="metodoCarga" value="url" class="form-selectgroup-input">-->
+<!--                                                    <span class="form-selectgroup-label">-->
+<!--                                                        <i class="fas fa-paste me-2"></i>-->
+<!--                                                        URL de archivo-->
+<!--                                                    </span>-->
+<!--                                                </label>-->
                                             </div>
                                         </div>
 
@@ -181,21 +189,21 @@
                                         </div>
 
                                         <!-- Formato del contrato -->
-                                        <div class="mb-3">
-                                            <label for="formato" class="form-label required">Formato del Contrato</label>
-                                            <select id="formato" class="form-select form-" th:field="*{formato}" required>
-                                                <option value="" disabled selected>-- Seleccione un formato --</option>
-                                                <option th:each="f : ${formatosCont}"
-                                                        th:value="${f}"
-                                                        th:text="${f}"></option>
-                                            </select>
-                                            <small class="form-hint">Formato de la especificación OpenAPI</small>
-                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('formato')}" th:errors="*{formato}"></div>
-                                        </div>
+<!--                                        <div class="mb-3">-->
+<!--                                            <label for="formato" class="form-label required">Formato del Contrato</label>-->
+<!--                                            <select id="formato" class="form-select form-" th:field="*{formato}" required>-->
+<!--                                                <option value="" disabled selected>&#45;&#45; Seleccione un formato &#45;&#45;</option>-->
+<!--                                                <option th:each="f : ${formatosCont}"-->
+<!--                                                        th:value="${f}"-->
+<!--                                                        th:text="${f}"></option>-->
+<!--                                            </select>-->
+<!--                                            <small class="form-hint">Formato de la especificación OpenAPI</small>-->
+<!--                                            <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('formato')}" th:errors="*{formato}"></div>-->
+<!--                                        </div>-->
 
-                                <!-- Mensaje de validación que refleja el resultado DEL SERVIDOR -->
-                                <div th:if="${hasServerErrors}"
-                                    class="alert alert-danger">
+                                        <!-- Mensaje de validación que refleja el resultado DEL SERVIDOR -->
+                                        <div th:if="${hasServerErrors}"
+                                            class="alert alert-danger">
                                             <div class="d-flex">
                                                 <div class="me-3"><i class="fas fa-times-circle"></i></div>
                                                 <div>
@@ -206,10 +214,10 @@
                                             </div>
                                         </div>
 
-                                <!-- Contenedor que usa SOLO la validación del cliente (JS) cuando NO hay errores del servidor -->
-                                <!-- Usar la bandera hasServerErrors enviada por el controlador -->
-                                <div th:if="${!hasServerErrors}"
-                                    class="alert" id="alert-validacion" style="display:none;">
+                                        <!-- Contenedor que usa SOLO la validación del cliente (JS) cuando NO hay errores del servidor -->
+                                        <!-- Usar la bandera hasServerErrors enviada por el controlador -->
+                                        <div th:if="${!hasServerErrors}"
+                                            class="alert" id="alert-validacion" style="display:none;">
                                             <div class="d-flex">
                                                 <div class="me-3"><i class="fas fa-info-circle"></i></div>
                                                 <div>

@@ -176,17 +176,48 @@ public class CreacionApisController extends BaseController {
         try {
             log.info("[DEBUG] Validando contrato OpenAPI en formato {}", versionContratoDto.getFormato());
             boolean subioArchivo = versionContratoDto.getArchivo() != null
-                    && !versionContratoDto.getArchivo().isEmpty();
+                    && !versionContratoDto.getArchivo().isEmpty()
+//                    && versionContratoDto.getMetodoCarga()==VersionContratoDTO.MetodoCarga.archivo
+                    ;
+
+            if (subioArchivo) {
+                String nombre = versionContratoDto.getArchivo().getOriginalFilename();
+                if (nombre == null) throw new SecurityException("Archivo sin nombre válido.");
+
+                String extension = nombre.substring(nombre.lastIndexOf('.') + 1).toLowerCase();
+                if (extension.equals("json")) {
+                    versionContratoDto.setFormato(ContratoApi.FormatoContrato.JSON);
+                } else if (extension.equals("yaml") || extension.equals("yml")) {
+                    versionContratoDto.setFormato(ContratoApi.FormatoContrato.YAML);
+                } else throw new SecurityException("Formato de contrato no soportado.");
+
+                String contentType = versionContratoDto.getArchivo().getContentType();
+                System.out.println("[DEBUG] Contrato de tipo " + contentType);
+                if (versionContratoDto.getFormato() == ContratoApi.FormatoContrato.JSON
+                        && !"application/json".equals(contentType)) {
+                    throw new SecurityException("El archivo no es un JSON válido.");
+                }
+                if (versionContratoDto.getFormato() == ContratoApi.FormatoContrato.YAML
+                        && !("application/x-yaml".equals(contentType) || "application/x-yml".equals(contentType) || "application/octet-stream".equals(contentType))) {
+                    throw new SecurityException("El archivo no es un YAML válido.");
+                }
+
+            } else if (versionContratoDto.getMetodoCarga()==VersionContratoDTO.MetodoCarga.texto && versionContratoDto.getContenido()!=null) {
+                String contenido = versionContratoDto.getContenido().trim();
+                if (contenido.startsWith("{")) {
+                    versionContratoDto.setFormato(ContratoApi.FormatoContrato.JSON);
+                } else {
+                    versionContratoDto.setFormato(ContratoApi.FormatoContrato.YAML);
+                }
+            } else throw new SecurityException("Error procesando el archivo.");
 
             switch (versionContratoDto.getFormato()) {
                 case JSON -> {
-                    log.info("[DEBUG] -> Validando JSON: archivo={} ", subioArchivo);
                     contenidoContrato = subioArchivo
                             ? fileSecurityService.validateAndNormalizeJson(versionContratoDto.getArchivo())
                             : fileSecurityService.validateAndNormalizeJsonString(versionContratoDto.getContenido());
                 }
                 case YAML -> {
-                    log.info("[DEBUG] -> Validando YAML: archivo={} ", subioArchivo);
                     contenidoContrato = subioArchivo
                             ? fileSecurityService.validateAndNormalizeYaml(versionContratoDto.getArchivo())
                             : fileSecurityService.validateAndNormalizeYamlString(versionContratoDto.getContenido());
@@ -230,17 +261,13 @@ public class CreacionApisController extends BaseController {
     contratoApi.setContenido(contenidoContrato);
     contratoRepository.save(contratoApi);
 
-    redirectAttributes.addFlashAttribute("msg",
-        "Creaste la primera versión de tu API " + api.getNombre() + " exitosamente");
-    // Redirigir directamente a Revisión Final (Paso 4)
-    return "redirect:/dev/int/" + api.getIdApi() + "/versiones/" + versionApi.getIdVersion() + "/revisionFinal";
-
-
+    redirectAttributes.addFlashAttribute("msg", "Creaste la primera versión de tu API " + api.getNombre() + " exitosamente");
+//    return "redirect:/dev/int/" + api.getIdApi() + "/versiones/" + versionApi.getIdVersion() + "/revisionFinal";
+    return "redirect:/dev/int/" + api.getIdApi() + "/versiones/" + versionApi.getIdVersion() + "/docs";
     }
 
 
     /* ==================== PASO 3 ==================== */
-
     @GetMapping("/{idApi}/versiones/{idVersion}/docs")
     public String vistaDocsVersionApi(Model model, Authentication auth, HttpSession session,
                                       @PathVariable("idApi") Integer idApi,
@@ -296,13 +323,16 @@ public class CreacionApisController extends BaseController {
             docGeneralDto.setEjemplosIntegracion(textSecurityService.sanitizeRequired(docGeneralDto.getEjemplosIntegracion(), "Ejemplos de integración", 100, 400));
         } catch (IllegalArgumentException ex) {
             bindingResult.rejectValue("beneficios", "error.alto.nivel", ex.getMessage());
+            docGeneralDto.setNombreApi(api.getNombre());
+            docGeneralDto.setIdApi(api.getIdApi());
+            docGeneralDto.setNumeroVersion(versionApi.getVersion());
             model.addAttribute("docGeneralDto", docGeneralDto);
             return "desarrollador/interno/crearDocGeneral";
         }
 
-        Path storageRoot = Paths.get(System.getProperty("user.home"), "telitodev-storage");
-        Path baseDir = storageRoot.resolve("api_" + api.getIdApi() + "_ver_" + versionApi.getIdVersion());
-        try { Files.createDirectories(baseDir); } catch (Exception ignored) {}
+//        Path storageRoot = Paths.get(System.getProperty("user.home"), "telitodev-storage");
+//        Path baseDir = storageRoot.resolve("api_" + api.getIdApi() + "_ver_" + versionApi.getIdVersion());
+//        try { Files.createDirectories(baseDir); } catch (Exception ignored) {}
 
         if (docGeneralDto.getDocumentosTecnicos() != null) {
             for (int idx = 0; idx < docGeneralDto.getDocumentosTecnicos().size(); idx++) {
@@ -316,26 +346,26 @@ public class CreacionApisController extends BaseController {
                     switch (it.getFormato()) {
                         case JSON -> {
                             normalizedContent = fileSecurityService.validateAndNormalizeJson(it.getArchivo());
-                            storedName = "openapi-" + UUID.randomUUID() + ".json";
-                            Files.writeString(baseDir.resolve(storedName), normalizedContent, StandardCharsets.UTF_8,
-                                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+//                            storedName = "openapi-" + UUID.randomUUID() + ".json";
+//                            Files.writeString(baseDir.resolve(storedName), normalizedContent, StandardCharsets.UTF_8,
+//                                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                         }
                         case YAML -> {
                             normalizedContent = fileSecurityService.validateAndNormalizeYaml(it.getArchivo());
-                            storedName = "openapi-" + UUID.randomUUID() + ".yaml";
-                            Files.writeString(baseDir.resolve(storedName), normalizedContent, StandardCharsets.UTF_8,
-                                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+//                            storedName = "openapi-" + UUID.randomUUID() + ".yaml";
+//                            Files.writeString(baseDir.resolve(storedName), normalizedContent, StandardCharsets.UTF_8,
+//                                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                         }
                         case MARKDOWN -> {
                             normalizedContent = fileSecurityService.validateAndSanitizeMarkdown(it.getArchivo());
-                            storedName = "doc-" + UUID.randomUUID() + ".md";
-                            Files.writeString(baseDir.resolve(storedName), normalizedContent, StandardCharsets.UTF_8,
-                                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+//                            storedName = "doc-" + UUID.randomUUID() + ".md";
+//                            Files.writeString(baseDir.resolve(storedName), normalizedContent, StandardCharsets.UTF_8,
+//                                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
                         }
                         case PDF -> {
                             fileSecurityService.validatePdf(it.getArchivo());
-                            storedName = "doc-" + UUID.randomUUID() + ".pdf";
-                            Files.copy(it.getArchivo().getInputStream(), baseDir.resolve(storedName), StandardCopyOption.REPLACE_EXISTING);
+//                            storedName = "doc-" + UUID.randomUUID() + ".pdf";
+//                            Files.copy(it.getArchivo().getInputStream(), baseDir.resolve(storedName), StandardCopyOption.REPLACE_EXISTING);
                         }
                         default -> throw new SecurityException("Formato no soportado: " + it.getFormato());
                     }
@@ -346,13 +376,16 @@ public class CreacionApisController extends BaseController {
                     doc.setFormato(it.getFormato());
                     doc.setDescripcion(it.getDescripcion());
                     doc.setTipo(it.getTipo());
-                    doc.setUrlDocumento(baseDir.resolve(storedName).toString());
+//                    doc.setUrlDocumento(baseDir.resolve(storedName).toString());
 
                     // TODO: persistir con tu repository de documentación (no incluido aquí)
                     // documentacionRepository.save(doc);
 
                 } catch (Exception e) {
                     bindingResult.rejectValue("documentosTecnicos[" + idx + "].archivo", "error.doc", e.getMessage());
+                    docGeneralDto.setNombreApi(api.getNombre());
+                    docGeneralDto.setIdApi(api.getIdApi());
+                    docGeneralDto.setNumeroVersion(versionApi.getVersion());
                     model.addAttribute("docGeneralDto", docGeneralDto);
                     // Mostrar detalle del error en la vista
                     model.addAttribute("errorBack", e.getMessage());
