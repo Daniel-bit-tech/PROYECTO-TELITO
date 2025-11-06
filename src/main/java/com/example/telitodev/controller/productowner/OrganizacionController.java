@@ -30,7 +30,7 @@
                                       OrganizacionRepository organizacionRepository,
                                       ProyectoRepository proyectoRepository,
                                       SolAccesoOrgService solAccesoOrgService,
-                                      OrganizacionService organizacionService
+                                      OrganizacionService organizacionService,
                                       ApiRepository apiRepository) {
             this.usuarioRepository = usuarioRepository;
             this.organizacionRepository = organizacionRepository;
