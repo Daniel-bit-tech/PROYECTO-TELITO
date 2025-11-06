@@ -1,9 +1,12 @@
 package com.example.telitodev.controller.productowner;
 
+import com.example.telitodev.entity.*;
+import com.example.telitodev.repository.*;
 import com.example.telitodev.dto.SolicitudAccesoDecisionRequest;
 import com.example.telitodev.dto.SolicitudAccesoResponse;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.repository.UsuarioRepository;
+import com.example.telitodev.repository.po.ActividadRecienteRepository;
 import com.example.telitodev.service.OnboardingService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Controller
@@ -23,10 +27,13 @@ public class BandejaMensajesController {
 
     final UsuarioRepository usuarioRepository;
     final OnboardingService onboardingService;
+    final ActividadRecienteRepository actividadRecienteRepository;
 
-    public BandejaMensajesController(UsuarioRepository usuarioRepository, OnboardingService onboardingService) {
+    public BandejaMensajesController(UsuarioRepository usuarioRepository, OnboardingService onboardingService,
+                                     ActividadRecienteRepository actividadRecienteRepository) {
         this.usuarioRepository = usuarioRepository;
         this.onboardingService = onboardingService;
+        this.actividadRecienteRepository = actividadRecienteRepository;
     }
 
     @GetMapping("/bandejaSolicitud")
@@ -90,6 +97,8 @@ public class BandejaMensajesController {
     @PostMapping("/aprobarSolicitud")
     public String aprobarSolicitud(@RequestParam("id") Integer idSolicitud, Authentication auth) {
         try {
+            Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+
             // Crear objeto de decisión para aprobar
             SolicitudAccesoDecisionRequest decision = new SolicitudAccesoDecisionRequest();
             decision.setAccion("APROBAR");
@@ -97,7 +106,15 @@ public class BandejaMensajesController {
             // Procesar la solicitud
             onboardingService.procesarSolicitud(idSolicitud, decision);
 
-            System.out.println("APROBADA: Solicitud " + idSolicitud + " aprobada exitosamente");
+            // === ACTIVIDAD RECIENTE ===
+            ActividadReciente actividad = new ActividadReciente();
+            actividad.setTitulo("Solicitud Aprobada");
+            actividad.setDescripcion("Has aprobado la solicitud de API key #" + idSolicitud);
+            actividad.setUsuario(usuario);
+            actividad.setFecha(new Timestamp(System.currentTimeMillis()).toLocalDateTime());
+            actividadRecienteRepository.save(actividad);
+
+            System.out.println("✅ Solicitud " + idSolicitud + " aprobada - Actividad registrada");
 
         } catch (Exception e) {
             System.err.println("Error al aprobar solicitud: " + e.getMessage());
@@ -111,6 +128,8 @@ public class BandejaMensajesController {
                                     @RequestParam(value = "motivo", required = false) String motivo,
                                     Authentication auth) {
         try {
+            Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+
             // Crear objeto de decisión para rechazar
             SolicitudAccesoDecisionRequest decision = new SolicitudAccesoDecisionRequest();
             decision.setAccion("RECHAZAR");
@@ -119,7 +138,16 @@ public class BandejaMensajesController {
             // Procesar la solicitud
             onboardingService.procesarSolicitud(idSolicitud, decision);
 
-            System.out.println("RECHAZADA: Solicitud " + idSolicitud + " rechazada exitosamente");
+            // === ACTIVIDAD RECIENTE ===
+            ActividadReciente actividad = new ActividadReciente();
+            actividad.setTitulo("Solicitud Rechazada");
+            actividad.setDescripcion("Has rechazado la solicitud de API key #" + idSolicitud +
+                    (motivo != null ? " - Motivo: " + motivo : ""));
+            actividad.setUsuario(usuario);
+            actividad.setFecha(new Timestamp(System.currentTimeMillis()).toLocalDateTime());
+            actividadRecienteRepository.save(actividad);
+
+            System.out.println("✅ Solicitud " + idSolicitud + " rechazada - Actividad registrada");
 
         } catch (Exception e) {
             System.err.println("Error al rechazar solicitud: " + e.getMessage());

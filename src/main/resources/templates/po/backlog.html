@@ -172,7 +172,10 @@
                                             <form th:action="@{/po/backlog/marcar-como-resuelto/{id}(id=${backlog.idBacklog})}" method="post"
                                                   th:if="${backlog.estadoBacklog != 'Resuelto'}">
                                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                                <button type="submit" class="btn btn-sm btn-primary">Marcar como resuelto</button>
+                                                <button type="submit" class="btn btn-sm btn-primary"
+                                                        onclick="return confirm('¿Está seguro de marcar este elemento como resuelto?')">
+                                                    Marcar como resuelto
+                                                </button>
                                             </form>
                                             <span th:if="${backlog.estadoBacklog == 'Resuelto'}" class="text-muted">✔ Resuelto</span>
                                         </td>

@@ -5,7 +5,6 @@
     import com.example.telitodev.repository.*;
     import com.example.telitodev.service.*;
     import jakarta.servlet.http.HttpSession;
-    import org.springframework.security.access.prepost.PreAuthorize;
     import org.springframework.security.core.Authentication;
     import org.springframework.stereotype.Controller;
     import org.springframework.ui.Model;
@@ -15,58 +14,62 @@
     import java.util.*;
     import java.util.stream.Collectors;
     
-@Controller
-@RequestMapping("/po")
-@PreAuthorize("hasAnyRole('PO', 'SUPERADMIN')")
-public class OrganizacionController extends BaseController {    private final OrganizacionRepository organizacionRepository;
-    private final UsuarioRepository usuarioRepository;
-    private final ProyectoRepository proyectoRepository;
-    private final SolAccesoOrgService solAccesoOrgService;
-    private final OrganizacionService organizacionService;
+    @Controller
+    @RequestMapping("/po")
+    public class OrganizacionController extends BaseController {
+    
+        private final UsuarioRepository usuarioRepository;
+        private final OrganizacionRepository organizacionRepository;
+        private final ProyectoRepository proyectoRepository;
+        private final SolAccesoOrgService solAccesoOrgService;
+        private final OrganizacionService organizacionService;
+        private final ApiRepository apiRepository;;
 
-    // AGREGAR los nuevos servicios al constructor
-    public OrganizacionController(UsuarioRepository usuarioRepository,
-                                  OrganizacionRepository organizacionRepository,
-                                  ProyectoRepository proyectoRepository,
-                                  SolAccesoOrgService solAccesoOrgService,
-                                  OrganizacionService organizacionService) {
-        this.usuarioRepository = usuarioRepository;
-        this.organizacionRepository = organizacionRepository;
-        this.proyectoRepository = proyectoRepository;
-        this.solAccesoOrgService = solAccesoOrgService;
-        this.organizacionService = organizacionService;
-    }
-
-    @GetMapping("/organizacion")
-    public String showOrganizacion(Model model, Authentication auth, HttpSession session) {
-        try {
-            // 1. Obtener usuario logueado (considerando impersonación)
-            Usuario usuario = getCurrentUser(auth, session);
-            model.addAttribute("usuario", usuario);
-            
-            // Agregar atributos de impersonación
-            addImpersonationAttributes(model, session);
-
-            // 2. Obtener organización del usuario
-            Organizacion organizacion = organizacionRepository.findByUsuarioDni(usuario.getDni());
-            
-            if (organizacion == null) {
-                // Si no tiene organización, mostrar página vacía
-                return "po/organizacion";
-            }
-
-            model.addAttribute("organizacion", organizacion);
-
-            // 3. Obtener miembros de la organización (con roles cargados)
-            List<Usuario> miembros = usuarioRepository.findByOrganizacionIdWithRol(organizacion.getIdOrganizacion());
-            model.addAttribute("miembros", miembros);
+        // AGREGAR los nuevos servicios al constructor
+        public OrganizacionController(UsuarioRepository usuarioRepository,
+                                      OrganizacionRepository organizacionRepository,
+                                      ProyectoRepository proyectoRepository,
+                                      SolAccesoOrgService solAccesoOrgService,
+                                      OrganizacionService organizacionService
+                                      ApiRepository apiRepository) {
+            this.usuarioRepository = usuarioRepository;
+            this.organizacionRepository = organizacionRepository;
+            this.proyectoRepository = proyectoRepository;
+            this.solAccesoOrgService = solAccesoOrgService;
+            this.organizacionService = organizacionService;
+            this.apiRepository = apiRepository;
+        }
+    
+        @GetMapping("/organizacion")
+        public String showOrganizacion(Model model, Authentication auth, HttpSession session) {
+            try {
+                // 1. Obtener usuario logueado
+                Usuario usuario = getCurrentUser(auth, session);
+                model.addAttribute("usuario", usuario);
+                // Agregar atributos de impersonación
+                addImpersonationAttributes(model, session);
+    
+                // 2. Obtener organización del usuario
+                Organizacion organizacion = organizacionRepository.findByUsuarioDni(usuario.getDni());
+    
+                if (organizacion == null) {
+                    // Si no tiene organización, mostrar página vacía
+                    return "po/organizacion";
+                }
+    
+                model.addAttribute("organizacion", organizacion);
+    
+                // 3. Obtener miembros de la organización (con roles cargados)
+                List<Usuario> miembros = usuarioRepository.findByOrganizacionIdWithRol(organizacion.getIdOrganizacion());
+                model.addAttribute("miembros", miembros);
     
                 // 4. Obtener proyectos activos de la organización
                 List<Proyecto> proyectosActivos = proyectoRepository.findProyectosActivosByOrganizacionId(organizacion.getIdOrganizacion());
                 model.addAttribute("proyectosActivos", proyectosActivos);
     
                 // 5. Obtener APIs únicas de la organización
-                List<Api> apisUnicas = obtenerApisUnicasDeOrganizacion(organizacion);
+                // En el controller, reemplaza la línea:
+                List<Api> apisUnicas = apiRepository.findByOrganizacionId(organizacion.getIdOrganizacion());
                 model.addAttribute("apis", apisUnicas);
     
             return "po/organizacion";
@@ -88,9 +91,10 @@ public class OrganizacionController extends BaseController {    private final Or
                 // 1. Obtener usuario logueado (considerando impersonación)
                 Usuario usuario = getCurrentUser(auth, session);
                 model.addAttribute("usuario", usuario);
-                
+
                 // Agregar atributos de impersonación
-                addImpersonationAttributes(model, session);                    // 2. Obtener organización del usuario
+                addImpersonationAttributes(model, session);
+                // 2. Obtener organización del usuario
                     Organizacion organizacion = organizacionRepository.findByUsuarioDni(usuario.getDni());
                     model.addAttribute("organizacion", organizacion);
 
@@ -140,9 +144,10 @@ public class OrganizacionController extends BaseController {    private final Or
         try {
             Usuario usuario = getCurrentUser(auth, session);
             model.addAttribute("usuario", usuario);
-            
+
             // Agregar atributos de impersonación
-            addImpersonationAttributes(model, session);                // 1. Cargar organizaciones para el dropdown
+            addImpersonationAttributes(model, session);
+            // 1. Cargar organizaciones para el dropdown
                 List<Organizacion> organizaciones = organizacionService.obtenerTodasOrganizacionesOrdenadas();
                 model.addAttribute("organizaciones", organizaciones);
     

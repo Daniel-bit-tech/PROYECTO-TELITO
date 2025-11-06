@@ -27,6 +27,10 @@ public class FeedbackService {
         Feedback feedback = feedbackRepository.findById(idFeedback)
                 .orElseThrow(() -> new Exception("Feedback no encontrado"));
 
+        // ✅ ACTUALIZAR EL CAMPO registradoBacklog A TRUE
+        feedback.setRegistradoBacklog(true);
+        feedbackRepository.save(feedback); // Guardar el cambio en el feedback
+
         // Calcular la prioridad del feedback
         String prioridad = calcularPrioridad(feedback);
 

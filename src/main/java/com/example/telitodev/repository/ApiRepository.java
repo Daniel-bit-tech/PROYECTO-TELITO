@@ -43,6 +43,13 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
             "WHERE pha.idAPI IS NULL", nativeQuery = true)
     List<Api> findApisNotAssociatedWithProyecto(@Param("idProy") Integer idProyecto);
 
+//    @Query("SELECT a FROM Api a " +
+//            "LEFT JOIN a.dominio d " +
+//            "LEFT JOIN a.tag t " +
+//            "WHERE (:search IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+//            "AND (:idDominios IS NULL OR d.idDominio IN :idDominios) " +
+//            "AND (:idTags IS NULL OR t.idTag IN :idTags)")
+
     @Query(value = "SELECT a.* FROM api a " +
             "LEFT JOIN dominio d ON a.idDominio = d.idDominio " +
             "LEFT JOIN tag t ON a.idTag = t.idTag " +
@@ -149,4 +156,8 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
      */
     @Query(value = "SELECT COUNT(*) FROM api WHERE fechaCreacion >= DATE_SUB(NOW(), INTERVAL :days DAY)", nativeQuery = true)
     long countApisCreatedInLastDays(@Param("days") int days);
+
+    @Query("SELECT a FROM Api a WHERE a.usuario.organizacion.idOrganizacion = :organizacionId")
+    List<Api> findByOrganizacionId(@Param("organizacionId") Integer organizacionId);
+
 }

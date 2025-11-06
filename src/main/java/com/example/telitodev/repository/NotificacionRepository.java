@@ -14,5 +14,5 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Inte
     List<Notificacion> findByUsuario_Dni(String dni);
     List<Notificacion> findByUsuario_DniAndLeido(String dni, Boolean leido);
     Integer countByUsuarioAndLeido(Usuario usuario, Boolean leido);
-
+    List<Notificacion> findTop5ByUsuarioDniAndLeidoOrderByFechaDesc(String dni, boolean b);
 }

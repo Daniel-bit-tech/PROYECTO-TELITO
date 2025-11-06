@@ -1,5 +1,6 @@
 package com.example.telitodev.controller.productowner;
 
+import com.example.telitodev.repository.po.ActividadRecienteRepository;
 import com.example.telitodev.service.*;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import jakarta.servlet.http.HttpSession;
@@ -26,20 +29,51 @@ public class FeedbackPoController {
     final UsuarioRepository usuarioRepository;
     final FeedbackRepository feedbackRepository;
     final BacklogRepository backlogRepository;
+    final ActividadRecienteRepository actividadRecienteRepository;
 
-    public FeedbackPoController(BacklogRepository backlogRepository,UsuarioRepository usuarioRepository, FeedbackRepository feedbackRepository, BacklogService backlogService, FeedbackService feedbackService) {
+    public FeedbackPoController(BacklogRepository backlogRepository,UsuarioRepository usuarioRepository,
+                                FeedbackRepository feedbackRepository, BacklogService backlogService,
+                                FeedbackService feedbackService, ActividadRecienteRepository actividadRecienteRepository) {
         this.usuarioRepository = usuarioRepository;
         this.feedbackRepository = feedbackRepository;
         this.backlogService = backlogService;
         this.feedbackService = feedbackService;
         this.backlogRepository = backlogRepository;
+        this.actividadRecienteRepository = actividadRecienteRepository;
         }
 
     @GetMapping("/feedback")
     public String showFeedbackView(Model model, Authentication auth) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         model.addAttribute("usuario", usuario);
-        List<Feedback> listaFeedback = feedbackRepository.findAll();
+
+        // Obtener la organización del PO
+        Organizacion organizacion = usuario.getOrganizacion();
+
+        List<Feedback> listaFeedback;
+
+        if (organizacion != null) {
+            // Filtrar feedbacks solo de la organización del PO
+            listaFeedback = feedbackRepository.findByUsuarioOrganizacionId(organizacion.getIdOrganizacion());
+
+            // Debug mejorado
+            System.out.println("=== DEBUG FEEDBACK ORGANIZACIÓN ===");
+            System.out.println("PO: " + usuario.getCorreo());
+            System.out.println("Organización: " + organizacion.getNombre());
+            System.out.println("Total feedbacks encontrados: " + listaFeedback.size());
+
+            for (Feedback feedback : listaFeedback) {
+                System.out.println("Feedback ID: " + feedback.getIdFeedback() +
+                        " | API: " + feedback.getApi().getNombre() +
+                        " | Usuario: " + feedback.getUsuario().getCorreo() +
+                        " | Calificación: " + feedback.getCalificacion());
+            }
+        } else {
+            // Si el PO no tiene organización, mostrar lista vacía
+            listaFeedback = new ArrayList<>();
+            System.out.println("ADVERTENCIA: El PO no tiene organización asignada");
+        }
+
         model.addAttribute("listaFeedback", listaFeedback);
         return "po/feedback";
     }
@@ -90,13 +124,33 @@ public class FeedbackPoController {
                 model.addAttribute("feedbackYaRegistrado", true);
                 model.addAttribute("feedbackRegistrado", false);
             } else {
+                // ✅ Este método ahora actualiza automáticamente registradoBacklog
                 feedbackService.registrarFeedbackEnBacklog(idFeedback, asunto, usuario);
+
+                // === ACTIVIDAD RECIENTE ===
+                Optional<Feedback> feedbackOpt = feedbackRepository.findById(idFeedback);
+                if (feedbackOpt.isPresent()) {
+                    Feedback feedback = feedbackOpt.get();
+
+                    ActividadReciente actividad = new ActividadReciente();
+                    actividad.setTitulo("Feedback Registrado en Backlog");
+                    actividad.setDescripcion("Has registrado en backlog el feedback de " +
+                            feedback.getUsuario().getNombre() + " " +
+                            feedback.getUsuario().getApellidoPaterno() +
+                            " para la API: " + feedback.getApi().getNombre());
+                    actividad.setUsuario(usuario);
+                    actividad.setFecha(new Timestamp(System.currentTimeMillis()).toLocalDateTime());
+                    actividadRecienteRepository.save(actividad);
+
+                    System.out.println("✅ Feedback registrado en backlog - Actividad registrada para PO: " + usuario.getCorreo());
+                }
+
                 model.addAttribute("success", "Feedback registrado exitosamente en el backlog");
                 model.addAttribute("feedbackRegistrado", true);
                 model.addAttribute("feedbackYaRegistrado", false);
             }
 
-            // Cargar el feedback nuevamente para mostrar la página
+            // Cargar el feedback actualizado (con registradoBacklog = true)
             Optional<Feedback> feedbackOptional = feedbackRepository.findById(idFeedback);
             if (feedbackOptional.isPresent()) {
                 model.addAttribute("feedback", feedbackOptional.get());
@@ -109,6 +163,13 @@ public class FeedbackPoController {
             model.addAttribute("error", "Error al registrar en el backlog: " + e.getMessage());
             return "po/error";
         }
+    }
+
+
+    @PostMapping("/feedback/{id}/registrar-backlog")
+    public String registrarEnBacklog(@PathVariable Integer id) {
+        feedbackRepository.marcarComoRegistradoEnBacklog(id);
+        return "redirect:/po/feedback"; // o a donde quieras redirigir
     }
 
 

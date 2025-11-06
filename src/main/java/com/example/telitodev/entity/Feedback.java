@@ -29,6 +29,8 @@ public class Feedback {
     @JoinColumn(name = "idAPI", nullable = false)
     private Api api;
 
+    @Column(name = "registrado_backlog")
+    private Boolean registradoBacklog = false;
 
     public Feedback() {}
 
@@ -80,4 +82,8 @@ public class Feedback {
     public void setApi(Api api) {
         this.api = api;
     }
+
+    public Boolean getRegistradoBacklog() {return registradoBacklog;}
+
+    public void setRegistradoBacklog(Boolean registradoBacklog) {this.registradoBacklog = registradoBacklog;}
 }

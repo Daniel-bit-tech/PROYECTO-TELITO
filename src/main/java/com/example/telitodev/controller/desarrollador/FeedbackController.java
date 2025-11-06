@@ -1,10 +1,11 @@
 package com.example.telitodev.controller.desarrollador;
 
-import com.example.telitodev.entity.Api;
+import com.example.telitodev.entity.*;
 import com.example.telitodev.entity.Feedback;
 import com.example.telitodev.entity.Usuario;
-import com.example.telitodev.repository.ApiRepository;
+import com.example.telitodev.repository.*;
 import com.example.telitodev.repository.FeedbackRepository;
+import com.example.telitodev.repository.NotificacionRepository;
 import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.service.ApiService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,8 +30,11 @@ public class FeedbackController {
     private final ApiService apiService;
     private final ApiRepository apiRepository;
     private final FeedbackRepository feedbackRepository;
+    private final NotificacionRepository notificacionRepository;
 
-    public FeedbackController(UsuarioRepository usuarioRepository, ApiService apiService, ApiRepository apiRepository, FeedbackRepository feedbackRepository) {
+
+    public FeedbackController(UsuarioRepository usuarioRepository, ApiService apiService, ApiRepository apiRepository, FeedbackRepository feedbackRepository, NotificacionRepository notificacionRepository) {
+        this.notificacionRepository = notificacionRepository;
         this.usuarioRepository = usuarioRepository;
         this.apiService = apiService;
         this.apiRepository = apiRepository;
@@ -62,13 +66,11 @@ public class FeedbackController {
                                Authentication auth,
                                RedirectAttributes redirectAttributes) {
         try {
-
             Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
             if (usuario == null) {
                 redirectAttributes.addFlashAttribute("error", "Usuario no encontrado.");
                 return "redirect:/feedback";
             }
-
 
             Optional<Api> apiOptional = apiRepository.findById(apiId);
             if (!apiOptional.isPresent()) {
@@ -76,23 +78,52 @@ public class FeedbackController {
                 return "redirect:/feedback";
             }
 
+            Api api = apiOptional.get();
 
+            // Crear el feedback
             Feedback feedback = new Feedback();
             feedback.setComentario(comentario);
             feedback.setCalificacion(calificacion);
             feedback.setFechaCreacion(Timestamp.valueOf(LocalDateTime.now()));
-            feedback.setApi(apiOptional.get());
+            feedback.setApi(api);
             feedback.setUsuario(usuario);
-
 
             feedbackRepository.save(feedback);
 
-            redirectAttributes.addFlashAttribute("message", "¡Feedback enviado con éxito!");
-        } catch (Exception e) {
+            // === NOTIFICACIÓN PARA EL PO ===
+            // USAR LA ORGANIZACIÓN DEL DEV QUE ENVÍA EL FEEDBACK
+            if (usuario.getOrganizacion() != null) {
 
+                // Buscar al PO de la organización del DEV
+                Usuario po = usuarioRepository.findPoByOrganizacion(usuario.getOrganizacion().getIdOrganizacion());
+
+                if (po != null) {
+                    // Crear notificación para el PO
+                    Notificacion notificacion = new Notificacion();
+                    notificacion.setMensaje("El desarrollador " + usuario.getNombre() + " " + usuario.getApellidoPaterno() +
+                            " ha enviado feedback para la API: " + api.getNombre());
+                    notificacion.setLeido(false);
+                    notificacion.setFecha(new Timestamp(System.currentTimeMillis()));
+                    notificacion.setUsuario(po);
+
+                    notificacionRepository.save(notificacion);
+
+                    System.out.println("✅ Notificación de feedback enviada al PO: " + po.getCorreo());
+                    System.out.println("   Organización: " + usuario.getOrganizacion().getNombre());
+                } else {
+                    System.out.println("⚠️ No se encontró PO en la organización: " + usuario.getOrganizacion().getNombre());
+                }
+            } else {
+                System.out.println("ℹ️ El DEV no tiene organización asignada - No se envía notificación");
+            }
+
+            redirectAttributes.addFlashAttribute("message", "¡Feedback enviado con éxito!");
+
+        } catch (Exception e) {
             e.printStackTrace();
             redirectAttributes.addFlashAttribute("error", "Error al enviar el feedback: " + e.getMessage());
         }
         return "redirect:/feedback";
     }
+
 }
