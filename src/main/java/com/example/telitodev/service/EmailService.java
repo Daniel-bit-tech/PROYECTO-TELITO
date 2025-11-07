@@ -1,5 +1,6 @@
 package com.example.telitodev.service;
 
+import com.example.telitodev.entity.Usuario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -128,6 +129,40 @@ public class EmailService {
 
         } catch (Exception e) {
             System.err.println("❌ Error enviando email de bienvenida a " + email + ": " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    /**
+     * *** NUEVO MÉTODO ***
+     * Enviar un email genérico de notificación.
+     * @param destinatario El objeto Usuario que recibirá el email.
+     * @param mensaje El contenido de la notificación (ej. "El QA Juan ha aprobado tu API...").
+     */
+    public boolean enviarEmailNotificacion(Usuario destinatario, String mensaje) {
+        try {
+            System.out.println("=== ENVIANDO EMAIL DE NOTIFICACIÓN ===");
+            System.out.println("Destinatario: " + destinatario.getCorreo());
+            System.out.println("Nombre: " + destinatario.getNombre());
+
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom("TelitoDev Portal <" + fromEmail + ">");
+            helper.setTo(destinatario.getCorreo());
+            helper.setSubject("🔔 Tienes una nueva notificación en " + appName);
+
+            String htmlContent = construirEmailNotificacion(destinatario.getNombre(), mensaje);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+
+            System.out.println("✅ Email de notificación enviado a: " + destinatario.getCorreo());
+            return true;
+
+        } catch (Exception e) {
+            System.err.println("❌ Error enviando email de notificación a " + destinatario.getCorreo() + ": " + e.getMessage());
             e.printStackTrace();
             return false;
         }
@@ -288,6 +323,71 @@ public class EmailService {
                 .replace("NOMBRE_PLACEHOLDER", nombre)
                 .replace("DNI_PLACEHOLDER", dni)
                 .replace("ROL_PLACEHOLDER", rol)
+                .replace("APP_URL_PLACEHOLDER", appUrl);
+    }
+
+    /**
+     * *** NUEVO MÉTODO ***
+     * Construir contenido HTML del email de notificación
+     * @param nombre El nombre del destinatario.
+     * @param mensaje El contenido del mensaje de notificación.
+     */
+    private String construirEmailNotificacion(String nombre, String mensaje) {
+        String htmlTemplate = """
+            <!DOCTYPE html>
+            <html lang="es">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>¡Nueva Notificación!</title>
+                <style>
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8f9fa; }
+                    .container { max-width: 600px; margin: 0 auto; background-color: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+                    .header { background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%); color: white; padding: 30px; text-align: center; }
+                    .header h1 { margin: 0; font-size: 28px; font-weight: 300; }
+                    .content { padding: 40px 30px; }
+                    .message-box { background-color: #f8f9fa; border-left: 4px solid #0d6efd; padding: 20px; margin: 25px 0; }
+                    .button { display: inline-block; background-color: #0d6efd; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; margin: 15px 0; }
+                    .footer { background-color: #f8f9fa; padding: 20px; text-align: center; color: #6c757d; font-size: 14px; }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>🔔 ¡Nueva Notificación!</h1>
+                        <p>APP_NAME_PLACEHOLDER</p>
+                    </div>
+                    
+                    <div class="content">
+                        <h2>¡Hola NOMBRE_PLACEHOLDER!</h2>
+                        <p>Has recibido una nueva notificación en el portal:</p>
+                        
+                        <div class="message-box">
+                            <p style="font-size: 16px; color: #343a40; margin: 0;">MENSAJE_PLACEHOLDER</p>
+                        </div>
+                        
+                        <p>Puedes ver esta y todas tus otras notificaciones en el centro de notificaciones.</p>
+
+                        <div style="text-align:center; margin: 30px 0;">
+                            <a class="button" href="APP_URL_PLACEHOLDER/notificaciones" target="_blank">Ver mis Notificaciones</a>
+                        </div>
+                        
+                        <p>Si no esperabas esta notificación, puedes ignorar este email de forma segura.</p>
+                    </div>
+                    
+                    <div class="footer">
+                        <p>© 2025 APP_NAME_PLACEHOLDER - Sistema de gestión de proyectos</p>
+                        <p>Este es un email automático, por favor no respondas a este mensaje.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """;
+
+        return htmlTemplate
+                .replace("APP_NAME_PLACEHOLDER", appName)
+                .replace("NOMBRE_PLACEHOLDER", nombre)
+                .replace("MENSAJE_PLACEHOLDER", mensaje)
                 .replace("APP_URL_PLACEHOLDER", appUrl);
     }
 

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <!-- CSRF tokens para impersonación -->
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>TELITO DEVELOPER PORTAL | Notificaciones</title>
+    <link th:href="|/tabler/dist/css/tabler.css?1757307620|" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url("https://rsms.me/inter/inter.css");
+        /* Estilo para notificaciones no leídas */
+        .notification-item.unread {
+            background-color: var(--tblr-bg-surface-secondary);
+            border-left: 4px solid var(--tblr-primary);
+        }
+        /* Estilo para notificaciones leídas */
+        .notification-item.read {
+            border-left: 4px solid var(--tblr-border-color);
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+<script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
+<div class="page">
+    <div th:replace="qa/header_qa.html :: header"></div>
+    <div th:replace="components/impersonation-banner.html :: impersonation-banner"></div>
+
+    <div class="page-wrapper">
+        <div class="page-header d-print-none">
+            <div class="container-xl">
+                <div class="row g-2 align-items-center">
+                    <div class="col">
+                        <h2 class="page-title">Centro de Notificaciones</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="page-body">
+            <div class="container-xl">
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+
+                            <!-- Mensajes de éxito o error de RedirectAttributes -->
+                            <div th:if="${success}" class="list-group-item bg-success-lt text-center text-success" th:text="${success}"></div>
+                            <div th:if="${error}" class="list-group-item bg-danger-lt text-center text-danger" th:text="${error}"></div>
+
+                            <!-- Estado Vacío -->
+                            <div th:if="${!notificacionPage.hasContent()}" class="list-group-item">
+                                <div class="empty-state text-center p-5">
+                                    <div class="empty-icon mb-3"><i class="fas fa-bell-slash fa-2x text-muted"></i></div>
+                                    <h3 class="empty-title">No hay notificaciones</h3>
+                                    <p class="empty-description text-muted">Tu buzón está vacío por ahora.</p>
+                                </div>
+                            </div>
+
+                            <!-- Lista de Notificaciones -->
+                            <div th:each="noti : ${notificacionPage.content}"
+                                 class="list-group-item notification-item"
+                                 th:classappend="${noti.leido} ? 'read' : 'unread'">
+                                <div class="row align-items-center">
+                                    <div class="col-auto">
+                                        <span class="avatar" th:classappend="${noti.leido} ? 'opacity-50' : 'bg-primary-lt'">
+                                            <i class="fas" th:classappend="${noti.leido} ? 'fa-envelope-open' : 'fa-envelope'"></i>
+                                        </span>
+                                    </div>
+                                    <div class="col text-truncate">
+                                        <div class="text-body" th:text="${noti.mensaje}"></div>
+                                        <div class="text-muted" th:text="${#temporals.format(noti.fecha.toLocalDateTime(), 'dd MMMM yyyy, HH:mm')}"></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <!-- AQUÍ LA LÓGICA: Botón condicional -->
+                                        <div th:if="${!noti.leido}">
+                                            <a th:href="@{/notificaciones/marcarLeido/{id}(id=${noti.idNotificacion})}"
+                                               class="btn btn-sm btn-outline-primary">
+                                                Marcar Leído
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Paginación -->
+                    <nav aria-label="Page navigation" class="mt-4 p-3" th:if="${notificacionPage.totalPages > 1}">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${notificacionPage.isFirst()} ? 'disabled'">
+                                <a class="page-link" th:href="@{/notificaciones(page=${notificacionPage.number - 1}, size=${notificacionPage.size})}">Anterior</a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, notificacionPage.totalPages - 1)}" th:classappend="${i == notificacionPage.number} ? 'active'">
+                                <a class="page-link" th:href="@{/notificaciones(page=${i}, size=${notificacionPage.size})}" th:text="${i + 1}"></a>
+                            </li>
+                            <li class="page-item" th:classappend="${notificacionPage.isLast()} ? 'disabled'">
+                                <a class="page-link" th:href="@{/notificaciones(page=${notificacionPage.number + 1}, size=${notificacionPage.size})}">Siguiente</a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+
+        <div th:replace="qa/footer.html :: footer"></div>
+    </div>
+</div>
+<script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620|"></script>
+<script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
+</body>
+</html>
