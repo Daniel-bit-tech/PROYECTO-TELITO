@@ -94,8 +94,7 @@
                                             <span class="ms-2 text-muted" id="response-time"></span>
                                         </div>
                                     </div>
-                                    <div class="card-body"><pre><code id="response-body"></code></pre></div>
-                                </div>
+                                    <div class="card-body"><pre id="response-body-pre"></pre></div>                                </div>
                             </div>
                             <div id="welcome-message" class="card card-body text-center">
                                 <p class="h3">Bienvenido al Sandbox</p>
@@ -118,12 +117,10 @@
 
         console.log('🔍 Parámetros de URL:', { apiId, entorno });
 
-        // Validar y corregir el entorno si es undefined
         if (!entorno || entorno === 'undefined' || entorno === 'null') {
             console.warn('Entorno no especificado o es undefined, usando valor por defecto: development');
             entorno = 'development';
 
-            // Opcional: actualizar la URL en el navegador sin recargar
             const nuevaUrl = `${window.location.pathname}?api=${apiId}&env=${entorno}`;
             window.history.replaceState({}, '', nuevaUrl);
         }
@@ -254,8 +251,24 @@
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
 
-        const baseUrl = document.getElementById('environment-select').value;
-        let finalUrl = baseUrl + selectedEndpoint.path;
+        const rawBaseUrl = document.getElementById('environment-select').value;
+        const baseUrlClean = rawBaseUrl.trim().replace(/\/+$/, ''); // Elimina barra diagonal final
+
+        const rawPath = selectedEndpoint.path;
+        const pathClean = rawPath.trim().replace(/^\/+/, '');
+
+        let finalUrl;
+
+        if (baseUrlClean.startsWith('http')) {
+            finalUrl = baseUrlClean + '/' + pathClean;
+        } else if (baseUrlClean.length > 0) {
+            finalUrl = 'https://' + baseUrlClean + '/' + pathClean;
+        } else {
+
+            finalUrl = 'https://pokeapi.co/' + pathClean;
+        }
+        console.warn('URL final generada:', finalUrl);
+
         const urlParams = new URLSearchParams();
 
         document.querySelectorAll('#params-container input').forEach(input => {
@@ -300,15 +313,25 @@
     function displayResponse(result) {
         const responsePanel = document.getElementById('response-panel');
         responsePanel.style.display = 'block';
+
         const statusBadge = document.getElementById('response-status');
         statusBadge.textContent = `Status: ${result.status}`;
         statusBadge.className = `badge ${result.status >= 200 && result.status < 300 ? 'bg-success' : 'bg-danger'}`;
         document.getElementById('response-time').textContent = `${result.time} ms`;
+
+        let formattedBody;
+
         try {
-            document.getElementById('response-body').textContent = JSON.stringify(JSON.parse(result.body), null, 2);
+            const jsonObject = JSON.parse(result.body);
+
+            formattedBody = JSON.stringify(jsonObject, null, 2);
+
         } catch (e) {
-            document.getElementById('response-body').textContent = result.body;
+            console.error("Error al formatear JSON para visualización:", e);
+            formattedBody = result.body;
         }
+
+        document.getElementById('response-body-pre').textContent = formattedBody;
     }
 </script>
 

@@ -16,6 +16,6 @@ public interface CredencialApiRepository extends JpaRepository<CredencialApi, In
 
     List<CredencialApi> findByUsuario_DniAndApi_IdApiAndEstado(String dni, Integer apiId, Boolean estado);
     Optional<CredencialApi> findFirstByUsuario_DniAndApi_IdApiAndEstado(String userDni, Integer apiId, boolean estado);
-
-
+    List<CredencialApi> findByApi_IdApiAndEstado(Integer idApi, Boolean estado);
+    
 }

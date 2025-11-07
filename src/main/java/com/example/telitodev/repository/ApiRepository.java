@@ -157,7 +157,18 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
     @Query(value = "SELECT COUNT(*) FROM api WHERE fechaCreacion >= DATE_SUB(NOW(), INTERVAL :days DAY)", nativeQuery = true)
     long countApisCreatedInLastDays(@Param("days") int days);
 
+    List<Api> findByEstadoApi_IdEstadoNot(Integer estadoId);
+
+
+    @Query("SELECT DISTINCT a FROM Api a " +
+            "JOIN ProyectoHasApi pha ON pha.api = a " +
+            "JOIN pha.proyecto p " +
+            "WHERE p.organizacion.idOrganizacion = :idOrganizacion " +
+            "AND a.estadoApi.idEstado != 2")
+    List<Api> findApisDisponiblesPorOrganizacion(@Param("idOrganizacion") Integer idOrganizacion);
+
     @Query("SELECT a FROM Api a WHERE a.usuario.organizacion.idOrganizacion = :organizacionId")
     List<Api> findByOrganizacionId(@Param("organizacionId") Integer organizacionId);
+
 
 }

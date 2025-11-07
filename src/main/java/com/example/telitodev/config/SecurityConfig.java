@@ -28,6 +28,8 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Collection;
 
@@ -67,12 +69,11 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**", "/static/**").permitAll()
                         .requestMatchers("/error", "/acceso-denegado").permitAll()
 
-                        .requestMatchers("/cat").permitAll()
+                        .requestMatchers("/cat","/playground.html").permitAll()
                         .requestMatchers("/api/apis/**").authenticated()
 
                         //  la página y la API del Sandbox
-                        .requestMatchers("/sandbox", "/qa/api/sandbox/**").hasAnyRole("DEV", "QA", "SUPERADMIN")
-
+                        .requestMatchers("/sandbox", "/qa/api/sandbox/**", "/api/sandbox/execute").hasAnyRole("DEV", "QA", "SUPERADMIN")
 
                         // API endpoints - requieren autenticación pero sin CSRF
                         .requestMatchers("/api/onboarding/**").authenticated()
@@ -135,7 +136,8 @@ public class SecurityConfig {
                                 "/qa/**",
                                 "/api/onboarding/**",
                                 "/po/registrarFeedbackEnBacklog",
-                                "/po/roadmap/**"  // ✅ AGREGAR ESTA LÍNEA
+                                "/po/roadmap/**",  // ✅ AGREGAR ESTA LÍNEA
+                                "/api/sandbox/**"
                         )
                 )
                 // Control de sesiones concurrentes y seguridad de sesión - SIMPLIFICADO PARA OAUTH2
@@ -257,6 +259,10 @@ public class SecurityConfig {
     @Bean
     public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
         return new HttpSessionOAuth2AuthorizationRequestRepository();
+    }
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder.build();
     }
 
 }

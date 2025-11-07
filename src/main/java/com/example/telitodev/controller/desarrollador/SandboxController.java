@@ -54,7 +54,13 @@ public class SandboxController {
     public ResponseEntity<SandboxResponseDto> executeSandboxRequest(@RequestBody SandboxRequestDto requestDto, Authentication authentication) {
 
 
-        String userDni = authentication.getName();
+        String userEmail = authentication.getName();
+
+        Usuario usuario = usuarioRepository.findByCorreo(userEmail);
+        if (usuario == null) {
+            throw new RuntimeException("Usuario no encontrado con el email: " + userEmail);
+        }
+        String userDni = usuario.getDni();
 
         SandboxResponseDto response = sandboxService.executeRequest(requestDto, userDni);
 
