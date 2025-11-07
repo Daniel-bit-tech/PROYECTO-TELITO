@@ -102,7 +102,6 @@ public class PoController extends BaseController {
         List<ActividadReciente> actividadesRecientes = actividadRecienteService.obtenerActividadesRecientesPorUsuario(usuario.getDni());
         model.addAttribute("actividadesRecientes", actividadesRecientes);
 
-        System.out.println("Notificaciones " + notificaciones);
         System.out.println("Actividades recientes " + actividadesRecientes);
 
         return "po/home";

@@ -2,6 +2,8 @@ package com.example.telitodev.repository;
 
 import com.example.telitodev.entity.Notificacion;
 import com.example.telitodev.entity.Usuario;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
