@@ -1,11 +1,16 @@
 package com.example.telitodev.service.S3Services;
 
+import com.example.telitodev.dto.VersionContratoDTO;
+import com.example.telitodev.entity.ContratoApi;
 import com.example.telitodev.entity.Documentacion;
+import com.example.telitodev.entity.VersionApi;
+import com.example.telitodev.repository.ContratoRepository;
 import com.example.telitodev.repository.DocumentacionRepository;
-import com.example.telitodev.service.DocApiService;
-import org.springframework.http.HttpMethod;
+import com.example.telitodev.repository.VersionApiRepository;
+import com.example.telitodev.service.ContratoApiService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -14,10 +19,12 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
-import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 @Service
@@ -26,135 +33,193 @@ public class S3DocsApiService {
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
     private final DocumentacionRepository documentacionRepository;
-    private final DocApiService validationService;
-    private final String bucketName = "my-bucket";
+    private final ContratoRepository contratoRepository;
+    private final String bucketName = "ipt-symphony-bucket-2";
+    private final VersionApiRepository versionApiRepository;
 
-    public S3DocsApiService(S3Client s3Client,
-                                    S3Presigner s3Presigner,
-                                    DocumentacionRepository documentacionRepository,
-                                    DocApiService validationService) {
+    public S3DocsApiService(S3Client s3Client, S3Presigner s3Presigner,
+                            DocumentacionRepository documentacionRepository,
+                            ContratoRepository contratoRepository, VersionApiRepository versionApiRepository) {
         this.s3Client = s3Client;
         this.s3Presigner = s3Presigner;
         this.documentacionRepository = documentacionRepository;
-        this.validationService = validationService;
+        this.contratoRepository = contratoRepository;
+        this.versionApiRepository = versionApiRepository;
     }
 
-    // Subir un archivo con validación
-    public Documentacion uploadFile(MultipartFile file, String tipo, String descripcion,
-                                    Integer idAPI, Integer idVersion) throws IOException {
+    public void subirContratoAS3(VersionContratoDTO dto, String contenidoNormalizado, String cabecerasContrato) throws ContratoApiService.ContratoValidationException {
+        // 1. Generar nombres y rutas
+        String nombreArchivo = generarNombreArchivo(dto.getIdAPI(), dto.getIdVersion(), dto.getFormato());
+//        String s3Key = generarS3Key(dto.getIdAPI(), nombreArchivo);
+        String s3Key = "apis/api_"+dto.getIdAPI()+"/ver/v_"+dto.getIdVersion()+"/" + nombreArchivo;
 
-        validationService.validateSingleFile(file);
+        try {
+            // 2. Subir a S3 con metadatos
+            byte[] bytes = contenidoNormalizado.getBytes(StandardCharsets.UTF_8);
 
-        String folder = "documentaciones/"+idAPI+"/"+idVersion+"/";
+            // Metadata para S3
+            Map<String, String> metadata = new HashMap<>();
+//            metadata.put("original-filename", file.getOriginalFilename());
+            metadata.put("formato", dto.getFormato().name());
+            metadata.put("api-id", dto.getIdAPI().toString());
+            metadata.put("ver-id", dto.getIdVersion().toString());
+            metadata.put("uploaded-at", Instant.now().toString());
+            metadata.put("content-type", obtenerContentType(dto.getFormato()));
 
-        String key = generateS3Key(file.getOriginalFilename(), folder);
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3Key)
+                    .contentType(obtenerContentType(dto.getFormato()))
+                    .metadata(metadata)
+                    .build();
+            RequestBody requestBody = RequestBody.fromBytes(bytes);
 
-        // Metadata para S3
-        Map<String, String> metadata = new HashMap<>();
-        metadata.put("original-filename", file.getOriginalFilename());
-        metadata.put("uploaded-at", new Date().toString());
-        metadata.put("content-type", file.getContentType());
+            s3Client.putObject(request,requestBody);
 
-        PutObjectRequest putObjectRequest = PutObjectRequest.builder()
-                .bucket(bucketName)
-                .key(key)
-                .contentType(file.getContentType())
-                .metadata(metadata)
-                .build();
+            // 4. Guardar metadata en BD
+            guardarMetadataContrato(dto, s3Key, cabecerasContrato);
 
-        // Subir archivo
-        s3Client.putObject(putObjectRequest,
-                RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
 
-        return saveDocumentacionMetadata(file, tipo, descripcion, idAPI, idVersion, key);
+        } catch (Exception e) {
+            throw new ContratoApiService.ContratoValidationException("Error guardando contrato "+ e.getMessage(), e);
+        }
     }
 
-    // Recuperar URL firmada para descarga
-    public URL getFileUrl(Integer idDocumentacion) {
-        Documentacion doc = documentacionRepository.findById(idDocumentacion)
-                .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
+    /* ========== GENERACIÓN DE NOMBRES Y RUTAS ========== */
+    private String generarNombreArchivo(Integer idApi, Integer idVersion, ContratoApi.FormatoContrato formato) {
+        String timestamp = Instant.now().toString().replace(":", "-");
+        String extension = (formato == ContratoApi.FormatoContrato.JSON) ? ".json" : ".yaml";
+//        return String.format("api-%s-contrato-%s.%s", idApi, timestamp, extension);
+        return "contrato-api"+idApi + "-v"+idVersion + "-"+UUID.randomUUID()+extension;
+    }
 
+    /* ========== GENERACIÓN DE S3KEY ========== */
+    private String generateS3Key(Integer idApi, Integer idVersion, String nombreArchivo) {
+        String uuid = UUID.randomUUID().toString();
+        return String.format("apis/api_%s/ver/v_%s", idApi, idVersion);
+    }
+
+
+    /* ========== SUBIDA DE DOC ADICIONAL A S3 CON METADATOS ========== */
+    private void subirDocAddAS3(Map<String, String> metadata, String s3Key, RequestBody requestBody, Documentacion.FormatoDoc formato) {
+        try {
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3Key)
+                    .contentType(obtenerDocContentType(formato))
+                    .metadata(metadata)
+                    .build();
+
+            s3Client.putObject(request,requestBody);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error subiendo archivo a S3: " + e.getMessage(), e);
+        }
+    }
+
+    private String obtenerContentType(ContratoApi.FormatoContrato formato) {
+        return formato == ContratoApi.FormatoContrato.JSON ? "application/json" : "application/x-yaml";
+    }
+
+    private String obtenerDocContentType(Documentacion.FormatoDoc formato) {
+        return switch (formato) {
+            case JSON -> "application/json";
+            case YAML -> "application/x-yaml";
+            case MARKDOWN -> "text/markdown";
+            case PDF -> "application/pdf";
+        };
+    }
+
+
+    private URL generarPresignedUrl(String s3Key) {
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
-                .key(doc.getUrlDocumento())
+                .key(s3Key)
                 .build();
 
-        GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
-                .signatureDuration(Duration.ofMinutes(5))
-                .getObjectRequest(getObjectRequest)
-                .build();
+        GetObjectPresignRequest presignedRequest = GetObjectPresignRequest.builder()
+                        .signatureDuration(Duration.ofMinutes(15))
+                        .getObjectRequest(getObjectRequest)
+                        .build();
 
-        return s3Presigner.presignGetObject(presignRequest).url();
+        return s3Presigner.presignGetObject(presignedRequest).url();
     }
 
-    // Eliminar archivo de S3 y base de datos
-    public void deleteFile(Integer idDocumentacion) {
-        Documentacion doc = documentacionRepository.findById(idDocumentacion)
-                .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
+    /* ========== GUARDADO EN BASE DE DATOS ========== */
+    private void guardarMetadataContrato(VersionContratoDTO dto, String s3Key, String cabecerasContrato) {
+            ContratoApi contrato = new ContratoApi();
 
-        DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
-                .bucket(bucketName)
-                .key(doc.getUrlDocumento())
-                .build();
+            // Información básica
+            VersionApi version = versionApiRepository.findById(dto.getIdVersion())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la versión solicitada"));
 
-        s3Client.deleteObject(deleteObjectRequest);
-        documentacionRepository.delete(doc);
+            contrato.setVersionApi(version);
+            contrato.setFormato(dto.getFormato());
+
+            contrato.setUrlContrato(s3Key);
+
+            // Información de contenido (opcional - solo cabeceras)
+            contrato.setContenido(cabecerasContrato);
+            // Hashes para verificación
+//            contrato.setSha256Hash(calcularHashSHA256(contenido));
+
+            // Timestamps
+            contrato.setFechaModificacion(Timestamp.from(Instant.now()));
+
+            contratoRepository.save(contrato);
     }
 
-    // Subir múltiples archivos con validación
-    public List<Documentacion> uploadMultipleFiles(List<MultipartFile> files, String tipo,
-                                                   List<String> descripciones, Integer idAPI,
-                                                   Integer idVersion) throws IOException {
-
-        // Validar lista de archivos
-        validationService.validateFileList(files);
-        validationService.validateDescriptions(files, descripciones);
-
-        List<Documentacion> savedDocs = new ArrayList<>();
-
-        for (int i = 0; i < files.size(); i++) {
-            MultipartFile file = files.get(i);
-            String descripcion = descripciones.get(i);
-
-            Documentacion doc = uploadFile(file, tipo, descripcion, idAPI, idVersion);
-            savedDocs.add(doc);
+    private String calcularHashSHA256(String contenido) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(contenido.getBytes(StandardCharsets.UTF_8));
+            return Base64.getEncoder().encodeToString(hash);
+        } catch (Exception e) {
+            return "error-calculo-hash";
         }
-
-        return savedDocs;
     }
 
 
-    // Verificar si un archivo existe
-    public boolean fileExists(Integer idDocumentacion) {
-        return documentacionRepository.existsById(idDocumentacion);
+    /* ========== MÉTODOS ADICIONALES ÚTILES ========== */
+
+    // Eliminar archivo de contrato de S3 y base de datos
+    public void eliminarContratoS3(Integer idContratoApi) {
+        try {
+            ContratoApi contrato = contratoRepository.findById(idContratoApi)
+                    .orElseThrow(() -> new RuntimeException("Contrato no encontrado"));
+
+            // Eliminar de S3
+            DeleteObjectRequest delObjectRequest = DeleteObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(contrato.getUrlContrato()).build();
+
+            s3Client.deleteObject(delObjectRequest);
+            contratoRepository.delete(contrato);
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error eliminando contrato: " + e.getMessage(), e);
+        }
     }
 
-    // Obtener información del archivo sin URL
-    public Documentacion getFileInfo(Integer idDocumentacion) {
-        return documentacionRepository.findById(idDocumentacion)
-                .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
+    // Eliminar archivo de doc adicional de S3 y base de datos
+    public void eliminarDocFileS3(Integer idDocumentacion) {
+        try {
+            Documentacion doc = documentacionRepository.findById(idDocumentacion)
+                    .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
+
+            DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(doc.getUrlDocumento())
+                    .build();
+
+            s3Client.deleteObject(deleteObjectRequest);
+            documentacionRepository.delete(doc);
+        } catch (Exception e) {
+            throw new RuntimeException("Error eliminando documentación: " + e.getMessage(), e);
+        }
     }
 
-    // Métodos privados auxiliares
-    private String generateS3Key(String originalFilename, String folder) {
-        String uuid = UUID.randomUUID().toString();
-        String safeFilename = originalFilename.replaceAll("[^a-zA-Z0-9.-]", "_");
-        return String.format("%s/%s_%s", folder, uuid, safeFilename);
-    }
-
-    private Documentacion saveDocumentacionMetadata(MultipartFile file, String tipo,
-                                                    String descripcion, Integer idAPI,
-                                                    Integer idVersion, String s3Key) {
-        Documentacion doc = new Documentacion();
-        doc.setTipo(tipo);
-        doc.setDescripcion(descripcion);
-//        doc.setApi(idAPI);
-//        doc.setVersionApi(idVersion);
-//        doc.setFormato(validationService.getFileFormat(file.getOriginalFilename()));
-        doc.setUrlDocumento(s3Key);
-        doc.setFechaCreacion(new Timestamp(System.currentTimeMillis()));
-
-        return documentacionRepository.save(doc);
-    }
+    
+    
 
 }

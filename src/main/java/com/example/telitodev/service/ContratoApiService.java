@@ -1,114 +1,91 @@
 package com.example.telitodev.service;
 
 import com.example.telitodev.dto.VersionContratoDTO;
+import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.ContratoApi;
+import com.example.telitodev.entity.VersionApi;
+import com.example.telitodev.repository.ContratoRepository;
+import com.example.telitodev.repository.VersionApiRepository;
+import com.example.telitodev.service.S3Services.S3DocsApiService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @Service
 public class ContratoApiService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ContratoApiService.class);
-
     // Tamaño máximo de archivo: 10MB
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
 
+    private final DocApiService validationService;
+    private final FileSecurityService fileSecurityService;
+    private final S3DocsApiService s3DocsApiService;
+
+    private final ContratoRepository contratoRepository;
+    private final VersionApiRepository versionApiRepository;
+
+    public ContratoApiService(DocApiService validationService, FileSecurityService fileSecurityService, S3DocsApiService s3DocsApiService, ContratoRepository contratoRepository, VersionApiRepository versionApiRepository) {
+        this.validationService = validationService;
+        this.fileSecurityService = fileSecurityService;
+        this.s3DocsApiService = s3DocsApiService;
+        this.contratoRepository = contratoRepository;
+        this.versionApiRepository = versionApiRepository;
+    }
+
+
     /**
-     * Valida y procesa el contrato API desde DTO
+     * Coordina la validación y procesa el contrato API desde DTO
      */
-    public String validarYProcesarContrato(VersionContratoDTO versionContratoDto) throws ContratoValidationException {
+    public void validarYProcesarContrato(VersionContratoDTO versionContratoDto, Api api) throws ContratoValidationException {
+
+        boolean subioArchivo = versionContratoDto.getMetodoCarga()==VersionContratoDTO.MetodoCarga.archivo
+                && versionContratoDto.getArchivo() != null && !versionContratoDto.getArchivo().isEmpty();
+
+        if (subioArchivo) {
+            versionContratoDto.setDesdeArchivo(true);
+
+            MultipartFile contratoFile = versionContratoDto.getArchivo();
+            versionContratoDto.setFormato(detectarFormato(contratoFile));
+
+        } else if (versionContratoDto.getMetodoCarga()==VersionContratoDTO.MetodoCarga.texto && versionContratoDto.getContenido()!=null && !versionContratoDto.getContenido().isEmpty()) {
+            versionContratoDto.setDesdeArchivo(false);
+
+            String contenido = versionContratoDto.getContenido().trim();
+            versionContratoDto.setFormato(detectarFormatoTexto(contenido));
+
+        } else throw new SecurityException("Error procesando el archivo.");
+
         try {
-            String contenido;
+            String contenidoNormalizado = fileSecurityService.validarSintaxis(versionContratoDto);
+            String cabeceras = validationService.validarSemanticaOpenAPI(contenidoNormalizado);
 
-            if (versionContratoDto.isDesdeArchivo()) {
-                contenido = procesarArchivoContrato(versionContratoDto.getArchivo());
-            } else {
-                contenido = procesarContenidoDirecto(versionContratoDto.getContenido());
-            }
+            VersionApi versionApi = new VersionApi();
+            versionApi.setApi(api);
+            versionApi.setVersion(versionContratoDto.getVersion());
+            versionApi.setFechaPublicacion(versionContratoDto.getFechaPublicacion());
+            versionApi.setEstadoVersion(versionContratoDto.getEstadoVersion());
+            // Persistir la versión primero para asegurarnos de tener un id válido
+            versionApiRepository.save(versionApi);
 
-            // Validar formato específico
-            validarFormatoContrato(contenido, versionContratoDto.getFormato());
+//            ContratoApi contratoApi = new ContratoApi();
+//            contratoApi.setVersionApi(versionApi);
+//            contratoApi.setFormato(versionContratoDto.getFormato());
+//            contratoApi.setContenido(cabeceras);
+//            contratoRepository.save(contratoApi);
 
-            return contenido;
+            versionContratoDto.setIdVersion(versionApi.getIdVersion());
+            s3DocsApiService.subirContratoAS3(versionContratoDto, contenidoNormalizado, cabeceras);
 
+        } catch (SecurityException e) {
+            throw new ContratoValidationException("Error validando archivo: " +e.getMessage(), e);
         } catch (Exception e) {
-            System.err.println("Error validando contrato para API: " + versionContratoDto.getNombreAPI()+" con ID "+versionContratoDto.getIdAPI());
-            System.err.println(e.getMessage());
-            throw new ContratoValidationException("Error al procesar el contrato: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Procesa archivo subido y extrae contenido
-     */
-    private String procesarArchivoContrato(MultipartFile archivo) throws ContratoValidationException {
-        if (archivo == null || archivo.isEmpty()) {
-            throw new ContratoValidationException("No se ha proporcionado un archivo de contrato");
-        }
-
-        // Validar tamaño
-        if (archivo.getSize() > MAX_FILE_SIZE) {
-            throw new ContratoValidationException("El archivo es demasiado grande. Tamaño máximo: 10MB");
-        }
-
-        // Validar tipo de archivo
-        String nombreArchivo = archivo.getOriginalFilename();
-        if (nombreArchivo == null || !esExtensionValida(nombreArchivo)) {
-            throw new ContratoValidationException("Formato de archivo no válido. Use .yaml, .yml o .json");
-        }
-
-        try {
-            // Leer contenido del archivo
-            return new String(archivo.getBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new ContratoValidationException("Error al leer el archivo: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Procesa contenido directo pegado
-     */
-    private String procesarContenidoDirecto(String contenido) throws ContratoValidationException {
-        if (contenido == null || contenido.trim().isEmpty()) {
-            throw new ContratoValidationException("El contenido del contrato no puede estar vacío");
-        }
-
-        if (contenido.length() > MAX_FILE_SIZE) {
-            throw new ContratoValidationException("El contenido es demasiado grande. Límite: 10MB");
-        }
-
-        return contenido.trim();
-    }
-
-    /**
-     * Valida el formato del contrato (JSON/YAML)
-     */
-    private void validarFormatoContrato(String contenido, ContratoApi.FormatoContrato formato)
-            throws ContratoValidationException {
-
-        try {
-            switch (formato) {
-                case JSON:
-                    validarJSON(contenido);
-                    break;
-                case YAML:
-                    validarYAML(contenido);
-                    break;
-                default:
-                    throw new ContratoValidationException("Formato no soportado: " + formato);
-            }
-        } catch (Exception e) {
-            throw new ContratoValidationException("Error en la validación del formato " + formato + ": " + e.getMessage());
+            System.err.println("Error validando contrato: " +e.getMessage());
+            throw new ContratoValidationException("Error procesando el contrato: ", e);
         }
     }
 
@@ -176,36 +153,61 @@ public class ContratoApiService {
     }
 
     /**
-     * Verifica extensión de archivo válida
+     * Detecta automáticamente el formato del contenido desde texto plano
+     * @param contenido texto plano dej contrato
+     * @return JSON o YAML
+     * @throws ContratoValidationException cuando no se puede obtener un formato válido
      */
-    private boolean esExtensionValida(String nombreArchivo) {
-        String extension = nombreArchivo.toLowerCase();
-        return extension.endsWith(".yaml") || extension.endsWith(".yml") || extension.endsWith(".json");
-    }
-
-    /**
-     * Detecta automáticamente el formato del contenido
-     */
-    public ContratoApi.FormatoContrato detectarFormato(String contenido) {
-        if (contenido == null) {
-            return ContratoApi.FormatoContrato.JSON;
+    public ContratoApi.FormatoContrato detectarFormatoTexto(String contenido) throws ContratoValidationException {
+        if (contenido == null || contenido.trim().isEmpty()) {
+            throw new ContratoValidationException("No se puede procesar contenido vacío.");
         }
 
         String contenidoTrim = contenido.trim();
 
-        // Si empieza con { o [, probablemente es JSON
         if (contenidoTrim.startsWith("{") || contenidoTrim.startsWith("[")) {
             return ContratoApi.FormatoContrato.JSON;
         }
 
-        // Si contiene openapi: o swagger:, probablemente es YAML
         if (contenidoTrim.contains("openapi:") || contenidoTrim.contains("swagger:")) {
             return ContratoApi.FormatoContrato.YAML;
         }
 
-        // Por defecto JSON
-        return ContratoApi.FormatoContrato.JSON;
+        throw new ContratoValidationException("El contenido no tiene formato válido.");
     }
+
+    /**
+     * Detecta automáticamente el formato del archivo de contrato
+     * @param archivoContrato el archivo JSON o YAML
+     * @return JSON o YAML
+     * @throws ContratoValidationException cuando no se puede obtener un formato válido
+     */
+    public ContratoApi.FormatoContrato detectarFormato(MultipartFile archivoContrato) throws ContratoValidationException {
+        String filename = archivoContrato.getOriginalFilename();
+        if (filename == null || !filename.contains(".")) {
+            throw new ContratoValidationException("El archivo no tiene extensión válida.");
+        }
+        String extension = filename.substring(filename.lastIndexOf('.') + 1).toLowerCase();
+
+        String contentType = archivoContrato.getContentType();
+        if (contentType != null) {
+            switch (contentType) {
+                case "application/json":
+                    if (extension.equals("json")) {
+                        return ContratoApi.FormatoContrato.JSON;
+                    }
+
+                case "application/x-yaml", "application/yaml", "application/x-yml", "application/yml", "application/octet-stream":
+                    if (extension.equals("yaml") || extension.equals("yml")) {
+                        return ContratoApi.FormatoContrato.YAML;
+                    }
+                default:
+                    throw new ContratoValidationException("El archivo no tiene formato válido.");
+            }
+            
+        } else throw new ContratoValidationException("El archivo no tiene formato válido.");
+    }
+
 
 
     public static class ContratoValidationException extends Exception {

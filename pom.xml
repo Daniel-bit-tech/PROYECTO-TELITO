@@ -134,6 +134,13 @@
             <version>3.0.0</version>
         </dependency>
 
+        <!-- Swagger Parser para validacion de contratos -->
+        <dependency>
+            <groupId>io.swagger.parser.v3</groupId>
+            <artifactId>swagger-parser-v3</artifactId>
+            <version>2.1.35</version>
+        </dependency>
+
         <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>

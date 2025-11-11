@@ -44,7 +44,7 @@
             <div class="container-xl">
                 <div class="card mb-4" th:if="${paso2}">
                     <div class="card-body">
-                        <ul class="steps steps-green steps-counter my-4">
+                        <ul class="steps steps-green steps-counter my-1">
                             <li class="step-item"
                                 data-bs-trigger="hover"
                                 data-bs-toggle="popover"
@@ -210,6 +210,7 @@
                                                     <h4 class="alert-title">Validación de Contrato</h4>
                                                     <p th:if="${#fields.hasErrors('archivo')}"   th:errors="*{archivo}"></p>
                                                     <p th:if="${#fields.hasErrors('contenido')}" th:errors="*{contenido}"></p>
+                                                    <p th:if="${errorBack}" th:text="${errorBack}"></p>
                                                 </div>
                                             </div>
                                         </div>

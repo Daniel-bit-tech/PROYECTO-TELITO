@@ -1,10 +1,11 @@
 package com.example.telitodev.service;
 
+import com.example.telitodev.dto.VersionContratoDTO;
+import com.example.telitodev.entity.ContratoApi;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -40,24 +41,35 @@ public class FileSecurityService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    /* ========== Texto (alto nivel) ========== */
-    public String sanitizeTextBlock(String input, String logicalName) {
-        if (input == null) return null;
-        String stripped = Jsoup.clean(input, Safelist.none());
-        basicStringChecks(stripped, logicalName);
-        return stripped;
+    public String validarSintaxis(VersionContratoDTO versionContratoDto) throws SecurityException {
+
+        String contenidoContrato;
+        switch (versionContratoDto.getFormato()) {
+            case JSON -> {
+                contenidoContrato = versionContratoDto.isDesdeArchivo()
+                        ? validateAndNormalizeJson(versionContratoDto.getArchivo())
+                        : validateAndNormalizeJsonString(versionContratoDto.getContenido());
+            }
+            case YAML -> {
+                contenidoContrato = versionContratoDto.isDesdeArchivo()
+                        ? validateAndNormalizeYaml(versionContratoDto.getArchivo())
+                        : validateAndNormalizeYamlString(versionContratoDto.getContenido());
+            }
+            default -> throw new SecurityException("Formato de contrato no soportado.");
+        }
+        return contenidoContrato;
     }
 
     /* ========== Validación común ========== */
     public void validateCommon(MultipartFile file, String logicalName) throws SecurityException, IOException {
         if (file == null || file.isEmpty())
-            throw new SecurityException("Debe adjuntar " + logicalName + ".");
+            throw new SecurityException("Debe adjuntar un archivo " + logicalName + " con contenido.");
         if (file.getSize() > MAX_BYTES)
-            throw new SecurityException(logicalName + " excede el tamaño permitido.");
+            throw new SecurityException("El archivo "+logicalName + " excede el tamaño permitido.");
         try (InputStream is = new BufferedInputStream(file.getInputStream())) {
             byte[] head = is.readNBytes(8);
             if (!isLikelyText(head) && !"application/pdf".equalsIgnoreCase(Objects.toString(file.getContentType(), ""))) {
-                throw new SecurityException("Formato binario inesperado en " + logicalName + ".");
+                throw new SecurityException("Formato binario inesperado en el archivo" + logicalName + ".");
             }
         }
     }
@@ -70,16 +82,24 @@ public class FileSecurityService {
     }
 
     /* ========== JSON / YAML desde archivo ========== */
-    public String validateAndNormalizeJson(MultipartFile json) throws SecurityException, IOException {
-        validateCommon(json, "JSON");
-        String content = new String(json.getBytes(), StandardCharsets.UTF_8);
-        return validateAndNormalizeJsonString(content);
+    public String validateAndNormalizeJson(MultipartFile json) throws SecurityException {
+        try {
+            validateCommon(json, "JSON");
+            String content = new String(json.getBytes(), StandardCharsets.UTF_8);
+            return validateAndNormalizeJsonString(content);
+        } catch (IOException e) {
+            throw new SecurityException("Error leyendo archivo JSON: " + e.getMessage(), e);
+        }
     }
 
-    public String validateAndNormalizeYaml(MultipartFile yamlFile) throws SecurityException, IOException {
-        validateCommon(yamlFile, "YAML");
-        String content = new String(yamlFile.getBytes(), StandardCharsets.UTF_8);
-        return validateAndNormalizeYamlString(content);
+    public String validateAndNormalizeYaml(MultipartFile yamlFile) throws SecurityException {
+        try {
+            validateCommon(yamlFile, "YAML");
+            String content = new String(yamlFile.getBytes(), StandardCharsets.UTF_8);
+            return validateAndNormalizeYamlString(content);
+        } catch (IOException e) {
+            throw new SecurityException("Error leyendo archivo YAML: " + e.getMessage(), e);
+        }
     }
 
     /* ========== JSON / YAML desde String (para “pegar contenido”) ========== */
@@ -153,6 +173,14 @@ public class FileSecurityService {
         } catch (Exception e) {
             throw new SecurityException("PDF inválido o no legible: " + e.getMessage());
         }
+    }
+
+    /* ========== Texto (alto nivel) ========== */
+    public String sanitizeTextBlock(String input, String logicalName) {
+        if (input == null) return null;
+        String stripped = Jsoup.clean(input, Safelist.none());
+        basicStringChecks(stripped, logicalName);
+        return stripped;
     }
 
     /* ========== Utilidades internas ========== */
