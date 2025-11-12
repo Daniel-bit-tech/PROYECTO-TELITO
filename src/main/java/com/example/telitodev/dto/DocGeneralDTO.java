@@ -16,8 +16,6 @@ public class DocGeneralDTO {
     private Integer idVersion;
     private String numeroVersion;
 
-    // Campos para documentación técnica (tabla: documentacion)
-    private List<DocumentacionItemDTO> documentosTecnicos;
 
     // Campos para documentación de alto nivel (tabla: doc_alto_nivel)
     private Integer idDocAltoNivel;
@@ -35,8 +33,11 @@ public class DocGeneralDTO {
     private String ejemplosIntegracion;
 
     // Campos auxiliares para la vista
-    private List<MultipartFile> archivosTecnicos;
-    private List<String> descripcionesTecnicas;
+//    private List<MultipartFile> archivosTecnicos;
+//    private List<String> descripcionesTecnicas;
+    private MultipartFile[] archivosTecnicos;
+    private String[] descripcionesTecnicas;
+    private String[] formatosTecnicos;
 
     // Getters y Setters
     public Integer getIdApi() {
@@ -58,13 +59,6 @@ public class DocGeneralDTO {
     }
     public void setNumeroVersion(String numeroVersion) {
         this.numeroVersion = numeroVersion;
-    }
-
-    public List<DocumentacionItemDTO> getDocumentosTecnicos() {
-        return documentosTecnicos;
-    }
-    public void setDocumentosTecnicos(List<DocumentacionItemDTO> documentosTecnicos) {
-        this.documentosTecnicos = documentosTecnicos;
     }
 
     public Integer getIdVersion() {
@@ -123,106 +117,37 @@ public class DocGeneralDTO {
         this.ejemplosIntegracion = ejemplosIntegracion;
     }
 
-    public List<MultipartFile> getArchivosTecnicos() {
+//    public List<MultipartFile> getArchivosTecnicos() {
+//        return archivosTecnicos;
+//    }
+//    public void setArchivosTecnicos(List<MultipartFile> archivosTecnicos) {
+//        this.archivosTecnicos = archivosTecnicos;
+//    }
+//
+//    public List<String> getDescripcionesTecnicas() {
+//        return descripcionesTecnicas;
+//    }
+//    public void setDescripcionesTecnicas(List<String> descripcionesTecnicas) {
+//        this.descripcionesTecnicas = descripcionesTecnicas;
+//    }
+    public MultipartFile[] getArchivosTecnicos() {
         return archivosTecnicos;
     }
-    public void setArchivosTecnicos(List<MultipartFile> archivosTecnicos) {
+    public void setArchivosTecnicos(MultipartFile[] archivosTecnicos) {
         this.archivosTecnicos = archivosTecnicos;
     }
 
-    public List<String> getDescripcionesTecnicas() {
+    public String[] getDescripcionesTecnicas() {
         return descripcionesTecnicas;
     }
-    public void setDescripcionesTecnicas(List<String> descripcionesTecnicas) {
+    public void setDescripcionesTecnicas(String[] descripcionesTecnicas) {
         this.descripcionesTecnicas = descripcionesTecnicas;
     }
 
-    // DTO para items individuales de documentación técnica
-    public class DocumentacionItemDTO {
-        private Integer idDocumentacion;
-        private String tipo;
-        private String urlDocumento;
-        private String contenido;
-        @Size(min = 10, max = 50,message = "La descripción del archivo debe tener entre 10 y 50 caracteres.")
-        private String descripcion;
-        private Timestamp fechaModificacion = new Timestamp(System.currentTimeMillis());
-        private Integer idAPI;
-        private Integer idVersion;
-        @NotNull(message = "Debe elegir un formato.")
-        private Documentacion.FormatoDoc formato;
-        private MultipartFile archivo;
-
-        // Getters y Setters
-
-        public Integer getIdDocumentacion() {
-            return idDocumentacion;
-        }
-        public void setIdDocumentacion(Integer idDocumentacion) {
-            this.idDocumentacion = idDocumentacion;
-        }
-
-        public String getUrlDocumento() {
-            return urlDocumento;
-        }
-        public void setUrlDocumento(String urlDocumento) {
-            this.urlDocumento = urlDocumento;
-        }
-
-        public String getTipo() {
-            return tipo;
-        }
-        public void setTipo(String tipo) {
-            this.tipo = tipo;
-        }
-
-        public String getContenido() {
-            return contenido;
-        }
-        public void setContenido(String contenido) {
-            this.contenido = contenido;
-        }
-
-        public String getDescripcion() {
-            return descripcion;
-        }
-        public void setDescripcion(String descripcion) {
-            this.descripcion = descripcion;
-        }
-
-        public Timestamp getFechaModificacion() {
-            return fechaModificacion;
-        }
-        public void setFechaModificacion(Timestamp fechaModificacion) {
-            this.fechaModificacion = fechaModificacion;
-        }
-
-        public Integer getIdAPI() {
-            return idAPI;
-        }
-        public void setIdAPI(Integer idAPI) {
-            this.idAPI = idAPI;
-        }
-
-        public Integer getIdVersion() {
-            return idVersion;
-        }
-        public void setIdVersion(Integer idVersion) {
-            this.idVersion = idVersion;
-        }
-
-        public Documentacion.FormatoDoc getFormato() {
-            return formato;
-        }
-        public void setFormato(Documentacion.FormatoDoc formato) {
-            this.formato = formato;
-        }
-
-        public MultipartFile getArchivo() {
-            return archivo;
-        }
-        public void setArchivo(MultipartFile archivo) {
-            this.archivo = archivo;
-        }
+    public String[] getFormatosTecnicos() {
+        return formatosTecnicos;
     }
-
+    public void setFormatosTecnicos(String[] formatosTecnicos) {
+        this.formatosTecnicos = formatosTecnicos;
+    }
 }

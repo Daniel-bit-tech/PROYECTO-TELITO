@@ -1,5 +1,9 @@
 package com.example.telitodev.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vladsch.flexmark.ast.Heading;
 import com.vladsch.flexmark.ext.tables.TablesExtension;
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension;
 import com.vladsch.flexmark.html.HtmlRenderer;
@@ -75,4 +79,36 @@ public class DocMDService {
 
         return new ArrayList<>(sections);
     }
+
+    public String extraerCabecerasJsonFlexmark(String markdown) throws JsonProcessingException {
+        Parser parser = Parser.builder().build();
+        Node document = parser.parse(markdown);
+
+        Map<String, Object> estructura = new LinkedHashMap<>();
+        String currentSec = null;
+
+        for (Node node = document.getFirstChild(); node != null; node = node.getNext()) {
+            if (node instanceof Heading heading) {
+                String texto = heading.getText().toString();
+                int nivel = heading.getLevel();
+
+                if (nivel == 2) { // ## Sección
+                    currentSec = texto;
+                    estructura.put(currentSec, "");
+                } else if (nivel == 3 && currentSec != null) { // ### Sub-sección
+                    Object valor = estructura.get(currentSec);
+                    if (valor instanceof String) {
+                        valor = new LinkedHashMap<String, Object>();
+                        estructura.put(currentSec, valor);
+                    }
+                    ((Map<String, Object>) valor).put(texto, "");
+                }
+            }
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(estructura);
+    }
+
+
+
 }

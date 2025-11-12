@@ -22,7 +22,7 @@ public class Documentacion {
     @Column(name = "descripcion", columnDefinition = "TEXT", nullable = false)
     private String descripcion;
 
-    @Column(name = "url_documento", nullable = true, length = 45)
+    @Column(name = "url_documento", nullable = true, length = 110)
     private String urlDocumento;
 
     @Column(name = "contenido", columnDefinition = "JSON")
@@ -41,7 +41,7 @@ public class Documentacion {
     private Api api;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idVersion", nullable = false)
+    @JoinColumn(name = "idVersion", nullable = true)
     private VersionApi versionApi;
 
     public enum FormatoDoc {PDF, MARKDOWN,JSON, YAML}    //Limita opciones de formato
@@ -61,6 +61,13 @@ public class Documentacion {
         this.contenido = contenido;
         this.fechaCreacion = fechaCreacion;
         this.api = api;
+    }
+
+    public Documentacion(Api api, VersionApi versionApi, String descripcion, String tipo) {
+        this.api = api;
+        this.versionApi = versionApi;
+        this.descripcion = descripcion;
+        this.tipo = tipo;
     }
     
     // Getters y Setters

@@ -1,9 +1,11 @@
 package com.example.telitodev.service;
 
+import com.example.telitodev.dto.DocGeneralDTO;
 import com.example.telitodev.dto.VersionContratoDTO;
-import com.example.telitodev.entity.ContratoApi;
+import com.example.telitodev.entity.Documentacion;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 import org.springframework.stereotype.Service;
@@ -41,7 +43,7 @@ public class FileSecurityService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public String validarSintaxis(VersionContratoDTO versionContratoDto) throws SecurityException {
+    public String validarSintaxisContrato(VersionContratoDTO versionContratoDto) throws SecurityException {
 
         String contenidoContrato;
         switch (versionContratoDto.getFormato()) {
@@ -60,12 +62,36 @@ public class FileSecurityService {
         return contenidoContrato;
     }
 
+    public String validarSintaxisDoc(MultipartFile archivoDoc, Documentacion.FormatoDoc formato) throws SecurityException {
+        String contenidoDoc = null;
+        switch (formato) {
+            case JSON -> {
+                contenidoDoc = validateAndNormalizeJson(archivoDoc);
+            }
+            case YAML -> {
+                contenidoDoc = validateAndNormalizeYaml(archivoDoc);
+            }
+            case PDF -> {
+                validatePdf(archivoDoc);
+            }
+            case MARKDOWN -> {
+                contenidoDoc = validateAndSanitizeMarkdown(archivoDoc);
+            }
+            default -> throw new SecurityException("Formato de documento no soportado.");
+        }
+        return contenidoDoc;
+    }
+
+
     /* ========== Validación común ========== */
     public void validateCommon(MultipartFile file, String logicalName) throws SecurityException, IOException {
         if (file == null || file.isEmpty())
             throw new SecurityException("Debe adjuntar un archivo " + logicalName + " con contenido.");
         if (file.getSize() > MAX_BYTES)
             throw new SecurityException("El archivo "+logicalName + " excede el tamaño permitido.");
+        String contentType = Objects.toString(file.getContentType(), "").toLowerCase();
+        String nombre = Objects.toString(file.getOriginalFilename(),"");
+
         try (InputStream is = new BufferedInputStream(file.getInputStream())) {
             byte[] head = is.readNBytes(8);
             if (!isLikelyText(head) && !"application/pdf".equalsIgnoreCase(Objects.toString(file.getContentType(), ""))) {
@@ -131,23 +157,25 @@ public class FileSecurityService {
     }
 
     /* ========== Markdown ========== */
-    public String validateAndSanitizeMarkdown(MultipartFile md) throws SecurityException, IOException {
-        validateCommon(md, "Markdown");
-        String content = new String(md.getBytes(), StandardCharsets.UTF_8);
-        basicStringChecks(content, "Markdown");
-        if (HTML_DANGEROUS.matcher(content).find()) {
-            throw new SecurityException("Markdown contiene HTML/atributos potencialmente peligrosos.");
+    public String validateAndSanitizeMarkdown(MultipartFile md) throws SecurityException {
+        try {
+            validateCommon(md, "Markdown");
+            String content = new String(md.getBytes(), StandardCharsets.UTF_8);
+            basicStringChecks(content, "Markdown");
+            if (HTML_DANGEROUS.matcher(content).find()) {
+                throw new SecurityException("Markdown contiene HTML/atributos potencialmente peligrosos.");
+            }
+            return content;
+        } catch (Exception e) {
+            throw new SecurityException("No se pudo procesar el archivo Markdown: "+md.getOriginalFilename(), e);
         }
-        return content;
     }
 
     /* ========== PDF (PDFBox 3 compatible) ========== */
-    public void validatePdf(MultipartFile pdf) throws SecurityException, IOException {
-        validateCommon(pdf, "PDF");
-        String ct = Objects.toString(pdf.getContentType(), "");
-        if (!"application/pdf".equalsIgnoreCase(ct))
-            throw new SecurityException("El PDF debe tener content-type application/pdf.");
+    public void validatePdf(MultipartFile pdf) throws SecurityException {
+
         try (PDDocument doc = PDDocument.load(pdf.getInputStream())) {
+            validateCommon(pdf, "PDF");
             PDDocumentCatalog catalog = doc.getDocumentCatalog();
 
             // getOpenAction() devuelve PDestinationOrAction en PDFBox 3.x -> usamos var
@@ -165,22 +193,11 @@ public class FileSecurityService {
             }
 
             // Escaneo de secretos en texto
-            String text = new org.apache.pdfbox.text.PDFTextStripper().getText(doc);
+            String text = new PDFTextStripper().getText(doc);
             scanForSecrets(text, "PDF");
-
-        } catch (SecurityException se) {
-            throw se;
         } catch (Exception e) {
-            throw new SecurityException("PDF inválido o no legible: " + e.getMessage());
+            throw new SecurityException("Archivo PDF "+pdf.getOriginalFilename()+" inválido o no legible",e);
         }
-    }
-
-    /* ========== Texto (alto nivel) ========== */
-    public String sanitizeTextBlock(String input, String logicalName) {
-        if (input == null) return null;
-        String stripped = Jsoup.clean(input, Safelist.none());
-        basicStringChecks(stripped, logicalName);
-        return stripped;
     }
 
     /* ========== Utilidades internas ========== */

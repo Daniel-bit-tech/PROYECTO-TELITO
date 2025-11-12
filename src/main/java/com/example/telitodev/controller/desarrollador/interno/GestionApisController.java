@@ -6,7 +6,6 @@ import com.example.telitodev.dto.DocGeneralDTO;
 import com.example.telitodev.dto.VersionContratoDTO;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
-import com.example.telitodev.service.ContratoApiService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -1,20 +1,15 @@
-package com.example.telitodev.service;
+package com.example.telitodev.service.creacionApi;
 
 import com.example.telitodev.dto.VersionContratoDTO;
 import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.ContratoApi;
 import com.example.telitodev.entity.VersionApi;
-import com.example.telitodev.repository.ContratoRepository;
 import com.example.telitodev.repository.VersionApiRepository;
+import com.example.telitodev.service.FileSecurityService;
 import com.example.telitodev.service.S3Services.S3DocsApiService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.telitodev.service.ValidateApiDocsService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.yaml.snakeyaml.Yaml;
-
-import java.util.Map;
 
 @Service
 public class ContratoApiService {
@@ -22,18 +17,16 @@ public class ContratoApiService {
     // Tamaño máximo de archivo: 10MB
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-    private final DocApiService validationService;
+    private final ValidateApiDocsService validationService;
     private final FileSecurityService fileSecurityService;
     private final S3DocsApiService s3DocsApiService;
 
-    private final ContratoRepository contratoRepository;
     private final VersionApiRepository versionApiRepository;
 
-    public ContratoApiService(DocApiService validationService, FileSecurityService fileSecurityService, S3DocsApiService s3DocsApiService, ContratoRepository contratoRepository, VersionApiRepository versionApiRepository) {
+    public ContratoApiService(ValidateApiDocsService validationService, FileSecurityService fileSecurityService, S3DocsApiService s3DocsApiService, VersionApiRepository versionApiRepository) {
         this.validationService = validationService;
         this.fileSecurityService = fileSecurityService;
         this.s3DocsApiService = s3DocsApiService;
-        this.contratoRepository = contratoRepository;
         this.versionApiRepository = versionApiRepository;
     }
 
@@ -61,7 +54,7 @@ public class ContratoApiService {
         } else throw new SecurityException("Error procesando el archivo.");
 
         try {
-            String contenidoNormalizado = fileSecurityService.validarSintaxis(versionContratoDto);
+            String contenidoNormalizado = fileSecurityService.validarSintaxisContrato(versionContratoDto);
             String cabeceras = validationService.validarSemanticaOpenAPI(contenidoNormalizado);
 
             VersionApi versionApi = new VersionApi();
@@ -86,69 +79,6 @@ public class ContratoApiService {
         } catch (Exception e) {
             System.err.println("Error validando contrato: " +e.getMessage());
             throw new ContratoValidationException("Error procesando el contrato: ", e);
-        }
-    }
-
-    /**
-     * Valida formato JSON
-     */
-    private void validarJSON(String contenido) throws ContratoValidationException {
-        try {
-
-            System.out.println(contenido);
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(contenido);
-
-            // Validaciones básicas de OpenAPI
-            if (!jsonNode.has("openapi") && !jsonNode.has("swagger")) {
-                throw new ContratoValidationException("No se detectó especificación OpenAPI/Swagger válida");
-            }
-
-            if (!jsonNode.has("info")) {
-                throw new ContratoValidationException("Falta sección 'info' requerida en OpenAPI");
-            }
-
-            if (!jsonNode.has("paths")) {
-                throw new ContratoValidationException("Falta sección 'paths' requerida en OpenAPI");
-            }
-
-            System.out.println("Contrato JSON validado exitosamente");
-
-        } catch (JsonProcessingException e) {
-            throw new ContratoValidationException("JSON malformado: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Valida formato YAML
-     */
-    private void validarYAML(String contenido) throws ContratoValidationException {
-        try {
-            Yaml yaml = new Yaml();
-            Map<String, Object> data = yaml.load(contenido);
-
-            if (data == null) {
-                throw new ContratoValidationException("YAML vacío o malformado");
-            }
-
-            // Validaciones básicas de OpenAPI
-            if (!data.containsKey("openapi") && !data.containsKey("swagger")) {
-                throw new ContratoValidationException("No se detectó especificación OpenAPI/Swagger válida");
-            }
-
-            if (!data.containsKey("info")) {
-                throw new ContratoValidationException("Falta sección 'info' requerida en OpenAPI");
-            }
-
-            if (!data.containsKey("paths")) {
-                throw new ContratoValidationException("Falta sección 'paths' requerida en OpenAPI");
-            }
-
-            System.out.println("Contrato YAML validado exitosamente");
-
-        } catch (Exception e) {
-            throw new ContratoValidationException("YAML malformado: " + e.getMessage());
         }
     }
 
@@ -196,16 +126,20 @@ public class ContratoApiService {
                     if (extension.equals("json")) {
                         return ContratoApi.FormatoContrato.JSON;
                     }
+                    break;
 
                 case "application/x-yaml", "application/yaml", "application/x-yml", "application/yml", "application/octet-stream":
                     if (extension.equals("yaml") || extension.equals("yml")) {
                         return ContratoApi.FormatoContrato.YAML;
                     }
+                    break;
+
                 default:
                     throw new ContratoValidationException("El archivo no tiene formato válido.");
             }
             
         } else throw new ContratoValidationException("El archivo no tiene formato válido.");
+        return null;
     }
 
 

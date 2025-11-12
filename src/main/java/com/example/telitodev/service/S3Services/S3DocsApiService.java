@@ -7,9 +7,11 @@ import com.example.telitodev.entity.VersionApi;
 import com.example.telitodev.repository.ContratoRepository;
 import com.example.telitodev.repository.DocumentacionRepository;
 import com.example.telitodev.repository.VersionApiRepository;
-import com.example.telitodev.service.ContratoApiService;
+import com.example.telitodev.service.creacionApi.ContratoApiService;
+import com.example.telitodev.service.creacionApi.DocApiService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -19,6 +21,7 @@ import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -49,7 +52,7 @@ public class S3DocsApiService {
 
     public void subirContratoAS3(VersionContratoDTO dto, String contenidoNormalizado, String cabecerasContrato) throws ContratoApiService.ContratoValidationException {
         // 1. Generar nombres y rutas
-        String nombreArchivo = generarNombreArchivo(dto.getIdAPI(), dto.getIdVersion(), dto.getFormato());
+        String nombreArchivo = generarNombreArchivo(dto.getIdAPI(), dto.getIdVersion(), dto.getFormato().name());
 //        String s3Key = generarS3Key(dto.getIdAPI(), nombreArchivo);
         String s3Key = "apis/api_"+dto.getIdAPI()+"/ver/v_"+dto.getIdVersion()+"/" + nombreArchivo;
 
@@ -85,12 +88,59 @@ public class S3DocsApiService {
         }
     }
 
+    public void subirDocAS3(Documentacion doc, MultipartFile archivoDoc) throws DocApiService.DocValidationException {
+        // 1. Generar nombres y rutas
+        Integer idVersion = (doc.getVersionApi() != null) ? doc.getVersionApi().getIdVersion() : null;
+        String nombreArchivo = generarNombreArchivo(doc.getApi().getIdApi(), idVersion, doc.getFormato().name());
+        String s3Key = "apis/api_"+doc.getApi().getIdApi();
+        if (idVersion != null) {
+            s3Key += "/ver/v_"+idVersion+"/" + nombreArchivo;
+        } else {
+            s3Key += "/"+nombreArchivo;
+        }
+
+        try (InputStream is = archivoDoc.getInputStream()) {
+            // 2. Subir a S3 con metadatos
+
+            Map<String, String> metadata = new HashMap<>();
+            metadata.put("original-filename", archivoDoc.getOriginalFilename());
+            metadata.put("formato", doc.getFormato().name());
+            metadata.put("api-id", doc.getApi().getIdApi().toString());
+            metadata.put("uploaded-at", Instant.now().toString());
+            metadata.put("content-type", obtenerDocContentType(doc.getFormato()));
+
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3Key)
+                    .contentType(obtenerDocContentType(doc.getFormato()))
+                    .metadata(metadata)
+                    .build();
+            RequestBody requestBody = RequestBody.fromInputStream(is,archivoDoc.getSize());
+
+            s3Client.putObject(request,requestBody);
+            doc.setUrlDocumento(s3Key);
+
+        } catch (Exception e) {
+            throw new DocApiService.DocValidationException("Error guardando documento "+ e.getMessage(), e);
+        }
+    }
+
     /* ========== GENERACIÓN DE NOMBRES Y RUTAS ========== */
-    private String generarNombreArchivo(Integer idApi, Integer idVersion, ContratoApi.FormatoContrato formato) {
+    private String generarNombreArchivo(Integer idApi, Integer idVersion, String formato) {
         String timestamp = Instant.now().toString().replace(":", "-");
-        String extension = (formato == ContratoApi.FormatoContrato.JSON) ? ".json" : ".yaml";
-//        return String.format("api-%s-contrato-%s.%s", idApi, timestamp, extension);
-        return "contrato-api"+idApi + "-v"+idVersion + "-"+UUID.randomUUID()+extension;
+        String extension = switch (formato) {
+            case "JSON" -> ".json";
+            case "YAML" -> ".yaml";
+            case "PDF" -> ".pdf";
+            case "MARKDOWN" -> ".md";
+            default -> ".txt";
+        };
+        String base = "doc-api" + idApi;
+
+        if (idVersion != null) {
+            base += "-v" + idVersion;
+        }
+        return base + "-" + UUID.randomUUID() + extension;
     }
 
     /* ========== GENERACIÓN DE S3KEY ========== */

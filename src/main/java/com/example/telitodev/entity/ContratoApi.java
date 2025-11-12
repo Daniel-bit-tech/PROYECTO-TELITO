@@ -17,7 +17,7 @@ public class ContratoApi {
     @Column(name = "formato", nullable = false)
     private FormatoContrato  formato;
 
-    @Column(name = "url_contrato", nullable = true, length = 100)
+    @Column(name = "url_contrato", nullable = true, length = 110)
     private String urlContrato;
 
     @Column(name = "fecha_modificacion")

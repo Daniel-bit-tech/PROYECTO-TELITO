@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,6 +13,14 @@
   <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="/tabler/dist/js/tabler-theme.min.js"></script>
+  <style>
+    .dropzone-dragging {
+      border-style: dashed;
+      background-color: #f0f8ff;
+      border-color: #007bff;
+      color: #007bff;
+    }
+  </style>
 </head>
 <body>
 <div class="page">
@@ -42,29 +50,17 @@
       <div class="container-xl">
         <div class="card mb-4" th:if="${paso3}">
           <div class="card-body">
-            <ul class="steps steps-green steps-counter my-4">
-              <li class="step-item"
-                  data-bs-trigger="hover"
-                  data-bs-toggle="popover"
-                  data-bs-placement="top"
+            <ul class="steps steps-green steps-counter my-1">
+              <li class="step-item" data-bs-trigger="hover" data-bs-toggle="popover" data-bs-placement="top"
                   title="Paso 1: Información Básica"
                   data-bs-content="Datos fundamentales de la API.">Información Básica</li>
-              <li class="step-item"
-                  data-bs-trigger="hover"
-                  data-bs-toggle="popover"
-                  data-bs-placement="top"
+              <li class="step-item" data-bs-trigger="hover" data-bs-toggle="popover" data-bs-placement="top"
                   title="Paso 2: Versionado y Contrato"
                   data-bs-content="Configurar versión inicial y especificación OpenAPI.">Versión y Contrato</li>
-              <li class="step-item active"
-                  data-bs-trigger="hover"
-                  data-bs-toggle="popover"
-                  data-bs-placement="top"
+              <li class="step-item active" data-bs-trigger="hover" data-bs-toggle="popover" data-bs-placement="top"
                   title="Paso 3: Documentación Adicional"
                   data-bs-content="Agregar documentación técnica y de alto nivel.">Documentación Adicional</li>
-              <li class="step-item"
-                  data-bs-trigger="hover"
-                  data-bs-toggle="popover"
-                  data-bs-placement="top"
+              <li class="step-item" data-bs-trigger="hover" data-bs-toggle="popover" data-bs-placement="top"
                   title="Paso 4: Revisión Final"
                   data-bs-content="Confirmar y publicar la API.">Revisión Final</li>
             </ul>
@@ -74,64 +70,78 @@
         <div class="row justify-content-center">
           <div class="col-lg-9 col-md-8">
             <div class="card">
-              <div class="card-header">
-                <div>
-                  <h3 class="card-title">
-                    <i class="fas fa-book me-2 text-purple"></i>
-                    Documentación Adicional API
-                  </h3>
-                  <p class="card-subtitle">Documentación técnica y de alto nivel</p>
-                </div>
-              </div>
+<!--              <div class="card-header">-->
+<!--                <div>-->
+<!--                  <h3 class="card-title">-->
+<!--                    <i class="fas fa-book me-2 text-purple"></i>-->
+<!--                    Documentación Adicional API-->
+<!--                  </h3>-->
+<!--                  <p class="card-subtitle">Documentación técnica y de alto nivel</p>-->
+<!--                </div>-->
+<!--              </div>-->
               <div class="card-body">
-                <form th:action="@{/dev/int/guardarDocsApi}" th:object="${docGeneralDto}" method="post" enctype="multipart/form-data">
+                <form id="form-doc" th:action="@{/dev/int/guardarDocsApi}" th:object="${docGeneralDto}" method="post" enctype="multipart/form-data">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
                   <input type="hidden" th:field="*{idApi}"/>
                   <input type="hidden" th:field="*{idVersion}"/>
 
                   <!-- Documentación de Alto Nivel -->
                   <div class="mb-4">
-                    <h4 class="card-title mb-3">
+                    <h4 class="card-title mb-1">
                       <i class="fas fa-chart-line me-2 text-blue"></i>
                       Documentación de Alto Nivel
+                      <span class="ms-2"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="right"
+                            data-bs-html="true"
+                            title="
+                            <div class='text-start'>
+                                <div class='fw-bold mb-2'>Documentación de Alto Nivel:</div>
+                                <div class='small'>
+                                    <ul class='list-unstyled small mb-0 text-start'>
+                                      <li class='mb-2'><i class='fas fa-check text-success me-2'></i>Piense en la audiencia no técnica</li>
+                                      <li class='mb-2'><i class='fas fa-check text-success me-2'></i>Incluya ejemplos prácticos</li>
+                                      <li class='mb-2'><i class='fas fa-check text-success me-2'></i>Especifique limitaciones conocidas</li>
+                                    </ul>
+                                </div>
+                            </div>"
+                      >
+                        <i class="fas fa-info-circle text-info" style="cursor: help;"></i>
+                      </span>
                     </h4>
                     <p class="text-muted mb-4">Información estratégica para Product Owners y stakeholders</p>
-
-
-
-
 
                     <div class="row">
                         <!-- Beneficios -->
                         <div class="mb-3 col-md-6 col-12">
                           <label class="form-label">Beneficios</label>
-                          <textarea th:field="*{beneficios}" class="form-control" rows="4"
-                                    placeholder="Describa los beneficios de usar esta API..."></textarea>
+                          <textarea th:field="*{beneficios}" class="form-control" rows="4" th:classappend="${#fields.hasErrors('beneficios')} ? 'is-invalid' : ''"
+                                    placeholder="Describa los beneficios de usar esta API..." minlength="100" maxlength="400" required></textarea>
                           <small class="form-hint">¿Qué ventajas ofrece esta API a los consumidores?</small>
-                          <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('beneficios')}" th:errors="*{beneficios}"></div>
+                          <div class="invalid-feedback" th:if="${#fields.hasErrors('beneficios')}" th:errors="*{beneficios}"></div>
                         </div>
                         <!-- Limitaciones -->
                         <div class="mb-3 col-md-6 col-12">
                           <label class="form-label">Limitaciones</label>
-                          <textarea th:field="*{limitaciones}" class="form-control" rows="4"
-                                    placeholder="Describa las limitaciones conocidas de la API..."></textarea>
+                          <textarea th:field="*{limitaciones}" class="form-control" rows="4" th:classappend="${#fields.hasErrors('limitaciones')} ? 'is-invalid' : ''"
+                                    placeholder="Describa las limitaciones conocidas de la API..." minlength="100" maxlength="400" required></textarea>
                           <small class="form-hint">¿Existen límites de uso, restricciones técnicas o funcionales?</small>
-                          <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('limitaciones')}" th:errors="*{limitaciones}"></div>
+                          <div class="invalid-feedback" th:if="${#fields.hasErrors('limitaciones')}" th:errors="*{limitaciones}"></div>
                         </div>
 
                         <!-- Flujo Funcional -->
                         <div class="mb-3 col-md-6 col-12">
                           <label class="form-label">Flujo Funcional</label>
-                          <textarea th:field="*{flujoFuncional}" class="form-control" rows="4"
-                                    placeholder="Describa el flujo funcional de la API..."></textarea>
+                          <textarea th:field="*{flujoFuncional}" class="form-control" rows="4" th:classappend="${#fields.hasErrors('flujoFuncional')} ? 'is-invalid' : ''"
+                                    placeholder="Describa el flujo funcional de la API..." minlength="100" maxlength="400" required></textarea>
                           <small class="form-hint">¿Cómo interactúa el usuario o sistema con la API? Describa el flujo.</small>
                           <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('flujoFuncional')}" th:errors="*{flujoFuncional}"></div>
                         </div>
                         <!-- SLA -->
                         <div class="mb-3 col-md-6 col-12">
                           <label class="form-label">SLA (Acuerdo de Nivel de Servicio)</label>
-                          <textarea th:field="*{sla}" class="form-control" rows="4"
-                                    placeholder="Describa los acuerdos de nivel de servicio..."></textarea>
+                          <textarea th:field="*{sla}" class="form-control" rows="4" th:classappend="${#fields.hasErrors('sla')} ? 'is-invalid' : ''"
+                                    placeholder="Describa los acuerdos de nivel de servicio..." minlength="100" maxlength="400" required></textarea>
                           <small class="form-hint">Disponibilidad, tiempo de respuesta, soporte, etc.</small>
                           <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('sla')}" th:errors="*{sla}"></div>
                         </div>
@@ -139,8 +149,8 @@
                         <!-- Costos -->
                         <div class="mb-3 col-md-6 col-12">
                           <label class="form-label">Costos</label>
-                          <textarea th:field="*{costos}" class="form-control" rows="4"
-                                    placeholder="Describa la estructura de costos asociada..."></textarea>
+                          <textarea th:field="*{costos}" class="form-control" rows="4" th:classappend="${#fields.hasErrors('costos')} ? 'is-invalid' : ''"
+                                    placeholder="Describa la estructura de costos asociada..." minlength="100" maxlength="400" required></textarea>
                           <small class="form-hint">¿Existen costos de uso? Describa la estructura de precios si aplica.</small>
                           <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('costos')}" th:errors="*{costos}"></div>
                         </div>
@@ -148,19 +158,40 @@
                         <!-- Ejemplos de Integración -->
                         <div class="mb-3 col-md-6 col-12">
                           <label class="form-label">Ejemplos de Integración</label>
-                          <textarea th:field="*{ejemplosIntegracion}" class="form-control" rows="4"
-                                    placeholder="Proporcione ejemplos de cómo integrar con la API..."></textarea>
-                          <small class="form-hint">Incluya ejemplos de código, escenarios de uso, etc.</small>
-                          <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('ejemplosIntegracion')}" th:errors="*{ejemplosIntegracion}"></div>
+                          <textarea th:field="*{ejemplosIntegracion}" class="form-control" rows="4" th:classappend="${#fields.hasErrors('ejemplosIntegracion')} ? 'is-invalid' : ''"
+                                    placeholder="Proporcione ejemplos de cómo integrar con la API..." minlength="100" maxlength="400" required></textarea>
+                          <small class="form-hint">Incluya escenarios de uso, casos específicos, etc.</small>
+                          <div class="invalid-feedback" th:if="${#fields.hasErrors('ejemplosIntegracion')}" th:errors="*{ejemplosIntegracion}"></div>
                         </div>
                     </div>
                   </div>
 
                   <!-- Documentación Técnica -->
                   <div class="mb-4">
-                    <h4 class="card-title mb-3">
+                    <h4 class="card-title mb-1">
                       <i class="fas fa-file-code me-2 text-green"></i>
                       Documentación Técnica
+
+                      <span class="ms-2"
+                            data-bs-toggle="tooltip"
+                            data-bs-placement="right"
+                            data-bs-html="true"
+                            title="
+                            <div class='text-start'>
+                                <div class='fw-bold mb-2'>Consejos de Documentación:</div>
+                                <div class='small'>
+                                    <ul class='list-unstyled small mb-0 text-start'>
+                                      <li class='mb-2'><i class='fas fa-check text-success me-2'></i>Incluya guías de instalación y uso</li>
+                                      <li class='mb-2'><i class='fas fa-check text-success me-2'></i>Provea ejemplos de código no cubiertos en OpenAPI</li>
+                                      <li class='mb-2'><i class='fas fa-check text-success me-2'></i>Incluya diagramas de secuencia</li>
+                                      <li class='mb-2'><i class='fas fa-exclamation-triangle text-warning me-2'></i>Agregue descripción a cada archivo</li>
+                                      <li class='mb-0'><i class='fas fa-info text-primary me-2'></i>Solo puede subir un archivo Markdown</li>
+                                    </ul>
+                                </div>
+                            </div>"
+                      >
+                        <i class="fas fa-info-circle text-info" style="cursor: help;"></i>
+                      </span>
                     </h4>
                     <p class="text-muted mb-4">Documentación detallada para desarrolladores</p>
 
@@ -176,13 +207,18 @@
                           </button>
                         </div>
                         <span class="dropzone-msg-desc text-muted">
-                            Sube hasta 5 archivos de documentación técnica.
-                            Formatos permitidos: PDF, MD, JSON, YAML
+                          Sube hasta 5 archivos de documentación técnica.
+                          Formatos permitidos:
+                          <span class="badge bg-red text-bg-red">PDF</span>
+                          <span class="badge bg-green text-bg-green">Markdown</span>
+                          <span class="badge bg-yellow text-bg-yellow">JSON</span>
+                          <span class="badge bg-purple text-bg-purple">YAML</span>
                         </span>
+
                       </div>
 
                       <!-- Input file oculto para funcionalidad manual -->
-                      <input type="file" id="archivosInput" multiple accept=".pdf,.md,.json,.yaml,.yml" style="display: none;">
+                      <input type="file" name="archivosTecnicos" id="archivosInput" multiple accept=".pdf,.md,.json,.yaml,.yml" style="display: none;">
                     </div>
 
                     <!-- Lista de archivos con descripciones -->
@@ -203,7 +239,7 @@
                   </div>
 
                   <!-- Botones -->
-                  <div class="form-footer mt-4">
+                  <div class="form-footer m-2">
                     <div class="btn-list justify-content-between">
                       <div>
                         <a th:href="@{/dev/int/misApis/{id}(id=${docGeneralDto.idApi})}" class="btn btn-ghost-secondary me-2">
@@ -220,78 +256,80 @@
             </div>
           </div>
 
-          <div class="col-lg-3 col-md-4 mb-4 mb-md-0">
-            <div class="card">
-              <div class="card-body">
-                <h3 class="card-title">
-                  <i class="fas fa-lightbulb fa-lg text-info me-2"></i>
-                  Consejos
-                </h3>
+<!--          <div class="col-lg-3 col-md-4 mb-4 mb-md-0">-->
+<!--            <div class="card">-->
+<!--              <div class="card-body">-->
+<!--                <h3 class="card-title">-->
+<!--                  <i class="fas fa-lightbulb fa-lg text-info me-2"></i>-->
+<!--                  Consejos-->
+<!--                </h3>-->
 
-                <!-- Información de Documentación de Alto Nivel -->
-                <div class="alert alert-info mt-4">
-                  <div class="d-flex">
-                    <div class="me-3">
-                      <i class="fas fa-chart-line fa-lg text-info"></i>
-                    </div>
-                    <div>
-                      <h4 class="alert-title">Documentación de Alto Nivel</h4>
-                      <ul class="mb-0">
-                        <li>Sea claro y conciso</li>
-                        <li>Piense en la audiencia no técnica</li>
-                        <li>Incluya ejemplos prácticos</li>
-                        <li>Especifique limitaciones conocidas</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
+<!--                &lt;!&ndash; Información de Documentación de Alto Nivel &ndash;&gt;-->
+<!--                <div class="alert alert-info mt-4">-->
+<!--                  <div class="d-flex">-->
+<!--                    <div class="me-3">-->
+<!--                      <i class="fas fa-chart-line fa-lg text-info"></i>-->
+<!--                    </div>-->
+<!--                    <div>-->
+<!--                      <h4 class="alert-title">Documentación de Alto Nivel</h4>-->
+<!--                      <ul class="mb-0">-->
+<!--                        <li>Sea claro y conciso</li>-->
+<!--                        <li>Piense en la audiencia no técnica</li>-->
+<!--                        <li>Incluya ejemplos prácticos</li>-->
+<!--                        <li>Especifique limitaciones conocidas</li>-->
+<!--                      </ul>-->
+<!--                    </div>-->
+<!--                  </div>-->
+<!--                </div>-->
 
-                <!-- Información de Documentación Técnica -->
-                <div class="alert alert-success">
-                  <div class="d-flex">
-                    <div class="me-3">
-                      <i class="fas fa-file-code fa-lg text-success"></i>
-                    </div>
-                    <div>
-                      <h4 class="alert-title">Documentación Técnica</h4>
-                      <ul class="mb-0">
-                        <li>Incluya guías de instalación</li>
-                        <li>Documente endpoints no cubiertos en OpenAPI</li>
-                        <li>Provea ejemplos de código</li>
-                        <li>Incluya diagramas de secuencia</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
+<!--                &lt;!&ndash; Información de Documentación Técnica &ndash;&gt;-->
+<!--                <div class="alert alert-success">-->
+<!--                  <div class="d-flex">-->
+<!--                    <div class="me-3">-->
+<!--                      <i class="fas fa-file-code fa-lg text-success"></i>-->
+<!--                    </div>-->
+<!--                    <div>-->
+<!--                      <h4 class="alert-title">Documentación Técnica</h4>-->
+<!--                      <ul class="mb-0">-->
+<!--                        <li>Incluya guías de instalación</li>-->
+<!--                        <li>Documente endpoints no cubiertos en OpenAPI</li>-->
+<!--                        <li>Provea ejemplos de código</li>-->
+<!--                        <li>Incluya diagramas de secuencia</li>-->
+<!--                      </ul>-->
+<!--                    </div>-->
+<!--                  </div>-->
+<!--                </div>-->
 
-                <!-- Formatos Recomendados -->
-                <div class="alert alert-info">
-                  <div class="d-flex">
-                    <div class="me-3">
-                      <i class="fas fa-file-alt fa-lg text-warning"></i>
-                    </div>
-                    <div>
-                      <h4 class="alert-title">Formatos Aceptados</h4>
-                      <div class="mb-2">
-                        <span class="badge bg-red text-bg-red">PDF</span>
-                        <span class="badge bg-green text-bg-green">Markdown</span>
-                        <span class="badge bg-yellow text-bg-yellow">JSON</span>
-                        <span class="badge bg-purple text-bg-purple">YAML</span>
-                      </div>
-                      <div class="small text-muted">
-                        <i class="fas fa-info-circle me-1"></i>
-                        Límite: 5 archivos • 10MB por archivo • 50MB total
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+<!--                &lt;!&ndash; Formatos Recomendados &ndash;&gt;-->
+<!--                <div class="alert alert-info">-->
+<!--                  <div class="d-flex">-->
+<!--                    <div class="me-3">-->
+<!--                      <i class="fas fa-file-alt fa-lg text-warning"></i>-->
+<!--                    </div>-->
+<!--                    <div>-->
+<!--                      <h4 class="alert-title">Formatos Aceptados</h4>-->
+<!--                      <div class="mb-2">-->
+<!--                        <span class="badge bg-red text-bg-red">PDF</span>-->
+<!--                        <span class="badge bg-green text-bg-green">Markdown</span>-->
+<!--                        <span class="badge bg-yellow text-bg-yellow">JSON</span>-->
+<!--                        <span class="badge bg-purple text-bg-purple">YAML</span>-->
+<!--                      </div>-->
+<!--                      <div class="small text-muted">-->
+<!--                        <i class="fas fa-info-circle me-1"></i>-->
+<!--                        Límite: 5 archivos • 10MB por archivo • 50MB total-->
+<!--                      </div>-->
+<!--                    </div>-->
+<!--                  </div>-->
+<!--                </div>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--          </div>-->
         </div>
       </div>
     </div>
   </div>
+
+  <div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055"></div>
 
   <div id="footer-placeholder"></div>
 </div>
@@ -300,7 +338,6 @@
 
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    // Elementos del DOM
     const dropzone = document.getElementById('dropzone-tecnica');
     const archivosInput = document.getElementById('archivosInput');
     const btnSeleccionar = document.getElementById('btn-seleccionar-manual');
@@ -308,19 +345,16 @@
     const contadorArchivos = document.getElementById('contador-archivos');
     const textoContador = document.getElementById('texto-contador');
     const textoValidacion = document.getElementById('texto-validacion');
-    const form = document.querySelector('form');
+    const form = document.getElementById('form-doc');
 
     const maxArchivos = 5;
-    const maxTamanoIndividual = 10 * 1024 * 1024; // 10MB
-    const maxTamanoTotal = 50 * 1024 * 1024; // 50MB
+    const maxTamanoIndividual = 10 * 1024 * 1024;
+    const maxTamanoTotal = 50 * 1024 * 1024;
 
     let archivosSeleccionados = [];
 
-    // Configurar Dropzone de Tabler
+    // Configurar Dropzone
     function inicializarDropzone() {
-      // Agregar clases de Tabler para el estilo
-      dropzone.classList.add('dropzone', 'dropzone-multiple');
-
       // Eventos de drag & drop
       dropzone.addEventListener('dragover', function(e) {
         e.preventDefault();
@@ -334,19 +368,13 @@
       dropzone.addEventListener('drop', function(e) {
         e.preventDefault();
         dropzone.classList.remove('dropzone-dragging');
-        const files = e.dataTransfer.files;
-        manejarArchivos(files);
+        manejarArchivos(e.dataTransfer.files);
       });
 
-      // Evento para el botón de selección manual
-      btnSeleccionar.addEventListener('click', function() {
-        archivosInput.click();
-      });
-
-      // Evento para el input file
+      // Eventos para selección manual
+      btnSeleccionar.addEventListener('click', () => archivosInput.click());
       archivosInput.addEventListener('change', function() {
         manejarArchivos(this.files);
-        // Limpiar el input para permitir seleccionar el mismo archivo otra vez
         this.value = '';
       });
     }
@@ -354,60 +382,71 @@
     // Manejar archivos seleccionados
     function manejarArchivos(files) {
       const archivosArray = Array.from(files);
+      const errores = [];
 
-      // Validar cantidad
+      // Validar cantidad máxima
       if (archivosSeleccionados.length + archivosArray.length > maxArchivos) {
-        mostrarError(`Solo se permiten un máximo de ${maxArchivos} archivos.`);
+        mostrarErrores([`Solo se permiten un máximo de ${maxArchivos} archivos.`]);
+        return;
+      }
+
+      // Validar que no haya más de un archivo MARKDOWN
+      const markdownActuales = archivosSeleccionados.filter(f => f.formato === "MARKDOWN").length;
+      const markdownNuevos = archivosArray.filter(f => obtenerFormato(f.name) === "MARKDOWN").length;
+      if (markdownActuales + markdownNuevos > 1) {
+        mostrarErrores(["Solo se permite un archivo con formato MARKDOWN (Documentación Técnica)."]);
         return;
       }
 
       // Procesar cada archivo
       archivosArray.forEach(file => {
-        if (validarArchivo(file)) {
-          // Asignar ID único y datos iniciales
+        const error = validarArchivo(file);
+        if (error) {
+          errores.push(error);
+        } else {
           file.id = Date.now() + Math.random();
-          file.descripcion = file.name.substring(0, file.name.lastIndexOf('.'));
+          file.descripcion = valorDescMarkdown(obtenerFormato(file.name));
           file.formato = obtenerFormato(file.name);
           archivosSeleccionados.push(file);
         }
       });
+
+      if (errores.length > 0) {
+        mostrarErrores(errores);
+      }
 
       actualizarVista();
     }
 
     // Validar archivo individual
     function validarArchivo(file) {
-      // Validar formato
       if (!validarFormato(file.name)) {
-        mostrarError(`El archivo "${file.name}" no tiene un formato permitido. Formatos: PDF, MD, JSON, YAML.`);
-        return false;
+        return `El archivo "${file.name}" no tiene un formato permitido. Formatos: PDF, MD, JSON, YAML.`;
       }
 
-      // Validar tamaño
       if (file.size > maxTamanoIndividual) {
-        mostrarError(`El archivo "${file.name}" es demasiado grande. Máximo 10MB por archivo.`);
-        return false;
+        return `El archivo "${file.name}" es demasiado grande. Máximo 10MB por archivo.`;
       }
 
-      return true;
+      return null;
     }
 
     // Validar formato por extensión
     function validarFormato(fileName) {
-      const extension = fileName.split('.').pop().toLowerCase();
+      const extension = fileName.toLowerCase().split('.').pop();
       const formatosPermitidos = ['pdf', 'md', 'json', 'yaml', 'yml'];
       return formatosPermitidos.includes(extension);
     }
 
     // Obtener formato para mostrar
     function obtenerFormato(fileName) {
-      const extension = fileName.split('.').pop().toLowerCase();
+      const extension = fileName.toLowerCase().split('.').pop();
       const formatos = {
         'pdf': 'PDF',
         'md': 'MARKDOWN',
         'json': 'JSON',
-        'yaml': 'YAML',
-        'yml': 'YAML'
+        'yml': 'YAML',
+        'yaml': 'YAML'
       };
       return formatos[extension] || extension.toUpperCase();
     }
@@ -418,8 +457,8 @@
         'pdf': 'file-pdf',
         'md': 'file-alt',
         'json': 'file-code',
-        'yaml': 'file-code',
-        'yml': 'file-code'
+        'yml': 'file-code',
+        'yaml': 'file-code'
       };
       return iconos[extension] || 'file';
     }
@@ -428,23 +467,24 @@
     function obtenerColor(extension) {
       const colores = {
         'pdf': 'text-danger',
-        'md': 'text-success',
+        'md': 'text-primary',
         'json': 'text-warning',
-        'yaml': 'text-info',
-        'yml': 'text-info'
+        'yml': 'text-success',
+        'yaml': 'text-success'
       };
-      return colores[extension] || 'text-muted';
+      return colores[extension] || 'text-secondary';
     }
 
-    // Actualizar la vista de archivos con descripciones
+    function valorDescMarkdown(formato) {
+      return formato === "MARKDOWN" ? "Documentación Técnica" : "";
+    }
+
+    // Actualizar la vista de archivos
     function actualizarVista() {
-      // Limpiar lista
       listaArchivosDesc.innerHTML = '';
 
-      // Mostrar cada archivo con su descripción
-      archivosSeleccionados.forEach((file, index) => {
+      archivosSeleccionados.forEach((file) => {
         const extension = file.name.split('.').pop().toLowerCase();
-
         const item = document.createElement('div');
         item.className = 'documento-item card mb-3';
         item.innerHTML = `
@@ -457,17 +497,21 @@
                             <div class="file-info">
                                 <h6 class="mb-1 text-truncate">${file.name}</h6>
                                 <small class="text-muted">
-                                    ${file.formato} • ${(file.size / 1024).toFixed(2)} KB
+                                    ${file.formato} • ${formatearTamano(file.size)}
                                 </small>
                             </div>
                         </div>
                         <div class="col-md-5">
-                            <label class="form-label small">Descripción del documento</label>
-                            <input type="text" class="form-control form-control-sm descripcion-archivo required" required list="descOptions"
-                                   placeholder="Describe el contenido de este documento...">
-                            <datalist id="descOptions">
-                                <option value="${file.descripcion}"></option>
-                                <option value="Documentación Técnica"></option>
+                            <label class="form-label small required">Descripción del documento</label>
+                            <input type="text" class="form-control form-control-sm descripcion-archivo"
+                                value="${file.descripcion}"
+                                ${file.formato === "MARKDOWN" ? 'readonly' : ''}
+                                list="descOptions${file.id}"
+                                placeholder="Describe el contenido de este documento...">
+                            ${file.formato === "MARKDOWN" ? '<small class="form-hint">* Este formato esta reservado para Documentación Técnica.</small>' : ''}
+
+                            <datalist id="descOptions${file.id}">
+                                <option value="${file.name}"></option>
                                 <option value="Endpoint adicionales"></option>
                                 <option value="Otros"></option>
                             </datalist>
@@ -483,100 +527,91 @@
             `;
         listaArchivosDesc.appendChild(item);
 
-        // Event listener para la descripción
-        const inputDesc = item.querySelector('.descripcion-archivo');
-        inputDesc.addEventListener('input', function() {
+        // Event listeners
+        item.querySelector('.descripcion-archivo').addEventListener('input', function() {
           file.descripcion = this.value;
         });
 
-        // Event listener para eliminar
-        const btnEliminar = item.querySelector('.btn-eliminar');
-        btnEliminar.addEventListener('click', function() {
-          const id = this.getAttribute('data-id');
-          archivosSeleccionados = archivosSeleccionados.filter(file => file.id != id);
+        item.querySelector('.btn-eliminar').addEventListener('click', function() {
+          archivosSeleccionados = archivosSeleccionados.filter(f => f.id !== file.id);
           actualizarVista();
         });
       });
 
-      // Actualizar contador y validación
       actualizarContador();
     }
 
-    // Actualizar contador y mensajes de validación
+    // Actualizar contador y validación
     function actualizarContador() {
       const cantidad = archivosSeleccionados.length;
+      const tamanoTotal = archivosSeleccionados.reduce((total, file) => total + file.size, 0);
+
       textoContador.textContent = `${cantidad} de ${maxArchivos} archivos agregados`;
 
-      // Calcular tamaño total
-      const tamanoTotal = archivosSeleccionados.reduce((total, file) => total + file.size, 0);
-      const tamanoTotalMB = (tamanoTotal / 1024 / 1024).toFixed(2);
-
-      // Mostrar/ocultar contador
       if (cantidad > 0) {
         contadorArchivos.style.display = 'block';
-        textoValidacion.innerHTML = `Tamaño total: ${tamanoTotalMB} MB / 50 MB`;
-
-        // Advertencia si se acerca al límite
-        if (tamanoTotal > maxTamanoTotal * 0.8) {
-          textoValidacion.classList.add('text-warning');
-        } else {
-          textoValidacion.classList.remove('text-warning');
-        }
+        textoValidacion.innerHTML = `Tamaño total: ${formatearTamano(tamanoTotal)} / 50 MB`;
+        textoValidacion.classList.toggle('text-warning', tamanoTotal > maxTamanoTotal * 0.8);
       } else {
         contadorArchivos.style.display = 'none';
       }
     }
 
-    // Mostrar mensajes de error
-    function mostrarError(mensaje) {
-      // Crear toast de error al estilo Tabler
-      const toast = document.createElement('div');
-      const alert = document.getElementById('alert')
-      toast.className = 'toast show align-items-center text-white bg-danger border-0';
-      toast.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="fas fa-exclamation-circle me-2"></i>${mensaje}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        `;
+    // Formatear tamaño para mostrar
+    function formatearTamano(bytes) {
+      const unidades = ['B', 'KB', 'MB'];
+      let tamano = bytes;
+      let unidadIndex = 0;
 
-      alert.className = 'toast show align-items-center text-white bg-danger border-0';
-      alert.innerHTML = `
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="fas fa-exclamation-circle me-2"></i>${mensaje}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        `;
-      // Agregar al documento
-      document.body.appendChild(toast);
+      while (tamano >= 1024 && unidadIndex < unidades.length - 1) {
+        tamano /= 1024;
+        unidadIndex++;
+      }
 
-      // Auto-eliminar después de 5 segundos
-      setTimeout(() => {
-        toast.remove();
-      }, 5000);
+      return `${tamano.toFixed(2)} ${unidades[unidadIndex]}`;
+    }
+
+    // Mostrar mensajes de error/toast
+    function mostrarErrores(errores) {
+      if (!Array.isArray(errores)) {
+        errores = [errores];
+      }
+
+      const contenedor = document.getElementById('toast-container');
+
+      errores.forEach(mensaje => {
+        const toast = document.createElement('div');
+        toast.className = 'toast show align-items-center text-white bg-danger border-0 mb-2';
+        toast.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="fas fa-exclamation-circle me-2"></i>${mensaje}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+        contenedor.appendChild(toast);
+
+        setTimeout(() => toast.remove(), 5000);
+      });
     }
 
     // Validación antes del envío
     form.addEventListener('submit', function(e) {
-      let errores = [];
+      e.preventDefault();
+      const errores = [];
+      const tamanoTotal = archivosSeleccionados.reduce((total, file) => total + file.size, 0);
 
-      // Validar que haya al menos un archivo
+      // Validaciones
       if (archivosSeleccionados.length === 0) {
         errores.push('Debe agregar al menos un archivo de documentación técnica.');
       }
 
-      // Validar tamaño total
-      const tamanoTotal = archivosSeleccionados.reduce((total, file) => total + file.size, 0);
       if (tamanoTotal > maxTamanoTotal) {
-        errores.push(`El tamaño total de los archivos (${(tamanoTotal / 1024 / 1024).toFixed(2)}MB) excede el límite de 50MB.`);
+        errores.push(`El tamaño total de los archivos (${formatearTamano(tamanoTotal)}) excede el límite de 50MB.`);
       }
 
-      // Validar que todas las descripciones tengan al menos 5 caracteres
-      archivosSeleccionados.forEach((file, index) => {
+      archivosSeleccionados.forEach(file => {
         if (!file.descripcion || file.descripcion.trim().length < 5) {
           errores.push(`La descripción para "${file.name}" debe tener al menos 5 caracteres.`);
         }
@@ -584,79 +619,39 @@
 
       if (errores.length > 0) {
         e.preventDefault();
-        mostrarErroresValidacion(errores);
+        mostrarErrores(errores);
       } else {
+        console.log("Se validara formulario para enviar");
         prepararEnvioFormulario();
       }
     });
 
-    // Mostrar errores de validación
-    function mostrarErroresValidacion(errores) {
-      const alertaHTML = `
-            <div class="alert alert-danger">
-                <h4 class="alert-title">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Errores de validación
-                </h4>
-                <div class="mt-2">
-                    ${errores.join('<br>')}
-                </div>
-            </div>
-        `;
-
-      // Insertar alerta al inicio del formulario
-      const primeraSeccion = form.querySelector('.mb-4');
-      if (primeraSeccion) {
-        // Remover alertas anteriores
-        const alertasAnteriores = form.querySelectorAll('.alert.alert-danger');
-        alertasAnteriores.forEach(alerta => alerta.remove());
-
-        primeraSeccion.insertAdjacentHTML('beforebegin', alertaHTML);
-
-        // Hacer scroll a la alerta
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
-      }
-    }
-
-    // Preparar datos para el envío del formulario
+    // Preparar datos para el envío
     function prepararEnvioFormulario() {
-      // Limpiar inputs anteriores
-      document.querySelectorAll('[name="archivosTecnicos"]').forEach(input => {
-        if (input.type !== 'file') input.remove();
+
+      // 1. Limpiar SOLO los inputs hidden anteriores
+      document.querySelectorAll('[name="descripcionesTecnicas"], [name="formatosTecnicos"]').forEach(input => {
+        if (input.type === 'hidden') input.remove();
       });
-      document.querySelectorAll('[name="descripcionesTecnicas"]').forEach(input => input.remove());
-      document.querySelectorAll('[name="formatosTecnicos"]').forEach(input => input.remove());
 
-      // Crear FormData y inputs para cada archivo
+      // 2. Crear DataTransfer con TODOS los archivos
+      const dataTransfer = new DataTransfer();
+      archivosSeleccionados.forEach(file => {
+        dataTransfer.items.add(file);
+      });
+
+      // 3. Asignar todos los archivos al input principal
+      archivosInput.files = dataTransfer.files;
+      console.log(`Total archivos en input: ${archivosInput.files.length}`);
+
+      // 4. Crear inputs hidden para descripciones y formatos
       archivosSeleccionados.forEach((file, index) => {
-        // Para el primer archivo, usar el input existente
-        if (index === 0) {
-          const dataTransfer = new DataTransfer();
-          dataTransfer.items.add(file);
-          archivosInput.files = dataTransfer.files;
-        } else {
-          // Para archivos adicionales, crear nuevos inputs file
-          const nuevoInput = document.createElement('input');
-          nuevoInput.type = 'file';
-          nuevoInput.name = 'archivosTecnicos';
-          nuevoInput.style.display = 'none';
-
-          const dataTransfer = new DataTransfer();
-          dataTransfer.items.add(file);
-          nuevoInput.files = dataTransfer.files;
-
-          form.appendChild(nuevoInput);
-        }
-
         // Input para descripción
-        const descripcionInput = document.createElement('input');
-        descripcionInput.type = 'hidden';
-        descripcionInput.name = 'descripcionesTecnicas';
-        descripcionInput.value = file.descripcion;
-        form.appendChild(descripcionInput);
+        const descInput = document.createElement('input');
+        descInput.type = 'hidden';
+        descInput.name = 'descripcionesTecnicas';
+        descInput.value = file.descripcion;
+        form.appendChild(descInput);
 
         // Input para formato
         const formatoInput = document.createElement('input');
@@ -665,6 +660,12 @@
         formatoInput.value = file.formato;
         form.appendChild(formatoInput);
       });
+
+      // Pequeño delay para asegurar que el DOM se actualice
+      console.log("Formulario listo para enviar");
+      setTimeout(() => {
+        form.submit()
+      }, 1000);
     }
 
     // Inicializar

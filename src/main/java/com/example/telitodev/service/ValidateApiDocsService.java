@@ -1,5 +1,7 @@
 package com.example.telitodev.service;
 
+import com.example.telitodev.service.creacionApi.ContratoApiService;
+import com.example.telitodev.service.creacionApi.DocApiService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.parser.OpenAPIV3Parser;
@@ -13,29 +15,12 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class DocApiService {
+public class ValidateApiDocsService {
 
     private static final List<String> ALLOWED_EXTENSIONS = Arrays.asList("pdf", "md", "json", "yaml", "yml");
     private static final long MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
     private static final long MAX_TOTAL_SIZE = 50 * 1024 * 1024; // 50MB
     private static final int MAX_FILE_COUNT = 5;
-
-
-    public void validarDescriptions(List<MultipartFile> files, List<String> descriptions) {
-        if (descriptions == null || descriptions.size() != files.size()) {
-            throw new IllegalArgumentException("Cada archivo debe tener una descripción");
-        }
-
-        for (int i = 0; i < descriptions.size(); i++) {
-            String desc = descriptions.get(i);
-            if (desc == null || desc.trim().length() < 5) {
-                String fileName = files.get(i).getOriginalFilename();
-                throw new IllegalArgumentException(
-                        String.format("La descripción para '%s' debe tener al menos 5 caracteres", fileName)
-                );
-            }
-        }
-    }
 
     public String validarSemanticaOpenAPI(String content) throws ContratoApiService.ContratoValidationException {
         SwaggerParseResult swaggerParseResult = new OpenAPIV3Parser().readContents(content);
