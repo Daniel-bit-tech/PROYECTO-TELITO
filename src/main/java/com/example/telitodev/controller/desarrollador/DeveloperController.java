@@ -45,7 +45,6 @@ public class DeveloperController extends BaseController {
         System.out.println("Autoridades: " + auth.getAuthorities());
 
         try {
-            // Obtener el usuario correcto considerando impersonación usando BaseController
             Usuario usuario = getCurrentUser(auth, session);
             System.out.println("Usuario obtenido: " + usuario.getCorreo());
 
@@ -104,15 +103,5 @@ public class DeveloperController extends BaseController {
         return "desarrollador/apis";
     }
 
-    @GetMapping("/sandbox")
-    public String mostrarSandboxPage(Model model, Authentication auth, HttpSession session) {
 
-        Usuario usuario = getCurrentUser(auth, session);
-        model.addAttribute("usuario", usuario);
-
-        addImpersonationAttributes(model, session);
-
-
-        return "desarrollador/sandbox";
-    }
 }

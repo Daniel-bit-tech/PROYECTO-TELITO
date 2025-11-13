@@ -18,6 +18,17 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
     Optional<Api> findById(Integer idApi);
 
+
+    @Query(value = "SELECT DISTINCT a.* FROM api a " +
+            "JOIN proyecto_has_api pha ON a.idAPI = pha.idAPI " +
+            "JOIN proyecto p ON pha.idProyecto = p.idProyecto " +
+            "WHERE p.idOrganizacion = :orgId " +
+            "UNION " +
+
+            "SELECT * FROM api WHERE idDominio = 11", nativeQuery = true)
+    List<Api> findApisByOrgProjectsAndPublic(@Param("orgId") Integer idOrganizacion);
+
+    // También necesitas el findByDominio_IdDominio si no lo tienes:
     List<Api> findByDominio_IdDominio(Integer idDominio);
 
     List<Api> findByTag_IdTag(Integer idTag);
@@ -157,7 +168,7 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
     @Query(value = "SELECT COUNT(*) FROM api WHERE fechaCreacion >= DATE_SUB(NOW(), INTERVAL :days DAY)", nativeQuery = true)
     long countApisCreatedInLastDays(@Param("days") int days);
 
-    List<Api> findByEstadoApi_IdEstadoNot(Integer estadoId);
+
 
 
     @Query("SELECT DISTINCT a FROM Api a " +

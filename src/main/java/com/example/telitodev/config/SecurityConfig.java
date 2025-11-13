@@ -4,10 +4,12 @@ import com.example.telitodev.filter.UsuarioActivoFilter;
 import com.example.telitodev.filter.ImpersonationAuthorizationFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.hc.client5.http.classic.HttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -31,6 +33,7 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.web.client.RestTemplate;
 
+import javax.net.ssl.SSLContext;
 import java.util.Collection;
 
 
@@ -70,14 +73,18 @@ public class SecurityConfig {
                         .requestMatchers("/error", "/acceso-denegado").permitAll()
 
                         .requestMatchers("/cat","/playground.html").permitAll()
+
+
                         .requestMatchers("/api/apis/**").authenticated()
-
-                        //  la página y la API del Sandbox
-                        .requestMatchers("/sandbox", "/qa/api/sandbox/**", "/api/sandbox/execute").hasAnyRole("DEV", "QA", "SUPERADMIN")
-
-                        // API endpoints - requieren autenticación pero sin CSRF
                         .requestMatchers("/api/onboarding/**").authenticated()
                         .requestMatchers("/api/validate-session").authenticated()
+
+
+                        //  la página y la API del Sandbox
+                        .requestMatchers("/dev/sandbox", "/api/sandbox/**").hasAnyRole("DEV", "QA", "SUPERADMIN")
+                        // API endpoints - requieren autenticación pero sin CSRF
+
+
 
                         // Endpoints de impersonación - reglas específicas
                         .requestMatchers("/admin/gestion-usuarios/stop-impersonation").hasAnyRole("SUPERADMIN", "QA", "DEV", "PO")
@@ -260,9 +267,32 @@ public class SecurityConfig {
     public AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository() {
         return new HttpSessionOAuth2AuthorizationRequestRepository();
     }
+//    @Bean
+//    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+//        return builder.build();
+//    }
     @Bean
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        return builder.build();
+    public RestTemplate restTemplate() throws Exception {
+
+        javax.net.ssl.SSLContext sslContext = org.apache.hc.core5.ssl.SSLContexts.custom()
+                .loadTrustMaterial(null, (chain, authType) -> true)
+                .build();
+
+        org.apache.hc.client5.http.ssl.NoopHostnameVerifier hostnameVerifier = org.apache.hc.client5.http.ssl.NoopHostnameVerifier.INSTANCE;
+        org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory sslsf =
+                new org.apache.hc.client5.http.ssl.SSLConnectionSocketFactory(sslContext, hostnameVerifier);
+
+        org.apache.hc.client5.http.impl.classic.CloseableHttpClient httpClient = org.apache.hc.client5.http.impl.classic.HttpClients.custom()
+                .setConnectionManager(org.apache.hc.client5.http.impl.io.PoolingHttpClientConnectionManagerBuilder.create()
+                        .setSSLSocketFactory(sslsf)
+                        .build())
+                .build();
+
+
+        org.springframework.http.client.HttpComponentsClientHttpRequestFactory requestFactory =
+                new org.springframework.http.client.HttpComponentsClientHttpRequestFactory(httpClient);
+
+        return new RestTemplate(requestFactory);
     }
 
 }
