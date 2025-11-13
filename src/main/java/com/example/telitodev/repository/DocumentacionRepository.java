@@ -14,5 +14,6 @@ public interface DocumentacionRepository extends JpaRepository<Documentacion, In
     List<Documentacion> findByApi_IdApiOrderByFechaCreacionDesc(Integer id);
     Optional<Documentacion> findFirstByApi_IdApi(Integer apiId);
 
+    Documentacion findByApi_IdApiAndFormato(Integer apiId, Documentacion.FormatoDoc formato);
 
 }

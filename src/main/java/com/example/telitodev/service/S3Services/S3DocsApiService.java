@@ -13,15 +13,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
+import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
-import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -49,6 +51,8 @@ public class S3DocsApiService {
         this.contratoRepository = contratoRepository;
         this.versionApiRepository = versionApiRepository;
     }
+
+    private final int MAX_EXPIRATION_MINUTES = 60;;
 
     public void subirContratoAS3(VersionContratoDTO dto, String contenidoNormalizado, String cabecerasContrato) throws ContratoApiService.ContratoValidationException {
         // 1. Generar nombres y rutas
@@ -149,24 +153,6 @@ public class S3DocsApiService {
         return String.format("apis/api_%s/ver/v_%s", idApi, idVersion);
     }
 
-
-    /* ========== SUBIDA DE DOC ADICIONAL A S3 CON METADATOS ========== */
-    private void subirDocAddAS3(Map<String, String> metadata, String s3Key, RequestBody requestBody, Documentacion.FormatoDoc formato) {
-        try {
-            PutObjectRequest request = PutObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(s3Key)
-                    .contentType(obtenerDocContentType(formato))
-                    .metadata(metadata)
-                    .build();
-
-            s3Client.putObject(request,requestBody);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error subiendo archivo a S3: " + e.getMessage(), e);
-        }
-    }
-
     private String obtenerContentType(ContratoApi.FormatoContrato formato) {
         return formato == ContratoApi.FormatoContrato.JSON ? "application/json" : "application/x-yaml";
     }
@@ -230,8 +216,58 @@ public class S3DocsApiService {
     }
 
 
-    /* ========== MÉTODOS ADICIONALES ÚTILES ========== */
+    /* ========== MÉTODOS DE DECARGA DE ARCHIVOS ========== */
+    public void descargarArchivoDesdeS3(String s3Key, OutputStream outputStream) throws DocApiService.DocValidationException {
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3Key)
+                    .build();
 
+            try (ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(getObjectRequest)) {
+                s3Object.transferTo(outputStream);
+            }
+        } catch (S3Exception e) {
+            throw new DocApiService.DocValidationException("Error accediendo a S3 para: " + s3Key, e);
+        } catch (Exception e) {
+            throw new DocApiService.DocValidationException("Error descargando archivo desde S3: " + s3Key, e);
+        }
+    }
+
+    public String generarUrlDescarga(String s3Key) throws DocApiService.DocValidationException {
+        return generarUrlDescarga(s3Key, Duration.ofMinutes(10));
+    }
+
+//    @Cacheable(value = "downloadUrls", key = "#s3Key + #duracion.toMinutes()")
+    public String generarUrlDescarga(String s3Key, Duration duracion) throws DocApiService.DocValidationException {
+        try {
+            if (s3Key == null || s3Key.trim().isEmpty()) {
+                throw new IllegalArgumentException("La clave S3 no puede ser nula o vacía");
+            }
+            if (duracion == null || duracion.isNegative() || duracion.isZero() || duracion.toMinutes()>MAX_EXPIRATION_MINUTES) {
+                throw new DocApiService.DocValidationException("La duración debe ser un valor positivo");
+            }
+
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3Key)
+                    .build();
+
+            PresignedGetObjectRequest presignedRequest = s3Presigner.presignGetObject(r -> r
+                    .getObjectRequest(getObjectRequest)
+                    .signatureDuration(duracion));
+
+            String url = presignedRequest.url().toString();
+
+            return url;
+
+        } catch (S3Exception e) {
+            throw new DocApiService.DocValidationException("Error obteniendo url de descarga");
+        }
+    }
+
+
+    /* ========== MÉTODOS ADICIONALES ÚTILES ========== */
     // Eliminar archivo de contrato de S3 y base de datos
     public void eliminarContratoS3(Integer idContratoApi) {
         try {

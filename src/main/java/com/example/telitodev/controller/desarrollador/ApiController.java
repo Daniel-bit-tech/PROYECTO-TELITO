@@ -37,8 +37,9 @@ public class ApiController extends BaseController {
     final EjemplosCodigoRepository ejemplosCodigoRepository;
     final DominioRepository dominioRepository;
     final TagRepository tagRepository;
+    private final ContratoRepository contratoRepository;
 
-    public ApiController(ApiRepository apiRepository, UsuarioRepository usuarioRepository, VersionApiRepository versionApiRepository, DocMDService docMDService, DocumentacionRepository documentacionRepository, VersionApiRepository versionApiRepository1, EjemplosCodigoRepository ejemplosCodigoRepository, DominioRepository dominioRepository, TagRepository tagRepository) {
+    public ApiController(ApiRepository apiRepository, UsuarioRepository usuarioRepository, VersionApiRepository versionApiRepository, DocMDService docMDService, DocumentacionRepository documentacionRepository, VersionApiRepository versionApiRepository1, EjemplosCodigoRepository ejemplosCodigoRepository, DominioRepository dominioRepository, TagRepository tagRepository, ContratoRepository contratoRepository) {
         this.apiRepository = apiRepository;
         this.usuarioRepository = usuarioRepository;
         this.docMDService = docMDService;
@@ -47,6 +48,7 @@ public class ApiController extends BaseController {
         this.ejemplosCodigoRepository = ejemplosCodigoRepository;
         this.dominioRepository = dominioRepository;
         this.tagRepository = tagRepository;
+        this.contratoRepository = contratoRepository;
     }
 
 
@@ -119,6 +121,9 @@ public class ApiController extends BaseController {
         } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No existe el api");
 
         List<String> nombresSecs = docMDService.nombresSecsDoc(idApi);
+        
+        Documentacion documentacion = documentacionRepository.findByApi_IdApiAndFormato(idApi, Documentacion.FormatoDoc.MARKDOWN);
+        String content = documentacion.getContenido();
         model.addAttribute("nombresSecs", nombresSecs);
 
         // Obtener el usuario correcto considerando impersonación usando BaseController
