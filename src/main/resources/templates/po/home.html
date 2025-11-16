@@ -490,21 +490,33 @@
 
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Actividad Reciente</h3>
+                        <h3 class="card-title"><i class="fas fa-history"></i> Actividad Reciente</h3>
                         <div class="card-actions">
-                            <a th:href="@{/po/actividad}" class="btn btn-sm btn-ghost">Ver todas</a>
+                            <button class="btn btn-sm btn-ghost" onclick="cargarTodasActividades()">Ver todas</button>
                         </div>
                     </div>
                     <div class="list-group list-group-flush">
                         <div th:if="${#lists.isEmpty(actividadesRecientes)}" class="list-group-item text-center text-muted">
                             <span class="text-secondary">No hay actividad reciente para mostrar.</span>
                         </div>
+
+                        <!-- Actividades con iconos -->
                         <a th:each="actividad : ${actividadesRecientes}" href="#" class="list-group-item list-group-item-action">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h5 class="mb-1" th:text="${actividad.titulo}"></h5>
-                                <small class="text-muted" th:text="${#temporals.format(actividad.fecha, 'dd-MM-yyyy HH:mm')}"></small>
+                            <div class="d-flex align-items-start">
+                                <!-- Icono con círculo de color -->
+                                <div class="activity-icon me-3" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                    <i class="fas fa-tasks" style="font-size: 16px;"></i>
+                                </div>
+
+                                <!-- Contenido de la actividad -->
+                                <div class="flex-grow-1">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1" th:text="${actividad.titulo}"></h5>
+                                        <small class="text-muted" th:text="${#temporals.format(actividad.fecha, 'dd-MM-yyyy HH:mm')}"></small>
+                                    </div>
+                                    <p class="mb-1" th:text="${actividad.descripcion}"></p>
+                                </div>
                             </div>
-                            <p class="mb-1" th:text="${actividad.descripcion}"></p>
                         </a>
                     </div>
                 </div>
@@ -540,7 +552,23 @@
         </div>
     </div>
 
-    <div id="footer-placeholder"></div>
+    <!-- Offcanvas para ver todas las actividades -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasActividades">
+        <div class="offcanvas-header">
+            <h2 class="offcanvas-title">Todas las Actividades</h2>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body" id="contenidoActividades">
+            <div class="text-center">
+                <div class="spinner-border"></div>
+                <p class="mt-2 text-muted">Cargando actividades...</p>
+            </div>
+        </div>
+    </div>
+
+
+    <div th:replace="po/footer.html :: footer"></div>
+
 </div>
 
 <script>

@@ -38,4 +38,28 @@ public interface BacklogRepository extends JpaRepository<Backlog, Integer> {
 
     List<Backlog> findByApiIn(List<Api> apis);
 
+
+    // NUEVOS MÉTODOS PARA FILTRO POR ESTADO
+    @Query("SELECT b FROM Backlog b WHERE b.estadoBacklog = 'Resuelto' AND " +
+            "(:search IS NULL OR :search = '' OR " +
+            "LOWER(b.api.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(b.descripcion) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(b.usuarioEncargado.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(b.prioridad) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(b.estadoBacklog) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Backlog> findResueltosBySearchTerm(@Param("search") String search, Pageable pageable);
+
+    @Query("SELECT b FROM Backlog b WHERE b.estadoBacklog != 'Resuelto' AND " +
+            "(:search IS NULL OR :search = '' OR " +
+            "LOWER(b.api.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(b.descripcion) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(b.usuarioEncargado.nombre) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(b.prioridad) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(b.estadoBacklog) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Backlog> findNoResueltosBySearchTerm(@Param("search") String search, Pageable pageable);
+
+    // Métodos sin búsqueda para filtros de estado
+    Page<Backlog> findByEstadoBacklog(String estadoBacklog, Pageable pageable);
+    Page<Backlog> findByEstadoBacklogNot(String estadoBacklog, Pageable pageable);
+
 }

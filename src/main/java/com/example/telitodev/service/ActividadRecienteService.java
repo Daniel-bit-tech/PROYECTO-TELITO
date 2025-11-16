@@ -34,4 +34,8 @@ public class ActividadRecienteService {
     public List<ActividadReciente> obtenerActividadesRecientesPorUsuario(String dni) {
         return actividadRecienteRepository.findTop5ByUsuario_DniOrderByFechaDesc(dni);
     }
+
+    public List<ActividadReciente> obtenerTodasActividadesPorUsuario(String dni) {
+        return actividadRecienteRepository.findByUsuario_DniOrderByFechaDesc(dni);
+    }
 }

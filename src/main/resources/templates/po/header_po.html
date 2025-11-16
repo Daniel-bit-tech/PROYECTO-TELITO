@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telito Developer Portal</title>
-    
+
     <!-- Control de caché y seguridad -->
     <div th:replace="~{components/security-cache-control :: security-cache-control}"></div>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -264,12 +264,12 @@
                 <div class="nav-item dropdown" sec:authorize="isAuthenticated()">
                 <a href="#" class="nav-link d-flex lh-1 p-0 dropdown-toggle" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario">
                     <!-- Mostrar avatar del usuario impersonado si aplica, sino del usuario actual -->
-                    <span class="avatar avatar-sm user-avatar" 
+                    <span class="avatar avatar-sm user-avatar"
                           th:style="'background-image: url(https://ui-avatars.com/api/?name='+${isImpersonating ? impersonatedUserName : usuario.nombre}+'+&background=4361ee&color=fff)'"> </span>
                     <div class="d-none d-xl-block ps-2 text-body">
                         <!-- Mostrar nombre del usuario impersonado si aplica, sino del usuario actual -->
                         <div th:text="${isImpersonating ? impersonatedUserName : usuario.nombre}">Juan Perez</div>
-                        <div class="mt-1 small opacity-75" 
+                        <div class="mt-1 small opacity-75"
                              th:text="${isImpersonating ? impersonatedUserRole : usuario.rol.nombreRol}">Desarrollador</div>
                     </div>
                 </a>

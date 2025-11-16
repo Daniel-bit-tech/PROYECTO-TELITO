@@ -31,10 +31,25 @@ public class ActividadRecienteController {
         // Obtener el usuario correcto considerando impersonación
         Usuario usuario = obtenerUsuarioActual(auth, session);
         model.addAttribute("usuario", usuario);
-        
+
         List<ActividadReciente> listaActividades = actividadRecienteService.obtenerTodasActividades();
         model.addAttribute("listaActividades", listaActividades);
         return "po/actividad-reciente";
+    }
+
+    // NUEVO: Endpoint para cargar todas las actividades via AJAX
+    @GetMapping("/todas")
+    public String getTodasActividades(Model model, Authentication auth, HttpSession session) {
+        // Obtener el usuario correcto considerando impersonación
+        Usuario usuario = obtenerUsuarioActual(auth, session);
+        model.addAttribute("usuario", usuario);
+
+        // Obtener TODAS las actividades del usuario
+        List<ActividadReciente> todasActividades =
+                actividadRecienteService.obtenerTodasActividadesPorUsuario(usuario.getDni());
+        model.addAttribute("todasActividades", todasActividades);
+
+        return "po/actividad-reciente :: actividades-content";
     }
 
     /**
@@ -43,7 +58,7 @@ public class ActividadRecienteController {
     private Usuario obtenerUsuarioActual(Authentication auth, HttpSession session) {
         // Verificar si hay impersonación activa
         Boolean isImpersonating = (Boolean) session.getAttribute("IS_IMPERSONATING");
-        
+
         if (isImpersonating != null && isImpersonating) {
             // Durante impersonación, obtener usuario por DNI del usuario impersonado
             String impersonatedUserDni = (String) session.getAttribute("IMPERSONATED_USER_DNI");
@@ -55,7 +70,7 @@ public class ActividadRecienteController {
                 }
             }
         }
-        
+
         // Sin impersonación, usar el usuario autenticado normal
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         System.out.println("👤 ActividadReciente - Usando datos del usuario autenticado: " + usuario.getNombre());

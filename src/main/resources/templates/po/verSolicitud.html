@@ -1,4 +1,5 @@
-<html lang="es" data-bs-theme="dark"><head>
+<html lang="es" data-bs-theme="dark">
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -9,11 +10,286 @@
     <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet">
     <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet">
     <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet">
-    <link href="/tabler/dist/css/tablbtner-marketing.css?1757307620" rel="stylesheet">
+    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet">
     <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet">
     <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url("https://rsms.me/inter/inter.css");
+
+        /* Estilo GitHub-like para solicitud - FONDO UNIFORME */
+        .github-card {
+            background: var(--tblr-bg-surface);
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .github-header {
+            padding: 20px 24px;
+            background: var(--tblr-bg-surface);
+            border-bottom: 1px solid #30363d;
+            border-radius: 6px 6px 0 0;
+        }
+
+        .github-section {
+            padding: 20px 24px;
+            border-bottom: 1px solid #21262d;
+            background: var(--tblr-bg-surface);
+        }
+
+        .github-section:last-child {
+            border-bottom: none;
+            border-radius: 0 0 6px 6px;
+        }
+
+        .user-info-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 24px;
+            background: var(--tblr-bg-surface);
+            border-bottom: 1px solid #30363d;
+        }
+
+        .user-avatar-square {
+            width: 80px;
+            height: 80px;
+            border-radius: 8px;
+            border: 2px solid #238636;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .info-item {
+            background: var(--tblr-bg-surface);
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 16px;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+        }
+
+        .info-item:hover {
+            border-color: #3fb950;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(46, 160, 67, 0.15);
+        }
+
+        .info-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #7d8590;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: #e6edf3;
+            font-weight: 500;
+        }
+
+        .status-badge {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #e3b341;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .status-approved {
+            background: rgba(46, 160, 67, 0.1);
+            color: #3fb950;
+            border-color: rgba(46, 160, 67, 0.3);
+        }
+
+        .status-rejected {
+            background: rgba(248, 81, 73, 0.1);
+            color: #f85149;
+            border-color: rgba(248, 81, 73, 0.3);
+        }
+
+        .comment-box {
+            background: var(--tblr-bg-surface);
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 16px;
+            margin: 16px 0;
+            border-left: 4px solid #1f6feb;
+            position: relative;
+        }
+
+        .comment-box::before {
+            content: '"';
+            position: absolute;
+            top: 8px;
+            left: 12px;
+            font-size: 32px;
+            color: #7d8590;
+            font-family: serif;
+            opacity: 0.3;
+        }
+
+        .btn-github {
+            background: #21262d;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #e6edf3;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 140px;
+            justify-content: center;
+        }
+
+        .btn-github:hover {
+            background: #30363d;
+            border-color: #7d8590;
+            color: #ffffff;
+            text-decoration: none;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-github-primary {
+            background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+            border-color: #3fb950;
+            color: white;
+            box-shadow: 0 1px 3px rgba(46, 160, 67, 0.3);
+        }
+
+        .btn-github-primary:hover {
+            background: linear-gradient(135deg, #2ea043 0%, #3fb950 100%);
+            border-color: #56d364;
+            box-shadow: 0 2px 8px rgba(46, 160, 67, 0.4);
+        }
+
+        .btn-github-secondary {
+            background: #21262d;
+            border-color: #30363d;
+            color: #e6edf3;
+        }
+
+        .btn-github-secondary:hover {
+            background: #30363d;
+            border-color: #7d8590;
+            color: #ffffff;
+        }
+
+        .btn-github-danger {
+            background: linear-gradient(135deg, #da3633 0%, #f85149 100%);
+            border-color: #ff7b72;
+            color: white;
+            box-shadow: 0 1px 3px rgba(248, 81, 73, 0.3);
+        }
+
+        .btn-github-danger:hover {
+            background: linear-gradient(135deg, #f85149 0%, #ff7b72 100%);
+            border-color: #ffa198;
+            box-shadow: 0 2px 8px rgba(248, 81, 73, 0.4);
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            padding: 20px 24px;
+            background: var(--tblr-bg-surface);
+            border-top: 1px solid #30363d;
+            border-radius: 0 0 6px 6px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e6edf3;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: linear-gradient(135deg, #1f6feb 0%, #4493f8 100%);
+            border-radius: 2px;
+        }
+
+        /* Icon colors */
+        .icon-blue { color: #4493f8; }
+        .icon-green { color: #3fb950; }
+        .icon-yellow { color: #e3b341; }
+        .icon-purple { color: #a371f7; }
+        .icon-orange { color: #f78166; }
+        .icon-red { color: #f85149; }
+
+        /* User name styling */
+        .user-name {
+            color: #e6edf3;
+            font-weight: 600;
+        }
+
+        /* Badge styles */
+        .badge-github {
+            background: rgba(46, 160, 67, 0.1);
+            color: #3fb950;
+            border: 1px solid rgba(46, 160, 67, 0.3);
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .badge-blue {
+            background: rgba(31, 111, 235, 0.1);
+            color: #4493f8;
+            border: 1px solid rgba(31, 111, 235, 0.3);
+        }
+
+        .badge-yellow {
+            background: rgba(227, 179, 65, 0.1);
+            color: #e3b341;
+            border: 1px solid rgba(227, 179, 65, 0.3);
+        }
+
         .api-card:hover {
             transform: translateY(-5px);
             transition: transform 0.2s ease;
@@ -64,119 +340,138 @@
 
     <!-- Main Content -->
     <div class="page-wrapper">
-        <!-- BEGIN PAGE HEADER -->
-        <div class="page-header d-print-none" aria-label="Page header">
-            <div class="container-xl">
-                <div class="row g-2 align-items-center">
-                    <div class="col">
-                        <h2 class="page-title">Solicitud</h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- END PAGE HEADER -->
         <!-- BEGIN PAGE BODY -->
         <div class="page-body">
             <div class="container-xl">
-                <div class="card">
-                    <div class="row g-0">
+                <!-- Alertas -->
+                <div id="alertContainer"></div>
 
-                        <div class="col-12 col-md-9 d-flex flex-column">
-                            <div class="card-body">
+                <!-- Card principal al estilo GitHub -->
+                <div class="github-card">
+                    <!-- Header -->
+                    <div class="github-header">
+                        <h2 class="page-title mb-0 text-white">
+                            <i class="fas fa-file-alt icon-blue me-2"></i>
+                            Detalles de Solicitud
+                        </h2>
+                    </div>
 
-                                <h3 class="card-title">Solicitante</h3>
-                                <div class="row align-items-center">
-                                    <div class="col-auto"><span class="avatar avatar-xl" style="background-image: url(./static/avatars/000m.jpg)"> </span></div>
-                                    <div class="col-auto">
+                    <!-- Información del usuario -->
+                    <div class="user-info-header">
+                        <span class="avatar avatar-xl user-avatar-square" style="background-image: url(./static/avatars/000m.jpg)"></span>
+                        <div>
+                            <h3 class="mb-1 user-name" th:text="${solicitud != null ? solicitud.desarrollador : 'Desarrollador'}">Desarrollador</h3>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-user-circle icon-blue me-1"></i>
+                                Información del solicitante
+                            </p>
+                        </div>
+                    </div>
 
-                                    </div>
-                                    <div class="col-auto">
-
-                                    </div>
+                    <!-- Grid de información -->
+                    <div class="github-section">
+                        <div class="section-title">Información General</div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="fas fa-project-diagram icon-purple"></i>
+                                    Proyecto
                                 </div>
-                                <h3 class="card-title mt-4" th:text="${solicitud != null ? solicitud.desarrollador : 'Desarrollador'}">Desarrollador</h3>
-                                <div class="row g-3" th:if="${solicitud != null}">
-                                    <div class="col-md">
-                                        <div class="form-label">Proyecto</div>
-                                        <div class="mt-3">
-                                            <span class="badge bg-green-lt" th:text="${solicitud.nombreProyecto}">Proyecto</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md">
-                                        <div class="form-label">Email</div>
-                                        <div class="mt-3">
-                                            <span class="badge bg-blue-lt" th:text="${solicitud.email}">Email</span>
-                                        </div>
-                                    </div>
-
-                                </div>
-                                <h3 class="card-title mt-4">API solicitada</h3>
-
-                                <div th:if="${solicitud != null}">
-                                    <div class="row g-2">
-                                        <div class="col-md">
-                                            <span class="badge bg-blue" th:text="${solicitud.nombreApi}">API</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <h3 class="card-title mt-4">Estado de la solicitud</h3>
-                                <div th:if="${solicitud != null}">
-                                    <div class="row g-2">
-                                        <div class="col-md">
-                                            <span class="badge bg-yellow-lt" th:text="${solicitud.estado}">PENDIENTE</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p class="card-subtitle mt-3" th:text="${solicitud != null ? 'Fecha: ' + solicitud.fechaFormatted : 'Fecha'}">Fecha</p>
-
-                                <div class="col col-lg-12" th:if="${solicitud != null}">
-                                    <div class="chat-bubble">
-                                        <div class="chat-bubble-title">
-                                            <div class="row">
-                                                <div class="col chat-bubble-author">Descripción del uso</div>
-                                            </div>
-                                        </div>
-                                        <div class="chat-bubble-body">
-                                            <p th:text="${solicitud.descripcionUso}">Descripción del proyecto</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                            </div>
-                            <div class="card-footer bg-transparent mt-auto" th:if="${solicitud != null}">
-                                <div class="btn-list justify-content-end">
-                                    <a class="btn btn-green" href="/po/bandejaSolicitud" style="min-width: 140px;">
-                                        Volver
-                                    </a>
-                                    
-                                    <!-- Botón de Rechazar -->
-                                    <form th:action="@{/po/rechazarSolicitud}" method="post" style="display: inline;">
-                                        <input type="hidden" name="id" th:value="${solicitud.idSolicitudAcceso}"/>
-                                        <input type="hidden" name="motivo" value="Solicitud rechazada por el Product Owner"/>
-                                        <button type="submit" class="btn btn-red" onclick="return confirm('¿Está seguro de rechazar esta solicitud?')" style="min-width: 140px;">
-                                            Rechazar Solicitud
-                                        </button>
-                                    </form>
-                                    
-                                    <!-- Botón de Aprobar -->
-                                    <form th:action="@{/po/aprobarSolicitud}" method="post" style="display: inline;">
-                                        <input type="hidden" name="id" th:value="${solicitud.idSolicitudAcceso}"/>
-                                        <button type="submit" class="btn btn-blue" onclick="return confirm('¿Está seguro de aprobar esta solicitud?')" style="min-width: 140px;">
-                                            Aceptar Solicitud
-                                        </button>
-                                    </form>
+                                <div class="info-value">
+                                    <span class="badge-github" th:text="${solicitud.nombreProyecto}">Proyecto</span>
                                 </div>
                             </div>
-                            
-                            <!-- Mostrar error si no hay solicitud -->
-                            <div th:if="${solicitud == null}" class="card-footer bg-transparent mt-auto">
-                                <div class="alert alert-danger">
-                                    <h4>Error</h4>
-                                    <p th:text="${error}">No se pudo cargar la solicitud</p>
-                                    <a class="btn btn-green" href="/po/bandejaSolicitud" style="min-width: 140px;">Volver</a>
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="fas fa-envelope icon-orange"></i>
+                                    Email
                                 </div>
+                                <div class="info-value">
+                                    <span class="badge-github badge-blue" th:text="${solicitud.email}">Email</span>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">
+                                    <i class="fas fa-code icon-blue"></i>
+                                    API Solicitada
+                                </div>
+                                <div class="info-value">
+                                    <span class="badge-github badge-blue" th:text="${solicitud.nombreApi}">API</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Estado de la solicitud -->
+                    <div class="github-section">
+                        <div class="section-title">
+                            <i class="fas fa-info-circle icon-yellow"></i>
+                            Estado de la Solicitud
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Estado Actual</div>
+                            <div class="status-badge status-pending">
+                                <i class="fas fa-clock me-2"></i>
+                                <span th:text="${solicitud.estado}">PENDIENTE</span>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <div class="info-label">
+                                <i class="fas fa-calendar icon-green"></i>
+                                Fecha de Solicitud
+                            </div>
+                            <div class="info-value" th:text="${solicitud != null ? solicitud.fechaFormatted : 'Fecha'}">Fecha</div>
+                        </div>
+                    </div>
+
+                    <!-- Descripción del uso -->
+                    <div class="github-section">
+                        <div class="section-title">
+                            <i class="fas fa-comment icon-green"></i>
+                            Descripción del Uso
+                        </div>
+                        <div class="comment-box">
+                            <p class="mb-0 text-white" th:text="${solicitud.descripcionUso}" style="padding-left: 20px;">Descripción del proyecto</p>
+                        </div>
+                    </div>
+
+                    <!-- Acciones -->
+                    <div class="action-bar">
+                        <!-- Botón Volver -->
+                        <a class="btn-github btn-github-secondary" href="/po/bandejaSolicitud">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+
+                        <!-- Botón de Rechazar -->
+                        <form th:action="@{/po/rechazarSolicitud}" method="post" style="display: inline;">
+                            <input type="hidden" name="id" th:value="${solicitud.idSolicitudAcceso}"/>
+                            <input type="hidden" name="motivo" value="Solicitud rechazada por el Product Owner"/>
+                            <button type="submit" class="btn-github btn-github-danger" onclick="return confirm('¿Está seguro de rechazar esta solicitud?')">
+                                <i class="fas fa-times"></i> Rechazar
+                            </button>
+                        </form>
+
+                        <!-- Botón de Aprobar -->
+                        <form th:action="@{/po/aprobarSolicitud}" method="post" style="display: inline;">
+                            <input type="hidden" name="id" th:value="${solicitud.idSolicitudAcceso}"/>
+                            <button type="submit" class="btn-github btn-github-primary" onclick="return confirm('¿Está seguro de aprobar esta solicitud?')">
+                                <i class="fas fa-check"></i> Aprobar
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Mostrar error si no hay solicitud -->
+                    <div th:if="${solicitud == null}" class="github-section">
+                        <div class="alert alert-danger" style="border-radius: 6px; border: 1px solid #30363d; background: var(--tblr-bg-surface);">
+                            <h4 class="text-white">
+                                <i class="fas fa-exclamation-triangle icon-red me-2"></i>
+                                Error
+                            </h4>
+                            <p class="text-white mb-0" th:text="${error}">No se pudo cargar la solicitud</p>
+                            <div class="mt-3">
+                                <a class="btn-github btn-github-secondary" href="/po/bandejaSolicitud">
+                                    <i class="fas fa-arrow-left"></i> Volver
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -184,7 +479,8 @@
             </div>
         </div>
         <!-- END PAGE BODY -->
-        <!--  BEGIN FOOTER  -->
+
+        <!-- Footer (mantenido igual) -->
         <footer class="footer footer-transparent d-print-none">
             <div class="container-xl">
                 <div class="row text-center align-items-center flex-row-reverse">
@@ -197,7 +493,6 @@
                             </li>
                             <li class="list-inline-item">
                                 <a href="https://github.com/sponsors/codecalm" target="_blank" class="link-secondary" rel="noopener">
-                                    <!-- Download SVG icon from http://tabler.io/icons/icon/heart -->
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon text-pink icon-inline icon-4">
                                         <path d="M19.5 12.572l-7.5 7.428l-7.5 -7.428a5 5 0 1 1 7.5 -6.566a5 5 0 1 1 7.5 6.572"></path>
                                     </svg>
@@ -220,10 +515,9 @@
                 </div>
             </div>
         </footer>
-        <!--  END FOOTER  -->
     </div>
 
-
+    <!-- Chatbot (mantenido igual) -->
     <div class="chatbot-container">
         <div class="chatbot-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasChatbot">
             <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-message-chatbot" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -236,7 +530,7 @@
         </div>
     </div>
 
-
+    <!-- Offcanvas chatbot (mantenido igual) -->
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasChatbot">
         <div class="offcanvas-header">
             <h2 class="offcanvas-title">Asistente Virtual</h2>
@@ -281,4 +575,5 @@
 
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
 <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
-</body></html>
+</body>
+</html>

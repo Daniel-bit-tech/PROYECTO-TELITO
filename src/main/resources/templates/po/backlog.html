@@ -1,4 +1,6 @@
-<html lang="es" data-bs-theme="dark"><head>
+<!DOCTYPE html>
+<html lang="es" data-bs-theme="dark">
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -58,6 +60,36 @@
             border-radius: 8px;
             padding: 8px;
         }
+
+        /* Nuevos estilos para los badges de estado */
+        .badge-estado-resuelto {
+            background-color: #2fb344 !important;
+            color: white !important;
+        }
+
+        .badge-estado-desarrollo {
+            background-color: #f59f00 !important;
+            color: white !important;
+        }
+
+        .badge-estado-pendiente {
+            background-color: #e03131 !important;
+            color: white !important;
+        }
+
+        /* Estilos para el filtro de estado */
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .filter-badge {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .filter-badge.active {
+            box-shadow: 0 0 0 2px rgba(32, 107, 196, 0.5);
+        }
     </style>
 </head>
 
@@ -68,7 +100,6 @@
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
     <div th:replace="po/header_po.html :: header"></div>
-
 
     <!-- Main Content -->
     <div class="page-wrapper">
@@ -91,30 +122,56 @@
                         <div class="card">
 
                             <div class="card-body border-bottom py-3">
-                                <div class="d-flex">
-                                    <div class="text-secondary">
-                                        Mostrar
-                                        <div class="mx-2 d-inline-block">
-                                            <select class="form-control form-control-sm" id="sizeSelector" onchange="changePageSize()">
-                                                <option value="5" th:selected="${size == 5}">5</option>
-                                                <option value="8" th:selected="${size == 8}">8</option>
-                                                <option value="10" th:selected="${size == 10}">10</option>
-                                                <option value="15" th:selected="${size == 15}">15</option>
-                                                <option value="25" th:selected="${size == 25}">25</option>
-                                                <option value="50" th:selected="${size == 50}">50</option>
-                                            </select>
+                                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="text-secondary">
+                                            Mostrar
+                                            <div class="mx-2 d-inline-block">
+                                                <select class="form-control form-control-sm" id="sizeSelector" onchange="changePageSize()">
+                                                    <option value="5" th:selected="${size == 5}">5</option>
+                                                    <option value="8" th:selected="${size == 8}">8</option>
+                                                    <option value="10" th:selected="${size == 10}">10</option>
+                                                    <option value="15" th:selected="${size == 15}">15</option>
+                                                    <option value="25" th:selected="${size == 25}">25</option>
+                                                    <option value="50" th:selected="${size == 50}">50</option>
+                                                </select>
+                                            </div>
+                                            entradas
                                         </div>
-                                        entradas
                                     </div>
-                                    <div class="ms-auto text-secondary">
+
+                                    <!-- Filtro por Estado -->
+                                    <div class="filter-container">
+                                        <span class="text-secondary me-2">Filtrar por estado:</span>
+                                        <div class="d-flex gap-2">
+                                            <a th:href="@{/po/backlog(page=0, size=${size}, q=${q}, estado='')}"
+                                               class="badge filter-badge"
+                                               th:classappend="${(estadoFiltro == null || estadoFiltro == '')} ? 'bg-primary active' : 'bg-secondary'">
+                                                Todos
+                                            </a>
+                                            <a th:href="@{/po/backlog(page=0, size=${size}, q=${q}, estado='Resuelto')}"
+                                               class="badge filter-badge badge-estado-resuelto"
+                                               th:classappend="${estadoFiltro == 'Resuelto'} ? 'active' : ''">
+                                                Resueltos
+                                            </a>
+                                            <a th:href="@{/po/backlog(page=0, size=${size}, q=${q}, estado='No Resuelto')}"
+                                               class="badge filter-badge badge-estado-desarrollo"
+                                               th:classappend="${estadoFiltro == 'No Resuelto'} ? 'active' : ''">
+                                                No Resueltos
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="text-secondary">
                                         Buscar:
                                         <div class="ms-2 d-inline-block">
-                                            <form method="get" th:action="@{/po/backlog}" class="d-inline">
+                                            <form method="get" th:action="@{/po/backlog}" class="d-inline" id="searchForm">
                                                 <input type="hidden" name="page" value="0">
                                                 <input type="hidden" name="size" th:value="${size}">
-                                                <input type="text" 
-                                                       class="form-control form-control-sm" 
-                                                       name="q" 
+                                                <input type="hidden" name="estado" th:value="${estadoFiltro}">
+                                                <input type="text"
+                                                       class="form-control form-control-sm"
+                                                       name="q"
                                                        th:value="${q}"
                                                        placeholder="Buscar en backlog..."
                                                        aria-label="Buscar en backlog"
@@ -127,15 +184,15 @@
                             <div class="table-responsive">
                                 <table class="table table-selectable card-table table-vcenter text-nowrap datatable">
                                     <thead>
-                                        <tr>
-                                            <th class="w-1">No.</th>
-                                            <th>Nombre</th>
-                                            <th>Encargados</th>
-                                            <th>Prioridad</th>
-                                            <th>Estado</th>
-                                            <th>Descripción</th>
-                                            <th></th>
-                                        </tr>
+                                    <tr>
+                                        <th class="w-1">No.</th>
+                                        <th>Nombre</th>
+                                        <th>Encargados</th>
+                                        <th>Prioridad</th>
+                                        <th>Estado</th>
+                                        <th>Descripción</th>
+                                        <th></th>
+                                    </tr>
                                     </thead>
                                     <tbody>
                                     <!-- Mensaje cuando no hay resultados -->
@@ -147,15 +204,28 @@
                                                 <p class="empty-subtitle text-secondary">
                                                     <span th:if="${q != null and !q.isEmpty()}">
                                                         No hay resultados para "<strong th:text="${q}"></strong>"
+                                                        <span th:if="${estadoFiltro != null and !estadoFiltro.isEmpty()}">
+                                                            con estado "<strong th:text="${estadoFiltro}"></strong>"
+                                                        </span>
                                                     </span>
-                                                    <span th:unless="${q != null and !q.isEmpty()}">
-                                                        No hay elementos en el backlog
+                                                    <span th:if="${q == null or q.isEmpty()}">
+                                                        <span th:if="${estadoFiltro != null and !estadoFiltro.isEmpty()}">
+                                                            No hay elementos con estado "<strong th:text="${estadoFiltro}"></strong>"
+                                                        </span>
+                                                        <span th:unless="${estadoFiltro != null and !estadoFiltro.isEmpty()}">
+                                                            No hay elementos en el backlog
+                                                        </span>
                                                     </span>
                                                 </p>
+                                                <div class="empty-action">
+                                                    <a th:href="@{/po/backlog}" class="btn btn-primary">
+                                                        Mostrar todos los elementos
+                                                    </a>
+                                                </div>
                                             </div>
                                         </td>
                                     </tr>
-                                    
+
                                     <!-- Itera sobre los datos de backlog -->
                                     <tr th:each="backlog : ${backlogs}">
                                         <td><span class="text-secondary" th:text="${backlog.idBacklog}"></span></td>
@@ -163,8 +233,12 @@
                                         <td th:text="${backlog.usuarioEncargado.nombre}"></td>
                                         <td th:text="${backlog.prioridad}"></td>
                                         <td>
-                                            <span class="badge" 
-                                                  th:classappend="${backlog.estadoBacklog == 'Resuelto'} ? 'bg-success' : 'bg-warning'"
+                                            <span class="badge"
+                                                  th:classappend="${backlog.estadoBacklog == 'Resuelto'} ?
+                                                  'badge-estado-resuelto' :
+                                                  (${backlog.estadoBacklog == 'Desarrollo'} ?
+                                                  'badge-estado-desarrollo' :
+                                                  'badge-estado-pendiente')"
                                                   th:text="${backlog.estadoBacklog}"></span>
                                         </td>
                                         <td th:text="${backlog.descripcion}"></td>
@@ -172,7 +246,7 @@
                                             <form th:action="@{/po/backlog/marcar-como-resuelto/{id}(id=${backlog.idBacklog})}" method="post"
                                                   th:if="${backlog.estadoBacklog != 'Resuelto'}">
                                                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                                                <button type="submit" class="btn btn-sm btn-primary">Marcar como resuelto</button>
+                                                <button type="submit" class="btn btn-sm btn-primary" onclick="return confirmarMarcarResuelto()">Marcar como resuelto</button>
                                             </form>
                                             <span th:if="${backlog.estadoBacklog == 'Resuelto'}" class="text-muted">✔ Resuelto</span>
                                         </td>
@@ -181,73 +255,64 @@
                                 </table>
                             </div>
 
-
-                            <font style="vertical-align: inherit;"><font style="vertical-align: inherit;">
-
-
-                        <div class="card-footer">
-                            <div class="row g-2 justify-content-center justify-content-sm-between">
-                                <div class="col-auto d-flex align-items-center">
-                                    <p class="m-0 text-secondary">
-                                        Mostrando <strong th:text="${startElement} + ' a ' + ${endElement}">1 a 8</strong> de <strong th:text="${totalElements}">16</strong> entradas
-                                    </p>
-                                </div>
-                                <div class="col-auto">
-                                    <ul class="pagination m-0 ms-auto">
-                                        <!-- Botón Anterior -->
-                                        <li class="page-item" th:classappend="${!hasPrevious} ? 'disabled' : ''">
-                                            <a class="page-link" 
-                                               th:href="${hasPrevious} ? @{/po/backlog(page=${currentPage - 1}, size=${size}, q=${q})} : '#'"
-                                               tabindex="-1" 
-                                               th:aria-disabled="${!hasPrevious}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
-                                                    <path d="M15 6l-6 6l6 6"></path>
-                                                </svg>
-                                            </a>
-                                        </li>
-                                        
-                                        <!-- Páginas numeradas -->
-                                        <th:block th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}">
-                                            <!-- Mostrar páginas cercanas a la actual -->
-                                            <li class="page-item" 
-                                                th:if="${pageNum >= (currentPage - 2) and pageNum <= (currentPage + 2)}"
-                                                th:classappend="${pageNum == currentPage} ? 'active' : ''">
-                                                <a class="page-link" 
-                                                   th:href="@{/po/backlog(page=${pageNum}, size=${size}, q=${q})}"
-                                                   th:text="${pageNum + 1}">1</a>
+                            <div class="card-footer">
+                                <div class="row g-2 justify-content-center justify-content-sm-between">
+                                    <div class="col-auto d-flex align-items-center">
+                                        <p class="m-0 text-secondary">
+                                            Mostrando <strong th:text="${startElement} + ' a ' + ${endElement}">1 a 8</strong> de <strong th:text="${totalElements}">16</strong> entradas
+                                            <span th:if="${estadoFiltro != null and !estadoFiltro.isEmpty()}" class="ms-2">
+                                                (filtrado por: <strong th:text="${estadoFiltro}"></strong>)
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div class="col-auto">
+                                        <ul class="pagination m-0 ms-auto">
+                                            <!-- Botón Anterior -->
+                                            <li class="page-item" th:classappend="${!hasPrevious} ? 'disabled' : ''">
+                                                <a class="page-link"
+                                                   th:href="${hasPrevious} ?
+                                                   @{/po/backlog(page=${currentPage - 1}, size=${size}, q=${q}, estado=${estadoFiltro})} : '#'"
+                                                   tabindex="-1"
+                                                   th:aria-disabled="${!hasPrevious}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
+                                                        <path d="M15 6l-6 6l6 6"></path>
+                                                    </svg>
+                                                </a>
                                             </li>
-                                        </th:block>
-                                        
-                                        <!-- Botón Siguiente -->
-                                        <li class="page-item" th:classappend="${!hasNext} ? 'disabled' : ''">
-                                            <a class="page-link" 
-                                               th:href="${hasNext} ? @{/po/backlog(page=${currentPage + 1}, size=${size}, q=${q})} : '#'">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
-                                                    <path d="M9 6l6 6l-6 6"></path>
-                                                </svg>
-                                            </a>
-                                        </li>
-                                    </ul>
+
+                                            <!-- Páginas numeradas -->
+                                            <th:block th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}">
+                                                <!-- Mostrar páginas cercanas a la actual -->
+                                                <li class="page-item"
+                                                    th:if="${pageNum >= (currentPage - 2) and pageNum <= (currentPage + 2)}"
+                                                    th:classappend="${pageNum == currentPage} ? 'active' : ''">
+                                                    <a class="page-link"
+                                                       th:href="@{/po/backlog(page=${pageNum}, size=${size}, q=${q}, estado=${estadoFiltro})}"
+                                                       th:text="${pageNum + 1}">1</a>
+                                                </li>
+                                            </th:block>
+
+                                            <!-- Botón Siguiente -->
+                                            <li class="page-item" th:classappend="${!hasNext} ? 'disabled' : ''">
+                                                <a class="page-link"
+                                                   th:href="${hasNext} ?
+                                                   @{/po/backlog(page=${currentPage + 1}, size=${size}, q=${q}, estado=${estadoFiltro})} : '#'">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-1">
+                                                        <path d="M9 6l6 6l-6 6"></path>
+                                                    </svg>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        </div>
                     </div>
-
-
-
-
-
-
                 </div>
             </div>
         </div>
         <!-- END PAGE BODY -->
-        <!--  BEGIN FOOTER  -->
-
-        <!--  END FOOTER  -->
     </div>
-
 
     <div class="chatbot-container">
         <div class="chatbot-btn" data-bs-toggle="offcanvas" data-bs-target="#offcanvasChatbot">
@@ -260,7 +325,6 @@
             </svg>
         </div>
     </div>
-
 
     <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasChatbot">
         <div class="offcanvas-header">
@@ -304,7 +368,7 @@
     <div th:replace="po/footer.html :: footer"></div>
 </div>
 
-<!-- JavaScript para funcionalidad de paginación y búsqueda -->
+<!-- JavaScript para funcionalidad de paginación, búsqueda y confirmación -->
 <script>
     // Función para cambiar el tamaño de página
     function changePageSize() {
@@ -325,7 +389,7 @@
             searchInput.addEventListener('input', function() {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(function() {
-                    searchInput.closest('form').submit();
+                    document.getElementById('searchForm').submit();
                 }, 500); // Esperar 500ms después de que el usuario deje de escribir
             });
 
@@ -334,11 +398,16 @@
                 if (e.key === 'Enter') {
                     clearTimeout(searchTimeout);
                     e.preventDefault();
-                    this.closest('form').submit();
+                    document.getElementById('searchForm').submit();
                 }
             });
         }
     });
+
+    // Función para confirmar marcar como resuelto
+    function confirmarMarcarResuelto() {
+        return confirm("¿Estás seguro de que deseas marcar este elemento como resuelto? Esta acción no se puede deshacer.");
+    }
 </script>
 
 <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
