@@ -699,6 +699,52 @@
                     </li>
                 </ul>
             </div>
+
+            <!-- Contenido para usuarios nuevos -->
+            <div th:if="${usuarioNuevo}" class="row g-4 mt-4">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-info-circle text-info"></i> Bienvenido a Telito Developer Portal</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">
+                                Tu cuenta ha sido creada exitosamente. Nuestro equipo está preparando tu acceso a nuestras APIs.
+                            </p>
+                            <h5>¿Qué sigue ahora?</h5>
+                            <ul class="list-unstyled space-y">
+                                <li class="mb-2"><i class="fas fa-clock text-warning me-2"></i> Esperamos la aprobación de tu organización</li>
+                                <li class="mb-2"><i class="fas fa-envelope text-info me-2"></i> Te notificaremos por email cuando esté listo</li>
+                                <li class="mb-2"><i class="fas fa-book text-success me-2"></i> Mientras tanto, puedes revisar nuestra documentación</li>
+                            </ul>
+                            <div class="btn-list mt-3">
+                                <a href="/apis" class="btn btn-primary">
+                                    <i class="fas fa-book me-1"></i> Ver Documentación
+                                </a>
+                                <a href="/dev/soporte" class="btn btn-outline-secondary">
+                                    <i class="fas fa-headset me-1"></i> Contactar Soporte
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title"><i class="fas fa-question-circle"></i> ¿Necesitas ayuda?</h3>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-3">Nuestro equipo está aquí para ayudarte</p>
+                            <div class="btn-list">
+                                <a href="/dev/soporte/nuevo-ticket" class="btn btn-success w-100">
+                                    <i class="fas fa-ticket-alt me-1"></i> Crear Ticket
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </div>
         </div>
     </div>
 
@@ -1031,9 +1077,9 @@
 
                     <div class="key-actions">
 
-                        <button class="key-btn" style="color: var(--tblr-azure);" onclick="irAlSandbox(${credencial.apiId}, '${credencial.entorno || 'development'}')">
-                             <i class="fas fa-play-circle"></i> Probar en Sandbox
-                        </button
+                        <button class="key-btn" style="color: var(--tblr-azure);" onclick="irAlSandbox(${credencial.apiId}, '${credencial.entorno || 'development'}', '${credencial.apiKey}')">
+                            <i class="fas fa-play-circle"></i> Probar en Sandbox
+                        </button>
 
 
                         <button class="key-btn revoke" onclick="revocarCredencial(${credencial.idCredencialApi})">
@@ -1411,9 +1457,9 @@
      * .
      * @param {number} apiId
      */
-    function irAlSandbox(apiId, entorno) {
-        if (!apiId) {
-            alert('Error: No se pudo identificar la API.');
+    function irAlSandbox(apiId, entorno, apiKey) {
+        if (!apiId || !apiKey) {
+            alert('Error: No se pudo identificar la API o la clave.');
             return;
         }
 
@@ -1425,7 +1471,8 @@
             entornoValidado = 'development';
         }
 
-        const url = `/dev/sandbox?api=${encodeURIComponent(apiId)}&env=${encodeURIComponent(entornoValidado)}`;
+
+        const url = `/dev/sandbox?api=${encodeURIComponent(apiId)}&env=${encodeURIComponent(entornoValidado)}&key=${encodeURIComponent(apiKey)}`;
         console.log('Navegando a sandbox:', url);
         window.location.href = url;
     }

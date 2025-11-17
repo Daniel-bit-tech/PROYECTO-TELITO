@@ -22,102 +22,247 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url("https://rsms.me/inter/inter.css");
-        .api-card:hover {
-            transform: translateY(-5px);
-            transition: transform 0.2s ease;
+        
+        /* Estilos mejorados para la tarjeta principal */
+        .feedback-detail-card {
+            border-radius: 12px;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            overflow: hidden;
         }
-        .quick-action-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
+        
+        /* Avatar mejorado */
+        .avatar-xl-custom {
+            width: 5rem;
+            height: 5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        /* Secciones de información */
+        .info-section {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--tblr-border-color-light);
+        }
+        
+        .info-section:first-of-type {
+            border-top: none;
+            margin-top: 1.5rem;
+            padding-top: 0;
+        }
+        
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--tblr-body-color);
             display: flex;
             align-items: center;
-            justify-content: center;
+            gap: 0.5rem;
         }
+        
+        .section-title i {
+            color: var(--tblr-primary);
+        }
+        
+        /* Badges mejorados */
+        .badge-custom {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: 6px;
+        }
+        
+        /* Chat bubble mejorado */
+        .chat-bubble-custom {
+            background: var(--tblr-bg-surface-secondary);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1rem;
+            border-left: 4px solid var(--tblr-primary);
+        }
+        
+        .chat-bubble-custom .chat-bubble-title {
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--tblr-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .chat-bubble-custom .chat-bubble-body {
+            color: var(--tblr-body-color);
+            line-height: 1.6;
+        }
+        
+        /* Calificación con estrellas */
+        .rating-container {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 1.25rem;
+        }
+        
+        .rating-container .star {
+            transition: transform 0.2s;
+        }
+        
+        /* Botones mejorados */
+        .btn-custom {
+            min-width: 180px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            height: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .btn-success-custom {
+            background-color: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+        
+        .btn-success-custom:hover {
+            background-color: #059669;
+            border-color: #059669;
+            color: white;
+        }
+        
+        .btn-secondary-custom {
+            background-color: var(--tblr-secondary);
+            border-color: var(--tblr-secondary);
+            color: white;
+        }
+        
+        .btn-secondary-custom:hover {
+            background-color: var(--tblr-secondary-darken);
+            border-color: var(--tblr-secondary-darken);
+        }
+        
+        /* Estado de registro */
+        .status-badge {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9375rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            min-width: 180px;
+        }
+        
+        .status-registered {
+            background-color: var(--tblr-success-lt);
+            color: var(--tblr-success);
+            border: 1px solid var(--tblr-success);
+        }
+        
+        /* Grid de información */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .info-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--tblr-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-value {
+            font-size: 1rem;
+            color: var(--tblr-body-color);
+        }
+        
+        /* Card footer mejorado */
+        .card-footer-custom {
+            background-color: var(--tblr-bg-surface);
+            border-top: 1px solid var(--tblr-border-color-light);
+            padding: 1.5rem;
+        }
+        
+        /* Header de página mejorado */
+        .page-header-custom {
+            margin-bottom: 2rem;
+        }
+        
+        .page-title-custom {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--tblr-body-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .page-title-custom i {
+            color: var(--tblr-primary);
+        }
+        
+        /* Chatbot button */
         .chatbot-container {
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 1000;
         }
+        
         .chatbot-btn {
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            background-color: #206bc4;
+            background-color: var(--tblr-primary);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s;
         }
-        .api-status-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
+        
+        .chatbot-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
-        .sport-icon {
-            background-color: #f8f9fa;
-            border-radius: 8px;
-            padding: 8px;
-        }
-        /* Estilos para los botones - MISMO TAMAÑO */
-        .btn-custom {
-            background-color: #10b981;
-            border-color: #10b981;
-            color: white;
-            min-width: 200px;
-            padding: 12px 24px;
-            font-weight: 500;
-            font-size: 14px;
-            height: 48px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .btn-custom:hover {
-            background-color: #059669;
-            border-color: #059669;
-            color: white;
-        }
-        .btn-custom:disabled {
-            background-color: #6c757d;
-            border-color: #6c757d;
-            cursor: not-allowed;
-        }
-        /* Asegurar que el formulario no afecte el tamaño */
-        .btn-form {
-            display: inline-block;
-            margin-right: 10px;
-        }
-        /* Estilos para el estado del botón */
-        .btn-registered {
-            background-color: #6c757d;
-            border-color: #6c757d;
-            cursor: not-allowed;
-        }
-        .status-badge {
-            padding: 12px 24px;
-            border-radius: 4px;
-            font-weight: 500;
-            font-size: 14px;
-            height: 48px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 200px;
-            margin-right: 10px;
-        }
-        .status-registered {
-            background-color: #d1e7dd;
-            color: #0f5132;
-            border: 1px solid #badbcc;
-        }
-        .status-processing {
-            background-color: #fff3cd;
-            color: #664d03;
-            border: 1px solid #ffecb5;
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .btn-custom {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+            
+            .status-badge {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
         }
     </style>
 </head>
@@ -129,11 +274,15 @@
     <div th:replace="~{components/simple-impersonation-banner :: simple-impersonation-banner}"></div>
 
     <div class="page-wrapper">
-        <div class="page-header d-print-none" aria-label="Page header">
+        <div class="page-header d-print-none page-header-custom" aria-label="Page header">
             <div class="container-xl">
                 <div class="row g-2 align-items-center">
                     <div class="col">
-                        <h2 class="page-title">Detalles de Feedback</h2>
+                        <h2 class="page-title page-title-custom">
+                            <i class="fas fa-comment-dots"></i>
+                            Detalles de Feedback
+                        </h2>
+                        <div class="text-muted mt-1">Revisa y gestiona el feedback recibido</div>
                     </div>
                 </div>
             </div>
@@ -143,87 +292,107 @@
                 <!-- Alertas para mostrar mensajes -->
                 <div id="alertContainer"></div>
 
-                <div class="card">
-                    <div class="row g-0">
-                        <div class="col-12 col-md-9 d-flex flex-column">
-                            <div class="card-body">
-                                <h3 class="card-title">Solicitante</h3>
-                                <div class="row align-items-center">
-                                    <div class="col-auto">
-                                        <span class="avatar avatar-xl" th:style="'background-image: url(' + @{/avatars/000m.jpg} + ')'"></span>
-                                    </div>
+                <div class="card feedback-detail-card">
+                    <div class="card-body p-4">
+                        <!-- Información del Solicitante -->
+                        <div class="info-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-user"></i>
+                                Solicitante
+                            </h3>
+                            <div class="row align-items-center mt-3">
+                                <div class="col-auto">
+                                    <span class="avatar avatar-xl-custom" th:style="'background-image: url(' + @{/avatars/000m.jpg} + ')'"></span>
                                 </div>
-
-                                <h3 class="card-title mt-4" th:text="${feedback.usuario?.nombre ?: 'Usuario no encontrado'}">Nombre de Usuario</h3>
-                                <div class="row g-3">
-                                    <div class="col-md">
-                                        <div class="form-label">Cargo</div>
-                                        <div class="mt-3">
-                                            <span class="badge bg-purple-lt" th:text="${feedback.usuario?.rol?.nombreRol ?: 'N/A'}">Rol del Usuario</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-md">
-                                        <div class="form-label">Email</div>
-                                        <div class="mt-3">
-                                            <span class="badge bg-purple-lt" th:text="${feedback.usuario?.correo ?: 'N/A'}">Email del Usuario</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <h3 class="card-title mt-4">API</h3>
-                                <p class="card-subtitle" th:text="${feedback.api?.nombre ?: 'N/A'}">Nombre de la API</p>
-
-                                <h3 class="card-title mt-4">Calificación</h3>
-                                <p class="card-subtitle">
-                                    <span th:each="i : ${#numbers.sequence(1, feedback.calificacion)}" class="text-warning"><i class="fas fa-star"></i></span>
-                                    <span th:each="i : ${#numbers.sequence(feedback.calificacion + 1, 5)}" class="text-muted"><i class="far fa-star"></i></span>
-                                </p>
-
-                                <div class="col col-lg-6">
-                                    <div class="chat-bubble">
-                                        <div class="chat-bubble-title">
-                                            <div class="row">
-                                                <div class="col chat-bubble-author">Comentario</div>
+                                <div class="col">
+                                    <h4 class="mb-1" th:text="${feedback.usuario?.nombre ?: 'Usuario no encontrado'}">Nombre de Usuario</h4>
+                                    <div class="info-grid mt-3">
+                                        <div class="info-item">
+                                            <div class="info-label">Cargo</div>
+                                            <div class="info-value">
+                                                <span class="badge badge-custom bg-purple-lt" th:text="${feedback.usuario?.rol?.nombreRol ?: 'N/A'}">Rol del Usuario</span>
                                             </div>
                                         </div>
-                                        <div class="chat-bubble-body">
-                                            <p th:text="${feedback.comentario}">Comentario del Feedback</p>
+                                        <div class="info-item">
+                                            <div class="info-label">Email</div>
+                                            <div class="info-value">
+                                                <span class="badge badge-custom bg-blue-lt" th:text="${feedback.usuario?.correo ?: 'N/A'}">Email del Usuario</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="card-footer bg-transparent mt-auto">
-                                <div class="btn-list justify-content-end">
-                                    <!-- Mostrar formulario SOLO si NO está registrado en backlog -->
-                                    <form th:if="${!feedback.registradoBacklog}" id="backlogForm" action="/po/registrarFeedbackEnBacklog" method="POST" class="btn-form">
-                                        <!-- Enviar el id del Feedback -->
-                                        <input type="hidden" name="idFeedback" th:value="${feedback.idFeedback}" />
+                        <!-- Información de la API -->
+                        <div class="info-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-plug"></i>
+                                API Relacionada
+                            </h3>
+                            <div class="info-value mt-2">
+                                <span class="badge badge-custom bg-azure-lt" style="font-size: 1rem;" th:text="${feedback.api?.nombre ?: 'N/A'}">Nombre de la API</span>
+                            </div>
+                        </div>
 
-                                        <!-- El asunto por defecto es "--", no editable en esta vista -->
-                                        <input type="hidden" name="asunto" value="--" />
+                        <!-- Calificación -->
+                        <div class="info-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-star"></i>
+                                Calificación
+                            </h3>
+                            <div class="rating-container mt-2">
+                                <span th:each="i : ${#numbers.sequence(1, feedback.calificacion)}" class="text-warning star">
+                                    <i class="fas fa-star"></i>
+                                </span>
+                                <span th:each="i : ${#numbers.sequence(feedback.calificacion + 1, 5)}" class="text-muted star">
+                                    <i class="far fa-star"></i>
+                                </span>
+                                <span class="ms-2 text-muted" th:text="${feedback.calificacion} + ' de 5 estrellas'"></span>
+                            </div>
+                        </div>
 
-                                        <!-- Botón con confirmación simple -->
-                                        <button type="submit" class="btn btn-custom" onclick="return confirm('¿Está seguro de registrar este feedback en el backlog?')">
-                                            <i class="fas fa-plus-circle"></i> Registrar en Backlog
-                                        </button>
-                                    </form>
-
-                                    <!-- Mostrar estado SOLO si YA está registrado en backlog -->
-                                    <div th:if="${feedback.registradoBacklog}" class="status-badge status-registered">
-                                        <i class="fas fa-check-circle"></i> Registrado en Backlog
-                                    </div>
-
-                                    <!-- Botón para volver (siempre visible) -->
-                                    <a th:href="@{/po/feedback}" class="btn btn-custom" style="background-color: #6c757d; border-color: #6c757d;">
-                                        <i class="fas fa-arrow-left"></i> Volver
-                                    </a>
+                        <!-- Comentario -->
+                        <div class="info-section">
+                            <h3 class="section-title">
+                                <i class="fas fa-message"></i>
+                                Comentario
+                            </h3>
+                            <div class="chat-bubble-custom">
+                                <div class="chat-bubble-title">
+                                    <i class="fas fa-quote-left"></i>
+                                    Mensaje del usuario
+                                </div>
+                                <div class="chat-bubble-body">
+                                    <p class="mb-0" th:text="${feedback.comentario}">Comentario del Feedback</p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
 
-                            <!-- Contenedor para mensajes de alerta -->
-                            <div id="alertContainer"></div>
+                    <div class="card-footer card-footer-custom">
+                        <div class="d-flex flex-wrap gap-2 justify-content-end">
+                            <!-- Mostrar formulario SOLO si NO está registrado en backlog -->
+                            <form th:if="${!feedback.registradoBacklog}" id="backlogForm" action="/po/registrarFeedbackEnBacklog" method="POST" style="display: inline-block;">
+                                <input type="hidden" name="idFeedback" th:value="${feedback.idFeedback}" />
+                                <input type="hidden" name="asunto" value="--" />
+                                <button type="submit" class="btn btn-custom btn-success-custom" onclick="return confirm('¿Está seguro de registrar este feedback en el backlog?')">
+                                    <i class="fas fa-plus-circle"></i>
+                                    Registrar en Backlog
+                                </button>
+                            </form>
 
+                            <!-- Mostrar estado SOLO si YA está registrado en backlog -->
+                            <div th:if="${feedback.registradoBacklog}" class="status-badge status-registered">
+                                <i class="fas fa-check-circle"></i>
+                                Registrado en Backlog
+                            </div>
+
+                            <!-- Botón para volver (siempre visible) -->
+                            <a th:href="@{/po/feedback}" class="btn btn-custom btn-secondary-custom">
+                                <i class="fas fa-arrow-left"></i>
+                                Volver
+                            </a>
                         </div>
                     </div>
                 </div>

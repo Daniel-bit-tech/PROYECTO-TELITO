@@ -77,23 +77,35 @@ public class OnboardingController extends BaseController {
         // Agregar información de impersonación al modelo usando BaseController
         addImpersonationAttributes(model, session);
 
-        // Obtener datos adicionales para la vista
-        try {
-            List<ApiResponse> apisDisponibles = onboardingService.obtenerApisDisponibles(usuario.getDni());
-            List<CredencialApiResponse> misCredenciales = onboardingService.obtenerCredencialesUsuario(usuario.getDni());
+        // Verificar si el usuario tiene organización asignada
+        if (usuario.getOrganizacion() == null) {
+            // Usuario nuevo sin organización - mostrar vista de bienvenida básica
+            model.addAttribute("usuarioNuevo", true);
+            model.addAttribute("apisDisponibles", List.of());
+            model.addAttribute("misCredenciales", List.of());
+            model.addAttribute("totalCredenciales", 0);
+            model.addAttribute("credencialesActivas", 0L);
+            model.addAttribute("mensaje", "¡Bienvenido! Tu cuenta está siendo configurada. Pronto tendrás acceso a nuestras APIs.");
+        } else {
+            // Usuario con organización - cargar datos normalmente
+            model.addAttribute("usuarioNuevo", false);
+            try {
+                List<ApiResponse> apisDisponibles = onboardingService.obtenerApisDisponibles(usuario.getDni());
+                List<CredencialApiResponse> misCredenciales = onboardingService.obtenerCredencialesUsuario(usuario.getDni());
 
-            model.addAttribute("apisDisponibles", apisDisponibles);
-            model.addAttribute("misCredenciales", misCredenciales);
-            model.addAttribute("totalCredenciales", misCredenciales.size());
+                model.addAttribute("apisDisponibles", apisDisponibles);
+                model.addAttribute("misCredenciales", misCredenciales);
+                model.addAttribute("totalCredenciales", misCredenciales.size());
 
-            long credencialesActivas = misCredenciales.stream()
-                    .filter(CredencialApiResponse::getEstado)
-                    .count();
-            model.addAttribute("credencialesActivas", credencialesActivas);
+                long credencialesActivas = misCredenciales.stream()
+                        .filter(CredencialApiResponse::getEstado)
+                        .count();
+                model.addAttribute("credencialesActivas", credencialesActivas);
 
-        } catch (Exception e) {
-            // En caso de error, continuar con la vista pero sin los datos adicionales
-            model.addAttribute("error", "Error al cargar datos del onboarding");
+            } catch (Exception e) {
+                // En caso de error, continuar con la vista pero sin los datos adicionales
+                model.addAttribute("error", "Error al cargar datos del onboarding");
+            }
         }
 
         return "desarrollador/onboarding";
@@ -117,6 +129,11 @@ public class OnboardingController extends BaseController {
                 return ResponseEntity.status(403).build();
             }
 
+            // Si el usuario no tiene organización, devolver lista vacía
+            if (usuario.getOrganizacion() == null) {
+                return ResponseEntity.ok(List.of());
+            }
+
             List<ApiResponse> apisDisponibles = onboardingService.obtenerApisDisponibles(usuario.getDni());
             return ResponseEntity.ok(apisDisponibles);
 
@@ -136,6 +153,11 @@ public class OnboardingController extends BaseController {
             Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
             if (usuario == null) {
                 return "{\"error\":\"Usuario no autorizado\"}";
+            }
+
+            // Si el usuario no tiene organización, devolver lista vacía
+            if (usuario.getOrganizacion() == null) {
+                return "[]";
             }
 
             List<CredencialApiResponse> misCredenciales = onboardingService.obtenerCredencialesUsuario(usuario.getDni());

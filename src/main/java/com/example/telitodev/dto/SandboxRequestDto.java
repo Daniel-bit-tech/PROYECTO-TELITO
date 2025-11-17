@@ -7,9 +7,11 @@ public class SandboxRequestDto {
     private String method;
     private String targetUrl;
     private Map<String, String> headers;
-    private String body;
+    private Object body;
+    private String apiKey;
 
-
+    public String getApiKey() { return apiKey; }
+    public void setApiKey(String apiKey) { this.apiKey = apiKey; }
     public Integer getApiId() { return apiId; }
     public void setApiId(Integer apiId) { this.apiId = apiId; }
     public String getMethod() { return method; }
@@ -18,6 +20,12 @@ public class SandboxRequestDto {
     public void setTargetUrl(String targetUrl) { this.targetUrl = targetUrl; }
     public Map<String, String> getHeaders() { return headers; }
     public void setHeaders(Map<String, String> headers) { this.headers = headers; }
-    public String getBody() { return body; }
-    public void setBody(String body) { this.body = body; }
+
+    public Object getBody() {
+        return body;
+    }
+
+    public void setBody(Object body) {
+        this.body = body;
+    }
 }

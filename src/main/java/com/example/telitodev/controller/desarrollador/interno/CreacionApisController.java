@@ -179,16 +179,14 @@ public class CreacionApisController extends BaseController {
             return "desarrollador/interno/crearVersionApi";
         }
 
-        log.info("[DEBUG] Entró a guardarVersionApi() para API ID={}, formato={}, tieneArchivo={}",
-                versionContratoDto.getIdAPI(),
-                versionContratoDto.getFormato(),
-                versionContratoDto.getArchivo() != null && !versionContratoDto.getArchivo().isEmpty());
+        //log.info("[DEBUG] Entro a guardarVersionApi() para API ID={}, formato={}, tieneArchivo={}",
+
         try {
 
             contratoApiService.validarYProcesarContrato(versionContratoDto, api);
 
         } catch (ContratoApiService.ContratoValidationException e) {
-            log.error("[ERROR] Falló la validación de contrato: {}", e.getMessage());
+        //    log.error("[ERROR] Fallo la validacion de contrato: {}", e.getMessage());
 
             boolean subioArchivo = versionContratoDto.getArchivo() != null
                     && !versionContratoDto.getArchivo().isEmpty();
@@ -199,7 +197,7 @@ public class CreacionApisController extends BaseController {
             return "desarrollador/interno/crearVersionApi";
 
         } catch (Exception e) {
-            log.error("[ERROR] Falló la validación de contrato: {}", e.getMessage());
+            //log.error("[ERROR] Fallo la validacion de contrato: {}", e.getMessage());
             model.addAttribute("errorBack", "Falló la validación de contrato");
             return "desarrollador/interno/crearVersionApi";
 
@@ -323,7 +321,7 @@ public class CreacionApisController extends BaseController {
 
             } else throw new DocApiService.DocValidationException("Debe enviar al menos 1 archivo de documentación adicional");
         } catch (DocApiService.DocValidationException e) {
-            log.error("[ERROR] Falló la validación de docs: {}", e.getMessage());
+            //log.error("[ERROR] Fallo la validacion de docs: {}", e.getMessage());
             model.addAttribute("errorBack", e.getMessage());
             return "desarrollador/interno/crearDocGeneral";
         } finally {

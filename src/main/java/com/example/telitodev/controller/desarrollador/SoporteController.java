@@ -9,6 +9,7 @@ import com.example.telitodev.repository.ApiRepository;
 import com.example.telitodev.repository.TicketRepository;
 import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.service.ChatbotService;
+import com.example.telitodev.service.ChatbotTicketService;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,13 +34,16 @@ public class SoporteController extends BaseController {
     final TicketRepository ticketRepository;
     final ChatbotService chatbotService;
     final ApiRepository apiRepository;
+    final ChatbotTicketService chatbotTicketService;
     
     public SoporteController(UsuarioRepository usuarioRepository, TicketRepository ticketRepository, 
-                            ChatbotService chatbotService, ApiRepository apiRepository) {
+                            ChatbotService chatbotService, ApiRepository apiRepository,
+                            ChatbotTicketService chatbotTicketService) {
         this.usuarioRepository = usuarioRepository;
         this.ticketRepository = ticketRepository;
         this.chatbotService = chatbotService;
         this.apiRepository = apiRepository;
+        this.chatbotTicketService = chatbotTicketService;
     }
 
     @GetMapping("/soporte")
@@ -119,7 +123,101 @@ public class SoporteController extends BaseController {
     }
 
     /**
-     * Procesa la creación de un nuevo ticket
+     * Endpoint para que el chatbot cree tickets automáticamente
+     * Recibe JSON y devuelve JSON con el resultado
+     */
+    @CrossOrigin(origins = "*")
+    @PostMapping("/soporte/chatbot/crear-ticket")
+    @ResponseBody
+    public Map<String, Object> crearTicketChatbot(@RequestBody Map<String, Object> ticketData,
+                                                 Authentication auth,
+                                                 HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            logger.info("=== CHATBOT CREANDO TICKET ===");
+
+            // Obtener datos del ticket desde el JSON
+            String asunto = (String) ticketData.get("asunto");
+            Integer idApi = Integer.valueOf(ticketData.get("idApi").toString());
+            String descripcion = (String) ticketData.get("descripcion");
+            String infoAdicional = (String) ticketData.get("infoAdicional");
+            
+            logger.info("Asunto: " + asunto);
+            logger.info("ID API: " + idApi);
+            
+            // Obtener el usuario actual
+            Usuario usuario = getCurrentUser(auth, session);
+            logger.info("Usuario: " + usuario.getDni());
+            
+            // Buscar la API seleccionada
+            Api api = apiRepository.findById(idApi).orElseThrow(() -> 
+                new RuntimeException("API no encontrada"));
+            logger.info("API encontrada: " + api.getNombre());
+            
+            // Crear el nuevo ticket
+            Ticket ticket = new Ticket();
+            ticket.setAsunto(asunto);
+            ticket.setDescripcion(descripcion + (infoAdicional != null && !infoAdicional.isEmpty() 
+                ? "\n\n[Información adicional del chatbot]:\n" + infoAdicional : ""));
+            ticket.setFechaCreacion(new Timestamp(System.currentTimeMillis()));
+            ticket.setEstado(true); // Estado activo
+            ticket.setUsuario(usuario);
+            ticket.setApi(api);
+            
+            // Guardar el ticket
+            Ticket savedTicket = ticketRepository.save(ticket);
+            logger.info("Ticket creado por chatbot con ID: " + savedTicket.getIdTicket());
+            
+            // Respuesta exitosa
+            response.put("success", true);
+            response.put("ticketId", savedTicket.getIdTicket());
+            response.put("message", "Ticket creado exitosamente. ID: " + savedTicket.getIdTicket());
+            
+        } catch (Exception e) {
+            logger.error("ERROR AL CREAR TICKET VIA CHATBOT: " + e.getMessage(), e);
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        }
+        
+        return response;
+    }
+
+    /**
+     * Endpoint para obtener la lista de APIs disponibles para el chatbot
+     */
+    @CrossOrigin(origins = "*")
+    @GetMapping("/soporte/chatbot/apis")
+    @ResponseBody
+    public Map<String, Object> obtenerApisParaChatbot(Authentication auth, HttpSession session) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            List<Api> apis = apiRepository.findAll();
+            
+            // Simplificar los datos de las APIs para el chatbot
+            List<Map<String, Object>> apisSimplificadas = apis.stream().map(api -> {
+                Map<String, Object> apiData = new HashMap<>();
+                apiData.put("id", api.getIdApi());
+                apiData.put("nombre", api.getNombre());
+                apiData.put("descripcion", api.getDescripcion());
+                return apiData;
+            }).toList();
+            
+            response.put("success", true);
+            response.put("apis", apisSimplificadas);
+            
+        } catch (Exception e) {
+            logger.error("ERROR AL OBTENER APIS PARA CHATBOT: " + e.getMessage(), e);
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        }
+        
+        return response;
+    }
+
+    /**
+     * Procesa la creación de un nuevo ticket desde formulario web
      */
     @PostMapping("/soporte/crear-ticket")
     public String crearTicket(@RequestParam("asunto") String asunto,

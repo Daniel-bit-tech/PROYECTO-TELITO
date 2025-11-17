@@ -121,6 +121,32 @@
             cursor: pointer;
         }
 
+        /* Estilos para botones del chatbot */
+        .message-bot .btn-group {
+            margin-top: 0.5rem;
+        }
+
+        .message-bot .btn-sm {
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+        }
+
+        .message-bot .d-grid {
+            margin-bottom: 0.5rem;
+        }
+
+        .message-bot .btn-outline-primary {
+            text-align: left;
+            border: 1px solid var(--tblr-primary);
+            transition: all 0.2s ease;
+        }
+
+        .message-bot .btn-outline-primary:hover {
+            background-color: var(--tblr-primary);
+            color: white;
+            transform: translateY(-1px);
+        }
+
         .support-sidebar {
             display: flex;
             flex-direction: column;
@@ -328,15 +354,21 @@
                     </div>
                     <div class="chat-messages" id="chat-messages">
                         <div class="message message-bot">
-                            ¡Hola! Soy el asistente virtual de Telito. ¿En qué puedo ayudarte hoy? Puedo responder preguntas sobre nuestras APIs, documentación o ayudarte a crear un ticket de soporte.
+                            🤖 ¡Hola! Soy el asistente virtual de Telito. ¿En qué puedo ayudarte hoy? 
                         </div>
                         <div class="message message-bot">
-                            Algunas preguntas frecuentes:<br>
-                            • ¿Cómo obtener una API Key?<br>
-                            • ¿Dónde encontrar documentación?<br>
-                            • ¿Cómo probar endpoints?<br>
+                            🚀 <strong>Nuevas funcionalidades:</strong><br>
+                            • Puedo <strong>crear tickets automáticamente</strong> - solo describe tu problema<br>
+                            • Responder preguntas sobre APIs y documentación<br>
+                            • Ayudarte con problemas técnicos<br>
                             <br>
-                            Escribe tu pregunta o escribe "ticket" para hablar con un agente.
+                            💡 <strong>Para crear un ticket rápido:</strong><br>
+                            Escribe algo como "Tengo un problema con..." o "Crear ticket"<br>
+                            <br>
+                            📋 <strong>Preguntas frecuentes:</strong><br>
+                            • "¿Cómo obtener una API Key?"<br>
+                            • "¿Dónde encontrar documentación?"<br>
+                            • "¿Cómo probar endpoints?"
                         </div>
                     </div>
                     <div class="chat-input">
@@ -463,6 +495,54 @@
     // Obtener CSRF token para las peticiones POST
     const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
     const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+    
+    // Variables para el flujo del chatbot
+    let chatbotState = 'inicial';
+    let ticketInfo = {};
+    let apisDisponibles = [];
+    
+    // Estado estructurado para el chatbot
+    let estadoChatbot = {
+        fase: 'inicial',
+        ticketInfo: {
+            titulo: '',
+            descripcion: '',
+            apiId: null,
+            apiNombre: ''
+        }
+    };
+
+    // Cargar APIs disponibles al inicializar
+    async function cargarAPIsDisponibles() {
+        try {
+            console.log('Cargando APIs disponibles...');
+            const response = await fetch('/dev/soporte/chatbot/apis', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {})
+                }
+            });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log('Respuesta del servidor:', data);
+                if (data.success) {
+                    apisDisponibles = data.apis;
+                    console.log('APIs cargadas:', apisDisponibles.length);
+                } else {
+                    console.error('Error en respuesta:', data.error);
+                }
+            } else {
+                console.error('Error HTTP:', response.status);
+            }
+        } catch (error) {
+            console.error('Error al cargar APIs:', error);
+        }
+    }
+
+    // Llamar al cargar la página
+    cargarAPIsDisponibles();
 
     async function sendMessage() {
         const input = document.getElementById('chat-input');
@@ -474,11 +554,142 @@
         addMessage(message, 'user');
         input.value = '';
 
-        // Mostrar indicador de escritura (opcional)
+        // Procesar el mensaje según el estado del chatbot
+        await procesarMensajeChatbot(message);
+    }
+
+    async function procesarMensajeChatbot(message, esAccionBoton = false) {
         const typingIndicator = addMessage('Escribiendo...', 'bot');
+
+        try {
+            // Si estamos en el flujo de creación de tickets, manejar eso primero
+            if (chatbotState !== 'inicial' || estadoChatbot.fase !== 'inicial') {
+                // Sincronizar estados
+                if (estadoChatbot.fase === 'crear') {
+                    chatbotState = 'crear';
+                }
+                await manejarCreacionTicket(message, typingIndicator);
+            }
+            // Detectar si el usuario quiere crear un ticket (solo para nuevos intentos)
+            else if (detectarIntentoCrearTicket(message)) {
+                await manejarCreacionTicket(message, typingIndicator);
+            } 
+            // Comportamiento normal del chatbot (solo si no es una acción de botón)
+            else if (!esAccionBoton) {
+                await manejarChatNormal(message, typingIndicator);
+            } else {
+                // Si es una acción de botón pero no estamos en flujo, limpiar indicador
+                typingIndicator.remove();
+            }
+        } catch (error) {
+            console.error('Error en el chatbot:', error);
+            typingIndicator.remove();
+            addMessage('Lo siento, hubo un error. Por favor, intenta de nuevo.', 'bot');
+        }
+    }
+
+    function detectarIntentoCrearTicket(message) {
+        const palabrasClave = [
+            'crear ticket', 'nuevo ticket', 'reportar problema', 'tengo un problema',
+            'crear reporte', 'reportar bug', 'error en', 'problema con',
+            'no funciona', 'ayuda con', 'soporte para'
+        ];
+        
+        const messageLower = message.toLowerCase();
+        return palabrasClave.some(palabra => messageLower.includes(palabra));
+    }
+
+    async function manejarCreacionTicket(message, typingIndicator) {
+        switch (chatbotState) {
+            case 'inicial':
+                chatbotState = 'esperando_confirmacion';
+                ticketInfo.descripcionOriginal = message;
+                
+                // Extraer información básica
+                ticketInfo.asunto = extraerAsunto(message);
+                ticketInfo.descripcion = message;
+                
+                typingIndicator.remove();
+                addMessage(`He detectado que tienes un problema: "${ticketInfo.asunto}". ¿Quieres que cree un ticket de soporte para ti?`, 'bot');
+                addBotonesConfirmacion();
+                break;
+                
+            case 'esperando_confirmacion':
+                if (message.toLowerCase().includes('sí') || message.toLowerCase().includes('si') || 
+                    message.toLowerCase().includes('yes') || message.toLowerCase().includes('crear')) {
+                    chatbotState = 'seleccionando_api';
+                    typingIndicator.remove();
+                    addMessage('¡Perfecto! Ahora necesito saber qué API está relacionada con tu problema. Selecciona una de la lista:', 'bot');
+                    addSelectorAPIs();
+                } else if (message.toLowerCase().includes('no') || message.toLowerCase().includes('cancelar')) {
+                    chatbotState = 'inicial';
+                    ticketInfo = {}; // Limpiar información del ticket
+                    typingIndicator.remove();
+                    addMessage('Entendido. ¿En qué más puedo ayudarte?', 'bot');
+                } else {
+                    typingIndicator.remove();
+                    addMessage('Por favor, responde "sí" para crear el ticket o "no" para cancelar.', 'bot');
+                    addBotonesConfirmacion();
+                }
+                break;
+                
+            case 'seleccionando_api':
+                // El usuario seleccionó una API o escribió el nombre
+                const apiSeleccionada = buscarAPI(message);
+                if (apiSeleccionada) {
+                    ticketInfo.idApi = apiSeleccionada.id;
+                    ticketInfo.nombreApi = apiSeleccionada.nombre;
+                    await crearTicketFinal(typingIndicator);
+                } else {
+                    typingIndicator.remove();
+                    addMessage('No encontré esa API. Por favor, selecciona una de la lista o escribe el nombre exacto.', 'bot');
+                    addSelectorAPIs();
+                }
+                break;
+                
+            case 'crear':
+                // Manejar el caso especial cuando se llama desde seleccionarAPI
+                if (message === 'crear-ticket-ahora') {
+                    console.log('Creando ticket con info completa:', estadoChatbot.ticketInfo);
+                    ticketInfo.idApi = estadoChatbot.ticketInfo.apiId;
+                    ticketInfo.nombreApi = estadoChatbot.ticketInfo.apiNombre;
+                    ticketInfo.asunto = estadoChatbot.ticketInfo.titulo || ticketInfo.asunto;
+                    ticketInfo.descripcion = estadoChatbot.ticketInfo.descripcion || ticketInfo.descripcion;
+                    await crearTicketFinal(typingIndicator);
+                }
+                break;
+        }
+    }
+
+    async function manejarChatNormal(message, typingIndicator) {
+        const messageLower = message.toLowerCase();
+        
+        // Detectar intenciones específicas antes de llamar al servidor
+        if (detectarIntencionDocumentacion(messageLower)) {
+            typingIndicator.remove();
+            manejarSolicitudDocumentacion(messageLower);
+            return;
+        }
+        
+        if (detectarIntencionNavegacion(messageLower)) {
+            typingIndicator.remove();
+            manejarSolicitudNavegacion(messageLower);
+            return;
+        }
+        
+        if (detectarIntencionEjemplos(messageLower)) {
+            typingIndicator.remove();
+            manejarSolicitudEjemplos(messageLower);
+            return;
+        }
+        
+        if (detectarPreguntaFrecuente(messageLower)) {
+            typingIndicator.remove();
+            manejarPreguntaFrecuente(messageLower);
+            return;
+        }
         
         try {
-            // Llamar al endpoint del backend
             const response = await fetch('/dev/soporte/chat', {
                 method: 'POST',
                 headers: {
@@ -493,18 +704,14 @@
             }
 
             const data = await response.json();
-            
-            // Eliminar indicador de escritura
             typingIndicator.remove();
-            
-            // Añadir respuesta del bot
             addMessage(data.reply || 'Lo siento, no pude procesar tu mensaje.', 'bot');
             
-            // Si el usuario mencionó "ticket", preguntar si quiere crear uno
-            if (message.toLowerCase().includes('ticket') || data.reply.toLowerCase().includes('ticket')) {
+            // Si la respuesta sugiere crear ticket, ofrecer ayuda
+            if (data.reply.toLowerCase().includes('ticket') || message.toLowerCase().includes('problema')) {
                 setTimeout(() => {
-                    addMessage('¿Quieres que te ayude a crear un ticket ahora? Haz clic en "Nuevo Ticket" cuando estés listo.', 'bot');
-                }, 1000);
+                    addMessage('💡 ¡Puedo ayudarte a crear un ticket automáticamente! Solo dime: "crear ticket" o describe tu problema.', 'bot');
+                }, 1500);
             }
             
         } catch (error) {
@@ -512,6 +719,389 @@
             typingIndicator.remove();
             addMessage('Lo siento, hubo un error al procesar tu mensaje. Por favor, intenta de nuevo.', 'bot');
         }
+    }
+
+    async function crearTicketFinal(typingIndicator) {
+        try {
+            const ticketData = {
+                asunto: ticketInfo.asunto,
+                descripcion: ticketInfo.descripcion,
+                idApi: ticketInfo.idApi,
+                infoAdicional: `Creado por chatbot automático`
+            };
+            
+            const response = await fetch('/dev/soporte/chatbot/crear-ticket', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(csrfHeader && csrfToken ? { [csrfHeader]: csrfToken } : {})
+                },
+                body: JSON.stringify(ticketData)
+            });
+            
+            const data = await response.json();
+            typingIndicator.remove();
+            
+            if (data.success) {
+                addMessage(`🎉 ¡Excelente! He creado el ticket #${data.ticketId} para tu problema. Un miembro del equipo de QA lo revisará pronto.`, 'bot');
+                setTimeout(() => {
+                    addMessage('Puedes ver el estado de tus tickets en la sección "Mis Tickets" de esta página.', 'bot');
+                }, 2000);
+                
+                // Refrescar la página para mostrar el nuevo ticket
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
+            } else {
+                addMessage('❌ Lo siento, hubo un error al crear el ticket: ' + data.error, 'bot');
+            }
+            
+            // Resetear estado
+            chatbotState = 'inicial';
+            ticketInfo = {};
+            
+        } catch (error) {
+            console.error('Error al crear ticket:', error);
+            typingIndicator.remove();
+            addMessage('❌ Hubo un error al crear el ticket. Puedes intentar crear uno manualmente.', 'bot');
+            chatbotState = 'inicial';
+            ticketInfo = {};
+        }
+    }
+
+    // Funciones de detección de intenciones
+    function detectarIntencionDocumentacion(message) {
+        const keywordsDoc = [
+            'documentacion', 'documentación', 'docs', 'manual', 'guia', 'guía', 
+            'como usar', 'cómo usar', 'tutorial', 'referencia', 'api doc',
+            'informacion', 'información', 'especificat'
+        ];
+        return keywordsDoc.some(keyword => message.includes(keyword));
+    }
+    
+    function detectarIntencionNavegacion(message) {
+        const keywordsNav = [
+            'donde esta', 'dónde está', 'donde puedo', 'dónde puedo', 
+            'como llegar', 'cómo llegar', 'seccion', 'sección', 'catalogo', 'catálogo',
+            'enlace', 'link', 'direccion', 'dirección', 'pagina', 'página'
+        ];
+        return keywordsNav.some(keyword => message.includes(keyword));
+    }
+    
+    function detectarIntencionEjemplos(message) {
+        const keywordsEjem = [
+            'ejemplo', 'ejemplos', 'sample', 'muestra', 'demo', 
+            'codigo', 'código', 'implementation', 'implementacion', 'implementación'
+        ];
+        return keywordsEjem.some(keyword => message.includes(keyword));
+    }
+    
+    function detectarPreguntaFrecuente(message) {
+        const preguntasFrecuentes = [
+            'como funciona', 'cómo funciona', 'que es', 'qué es',
+            'horario', 'horarios', 'contacto', 'telefono', 'teléfono',
+            'precio', 'costo', 'cuanto', 'cuánto',
+            'error', 'problema', 'no funciona', 'falla', 'bug'
+        ];
+        return preguntasFrecuentes.some(keyword => message.includes(keyword));
+    }
+    
+    function manejarSolicitudDocumentacion(message) {
+        if (message.includes('api') || message.includes('endpoint')) {
+            addMessage('📚 **Documentación de APIs** Te ayudo con la información técnica:', 'bot');
+            addMessage('Puedes encontrar toda nuestra documentación técnica completa aquí:', 'bot');
+            addEnlaceBoton('📖 Ver Catálogo de APIs', '/apis', 'primary');
+            
+            setTimeout(() => {
+                addMessage('También tengo estas opciones específicas para ti:', 'bot');
+                addOpcionesDocumentacion();
+            }, 1500);
+        } else {
+            addMessage('📚 Te ayudo a encontrar la documentación que necesitas. ¿Qué tipo de información buscas?', 'bot');
+            addOpcionesDocumentacion();
+        }
+    }
+    
+    function manejarSolicitudNavegacion(message) {
+        addMessage('🧭 Te ayudo a navegar por la plataforma. Aquí tienes los enlaces directos:', 'bot');
+        addEnlacesNavegacion();
+    }
+    
+    function manejarSolicitudEjemplos(message) {
+        addMessage('💻 ¡Excelente! Te puedo mostrar ejemplos prácticos:', 'bot');
+        addEnlaceBoton('🚀 Ver APIs Disponibles', '/apis', 'success');
+        
+        setTimeout(() => {
+            addMessage('También puedes encontrar casos de uso comunes y guías de implementación en nuestra sección de APIs.', 'bot');
+            addEnlaceBoton('📋 Crear Ticket de Soporte', '/dev/soporte/nuevo-ticket', 'info');
+        }, 1500);
+    }
+    
+    function manejarPreguntaFrecuente(message) {
+        if (message.includes('horario') || message.includes('contacto')) {
+            addMessage('📞 **Información de Contacto:**', 'bot');
+            addMessage('• Horario de soporte: Lunes a Viernes, 8:00 AM - 6:00 PM', 'bot');
+            addMessage('• Para emergencias: Crea un ticket marcando "Urgente"', 'bot');
+            addMessage('• Email: soporte@telito.com', 'bot');
+        } 
+        else if (message.includes('como funciona') || message.includes('cómo funciona')) {
+            addMessage('🔧 **¿Cómo funciona la plataforma?**', 'bot');
+            addMessage('1. **APIs:** Gestiona y monitorea tus servicios', 'bot');
+            addMessage('2. **Métricas:** Visualiza estadísticas en tiempo real', 'bot');
+            addMessage('3. **Soporte:** Crea tickets para obtener ayuda', 'bot');
+            addEnlaceBoton('📖 Ver Catálogo de APIs', '/apis', 'primary');
+        }
+        else if (message.includes('precio') || message.includes('costo') || message.includes('cuanto')) {
+            addMessage('💰 **Información de Pricing:**', 'bot');
+            addMessage('Para información detallada sobre precios y planes, te recomiendo:', 'bot');
+            addEnlaceBoton('🎫 Crear Ticket de Soporte', '/dev/soporte/nuevo-ticket', 'warning');
+            addMessage('También puedo crear un ticket para que el equipo comercial te contacte.', 'bot');
+        }
+        else if (message.includes('error') || message.includes('no funciona') || message.includes('problema') || message.includes('falla') || message.includes('bug')) {
+            addMessage('🚨 **¿Tienes un problema técnico?**', 'bot');
+            addMessage('¡No te preocupes! Puedo ayudarte de inmediato:', 'bot');
+            addMessage('✅ **Opción 1:** Describe tu problema y crearé un ticket automáticamente', 'bot');
+            addMessage('✅ **Opción 2:** Revisa las soluciones más comunes:', 'bot');
+            addEnlaceBoton('🏠 Volver al Centro de Soporte', '/dev/soporte', 'danger');
+            
+            setTimeout(() => {
+                addMessage('💡 Para crear un ticket rápido, solo escribe: "Tengo un problema con..." y describe tu situación.', 'bot');
+            }, 2000);
+        }
+        else {
+            addMessage('🤔 Interesante pregunta. Déjame ayudarte con información específica:', 'bot');
+            addOpcionesGenerales();
+        }
+    }
+    
+    function addOpcionesGenerales() {
+        const messagesContainer = document.getElementById('chat-messages');
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', 'message-bot');
+        
+        const opciones = [
+            { texto: '📚 Documentación', url: '/dev/apis', tipo: 'primary' },
+            { texto: '🎫 Crear Ticket', action: 'crear-ticket', tipo: 'success' },
+            { texto: '❓ FAQ', url: '/dev/soporte#faq', tipo: 'info' },
+            { texto: '📞 Contacto', action: 'contacto', tipo: 'secondary' }
+        ];
+        
+        opciones.forEach(opcion => {
+            const button = document.createElement('button');
+            button.className = `btn btn-${opcion.tipo} btn-sm me-2 mb-1`;
+            button.textContent = opcion.texto;
+            
+            if (opcion.url) {
+                button.onclick = () => window.open(opcion.url, '_blank');
+            } else if (opcion.action === 'crear-ticket') {
+                button.onclick = () => {
+                    addMessage('Quiero crear un ticket', 'user');
+                    procesarMensajeChatbot('crear ticket');
+                };
+            } else if (opcion.action === 'contacto') {
+                button.onclick = () => {
+                    manejarPreguntaFrecuente('contacto horario');
+                };
+            }
+            
+            messageElement.appendChild(button);
+        });
+        
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    function addEnlaceBoton(texto, url, tipo = 'primary') {
+        const messagesContainer = document.getElementById('chat-messages');
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', 'message-bot');
+        
+        const button = document.createElement('a');
+        button.href = url;
+        button.className = `btn btn-${tipo} btn-sm me-2 mb-1`;
+        button.textContent = texto;
+        button.style.textDecoration = 'none';
+        button.onclick = function(e) {
+            e.preventDefault();
+            window.location.href = url;
+            return false;
+        };
+        
+        messageElement.appendChild(button);
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    function addOpcionesDocumentacion() {
+        const messagesContainer = document.getElementById('chat-messages');
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', 'message-bot');
+        
+        const opciones = [
+            { texto: '📖 Ver Catálogo de APIs', url: '/apis', tipo: 'primary' },
+            { texto: '� Crear Ticket de Soporte', url: '/dev/soporte/nuevo-ticket', tipo: 'info' },
+            { texto: '🏠 Volver al Centro de Soporte', url: '/dev/soporte', tipo: 'secondary' }
+        ];
+        
+        opciones.forEach(opcion => {
+            const button = document.createElement('a');
+            button.href = opcion.url;
+            button.className = `btn btn-${opcion.tipo} btn-sm me-2 mb-1`;
+            button.textContent = opcion.texto;
+            button.style.textDecoration = 'none';
+            button.onclick = function(e) {
+                e.preventDefault();
+                window.location.href = opcion.url;
+                return false;
+            };
+            
+            messageElement.appendChild(button);
+        });
+        
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    function addEnlacesNavegacion() {
+        const messagesContainer = document.getElementById('chat-messages');
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message', 'message-bot');
+        
+        const enlaces = [
+            { texto: '📖 Ver Catálogo de APIs', url: '/apis', tipo: 'primary' },
+            { texto: '🎫 Crear Nuevo Ticket', url: '/dev/soporte/nuevo-ticket', tipo: 'success' },
+            { texto: '🏠 Centro de Soporte', url: '/dev/soporte', tipo: 'info' },
+            { texto: '� Mi Perfil', url: '/usuario/desarrollador/perfil', tipo: 'secondary' }
+        ];
+        
+        enlaces.forEach(enlace => {
+            const button = document.createElement('a');
+            button.href = enlace.url;
+            button.className = `btn btn-${enlace.tipo} btn-sm me-2 mb-1`;
+            button.textContent = enlace.texto;
+            button.style.textDecoration = 'none';
+            button.onclick = function(e) {
+                e.preventDefault();
+                window.location.href = enlace.url;
+                return false;
+            };
+            
+            messageElement.appendChild(button);
+            messageElement.appendChild(document.createElement('br'));
+        });
+        
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Funciones auxiliares
+    function extraerAsunto(mensaje) {
+        if (mensaje.length > 50) {
+            return "Problema: " + mensaje.substring(0, 47) + "...";
+        }
+        return "Solicitud de soporte: " + mensaje;
+    }
+
+    function buscarAPI(mensaje) {
+        console.log('Buscando API:', mensaje, 'Estado:', chatbotState, 'APIs disponibles:', apisDisponibles.length);
+        
+        const messageLower = mensaje.toLowerCase().trim();
+        
+        // Buscar por ID (si el mensaje es un número)
+        const id = parseInt(mensaje);
+        if (!isNaN(id) && id > 0) {
+            const apiEncontrada = apisDisponibles.find(api => api.id === id);
+            console.log('API encontrada por ID:', apiEncontrada);
+            return apiEncontrada;
+        }
+        
+        // Buscar por nombre exacto
+        let apiEncontrada = apisDisponibles.find(api => 
+            api.nombre.toLowerCase() === messageLower
+        );
+        
+        // Si no encuentra exacto, buscar parcial
+        if (!apiEncontrada) {
+            apiEncontrada = apisDisponibles.find(api => 
+                api.nombre.toLowerCase().includes(messageLower) ||
+                messageLower.includes(api.nombre.toLowerCase())
+            );
+        }
+        
+        console.log('API encontrada:', apiEncontrada);
+        return apiEncontrada;
+    }
+
+    function addBotonesConfirmacion() {
+        const messagesContainer = document.getElementById('chat-messages');
+        const buttonContainer = document.createElement('div');
+        buttonContainer.classList.add('message', 'message-bot');
+        buttonContainer.innerHTML = `
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-success btn-sm" onclick="confirmarTicket(true)">
+                    ✅ Sí, crear ticket
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="confirmarTicket(false)">
+                    ❌ No, continuar chat
+                </button>
+            </div>
+        `;
+        messagesContainer.appendChild(buttonContainer);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    function addSelectorAPIs() {
+        const messagesContainer = document.getElementById('chat-messages');
+        const selectorContainer = document.createElement('div');
+        selectorContainer.classList.add('message', 'message-bot');
+        
+        let apisHtml = '<div class="mb-2"><strong>APIs disponibles:</strong></div>';
+        apisDisponibles.forEach(api => {
+            apisHtml += `
+                <div class="d-grid gap-2 mb-1">
+                    <button type="button" class="btn btn-outline-primary btn-sm text-start" 
+                            onclick="seleccionarAPI(${api.id}, '${api.nombre}')">
+                        <strong>${api.nombre}</strong><br>
+                        <small class="text-muted">${api.descripcion || 'Sin descripción'}</small>
+                    </button>
+                </div>
+            `;
+        });
+        
+        selectorContainer.innerHTML = apisHtml;
+        messagesContainer.appendChild(selectorContainer);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Funciones globales para los botones
+    window.confirmarTicket = function(confirmar) {
+        if (confirmar) {
+            addMessage('✅ Sí, crear ticket', 'user');
+            procesarMensajeChatbot('sí', true);
+        } else {
+            addMessage('❌ No, continuar chat', 'user');
+            procesarMensajeChatbot('no', true);
+        }
+    }
+
+    window.seleccionarAPI = function(id, nombre) {
+        console.log('seleccionarAPI llamada con:', { id, nombre });
+        console.log('Estado antes de actualizar:', estadoChatbot);
+        
+        // Actualizar estado del chatbot
+        estadoChatbot.ticketInfo.apiId = id;
+        estadoChatbot.ticketInfo.apiNombre = nombre;
+        estadoChatbot.fase = 'crear';
+        
+        console.log('Estado después de actualizar:', estadoChatbot);
+        
+        addMessage(`Seleccioné: ${nombre}`, 'user');
+        
+        // Procesar la creación del ticket
+        setTimeout(() => {
+            console.log('Procesando creación del ticket...');
+            procesarMensajeChatbot('crear-ticket-ahora', true);
+        }, 500);
     }
 
     function addMessage(text, sender) {
@@ -525,6 +1115,21 @@
         
         return messageElement; // Retornar el elemento para poder eliminarlo después si es necesario
     }
+    
+    // Inicialización del chatbot con mensaje de bienvenida inteligente
+    function inicializarChatbot() {
+        // Mensaje de bienvenida simple y directo
+        setTimeout(() => {
+            addMessage('¡Hola! 👋 Soy tu asistente de soporte. Puedo crear tickets automáticamente o ayudarte a encontrar información.', 'bot');
+        }, 1000);
+        
+        setTimeout(() => {
+            addMessage('💡 Escribe tu problema o pregunta, o usa comandos como "documentación", "ejemplos" o "crear ticket".', 'bot');
+        }, 2500);
+    }
+    
+    // Inicializar cuando se carga la página
+    window.addEventListener('load', inicializarChatbot);
 </script>
 
 <script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620|"></script>
