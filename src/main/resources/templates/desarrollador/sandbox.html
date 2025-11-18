@@ -296,34 +296,38 @@
     }
 
     async function sendRequest() {
-        if (!CURRENT_API_ID) { alert("Selecciona una API primero."); return; }
 
-        const apiId = parseInt(CURRENT_API_ID);
-        const apiKey = document.getElementById('apiKey').value;
-        const env = document.getElementById('environment-select').value;
         const targetUrl = document.getElementById('targetUrl').value;
         const method = document.getElementById('method-btn').textContent.trim();
         let body = document.getElementById('request-body').value;
 
+        const isAbsoluteUrl = targetUrl.startsWith('http');
+
+        if (!isAbsoluteUrl && !CURRENT_API_ID) {
+            alert("Selecciona una API primero.");
+            return;
+        }
+
+
+        const apiId = isAbsoluteUrl ? 0 : parseInt(CURRENT_API_ID);
+        const apiKey = document.getElementById('apiKey').value;
         const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
         const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-        // Parsear Body si no está vacío
+
+
         try {
-            if(body && method !== 'GET') body = JSON.parse(body);
+            if(body && method !== 'GET' && method !== 'DELETE') body = JSON.parse(body);
             else body = null;
         } catch(e) {
             alert("El cuerpo (Body) debe ser un JSON válido.");
             return;
         }
 
-        // Visual feedback
         document.getElementById('response-body-pre').textContent = "Enviando petición...";
 
-
-
         const requestData = {
-            apiId: apiId,
+            apiId: apiId, // Será 0 si es proxy universal
             method: method,
             targetUrl: targetUrl,
             apiKey: apiKey,
@@ -334,7 +338,10 @@
             const start = performance.now();
             const resp = await fetch('/api/sandbox/execute', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeader]: csrfToken
+                },
                 body: JSON.stringify(requestData)
             });
             const end = performance.now();

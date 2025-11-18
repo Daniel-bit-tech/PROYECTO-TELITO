@@ -49,3 +49,4 @@ logs/
 *.temp
 .DS_Store
 Thumbs.db
+1.env

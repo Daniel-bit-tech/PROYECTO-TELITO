@@ -96,35 +96,21 @@ public class ProxyController {
         return ResponseEntity.ok(response);
     }
 
+
+
+
+
+
+    // EN ProxyController.java
+
     @PostMapping("/api/sandbox/execute")
     public ResponseEntity<Map<String, Object>> executeSandboxTest(@RequestBody SandboxRequestDto request, Authentication authentication) {
         try {
             String userEmail = authentication.getName();
             Usuario usuario = usuarioRepository.findByCorreo(userEmail);
             if (usuario == null) throw new RuntimeException("Usuario no autenticado.");
-
             String userDni = usuario.getDni();
             String apiKey = request.getApiKey();
-
-
-            Api apiTarget = apiRepository.findById(request.getApiId())
-                    .orElseThrow(() -> new RuntimeException("API no encontrada"));
-
-            boolean esApiPublica = (apiTarget.getDominio().getIdDominio() == 11);
-            boolean esKeyMaestra = "DEV_TEST_12345".equals(apiKey);
-
-            if (!esApiPublica && !esKeyMaestra) {
-                Optional<CredencialApi> credencialOpt = credencialApiRepository
-                        .findByApiKeyAndUsuario_DniAndEstado(apiKey, userDni, true);
-
-                if (credencialOpt.isEmpty()) {
-                    Map<String, Object> errorMap = new HashMap<>();
-                    errorMap.put("error", "Acceso Prohibido");
-                    errorMap.put("detalle", "Esta es una API Privada. La API Key proporcionada no es válida o no te pertenece.");
-                    errorMap.put("statusCode", 403);
-                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorMap);
-                }
-            }
 
             String pathTemplate;
             String urlBase;
@@ -132,11 +118,38 @@ public class ProxyController {
             if (request.getTargetUrl().startsWith("http")) {
                 urlBase = "";
                 pathTemplate = request.getTargetUrl();
+
             } else {
+
+                if (request.getApiId() == null || request.getApiId() == 0) {
+                    throw new RuntimeException("Debe seleccionar una API para rutas relativas.");
+                }
+
+                Api apiTarget = apiRepository.findById(request.getApiId())
+                        .orElseThrow(() -> new RuntimeException("API no encontrada"));
+
+                boolean esApiPublica = (apiTarget.getDominio().getIdDominio() == 11);
+                boolean esKeyMaestra = "DEV_TEST_12345".equals(apiKey);
+
+                if (!esApiPublica && !esKeyMaestra) {
+                    Optional<CredencialApi> credencialOpt = credencialApiRepository
+                            .findByApiKeyAndUsuario_DniAndEstado(apiKey, userDni, true);
+
+                    if (credencialOpt.isEmpty()) {
+                        Map<String, Object> errorMap = new HashMap<>();
+                        errorMap.put("error", "Acceso Prohibido");
+                        errorMap.put("detalle", "Esta API requiere una credencial válida que te pertenezca.");
+                        errorMap.put("statusCode", 403);
+                        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorMap);
+                    }
+                }
+
+
                 Map<String, List<String>> pathParamsMap = getPathParamsMap(request.getApiId());
                 pathTemplate = matchEndpoint(request.getTargetUrl(), pathParamsMap);
                 urlBase = getUrlBaseFromDb(request.getApiId());
             }
+
 
             HttpMethod method = HttpMethod.valueOf(request.getMethod().toUpperCase());
 
@@ -147,6 +160,7 @@ public class ProxyController {
 
             ResponseEntity<String> response = callApi(urlBase, pathTemplate, request.getTargetUrl(), method, bodyAsString);
 
+
             Map<String, Object> bodyMap = new HashMap<>();
 
             if (response.getBody() != null && !response.getBody().isEmpty()) {
@@ -154,7 +168,6 @@ public class ProxyController {
                     Object jsonBody = objectMapper.readValue(response.getBody(), Object.class);
                     bodyMap.put("data", jsonBody);
                 } catch (Exception e) {
-                    // Si no es JSON, lo devolvemos como texto plano
                     bodyMap.put("data", response.getBody());
                 }
             } else {
@@ -173,6 +186,11 @@ public class ProxyController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMap);
         }
     }
+
+
+
+
+
 
     private ResponseEntity<String> callApi(String urlBase, String pathTemplate, String urlIngresada, HttpMethod method, String body) {
         Map<String, String> uriVariables = extractPathVariables(urlIngresada, pathTemplate);
