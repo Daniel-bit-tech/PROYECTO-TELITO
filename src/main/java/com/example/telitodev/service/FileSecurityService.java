@@ -1,13 +1,10 @@
 package com.example.telitodev.service;
 
-import com.example.telitodev.dto.DocGeneralDTO;
 import com.example.telitodev.dto.VersionContratoDTO;
 import com.example.telitodev.entity.Documentacion;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.jsoup.Jsoup;
-import org.jsoup.safety.Safelist;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.LoaderOptions;
@@ -49,12 +46,12 @@ public class FileSecurityService {
         switch (versionContratoDto.getFormato()) {
             case JSON -> {
                 contenidoContrato = versionContratoDto.isDesdeArchivo()
-                        ? validateAndNormalizeJson(versionContratoDto.getArchivo())
+                        ? validateAndNormalizeJson(versionContratoDto.getContrato())
                         : validateAndNormalizeJsonString(versionContratoDto.getContenido());
             }
             case YAML -> {
                 contenidoContrato = versionContratoDto.isDesdeArchivo()
-                        ? validateAndNormalizeYaml(versionContratoDto.getArchivo())
+                        ? validateAndNormalizeYaml(versionContratoDto.getContrato())
                         : validateAndNormalizeYamlString(versionContratoDto.getContenido());
             }
             default -> throw new SecurityException("Formato de contrato no soportado.");

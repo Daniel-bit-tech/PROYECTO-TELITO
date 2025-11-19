@@ -9,8 +9,10 @@ import jakarta.validation.constraints.Size;
 
 public class ApiCreacionDTO {
 
+    private Integer idApi;
+
     @NotBlank(message = "Su API debe tener un nombre")
-    @Size(min = 5, max = 50, message = "El nombre debe tener menos de 50 caracteres")
+    @Size(min = 5, max = 50, message = "El nombre debe tener entre 5 y 50 caracteres")
     private String nombre;
 
     @NotBlank(message = "Coloque una descripción a su API")
@@ -18,16 +20,43 @@ public class ApiCreacionDTO {
     private String descripcion;
 
     @NotBlank(message = "Proporcione una URL base para su API")
-    @Pattern(regexp = "^(https?://)([\\w.-]+)(:\\d+)?(/)?$",
+    @Pattern(regexp = "^(https?:\\/\\/)([A-Za-z0-9.-]+)(:\\d+)?(\\/.*)?$",
             message = "Proporcione una URL base válida para su API")
     private String endpointURL;
 
     @NotNull(message = "Asigne un dominio a su API para facilitar su búsqueda")
-    private Dominio dominio;
+    private Integer idDominio;
 
     @NotNull(message = "Asigne un tag a su API para facilitar su búsqueda")
-    private Tag tag;
+    private Integer idTag;
 
+
+    public ApiCreacionDTO() {
+    }
+
+    public ApiCreacionDTO(Integer idApi, String descripcion, String endpointURL, Integer idDominio, Integer idTag) {
+        this.idApi = idApi;
+        this.descripcion = descripcion;
+        this.endpointURL = endpointURL;
+        this.idDominio = idDominio;
+        this.idTag = idTag;
+    }
+
+    public ApiCreacionDTO(Integer idApi, String nombre, String descripcion, String endpointURL, Integer idDominio, Integer idTag) {
+        this.idApi = idApi;
+        this.nombre = nombre;
+        this.descripcion = descripcion;
+        this.endpointURL = endpointURL;
+        this.idDominio = idDominio;
+        this.idTag = idTag;
+    }
+
+    public Integer getIdApi() {
+        return idApi;
+    }
+    public void setIdApi(Integer idApi) {
+        this.idApi = idApi;
+    }
 
     public String getNombre() {
         return nombre;
@@ -50,17 +79,17 @@ public class ApiCreacionDTO {
         this.endpointURL = endpointURL;
     }
 
-    public Dominio getDominio() {
-        return dominio;
+    public Integer getIdDominio() {
+        return idDominio;
     }
-    public void setDominio(Dominio dominio) {
-        this.dominio = dominio;
+    public void setIdDominio(Integer idDominio) {
+        this.idDominio = idDominio;
     }
 
-    public Tag getTag() {
-        return tag;
+    public Integer getIdTag() {
+        return idTag;
     }
-    public void setTag(Tag tag) {
-        this.tag = tag;
+    public void setIdTag(Integer idTag) {
+        this.idTag = idTag;
     }
 }

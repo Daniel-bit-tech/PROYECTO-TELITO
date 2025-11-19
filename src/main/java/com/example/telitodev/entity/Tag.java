@@ -25,6 +25,13 @@ public class Tag {
     private List<Api> apisTag;
 
 
+    public Tag() {
+    }
+
+    public Tag(Integer idTag) {
+        this.idTag = idTag;
+    }
+
     //Get y Set
     public Integer getIdTag() {
         return idTag;

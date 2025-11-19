@@ -1,11 +1,9 @@
 package com.example.telitodev.service;
 
-import com.example.telitodev.dto.DocGeneralDTO;
 import org.jsoup.Jsoup;
 import org.jsoup.safety.Safelist;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;

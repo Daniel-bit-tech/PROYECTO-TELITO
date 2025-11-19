@@ -12,6 +12,7 @@
     <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet"/>
     <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/tabler/dist/js/tabler-theme.min.js"></script>
 </head>
 <body>
@@ -23,202 +24,166 @@
             <div class="container-xl">
 
                 <div class="row">
-                    <div class="col-md-4">
-                        <!-- Selector de Versiones -->
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">
-                                    <i class="fas fa-code-branch text-teal me-2"></i>
-                                    Versiones Disponibles
-                                </h3>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label class="form-label">Seleccionar Versión</label>
-                                    <select class="form-select" id="versionSelector">
-                                        <option value="">-- Selecciona una versión --</option>
-                                        <option th:each="version : ${versiones}"
-                                                th:value="${version.idVersion}"
-                                                th:text="${version.version + ' - ' + version.estadoVersion.label}">
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <div class="d-grid gap-2">
-                                    <button class="btn btn-primary" id="btnViewVersion">
-                                        <i class="fas fa-eye me-2"></i>Ver Detalles
-                                    </button>
-                                    <button class="btn btn-success" id="btnNewVersion">
-                                        <i class="fas fa-plus me-2"></i>Nueva Versión
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Resumen de Versiones -->
-                        <div class="card mt-4">
-                            <div class="card-header">
-                                <h4 class="card-title">Resumen</h4>
-                            </div>
-                            <div class="card-body">
-                                <div class="row text-center">
-                                    <div class="col-4">
-                                        <div class="text-blue">
-                                            <i class="fas fa-check-circle fa-2x"></i>
-                                            <div class="mt-2">
-                                                <span class="h4" th:text="${#lists.size(versiones.?[estadoVersion == 'ACTIVA'])}">0</span>
-                                                <div class="text-muted small">Activas</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="text-orange">
-                                            <i class="fas fa-flask fa-2x"></i>
-                                            <div class="mt-2">
-                                                <span class="h4" th:text="${#lists.size(versiones.?[estadoVersion == 'BETA'])}">0</span>
-                                                <div class="text-muted small">Beta</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="text-red">
-                                            <i class="fas fa-archive fa-2x"></i>
-                                            <div class="mt-2">
-                                                <span class="h4" th:text="${#lists.size(versiones.?[estadoVersion == 'DEPRECADA'])}">0</span>
-                                                <div class="text-muted small">Deprecadas</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Sidebar -->
+                    <div class="col-lg-2">
+                        <div th:replace="desarrollador/interno/gestionSidebar :: gestionApi-sidebar(${api.idApi}, ${api.nombre}, ${currentView}, ${subView})"></div>
                     </div>
 
-                    <div class="col-md-8">
-                        <!-- Detalles de la Versión Seleccionada -->
-                        <div class="card" id="versionDetails" style="display: none;">
-                            <div class="card-header">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h3 class="card-title" id="detailTitle">Detalles de Versión</h3>
-                                    <div class="btn-list">
-                                        <button class="btn btn-warning btn-sm" id="btnEditVersion">
-                                            <i class="fas fa-edit me-1"></i>Editar
-                                        </button>
-                                        <button class="btn btn-danger btn-sm" id="btnDeleteVersion">
-                                            <i class="fas fa-trash me-1"></i>Eliminar
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <table class="table table-borderless">
-                                            <tr>
-                                                <td class="w-25"><strong>Versión:</strong></td>
-                                                <td id="detailVersion">-</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Estado:</strong></td>
-                                                <td>
-                                                    <span class="badge" id="detailStatus">-</span>
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Fecha Publicación:</strong></td>
-                                                <td id="detailDate">-</td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <table class="table table-borderless">
-                                            <tr>
-                                                <td class="w-25"><strong>Cambios:</strong></td>
-                                                <td id="detailChanges">-</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Endpoints:</strong></td>
-                                                <td id="detailEndpoints">-</td>
-                                            </tr>
-                                        </table>
-                                    </div>
-                                </div>
+                    <div class="card px-0 col-lg-10">
+                        <div class="card-header">
+                            <ul class="nav nav-tabs card-header-tabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-section="status" href="#tabs-status" data-bs-toggle="tab">Estado</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" data-section="contrato" href="#tabs-contrato" data-bs-toggle="tab">Contrato OpenApi</a>
+                                </li>
 
-                                <div class="mt-4">
-                                    <h5>Documentación</h5>
-                                    <div id="detailDocumentation" class="bg-light p-3 rounded">
-                                        No hay documentación adicional disponible.
+                                <li class="nav-item dropdown ms-auto">
+                                    <span class="nav-link dropdown-toggle active" data-bs-toggle="dropdown">
+                                        <strong th:text="'Versión: '+${versionSeleccionada.version}"></strong>
+                                    </span>
+                                    <div class="dropdown-menu">
+                                        <span class="dropdown-header">
+                                            Activas
+                                            <span class="badge bg-success text-bg-success ms-auto" th:text="${#lists.size(versiones.?[estadoVersion.label == 'Estable'])}">12</span>
+                                        </span>
+                                        <a th:each="v : ${versiones.?[estadoVersion.label == 'Estable']}"
+                                           th:classappend="${v.idVersion == param.idVersion} ? ' active'"
+                                           th:href="@{'/dev/int/misApis/' + ${v.api.idApi} + '/versiones?idVersion=' + ${v.idVersion}}"
+                                           class="dropdown-item">
+                                            <div><strong th:text="${v.version}"></strong></div>
+                                            <small class="ms-auto" th:text="${#temporals.format(v.fechaPublicacion, 'dd-MM-yyyy')}"></small>
+                                        </a>
+
+                                        <span class="dropdown-header">
+                                            Otras
+                                            <span class="badge bg-primary text-bg-primary ms-auto" th:text="${#lists.size(versiones.?[estadoVersion.label != 'Estable'])}">12</span>
+                                        </span>
+                                        <a th:each="v : ${versiones.?[estadoVersion.label != 'Estable']}"
+                                           th:classappend="${v.idVersion == param.idVersion} ? ' active'"
+                                           th:href="@{'/dev/int/misApis/' + ${v.api.idApi} + '/versiones?idVersion=' + ${v.idVersion}}"
+                                           class="dropdown-item">
+                                            <div><strong th:text="${v.version}"></strong></div>
+                                            <small class="ms-auto" th:text="${#temporals.format(v.fechaPublicacion, 'dd-MM-yyyy')}"></small>
+                                        </a>
+
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item btn" data-bs-toggle="modal" data-bs-target="#newVersionModal">
+                                            <i class="fa fa-plus"></i> Nueva versión
+                                        </a>
                                     </div>
-                                </div>
-                            </div>
+                                </li>
+                            </ul>
                         </div>
 
-                        <!-- Lista de Todas las Versiones -->
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">Todas las Versiones</h3>
-                            </div>
-                            <div class="table-responsive">
-                                <table class="table table-hover table-vcenter card-table">
-                                    <thead>
-                                    <tr>
-                                        <th>Versión</th>
-                                        <th>Estado</th>
-                                        <th>Fecha Publicación</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr th:each="version : ${versiones}">
-                                        <td>
-                                            <div class="d-flex align-items-center">
-                                                <i class="fas fa-tag text-blue me-2"></i>
-                                                <strong th:text="${version.version}">v1.0</strong>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <th:block th:switch="${version.estadoVersion}">
-                                                <span th:case="'ESTABLE'" class="badge bg-success">Activa</span>
-                                                <span th:case="'EN_PRUEBAS'" class="badge bg-warning">En pruebas</span>
-                                                <span th:case="'DEPRECADA'" class="badge bg-danger">Deprecada</span>
-                                                <span th:case="'RETIRADA'" class="badge bg-danger">Retirada</span>
-                                                <span th:case="'EN_CONSTRUCCION'" class="badge bg-info">En Construcción</span>
-                                                <span th:case="*" class="badge bg-secondary" th:text="${version.estadoVersion}"></span>
-                                            </th:block>
-                                        </td>
-                                        <td th:text="${#temporals.format(version.fechaPublicacion, 'dd/MM/yyyy')}">01/01/2023</td>
-                                        <td>
-                                            <div class="btn-list">
-                                                <button class="btn btn-sm btn-outline-primary" th:onclick="|selectVersion(${version.idVersion})|">
-                                                    <i class="fas fa-eye"></i>
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-warning">
-                                                    <i class="fas fa-edit"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                        <div class="card-body">
+                            <div class="tab-content">
+                                <div class="tab-pane active show mt-3" id="tabs-status">
+                                    <h3 class="card-title">Estado de la versión</h3>
 
-                <!-- Modal para Nueva Versión (placeholder) -->
-                <div class="modal fade" id="newVersionModal" tabindex="-1">
-                    <div class="modal-dialog">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Nueva Versión</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p>Formulario para crear nueva versión iría aquí.</p>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                <button type="button" class="btn btn-primary">Crear Versión</button>
+                                    <form class="card w-50" th:action="@{'/dev/int/misApis/estadoVersion'}"
+                                          method="post">
+                                        <input type="hidden" name="idVersion" th:value="${versionSeleccionada.idVersion}"/>
+
+                                        <div class="list-group list-group-flush">
+                                            <label th:each="estado : ${listaEstados}" class="list-group-item d-flex justify-content-between align-items-center">
+                                                <strong th:text="${estado.label.toUpperCase()}"></strong>
+                                                <input class="form-check-input" type="radio" name="estadoVersion"
+                                                       th:value="${estado.name}"
+                                                       th:checked="${estado.name == estadoActual.name}"/>
+                                            </label>
+                                        </div>
+
+                                        <div class="card-footer text-end">
+                                            <button type="reset" class="btn btn-outline-secondary">
+                                                <i class="fa fa-x me-1"></i> Cancelar
+                                            </button>
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fa fa-save ms-auto"></i> Actualizar estado
+                                            </button>
+                                        </div>
+                                    </form>
+
+                                    <h5 class="mt-4">Documentación asociada</h5>
+                                    <div th:if="${#lists.isEmpty(versionSeleccionada.documentaciones)}" class="alert alert-info">
+                                        No hay documentación registrada.
+                                    </div>
+
+                                    <div th:unless="${#lists.isEmpty(versionSeleccionada.documentaciones)}" class="list-group">
+                                        <div class="list-group-item d-flex justify-content-between align-items-center"
+                                             th:each="doc : ${versionSeleccionada.documentaciones}"
+                                             th:attr="data-doc-id=${doc.idDocumentacion}">
+
+                                            <div>
+                                                <strong th:text="${doc.tipo}"></strong>
+                                                <span class="text-muted" th:text="${#dates.format(doc.fechaCreacion, 'dd/MM/yyyy')}"></span>
+                                                <br>
+                                                <span th:text="${doc.descripcion}"></span>
+                                                <br>
+                                                <small class="text-secondary" th:if="${doc.versionApi != null}"
+                                                       th:text="'Versión: ' + ${doc.versionApi.version}">
+                                                </small>
+                                            </div>
+
+<!--                                            <button type="button" class="btn btn-sm btn-outline-danger btn-delete-doc gap-2" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal"-->
+<!--                                                    th:attr="data-doc-id=${doc.idDocumentacion}" th:attrappend="data-doc-name=${doc.tipo}">-->
+<!--                                                <i class="fa fa-trash"></i> Eliminar-->
+<!--                                            </button>-->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="tab-pane mt-3" id="tabs-contrato">
+                                    <h3 class="card-title">Contrato OpenApi</h3>
+
+                                    <!-- Estado cuando NO hay contrato -->
+                                    <div th:unless="${versionSeleccionada.contratoApi}" class="empty">
+
+                                        <p class="empty-title">No hay contrato OpenAPI</p>
+                                        <p class="empty-subtitle text-muted">
+                                            Esta versión no tiene un contrato OpenAPI asociado. Sube un archivo YAML/JSON para documentar la API.
+                                        </p>
+                                        <div class="empty-action">
+                                            <button class="btn btn-primary gap-2" data-bs-toggle="modal" data-bs-target="#uploadContratoModal">
+                                                <i class="fa fa-upload"></i> Subir contrato
+                                            </button>
+<!--                                            <a href="#" class="btn btn-link" data-bs-toggle="modal" data-bs-target="#helpContratoModal">-->
+<!--                                                <i class="ti ti-help"></i> ¿Cómo crear un contrato OpenAPI?-->
+<!--                                            </a>-->
+                                        </div>
+                                    </div>
+
+                                    <!-- Estado cuando SÍ hay contrato -->
+                                    <div th:if="${versionSeleccionada.contratoApi}" class="card">
+                                        <div class="card-body">
+                                            <div class="mt-1">
+                                                <label class="form-label">Formato</label>
+                                                <div class="form-control-plaintext">
+                                                    <span class="badge bg-blue-lt" th:text="${versionSeleccionada.contratoApi.formato}"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-3">
+                                                <label class="form-label">Paths detectados</label>
+                                                <div class="border rounded p-3 bg-light">
+                                                    <pre class="m-0" style="max-height: 300px; overflow: auto;"><code th:text="${versionSeleccionada.contratoApi.contenido}"></code></pre>
+                                                </div>
+                                            </div>
+
+                                            <!-- Botones de acción -->
+                                            <div class="mt-3">
+                                                <a th:href="@{/documentacion/{idApi}/contrato/{idContrato} (idApi=${versionSeleccionada.api.idApi}, idContrato=${versionSeleccionada.contratoApi.idContratoApi})}"
+                                                   class="btn btn-success gap-2" target="_blank">
+                                                    <i class="fa fa-external-link"></i> Ver en Catálogo
+                                                </a>
+                                                <button class="btn btn-outline-primary gap-2" data-bs-toggle="modal" data-bs-target="#uploadContratoModal">
+                                                    <i class="fa fa-edit"></i> Reemplazar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -227,98 +192,351 @@
         </div>
     </div>
 </div>
-<script>
-    // Datos de ejemplo para las versiones (en un caso real vendrían del servidor)
-    const versionData = {
-        1: {
-            version: "v1.2.0",
-            estado: "ACTIVA",
-            fecha: "15/10/2023",
-            cambios: "Implementación de nuevos endpoints para gestión de usuarios",
-            endpoints: "15 endpoints activos",
-            documentacion: "Se ha añadido documentación completa para los nuevos endpoints de autenticación y gestión de perfiles."
-        },
-        2: {
-            version: "v1.1.5",
-            estado: "BETA",
-            fecha: "01/09/2023",
-            cambios: "Mejoras de rendimiento y corrección de errores menores",
-            endpoints: "12 endpoints activos",
-            documentacion: "Versión en fase de pruebas con mejoras significativas en el tiempo de respuesta."
-        },
-        3: {
-            version: "v1.0.0",
-            estado: "DEPRECADA",
-            fecha: "15/03/2023",
-            cambios: "Versión inicial de la API",
-            endpoints: "8 endpoints activos",
-            documentacion: "Versión inicial con funcionalidades básicas. Se recomienda migrar a v1.2.0"
+
+<!-- Modal para Nueva Versión -->
+<div class="modal fade" id="newVersionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="newVersionForm" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nueva Versión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- Campo oculto idApi -->
+                    <input type="hidden" name="idApi" th:value="${api.idApi}"/>
+
+                    <!-- Número de versión -->
+                    <div class="mb-3">
+                        <label class="form-label">Número de versión</label>
+                        <input type="text" name="version" class="form-control" placeholder="Ej: 1.3.0" required>
+                        <div class="invalid-feedback d-block" id="versionError"></div>
+                    </div>
+
+                    <!-- Archivo contrato -->
+                    <div class="mb-3">
+                        <label class="form-label">Contrato OpenAPI</label>
+                        <input type="file" name="contrato" class="form-control" accept=".json,.yaml,.yml" required onchange="validarArchivoContrato(this)">
+                        <small class="form-hint">Formatos aceptados: YAML (.yaml, .yml) o JSON (.json)</small>
+                        <div class="invalid-feedback d-block" id="contratoError"></div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="saveVersionBtn">Crear Versión</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para subir contrato OpenAPI -->
+<div class="modal fade" id="uploadContratoModal" tabindex="-1" aria-labelledby="uploadContratoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="contratoUpload" method="post" enctype="multipart/form-data">
+
+                <!-- Campos hidden para validar -->
+                <input type="hidden" name="idApi" th:value="${versionSeleccionada.api.idApi}"/>
+                <input type="hidden" name="idVersion" th:value="${versionSeleccionada.idVersion}">
+                <input type="hidden" name="version" th:value="${versionSeleccionada.version}">
+
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadContratoModalLabel">
+                        <i class="fa fa-upload me-2"></i>Subir Contrato OpenAPI
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Información de la versión -->
+                    <div class="alert alert-info">
+                        <div class="d-flex">
+                            <div class="me-3">
+                                <i class="fa fa-info-circle"></i>
+                            </div>
+                            <div>
+                                <strong>Versión:</strong>
+                                <span th:text="${versionSeleccionada.version}"></span> -
+                                <span th:text="${versionSeleccionada.api.nombre}"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input file -->
+                    <div class="mb-4">
+                        <label for="contrato" class="form-label required">
+                            <strong>Archivo OpenAPI</strong>
+                        </label>
+                        <input type="file" class="form-control"
+                               id="contrato" name="contrato"
+                               accept=".json,.yaml,.yml" required onchange="validarArchivoContrato(this)">
+                        <small class="form-hint">Formatos aceptados: YAML (.yaml, .yml) o JSON (.json). Tamaño máximo: 10MB</small>
+
+                        <div id="archivoError" class="invalid-feedback" style="display: none;"></div>
+                    </div>
+
+                    <!-- Información adicional -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="card-title mb-0">
+                                <i class="fa ti-info-circle me-2"></i>Información importante
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-bordered space-y-1">
+                                <li class="d-flex align-items-start mb-2">
+                                    <span>Asegúrate de que el archivo siga la especificación OpenAPI 3.0+</span>
+                                </li>
+                                <li class="d-flex align-items-start mb-2">
+                                    <span>El contrato debe incluir información básica: título, versión, endpoints</span>
+                                </li>
+                                <li class="d-flex align-items-start mb-2">
+                                    <span>Puedes validar tu archivo en <a href="https://editor.swagger.io/" target="_blank">Swagger Editor</a></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary gap-2" data-bs-dismiss="modal">
+                        <i class="fa fa-x"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary gap-2" id="btnSubirContrato">
+                        <i class="fa fa-upload"></i>Subir Contrato
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055"></div>
+
+
+<script src="/tabler/dist/js/tabler.min.js"></script>
+
+<script th:inline="javascript">
+    // Función global para mostrar toasts - siempre disponible
+    function showToast(message, type = 'info') {
+        // Crear contenedor de toast si no existe
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
         }
-    };
 
-    // Mapeo de estados a clases Bootstrap
-    const statusClasses = {
-        'ACTIVA': 'bg-success',
-        'BETA': 'bg-warning',
-        'DEPRECADA': 'bg-danger',
-        'PLANIFICADA': 'bg-info'
-    };
+        const toast = document.createElement('div');
+        const bgColor = type === 'success' ? 'success' :
+            type === 'warning' ? 'warning' :
+                type === 'info' ? 'info' : 'danger';
 
-    // Seleccionar versión desde el dropdown
-    document.getElementById('btnViewVersion').addEventListener('click', function() {
-        const selector = document.getElementById('versionSelector');
-        const selectedId = selector.value;
+        toast.className = `toast show align-items-center text-white bg-${bgColor} border-0`;
+        toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-${getToastIcon(type)} me-2"></i>${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+        toastContainer.appendChild(toast);
 
-        if (!selectedId) {
-            alert('Por favor, selecciona una versión');
-            return;
+        // Auto-remover después de 5 segundos
+        setTimeout(() => {
+            toast.remove();
+        }, 5000);
+    }
+
+    // Función auxiliar para iconos
+    function getToastIcon(type) {
+        const icons = {
+            'success': 'check-circle',
+            'warning': 'exclamation-triangle',
+            'info': 'info-circle',
+            'danger': 'exclamation-circle'
+        };
+        return icons[type] || 'info-circle';
+    }
+
+    // Función de validación de archivo
+    function validarArchivoContrato(input) {
+        const file = input.files[0];
+        const errorElement = document.getElementById('contratoError');
+        const allowedExtensions = ['json', 'yaml', 'yml'];
+        const maxSize = 10 * 1024 * 1024; // 10MB en bytes
+
+        // Limpiar error previo
+        errorElement.textContent = '';
+        errorElement.style.display = 'none';
+        input.classList.remove('is-invalid', 'is-valid');
+
+        if (!file) {
+            // Si no hay archivo pero el campo es requerido, es error
+            mostrarError('Este campo es requerido');
+            return false;
         }
 
-        selectVersion(selectedId);
-    });
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        if (!allowedExtensions.includes(fileExtension)) {
+            const errorMsg = `Formato de archivo no permitido. Formatos aceptados: ${allowedExtensions.join(', ')}.`;
+            mostrarError(errorMsg);
+            return false;
+        }
 
-    // Función para mostrar detalles de versión
-    function selectVersion(versionId) {
-        const detailsCard = document.getElementById('versionDetails');
-        const data = versionData[versionId];
+        if (file.size > maxSize) {
+            mostrarError('Archivo demasiado grande. Máximo 10MB.');
+            return false;
+        }
 
-        if (data) {
-            document.getElementById('detailTitle').textContent = `Detalles: ${data.version}`;
-            document.getElementById('detailVersion').textContent = data.version;
-            document.getElementById('detailStatus').textContent = data.estado;
-            document.getElementById('detailStatus').className = `badge ${statusClasses[data.estado] || 'bg-secondary'}`;
-            document.getElementById('detailDate').textContent = data.fecha;
-            document.getElementById('detailChanges').textContent = data.cambios;
-            document.getElementById('detailEndpoints').textContent = data.endpoints;
-            document.getElementById('detailDocumentation').textContent = data.documentacion;
+        // Si pasa todas las validaciones
+        input.classList.add('is-valid');
+        return true;
 
-            detailsCard.style.display = 'block';
-
-            // Actualizar el selector
-            document.getElementById('versionSelector').value = versionId;
-        } else {
-            alert('No se encontraron datos para esta versión');
+        function mostrarError(mensaje) {
+            errorElement.textContent = mensaje;
+            errorElement.style.display = 'block';
+            input.classList.add('is-invalid');
         }
     }
 
-    // Nueva versión
-    document.getElementById('btnNewVersion').addEventListener('click', function() {
-        const modal = new bootstrap.Modal(document.getElementById('newVersionModal'));
-        modal.show();
-    });
+    // Toast inicial si viene del backend
+    $(document).ready(function() {
+        // Mostrar toast inicial si existe
+        const toastMsg = /*[[${toastMessage}]]*/ null;
+        const toastTp = /*[[${toastType}]]*/ 'info';
 
-    // Botones de acción en la tarjeta de detalles
-    document.getElementById('btnEditVersion').addEventListener('click', function() {
-        alert('Funcionalidad de edición en desarrollo');
-    });
-
-    document.getElementById('btnDeleteVersion').addEventListener('click', function() {
-        if (confirm('¿Estás seguro de que deseas eliminar esta versión?')) {
-            alert('Versión eliminada (acción simulada)');
-            document.getElementById('versionDetails').style.display = 'none';
-            document.getElementById('versionSelector').value = '';
+        if (toastMsg) {
+            showToast(toastMsg, toastTp);
         }
+
+        // Manejador para el formulario de nueva versión
+        $("#newVersionForm").on("submit", function(e) {
+            e.preventDefault();
+            handleFormSubmit(
+                this,
+                $("#saveVersionBtn"),
+                "/dev/int/misApis/guardarVersionApi",
+                function(resp) {
+                    if (resp.success) {
+                        $("#newVersionForm")[0].reset();
+                        window.location.href = "/dev/int/misApis/" + resp.idApi + "/versiones?idVersion=" + resp.idVersion;
+                    } else {
+                        handleFormErrors(resp, {
+                            'version': ['[name=version]', '#versionError'],
+                            'contrato': ['[name=contrato]', '#contratoError']
+                        });
+                    }
+                }
+            );
+        });
+
+        // Manejador para el formulario de upload de contrato
+        $("#contratoUpload").on("submit", function(e) {
+            e.preventDefault();
+            handleFormSubmit(
+                this,
+                $("#btnSubirContrato"),
+                "/dev/int/misApis/editarContratoVersionApi",
+                function(resp) {
+                    if (resp.success) {
+                        $("#contratoUpload")[0].reset();
+                        showToast(resp.message || "Contrato actualizado exitosamente", "success");
+                        window.location.reload();
+                    } else {
+                        handleFormErrors(resp, {
+                            'contrato': ['#contrato', '#archivoError'],
+                            'version': [],
+                            'idVersion': [],
+                        });
+                    }
+                }
+            );
+        });
     });
+
+    // Función genérica para manejar envío de formularios
+    function handleFormSubmit(form, $button, url, successCallback) {
+        // Validar archivo antes del envío (si el formulario tiene un campo de contrato)
+        const fileInput = form.querySelector('#contrato');
+        if (fileInput) {
+            // Validar el archivo
+            const esValido = validarArchivoContrato(fileInput);
+            if (!esValido) {
+                showToast("Por favor, corrige los errores en el archivo antes de enviar", "warning");
+                return; // Detener el envío
+            }
+        }
+
+        const originalText = $button.html();
+        $button.html('<i class="fas fa-spinner fa-spin me-2"></i>Procesando...');
+        $button.prop("disabled", true);
+
+        // Limpiar feedback previo
+        $(form).find(".form-control").removeClass("is-invalid");
+        $(form).find(".invalid-feedback").text("").hide();
+
+        const formData = new FormData(form);
+
+        $.ajax({
+            url: url,
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                "X-CSRF-TOKEN": $("meta[name='_csrf']").attr("content")
+            },
+            success: successCallback,
+            error: function(xhr) {
+                let errors = xhr.responseJSON?.errors;
+                if (errors) {
+                    handleFormErrors({errors: errors}, {
+                        'version': ['[name=version]', '#versionError'],
+                        'contrato': ['#contrato', '#archivoError'],
+                        'idVersion': []
+                    });
+                } else {
+                    showToast("Error inesperado en el servidor", "danger");
+                }
+            },
+            complete: function() {
+                $button.html(originalText);
+                $button.prop("disabled", false);
+            }
+        });
+    }
+
+    // Función genérica para manejar errores de formulario
+    function handleFormErrors(resp, fieldMapping) {
+        if (resp.errors) {
+            for (const [field, config] of Object.entries(fieldMapping)) {
+                if (resp.errors[field]) {
+                    if (config.length > 0) {
+                        // Campo con elementos visuales
+                        const [fieldSelector, errorSelector] = config;
+                        $(fieldSelector).addClass("is-invalid");
+                        $(errorSelector).text(resp.errors[field]).show();
+                    } else {
+                        // Solo mostrar en toast (para campos hidden como version)
+                        showToast(resp.errors[field], "danger");
+                    }
+                }
+            }
+
+            // Manejar errores generales que no están mapeados a campos específicos
+            if (resp.errors.general) {
+                showToast(resp.errors.general, "danger");
+            }
+        }
+    }
 </script>
 </body>
 </html>

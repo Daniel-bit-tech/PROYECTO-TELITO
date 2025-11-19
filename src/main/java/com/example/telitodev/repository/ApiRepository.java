@@ -35,13 +35,31 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
     Api findByNombreIgnoreCase(String nombre);
 
-    @Query(value = "SELECT a.* FROM api a " +
-            "LEFT JOIN dominio d ON a.idDominio = d.idDominio " +
-            "LEFT JOIN tag t ON a.idTag = t.idTag " +
+
+    @Query("SELECT a FROM Api a " +
+            "JOIN a.usuario u " +
+            "JOIN u.organizacion o " +
+            "LEFT JOIN a.dominio d " +
+            "LEFT JOIN a.tag t " +
+            "LEFT JOIN a.estadoApi e " +
+            "WHERE o.idOrganizacion = :idOrganizacion " +
+            "AND (:search IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :search, '%'))) " +
+            "AND (:idDominios IS NULL OR d.idDominio IN :idDominios) " +
+            "AND (:idTags IS NULL OR t.idTag IN :idTags) " +
+            "AND (:idEstados IS NULL OR e.idEstado IN :idEstados)")
+    Page<Api> findByUserOrgAndFilters(@Param("search") String search,
+                                      @Param("idDominios") List<Integer> idDominios,
+                                      @Param("idTags") List<Integer> idTags,
+                                      @Param("idEstados") List<Integer> idEstados,
+                                      @Param("idOrganizacion") Integer idOrganizacion,
+                                      Pageable pageable);
+    @Query("SELECT a FROM Api a " +
+            "LEFT JOIN a.dominio d " +
+            "LEFT JOIN a.tag t " +
             "WHERE (:search IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :search, '%'))) " +
-            "AND (:idDominios IS NULL OR d.idDominio IN (:idDominios)) " +
-            "AND (:idTags IS NULL OR t.idTag IN (:idTags)) " +
-            "AND a.idUsuario=(:dniUsuario)", nativeQuery = true)
+            "AND (:idDominios IS NULL OR d.idDominio IN :idDominios) " +
+            "AND (:idTags IS NULL OR t.idTag IN :idTags) " +
+            "AND a.usuario.dni = :dniUsuario")
     List<Api> findByFilterAndDniUsuario(@Param("search") String search,
                                         @Param("idDominios") List<Integer> idDominios,
                                         @Param("idTags") List<Integer> idTags,

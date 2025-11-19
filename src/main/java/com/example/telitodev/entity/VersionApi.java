@@ -66,7 +66,13 @@ public class VersionApi {
         this.fechaPublicacion = fechaPublicacion;
         this.api = api;
     }
-    
+
+    public VersionApi(String version, EstadoVersion estadoVersion, Api api) {
+        this.version = version;
+        this.estadoVersion = estadoVersion;
+        this.api = api;
+    }
+
     // Getters y Setters
     public Integer getIdVersion() {
         return idVersion;

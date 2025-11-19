@@ -3,8 +3,11 @@
 <body>
 <!-- Fragmento de navegación para Mis Apis -->
     <!-- Sidebar -->
-    <div th:fragment="gestionApi-sidebar(idApi, currentView, subView)">
+    <div th:fragment="gestionApi-sidebar(idApi, nombreApi, currentView, subView)">
         <div class="list-group">
+            <button class="list-group-item list-group-item-primary hover">
+                <strong th:text="${nombreApi}"></strong>
+            </button>
             <a th:href="@{'/dev/int/misApis/' + ${idApi}}"
                th:classappend="${currentView == 'listado'} ? ' active'"
                class="list-group-item list-group-item-action">
@@ -31,6 +34,11 @@
                 <i class="fas fa-cog me-2"></i> Ajustes
             </a>
         </div>
+        <div class="my-4 text-center">
+            <a th:href="@{'/dev/int/misApis'}" class="btn btn-outline-secondary gap-2">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
     </div>
 
     <!-- Contenido principal -->
@@ -38,36 +46,34 @@
 
         <!-- Header secundario dinámico -->
         <div th:fragment="gestionApi-navbar(idApi, currentView, subView)">
-            <div th:if="${currentView == 'listado'}" class="mb-3">
-                <ul class="nav nav-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link" th:classappend="${subView == 'general'} ? ' active'" data-section="general" href="#">General</a>
-                    </li>
-    <!--                        <li class="nav-item">-->
-    <!--                            <a class="nav-link" th:classappend="${subView == 'versionado'} ? ' active'" data-section="versionado" href="#">Versionado</a>-->
-    <!--                        </li>-->
-                    <li class="nav-item">
-                        <a class="nav-link" th:classappend="${subView == 'documentacion'} ? ' active'" data-section="documentacion" href="#">Documentación</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:classappend="${subView == 'comunidad'} ? ' active'" data-section="comunidad" href="#">Comunidad</a>
-                    </li>
-                </ul>
-            </div>
+            <ul th:if="${currentView == 'listado'}" class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${subView == 'general'} ? ' active'" data-section="general" href="#">General</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${subView == 'readme'} ? ' active'" data-section="readme" href="#">ReadMe</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${subView == 'documentacion'} ? ' active'" data-section="documentacion" href="#">Documentación</a>
+                </li>
+<!--                <li class="nav-item">-->
+<!--                    <a class="nav-link" th:classappend="${subView == 'comunidad'} ? ' active'" data-section="comunidad" href="#">Comunidad</a>-->
+<!--                </li>-->
+            </ul>
 
-            <div th:if="${currentView == 'indicadores'}" class="mb-3">
-                <ul class="nav nav-tabs">
-                    <li class="nav-item">
-                        <a class="nav-link" th:classappend="${subView == 'latencia'} ? ' active'" data-section="latencia" href="#">Latencia</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:classappend="${subView == 'exito'} ? ' active'" data-section="exito" href="#">Tasa de Éxito</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" th:classappend="${subView == 'errores'} ? ' active'" data-section="errores" href="#">Errores</a>
-                    </li>
-                </ul>
-            </div>
+
+
+            <ul th:if="${currentView == 'indicadores'}" class="nav nav-tabs card-header-tabs">
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${subView == 'latencia'} ? ' active'" data-section="latencia" href="#">Latencia</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${subView == 'exito'} ? ' active'" data-section="exito" href="#">Tasa de Éxito</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${subView == 'errores'} ? ' active'" data-section="errores" href="#">Errores</a>
+                </li>
+            </ul>
 
         </div>
     </div>

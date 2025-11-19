@@ -1,7 +1,6 @@
 package com.example.telitodev.service.creacionApi;
 
-import com.example.telitodev.dto.DocGeneralDTO;
-import com.example.telitodev.entity.ContratoApi;
+import com.example.telitodev.dto.DocAdicionalDTO;
 import com.example.telitodev.entity.Documentacion;
 import com.example.telitodev.entity.VersionApi;
 import com.example.telitodev.repository.DocumentacionRepository;
@@ -35,16 +34,16 @@ public class DocApiService {
 
 
 
-    public void validaryProcesarDocs(DocGeneralDTO docGeneralDto, VersionApi versionApi, List<String> errores) throws DocValidationException {
-        MultipartFile[] archivos = docGeneralDto.getArchivosTecnicos();
-        String[] descArchivos = docGeneralDto.getDescripcionesTecnicas();
-        String[] formatoArchivos = docGeneralDto.getFormatosTecnicos();
+    public void validaryProcesarDocs(DocAdicionalDTO docAdicionalDto, VersionApi versionApi, List<String> errores) throws DocValidationException {
+        List<MultipartFile> archivos = docAdicionalDto.getFiles();
+        List<String>descArchivos = docAdicionalDto.getDescriptions();
+        List<String> formatoArchivos = docAdicionalDto.getFormatos();
 
         boolean archivoMD = false;
-        for (int idx=0; idx<archivos.length; idx++) {
-            MultipartFile archivo = archivos[idx];
-            String desc = descArchivos[idx];
-            String formato = formatoArchivos[idx];
+        for (int idx=0; idx<archivos.size(); idx++) {
+            MultipartFile archivo = archivos.get(idx);
+            String desc = descArchivos.get(idx);
+            String formato = formatoArchivos.get(idx);
             if (desc==null || desc.trim().length()<5 || formato == null) {
                 errores.add("El archivo "+archivo.getOriginalFilename()+" no tiene formato o descripción válida.");
                 continue;
@@ -69,11 +68,30 @@ public class DocApiService {
                 System.err.println(e.getMessage());
                 throw new DocValidationException("Error procesando archivos de documentación: " +e.getMessage(), e);
             } catch (Exception e) {
-                System.err.println("Error validando contrato: " +e.getMessage());
+                System.err.println("Error validando doc adicional: " +e.getMessage());
                 throw new DocValidationException("Error procesando los archivos de documentación", e);
             }
         }
     }
+
+    public void validarYProcesarMDTecnico(MultipartFile readmeFile, Documentacion readme) throws DocValidationException {
+        try {
+            String contenidoNormalizado = fileSecurityService.validarSintaxisDoc(readmeFile,readme.getFormato());
+
+            readme.setContenido(docMDService.extraerCabecerasJsonFlexmark(contenidoNormalizado));
+
+            s3DocsApiService.subirDocAS3(readme, readmeFile);
+            documentacionRepository.save(readme);
+
+        } catch (SecurityException e) {
+            System.err.println(e.getMessage());
+            throw new DocValidationException("Error procesando archivo Readme: " +e.getMessage(), e);
+        } catch (Exception e) {
+            System.err.println("Error procesando doc readme contrato: " +e.getMessage());
+            throw new DocValidationException("No se pudo procesar archivo Readme", e);
+        }
+    }
+
 
     public Documentacion.FormatoDoc detectarFormatoDoc(MultipartFile archivoDoc) throws DocValidationException {
         if (archivoDoc == null || archivoDoc.isEmpty()) {
@@ -103,16 +121,16 @@ public class DocApiService {
                 }
                 break;
 
-            case "text/markdown", "text/x-markdown":
-                if (nombre.endsWith("md")) {
-                    return Documentacion.FormatoDoc.MARKDOWN;
-                }
-                break;
+//            case "text/markdown", "text/x-markdown":
+//                if (nombre.endsWith("md")) {
+//                    return Documentacion.FormatoDoc.MARKDOWN;
+//                }
+//                break;
             case "application/octet-stream":
-                if (nombre.endsWith(".md")) {
-                    return Documentacion.FormatoDoc.MARKDOWN;
-                } else if (nombre.endsWith(".pdf")) {
+                if (nombre.endsWith(".pdf")) {
                     return Documentacion.FormatoDoc.PDF;
+//                } else if (nombre.endsWith(".md")) {
+//                    return Documentacion.FormatoDoc.MARKDOWN;
                 }
                 break;
 

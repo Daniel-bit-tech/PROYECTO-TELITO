@@ -1,33 +1,24 @@
 package com.example.telitodev.dto;
 
 import com.example.telitodev.entity.ContratoApi;
-import com.example.telitodev.entity.VersionApi;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 public class VersionContratoDTO {
+    @NotNull(message = "No se pudo encontrar la API.")
+    private Integer idApi;
+
     // Campos de VersionApi
-    private Integer idVersion=0;
+    private Integer idVersion;
 
     @NotNull(message = "Coloque un número de versión")
     private String version;
 
-    @NotNull(message = "Elija un estado de su nueva versión")
-    private VersionApi.EstadoVersion estadoVersion;
-
-    @FutureOrPresent(message = "La fecha de publicación debe ser futura")
-    private LocalDate fechaPublicacion;
-    private Integer idApi;
-    private String nombreApi;
-
     // Campos de ContratoApi
-    private Integer idContrato=0;
+    private Integer idContrato;
+
+    @NotNull(message = "Debe subir un contrato en formato JSON o YAML")
+    private MultipartFile contrato; // si se sube archivo
 
     private ContratoApi.FormatoContrato formato;
 
@@ -35,9 +26,6 @@ public class VersionContratoDTO {
     private MetodoCarga metodoCarga;
 
     private String contenido; // contenido del contrato si se pega
-    private String urlContrato;
-    private Timestamp fechaModificacion;
-    private MultipartFile archivo; // si se sube archivo
     private boolean desdeArchivo=true; // indica si se subió archivo o se pegó contenido
 
 
@@ -62,20 +50,6 @@ public class VersionContratoDTO {
         this.idVersion = idVersion;
     }
 
-    public LocalDate getFechaPublicacion() {
-        return fechaPublicacion;
-    }
-    public void setFechaPublicacion(LocalDate fechaPublicacion) {
-        this.fechaPublicacion = fechaPublicacion;
-    }
-
-    public VersionApi.EstadoVersion getEstadoVersion() {
-        return estadoVersion;
-    }
-    public void setEstadoVersion(VersionApi.EstadoVersion estadoVersion) {
-        this.estadoVersion = estadoVersion;
-    }
-
     public String getVersion() {
         return version;
     }
@@ -83,25 +57,11 @@ public class VersionContratoDTO {
         this.version = version;
     }
 
-    public String getNombreAPI() {
-        return nombreApi;
-    }
-    public void setNombreAPI(String nombreAPI) {
-        this.nombreApi = nombreAPI;
-    }
-
     public Integer getIdContrato() {
         return idContrato;
     }
     public void setIdContrato(Integer idContrato) {
         this.idContrato = idContrato;
-    }
-
-    public Integer getIdAPI() {
-        return idApi;
-    }
-    public void setIdAPI(Integer idAPI) {
-        this.idApi = idAPI;
     }
 
     public String getContenido() {
@@ -118,24 +78,17 @@ public class VersionContratoDTO {
         this.formato = formato;
     }
 
-    public String getUrlContrato() {
-        return urlContrato;
+    public Integer getIdApi() {
+        return idApi;
     }
-    public void setUrlContrato(String urlContrato) {
-        this.urlContrato = urlContrato;
-    }
-
-    public Timestamp getFechaModificacion() {
-        return fechaModificacion;
-    }
-    public void setFechaModificacion(Timestamp fechaModificacion) {
-        this.fechaModificacion = fechaModificacion;
+    public void setIdApi(Integer idApi) {
+        this.idApi = idApi;
     }
 
-    public MultipartFile getArchivo() {
-        return archivo;
+    public MultipartFile getContrato() {
+        return contrato;
     }
-    public void setArchivo(MultipartFile archivo) {
-        this.archivo = archivo;
+    public void setContrato(MultipartFile contrato) {
+        this.contrato = contrato;
     }
 }

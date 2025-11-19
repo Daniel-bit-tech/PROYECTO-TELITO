@@ -23,9 +23,15 @@ public class Dominio {
     @OneToMany(mappedBy = "dominio", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Api> apisDominio;
 
+
+    public Dominio() {
+    }
+
+    public Dominio(Integer idDominio) {
+        this.idDominio = idDominio;
+    }
+
     //Get y Set
-
-
     public Integer getIdDominio() {
         return idDominio;
     }

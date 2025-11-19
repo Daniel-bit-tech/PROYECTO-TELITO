@@ -8,8 +8,13 @@ import com.example.telitodev.repository.VersionApiRepository;
 import com.example.telitodev.service.FileSecurityService;
 import com.example.telitodev.service.S3Services.S3DocsApiService;
 import com.example.telitodev.service.ValidateApiDocsService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 public class ContratoApiService {
@@ -36,13 +41,14 @@ public class ContratoApiService {
      */
     public void validarYProcesarContrato(VersionContratoDTO versionContratoDto, Api api) throws ContratoValidationException {
 
-        boolean subioArchivo = versionContratoDto.getMetodoCarga()==VersionContratoDTO.MetodoCarga.archivo
-                && versionContratoDto.getArchivo() != null && !versionContratoDto.getArchivo().isEmpty();
+//        boolean subioArchivo = versionContratoDto.getMetodoCarga()==VersionContratoDTO.MetodoCarga.archivo
+//                && versionContratoDto.getContrato() != null && !versionContratoDto.getContrato().isEmpty();
+        boolean subioArchivo = versionContratoDto.getContrato() != null && !versionContratoDto.getContrato().isEmpty();
 
         if (subioArchivo) {
             versionContratoDto.setDesdeArchivo(true);
 
-            MultipartFile contratoFile = versionContratoDto.getArchivo();
+            MultipartFile contratoFile = versionContratoDto.getContrato();
             versionContratoDto.setFormato(detectarFormato(contratoFile));
 
         } else if (versionContratoDto.getMetodoCarga()==VersionContratoDTO.MetodoCarga.texto && versionContratoDto.getContenido()!=null && !versionContratoDto.getContenido().isEmpty()) {
@@ -58,12 +64,18 @@ public class ContratoApiService {
             String cabeceras = validationService.validarSemanticaOpenAPI(contenidoNormalizado);
 
             VersionApi versionApi = new VersionApi();
-            versionApi.setApi(api);
-            versionApi.setVersion(versionContratoDto.getVersion());
-            versionApi.setFechaPublicacion(versionContratoDto.getFechaPublicacion());
-            versionApi.setEstadoVersion(versionContratoDto.getEstadoVersion());
-            // Persistir la versión primero para asegurarnos de tener un id válido
-            versionApiRepository.save(versionApi);
+            if (versionContratoDto.getIdVersion()==null) {
+                versionApi.setApi(api);
+                versionApi.setVersion(versionContratoDto.getVersion());
+                versionApi.setFechaPublicacion(LocalDate.now());
+                versionApi.setEstadoVersion(VersionApi.EstadoVersion.EN_CONSTRUCCION);
+                // Persistir la versión primero para asegurarnos de tener un id válido
+                versionApiRepository.save(versionApi);
+            } else {
+                versionApi = versionApiRepository.findById(versionContratoDto.getIdVersion())
+                        .filter(v -> v.getApi().equals(api))
+                        .orElseThrow(() -> new Exception("No se encontró la versión."));;
+            }
 
 //            ContratoApi contratoApi = new ContratoApi();
 //            contratoApi.setVersionApi(versionApi);

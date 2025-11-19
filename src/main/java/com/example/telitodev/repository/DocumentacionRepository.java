@@ -17,4 +17,6 @@ public interface DocumentacionRepository extends JpaRepository<Documentacion, In
 
     Documentacion findByApi_IdApiAndFormato(Integer apiId, Documentacion.FormatoDoc formato);
 
+    Documentacion findByApi_IdApiAndFormatoAndDescripcion(Integer api_idApi, Documentacion.FormatoDoc formato, String descripcion);
+
 }

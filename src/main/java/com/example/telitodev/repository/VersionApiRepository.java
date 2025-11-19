@@ -10,4 +10,8 @@ import java.util.List;
 public interface VersionApiRepository extends JpaRepository<VersionApi, Integer> {
 
     List<VersionApi> findByApi_IdApi(Integer id);
+
+    Boolean existsByVersionAndApi_IdApi(String version, Integer idApi);
+
+    VersionApi findByIdVersionAndApi_IdApi(Integer idVersion, Integer idApi);
 }

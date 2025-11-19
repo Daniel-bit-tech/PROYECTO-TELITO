@@ -123,7 +123,7 @@ public class ApiController extends BaseController {
         List<String> nombresSecs = docMDService.nombresSecsDoc(idApi);
         
         Documentacion documentacion = documentacionRepository.findByApi_IdApiAndFormato(idApi, Documentacion.FormatoDoc.MARKDOWN);
-        String content = documentacion.getContenido();
+//        String content = documentacion.getContenido();
         model.addAttribute("nombresSecs", nombresSecs);
 
         // Obtener el usuario correcto considerando impersonación usando BaseController

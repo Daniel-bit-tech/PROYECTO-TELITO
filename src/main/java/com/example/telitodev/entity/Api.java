@@ -101,11 +101,9 @@ public class Api {
         this.endpointUrl = endpointUrl;
     }
 
-    public Api(String nombre, String descripcion, Dominio dominio, Tag tag, String endpointUrl) {
+    public Api(String nombre, String descripcion, String endpointUrl) {
         this.nombre = nombre;
         this.descripcion = descripcion;
-        this.dominio = dominio;
-        this.tag = tag;
         this.endpointUrl = endpointUrl;
     }
 

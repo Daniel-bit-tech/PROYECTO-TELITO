@@ -13,4 +13,6 @@ public interface ContratoRepository extends JpaRepository<ContratoApi, Integer> 
 
     ContratoApi findByIdContratoApiAndVersionApi_Api_IdApi(Integer idContrato, Integer idApi);
 
+    ContratoApi findByVersionApi_IdVersion(Integer idVersion);
+
 }

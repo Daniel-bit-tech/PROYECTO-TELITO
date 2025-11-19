@@ -28,7 +28,7 @@
 
           <!-- Sidebar -->
           <div class="col-lg-2">
-            <div th:replace="desarrollador/interno/gestionSidebar :: gestionApi-sidebar(${api.idApi}, ${currentView}, ${subView})"></div>
+            <div th:replace="desarrollador/interno/gestionSidebar :: gestionApi-sidebar(${api.idApi}, ${api.nombre}, ${currentView}, ${subView})"></div>
           </div>
 
           <!-- Contenido principal -->
@@ -82,13 +82,14 @@
                       <input type="hidden" th:field="*{estadoApi.idEstado}" id="estadoSelect"/>
 
                       <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="confirmCambio" required>
+                        <input class="form-check-input" type="checkbox" id="confirmCambio"
+                               onchange="document.getElementById('cambiarEstadoBtn').disabled = !this.checked">
                         <label class="form-check-label" for="confirmCambio">
                           Confirmo que deseo cambiar el estado de esta API.
                         </label>
                       </div>
 
-                      <button type="submit" class="btn btn-primary">
+                      <button id="cambiarEstadoBtn" type="submit" class="btn btn-primary" disabled>
                         <i class="fas fa-save me-1"></i> Guardar estado
                       </button>
                     </div>
@@ -98,44 +99,36 @@
             </div>
 
             <!-- ====== Sección Eliminación ====== -->
-            <div class="card border shadow-sm">
-              <div class="card-body">
-                <h3 class="card-title mb-2 text-danger">
-                  <i class="fas fa-trash-alt me-2"></i> Eliminar API
-                </h3>
+<!--            <div class="card border shadow-sm">-->
+<!--              <div class="card-body">-->
+<!--                <h3 class="card-title mb-2 text-danger">-->
+<!--                  <i class="fas fa-trash-alt me-2"></i> Eliminar API-->
+<!--                </h3>-->
 
-                <!-- Sección de eliminación definitiva -->
-                <div class="alert alert-danger d-flex align-items-center" role="alert">
-                  <i class="fas fa-triangle-exclamation me-2"></i>
-                  <div>
-                    <strong>Precaución:</strong> Esta acción eliminará permanentemente la API
-                    <span class="fw-bold" th:text="${api.nombre}">Nombre API</span> y todos sus datos relacionados.
-<!--                    Esta API da soporte para <span class="fw-bold" th:text="${contProyectos}+'proyectos'">0</span>-->
-                  </div>
-                </div>
+<!--                &lt;!&ndash; Sección de eliminación definitiva &ndash;&gt;-->
+<!--                <div class="alert alert-danger d-flex align-items-center" role="alert">-->
+<!--                  <i class="fas fa-triangle-exclamation me-2"></i>-->
+<!--                  <div>-->
+<!--                    <strong>Precaución:</strong> Esta acción eliminará permanentemente la API-->
+<!--                    <span class="fw-bold" th:text="${api.nombre}">Nombre API</span> y todos sus datos relacionados.-->
+<!--&lt;!&ndash;                    Esta API da soporte para <span class="fw-bold" th:text="${contProyectos}+'proyectos'">0</span>&ndash;&gt;-->
+<!--                  </div>-->
+<!--                </div>-->
 
-                <p class="text-muted">
-                  Eliminar esta API borrará todos sus datos, versiones y documentación asociada. Esta acción <strong>no es reversible</strong>.
-                </p>
+<!--                <p class="text-muted">-->
+<!--                  Eliminar esta API borrará todos sus datos, versiones y documentación asociada. Esta acción <strong>no es reversible</strong>.-->
+<!--                </p>-->
 
-                <form th:action="@{'/dev/int/misApis/' + ${api.idApi} + '/eliminar'}"
-                      method="post"
-                      onsubmit="return confirm('¿Seguro que deseas eliminar esta API permanentemente? Es usada');">
-                  <input type="hidden" name="_method" value="delete"/>
-                  <button type="submit" class="btn btn-danger mt-2">
-                    <i class="fas fa-trash me-1"></i> Eliminar permanentemente
-                  </button>
-                </form>
-              </div>
-            </div>
-
-            <!-- Botón de regreso -->
-            <div class="mt-4 text-center">
-              <a th:href="@{'/dev/int/misApis/' + ${api.idApi}}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> Volver
-              </a>
-            </div>
-
+<!--                <form th:action="@{'/dev/int/misApis/' + ${api.idApi} + '/eliminar'}"-->
+<!--                      method="post"-->
+<!--                      onsubmit="return confirm('¿Seguro que deseas eliminar esta API permanentemente? Es usada');">-->
+<!--                  <input type="hidden" name="_method" value="delete"/>-->
+<!--                  <button type="submit" class="btn btn-danger mt-2">-->
+<!--                    <i class="fas fa-trash me-1"></i> Eliminar permanentemente-->
+<!--                  </button>-->
+<!--                </form>-->
+<!--              </div>-->
+<!--            </div>-->
           </div>
         </div>
       </div>

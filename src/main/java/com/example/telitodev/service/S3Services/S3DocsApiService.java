@@ -56,9 +56,9 @@ public class S3DocsApiService {
 
     public void subirContratoAS3(VersionContratoDTO dto, String contenidoNormalizado, String cabecerasContrato) throws ContratoApiService.ContratoValidationException {
         // 1. Generar nombres y rutas
-        String nombreArchivo = generarNombreArchivo(dto.getIdAPI(), dto.getIdVersion(), dto.getFormato().name());
+        String nombreArchivo = generarNombreArchivo(dto.getIdApi(), dto.getIdVersion(), dto.getFormato().name());
 //        String s3Key = generarS3Key(dto.getIdAPI(), nombreArchivo);
-        String s3Key = "apis/api_"+dto.getIdAPI()+"/ver/v_"+dto.getIdVersion()+"/" + nombreArchivo;
+        String s3Key = "apis/api_"+dto.getIdApi()+"/ver/v_"+dto.getIdVersion()+"/" + nombreArchivo;
 
         try {
             // 2. Subir a S3 con metadatos
@@ -68,7 +68,7 @@ public class S3DocsApiService {
             Map<String, String> metadata = new HashMap<>();
 //            metadata.put("original-filename", file.getOriginalFilename());
             metadata.put("formato", dto.getFormato().name());
-            metadata.put("api-id", dto.getIdAPI().toString());
+            metadata.put("api-id", dto.getIdApi().toString());
             metadata.put("ver-id", dto.getIdVersion().toString());
             metadata.put("uploaded-at", Instant.now().toString());
             metadata.put("content-type", obtenerContentType(dto.getFormato()));
@@ -188,6 +188,10 @@ public class S3DocsApiService {
             // Información básica
             VersionApi version = versionApiRepository.findById(dto.getIdVersion())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la versión solicitada"));
+
+            if(version.getContratoApi() != null) {
+                contrato.setIdContratoApi(version.getContratoApi().getIdContratoApi());
+            }
 
             contrato.setVersionApi(version);
             contrato.setFormato(dto.getFormato());
