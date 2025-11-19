@@ -102,10 +102,13 @@
                 <line x1="0" y1="200" x2="400" y2="0"></line>
             </svg>
 
-            <div th:if="${readme}">
-                <pre th:text="${#strings.escapeJava(contenidoJson)}"></pre>
-                <!-- O si quieres mostrar formateado -->
-                <code th:text="${#strings.escapeJava(#strings.replace(contenidoJson, ',', ',<br/>'))}"></code>
+            <div class="mt-3" th:if="${readme}">
+                <label class="form-label">Secciones</label>
+                <div class="border rounded p-3 bg-light">
+                    <pre class="m-0" style="max-height: 300px; overflow: auto;"><code th:text="${#strings.escapeJava(contenidoJson)}"></code></pre>
+
+                    <code th:text="${#strings.escapeJava(#strings.replace(contenidoJson, ',', ',<br/>'))}"></code>
+                </div>
             </div>
         </div>
 
