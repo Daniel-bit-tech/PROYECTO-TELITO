@@ -90,7 +90,7 @@
                 <button type="button" class="btn btn-primary btn-2 gap-2" data-bs-toggle="modal" data-bs-target="#addReadmeModal" th:if="${readme}" >
                     <i class="fa fa-file-alt"></i> Reemplazar Readme
                 </button>
-                <a th:href="@{/apis/{idApi}/docs (idApi=${readme.api.idApi})}"
+                <a th:if="${readme}" th:href="@{/apis/{idApi}/docs (idApi=${readme.api.idApi})}"
                    class="btn btn-success gap-2" target="_blank">
                     <i class="fa fa-external-link"></i> Ver en Catálogo
                 </a>
