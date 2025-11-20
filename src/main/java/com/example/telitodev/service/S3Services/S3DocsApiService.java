@@ -238,6 +238,23 @@ public class S3DocsApiService {
         }
     }
 
+    public String descargarArchivoDesdeS3ComoString(String s3Key) throws IOException {
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3Key)
+                    .build();
+
+            try (ResponseInputStream<GetObjectResponse> response = s3Client.getObject(getObjectRequest)) {
+                return new String(response.readAllBytes(), StandardCharsets.UTF_8);
+            }
+        } catch (S3Exception e) {
+            throw new IOException("Error de S3 al descargar archivo: " + s3Key, e);
+        } catch (Exception e) {
+            throw new IOException("Error inesperado al descargar archivo: " + s3Key, e);
+        }
+    }
+
     public String generarUrlDescarga(String s3Key) throws DocApiService.DocValidationException {
         return generarUrlDescarga(s3Key, Duration.ofMinutes(10));
     }
@@ -246,7 +263,7 @@ public class S3DocsApiService {
     public String generarUrlDescarga(String s3Key, Duration duracion) throws DocApiService.DocValidationException {
         try {
             if (s3Key == null || s3Key.trim().isEmpty()) {
-                throw new IllegalArgumentException("La clave S3 no puede ser nula o vacía");
+                throw new DocApiService.DocValidationException("La clave S3 no puede ser nula o vacía");
             }
             if (duracion == null || duracion.isNegative() || duracion.isZero() || duracion.toMinutes()>MAX_EXPIRATION_MINUTES) {
                 throw new DocApiService.DocValidationException("La duración debe ser un valor positivo");
@@ -261,9 +278,7 @@ public class S3DocsApiService {
                     .getObjectRequest(getObjectRequest)
                     .signatureDuration(duracion));
 
-            String url = presignedRequest.url().toString();
-
-            return url;
+            return presignedRequest.url().toString();
 
         } catch (S3Exception e) {
             throw new DocApiService.DocValidationException("Error obteniendo url de descarga");
