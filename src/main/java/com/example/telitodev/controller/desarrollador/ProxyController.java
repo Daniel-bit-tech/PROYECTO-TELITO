@@ -61,29 +61,29 @@ public class ProxyController {
         public String getUrlBase() { return urlBase; }
         public String getApiNombre() { return apiNombre; }
     }
-
-    @GetMapping("/api/sandbox/list-available")
-    public ResponseEntity<List<Map<String, Object>>> getAvailableApisForSandbox(Authentication authentication) {
-
-        String userEmail = authentication.getName();
-        Usuario usuario = usuarioRepository.findByCorreo(userEmail);
-
-        if (usuario == null) {
-            List<Api> apisPublicas = apiRepository.findByDominio_IdDominio(11);
-            return buildApiResponse(apisPublicas);
-        }
-
-        if (usuario.getOrganizacion() == null) {
-            List<Api> apisPublicas = apiRepository.findByDominio_IdDominio(11);
-            return buildApiResponse(apisPublicas);
-        }
-
-        Integer idOrganizacionUsuario = usuario.getOrganizacion().getIdOrganizacion();
-
-        List<Api> apisDisponibles = apiRepository.findApisByOrgProjectsAndPublic(idOrganizacionUsuario);
-
-        return buildApiResponse(apisDisponibles);
-    }
+//
+//    @GetMapping("/api/sandbox/list-available")
+//    public ResponseEntity<List<Map<String, Object>>> getAvailableApisForSandbox(Authentication authentication) {
+//
+//        String userEmail = authentication.getName();
+//        Usuario usuario = usuarioRepository.findByCorreo(userEmail);
+//
+//        if (usuario == null) {
+//            List<Api> apisPublicas = apiRepository.findByDominio_IdDominio(11);
+//            return buildApiResponse(apisPublicas);
+//        }
+//
+//        if (usuario.getOrganizacion() == null) {
+//            List<Api> apisPublicas = apiRepository.findByDominio_IdDominio(11);
+//            return buildApiResponse(apisPublicas);
+//        }
+//
+//        Integer idOrganizacionUsuario = usuario.getOrganizacion().getIdOrganizacion();
+//
+//        List<Api> apisDisponibles = apiRepository.findApisByOrgProjectsAndPublic(idOrganizacionUsuario);
+//
+//        return buildApiResponse(apisDisponibles);
+//    }
 
     private ResponseEntity<List<Map<String, Object>>> buildApiResponse(List<Api> apis) {
         List<Map<String, Object>> response = apis.stream().map(api -> {
@@ -97,14 +97,9 @@ public class ProxyController {
     }
 
 
-
-
-
-
-    // EN ProxyController.java
-
     @PostMapping("/api/sandbox/execute")
     public ResponseEntity<Map<String, Object>> executeSandboxTest(@RequestBody SandboxRequestDto request, Authentication authentication) {
+
         try {
             String userEmail = authentication.getName();
             Usuario usuario = usuarioRepository.findByCorreo(userEmail);
@@ -145,9 +140,25 @@ public class ProxyController {
                 }
 
 
+
                 Map<String, List<String>> pathParamsMap = getPathParamsMap(request.getApiId());
                 pathTemplate = matchEndpoint(request.getTargetUrl(), pathParamsMap);
-                urlBase = getUrlBaseFromDb(request.getApiId());
+
+                String mockEntorno = getMockEnvironment(request.getEnvironmentId());
+                String apiName = apiTarget.getNombre().replaceAll("\\s+","").toLowerCase();
+
+
+                if (mockEntorno != null) {
+                    final String MOCK_SERVER_URL = "http://localhost:8083/mock/";
+
+                    urlBase = MOCK_SERVER_URL + mockEntorno + "/" + apiName;
+
+                    pathTemplate = (request.getTargetUrl().startsWith("/")) ? request.getTargetUrl() : "/" + request.getTargetUrl();
+
+                } else {
+
+                    urlBase = getUrlBaseFromDb(request.getApiId());
+                }
             }
 
 
@@ -158,8 +169,7 @@ public class ProxyController {
                 bodyAsString = objectMapper.writeValueAsString(request.getBody());
             }
 
-            ResponseEntity<String> response = callApi(urlBase, pathTemplate, request.getTargetUrl(), method, bodyAsString);
-
+            ResponseEntity<String> response = callApi(urlBase, pathTemplate, request.getTargetUrl(), method, bodyAsString, apiKey);
 
             Map<String, Object> bodyMap = new HashMap<>();
 
@@ -189,10 +199,24 @@ public class ProxyController {
 
 
 
+    private String getMockEnvironment(Integer environmentId) {
+        if (environmentId == null) return null;
+
+        switch (environmentId) {
+            // IDs basados en tu HTML:
+            case 2: // Desarrollo
+                return "dev";
+            case 3: // QA (Quality Assurance)
+                return "qa";
+            case 1: // Producción
+                return "prod";
+            default:
+                return null;
+        }
+    }
 
 
-
-    private ResponseEntity<String> callApi(String urlBase, String pathTemplate, String urlIngresada, HttpMethod method, String body) {
+    private ResponseEntity<String> callApi(String urlBase, String pathTemplate, String urlIngresada, HttpMethod method, String body, String apiKey) {
         Map<String, String> uriVariables = extractPathVariables(urlIngresada, pathTemplate);
 
         String fullUrl;
@@ -205,6 +229,9 @@ public class ProxyController {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            if (apiKey != null && !apiKey.isEmpty()) {
+                headers.add("X-API-Key", apiKey);
+            }
             HttpEntity<String> entity = new HttpEntity<>(body, headers);
 
             if (uriVariables.isEmpty()) {
@@ -292,24 +319,24 @@ public class ProxyController {
         }
         return ResponseEntity.ok(new ApiHasEntornoUrlDto(optConfig.get().getUrlBase(), optConfig.get().getApi().getNombre()));
     }
-
-    @GetMapping("/api/sandbox/{apiId}/endpoints")
-    public ResponseEntity<List<String>> getApiEndpoints(@PathVariable Integer apiId) {
-        Optional<Documentacion> docOpt = documentacionRepository.findFirstByApi_IdApi(apiId);
-        if (docOpt.isEmpty()) return ResponseEntity.notFound().build();
-
-        try {
-            JsonNode root = objectMapper.readTree((String) docOpt.get().getContenido());
-            JsonNode pathsNode = root.path("paths");
-
-            List<String> endpoints = new ArrayList<>();
-            if (!pathsNode.isMissingNode()) {
-                pathsNode.fieldNames().forEachRemaining(endpoints::add);
-            }
-            return ResponseEntity.ok(endpoints);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).build();
-        }
-    }
+//
+//    @GetMapping("/api/sandbox/{apiId}/endpoints")
+//    public ResponseEntity<List<String>> getApiEndpoints(@PathVariable Integer apiId) {
+//        Optional<Documentacion> docOpt = documentacionRepository.findFirstByApi_IdApi(apiId);
+//        if (docOpt.isEmpty()) return ResponseEntity.notFound().build();
+//
+//        try {
+//            JsonNode root = objectMapper.readTree((String) docOpt.get().getContenido());
+//            JsonNode pathsNode = root.path("paths");
+//
+//            List<String> endpoints = new ArrayList<>();
+//            if (!pathsNode.isMissingNode()) {
+//                pathsNode.fieldNames().forEachRemaining(endpoints::add);
+//            }
+//            return ResponseEntity.ok(endpoints);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(500).build();
+//        }
+//    }
 }

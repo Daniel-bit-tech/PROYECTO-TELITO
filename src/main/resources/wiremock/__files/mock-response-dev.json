@@ -1,0 +1,9 @@
+{
+  "entorno": "DEV",
+  "estatus": "SIMULADO_OK",
+  "mensaje": "La integración en DEV fue exitosa y muy rápida.",
+  "datos": {
+    "id": "dev-001",
+    "fecha_simulacion": "2025-11-18"
+  }
+}
