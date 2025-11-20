@@ -208,6 +208,22 @@ public class GestionApisController extends BaseController {
                 }
                 model.addAttribute("versionSeleccionada", versionSel);
                 model.addAttribute("estadoActual", versionSel.getEstadoVersion());
+
+                ContratoApi contrato = versionSel.getContratoApi();
+                if (contrato!=null) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        JsonNode jsonNode = objectMapper.readTree(contrato.getContenido());
+                        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+                        String jsonContent = objectMapper.writeValueAsString(jsonNode);
+
+                        model.addAttribute("contenidoJson", jsonContent);
+                    } catch (Exception e) {
+                        model.addAttribute("contenidoJson", contrato.getContenido()); // Fallback como string
+                    }
+                }
+
             } else {
                 model.addAttribute("versiones", null);
             }
