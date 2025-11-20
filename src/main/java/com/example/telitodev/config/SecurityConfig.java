@@ -4,7 +4,6 @@ import com.example.telitodev.filter.UsuarioActivoFilter;
 import com.example.telitodev.filter.ImpersonationAuthorizationFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.hc.client5.http.classic.HttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
