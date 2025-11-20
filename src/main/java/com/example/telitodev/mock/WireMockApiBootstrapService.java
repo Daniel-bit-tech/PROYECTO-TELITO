@@ -1,9 +1,12 @@
 package com.example.telitodev.mock;
 
 import com.example.telitodev.entity.Api;
+import com.example.telitodev.entity.ContratoApi;
 import com.example.telitodev.entity.Documentacion;
 import com.example.telitodev.repository.ApiRepository;
+import com.example.telitodev.repository.ContratoRepository;
 import com.example.telitodev.repository.DocumentacionRepository;
+import com.example.telitodev.service.S3Services.S3DocsApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +21,8 @@ public class WireMockApiBootstrapService {
     @Autowired private ApiRepository apiRepository;
     @Autowired private ApiDocParser apiDocParser;
     @Autowired private WireMockDynamicLoader wireMockDynamicLoader;
+    @Autowired private ContratoRepository contratoRepository;
+    @Autowired private S3DocsApiService s3DocsApiService;
 
 
     private final String[] ENVS = {"prod","dev","qa"};
@@ -36,20 +41,45 @@ public class WireMockApiBootstrapService {
 
         wireMockDynamicLoader.getWireMockServer().resetAll();
         List<Api> apis = apiRepository.findAll();
+
         for (Api api : apis) {
-            Optional<Documentacion> docOpt = documentacionRepository.findFirstByApi_IdApi(api.getIdApi());
-            if (docOpt.isEmpty()) continue;
+            Optional<ContratoApi> contratoOpt = contratoRepository.findLatestByApiId(api.getIdApi());
+
+            if (contratoOpt.isEmpty()) continue;
+
+            ContratoApi contrato = contratoOpt.get();
+
             String apiName = api.getNombre().replaceAll("\\s+","").toLowerCase();
-            String openApiJson = (String) docOpt.get().getContenido();
+            String openApiJson;
+
+            if (contrato.getUrlContrato() != null && !contrato.getUrlContrato().isBlank()) {
+                try {
+                    openApiJson = s3DocsApiService.obtenerContenidoS3(contrato.getUrlContrato());
+                    System.out.println("Mock: Contrato S3 cargado para API " + apiName);
+                } catch (RuntimeException e) {
+                    System.err.println(" Mock: Fallo al cargar S3. Saltando API " + apiName);
+                    continue; // Saltar esta API si S3 falla
+                }
+            } else {
+                // CASO 2: Contrato legacy almacenado en la columna 'contenido'
+                openApiJson = contrato.getContenido();
+                System.out.println(" Mock: Contrato BD cargado para API " + apiName);
+            }
+
+            if (openApiJson == null || openApiJson.isEmpty()) continue;
+
+
             List<StubDefinition> stubs = apiDocParser.parseOpenApi(openApiJson, apiName);
 
             for (String env : ENVS) {
                 for (StubDefinition sd : stubs) {
                     StubDefinition copy = deepCopy(sd);
                     copy.entorno = env;
+
                     if ("prod".equals(env)) {
                         if (copy.method == org.springframework.http.HttpMethod.POST && copy.status == 200) copy.status = 201;
                     }
+
                     wireMockDynamicLoader.registerStub(copy);
                 }
             }

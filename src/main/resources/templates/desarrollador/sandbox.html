@@ -325,19 +325,37 @@
     async function updateBaseUrl() {
         if (!CURRENT_API_ID) return;
         const envId = document.getElementById('environment-select').value;
+        const apiSelect = document.getElementById('api-select');
+        const apiName = apiSelect.options[apiSelect.selectedIndex].textContent.toLowerCase().replace(/\s+/g, '');
 
-        try {
-            const resp = await fetch(`/api/sandbox/${CURRENT_API_ID}/entorno/${envId}/url-base`);
-            if (resp.ok) {
-                const data = await resp.json();
-                API_BASE_URL = data.urlBase || "";
-                updateUrlPreview();
-            } else {
-                API_BASE_URL = "";
-                document.getElementById('url-preview').textContent = "No hay URL configurada para este entorno.";
+        if (envId === '2' || envId === '3' || envId === '1') {
+
+            let envName = '';
+            if (envId === '2') envName = 'dev';
+            else if (envId === '3') envName = 'qa';
+            else if (envId === '1') envName = 'prod';
+
+            API_BASE_URL = `http://localhost:8083/mock/${envName}/${apiName}`;
+            console.log(`DEBUG JS: Usando URL de MOCK para entorno ${envName}: ${API_BASE_URL}`);
+
+            updateUrlPreview();
+
+        } else {
+
+            console.log(`DEBUG JS: Intentando obtener URL REAL de la BD para ID ${envId}`);
+            try {
+                const resp = await fetch(`/api/sandbox/${CURRENT_API_ID}/entorno/${envId}/url-base`);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    API_BASE_URL = data.urlBase || "";
+                    updateUrlPreview();
+                } else {
+                    API_BASE_URL = "";
+                    document.getElementById('url-preview').textContent = "No hay URL configurada para este entorno.";
+                }
+            } catch (e) {
+                console.error("Error al obtener URL de la BD:", e);
             }
-        } catch (e) {
-            console.error(e);
         }
     }
 

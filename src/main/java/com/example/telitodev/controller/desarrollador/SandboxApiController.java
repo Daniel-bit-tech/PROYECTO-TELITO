@@ -3,7 +3,9 @@ package com.example.telitodev.controller.desarrollador;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.mock.ApiDocParser;
 import com.example.telitodev.repository.*;
+import com.example.telitodev.service.S3Services.S3DocsApiService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -20,6 +22,13 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/sandbox")
 public class SandboxApiController {
 
+    @Value("${mock.api.dev.url}")
+    private String mockDevUrl;
+
+    @Value("${mock.api.prod.url}")
+    private String mockProdUrl;
+
+
     @Autowired private ApiDocParser apiDocParser;
     @Autowired private ApiRepository apiRepository;
     @Autowired private DocumentacionRepository documentacionRepository;
@@ -27,6 +36,8 @@ public class SandboxApiController {
 
     @Autowired private ApiHasEntornoRepository apiHasEntornoRepository;
     @Autowired private EntornoRepository entornoRepository;
+    @Autowired private ContratoRepository contratoRepository;
+    @Autowired private S3DocsApiService s3DocsApiService;
 
     @PostMapping("/save-active-environment")
     @Transactional
@@ -135,56 +146,86 @@ public class SandboxApiController {
 
     @GetMapping("/list-available")
     public ResponseEntity<List<Map<String, Object>>> getAvailableApis(Authentication authentication) {
-        String userEmail = authentication.getName();
-        Usuario usuario = usuarioRepository.findByCorreo(userEmail);
 
-        if (usuario == null || usuario.getOrganizacion() == null) {
-            List<Api> apisPublicas = apiRepository.findByDominio_IdDominio(11);
-            return buildApiResponse(apisPublicas);
-        }
 
-        Integer idOrganizacionUsuario = usuario.getOrganizacion().getIdOrganizacion();
-        List<Api> apisDisponibles = apiRepository.findApisByOrgProjectsAndPublic(idOrganizacionUsuario);
+        List<Api> apisDisponibles = apiRepository.findAll();
+
 
         return buildApiResponse(apisDisponibles);
     }
 
     @GetMapping("/{apiId}/endpoints")
     public ResponseEntity<List<String>> getAvailableEndpoints(@PathVariable Integer apiId) {
-        return documentacionRepository.findFirstByApi_IdApi(apiId)
-                .map(doc -> {
+
+
+        return contratoRepository.findLatestByApiId(apiId)
+                .map(contrato -> {
                     try {
                         String apiName = apiRepository.findById(apiId)
                                 .orElseThrow(() -> new RuntimeException("API no encontrada")).getNombre()
                                 .replaceAll("\\s+","").toLowerCase();
 
-                        String openApiJson = (String) doc.getContenido();
+                        String openApiJson;
 
-                        return ResponseEntity.ok(apiDocParser.parseOpenApi(openApiJson, apiName).stream()
+
+                        if (contrato.getUrlContrato() != null && !contrato.getUrlContrato().isBlank()) {
+
+                            System.out.println("Sandbox descargando " + contrato.getUrlContrato());
+                            openApiJson = s3DocsApiService.obtenerContenidoS3(contrato.getUrlContrato());
+                        } else {
+                            System.out.println(" Sandbox: Usando contrato desde BD ");
+                            openApiJson = contrato.getContenido();
+                        }
+
+                        if (openApiJson == null || openApiJson.isEmpty()) {
+                            return ResponseEntity.ok(List.<String>of("Error: Contrato vacío"));
+                        }
+
+                        List<String> endpoints = apiDocParser.parseOpenApi(openApiJson, apiName).stream()
                                 .map(stub -> stub.method.name() + " " + stub.path)
-                                .collect(Collectors.toList()));
+                                .collect(Collectors.toList());
+
+                        return ResponseEntity.ok(endpoints);
+
                     } catch (Exception e) {
-                        return ResponseEntity.internalServerError().body(List.of("ERROR PARSING DOC"));
+                        System.err.println(" ERROR Sandbox Parser: " + e.getMessage());
+                        e.printStackTrace();
+                        return ResponseEntity.internalServerError().body(List.of("ERROR INTERNO: " + e.getMessage()));
                     }
                 })
                 .orElse(ResponseEntity.ok(List.of()));
     }
 
+
     @GetMapping("/{apiId}/entorno/{envId}/url-base-info")
     public ResponseEntity<Map<String, String>> getBaseUrl(@PathVariable Integer apiId, @PathVariable String envId) {
         String envName;
+        String baseUrl;
+
         switch (envId) {
-            case "1": envName = "prod"; break;
-            case "2": envName = "dev"; break;
-            case "3": envName = "qa"; break;
-            default: return ResponseEntity.badRequest().build();
+            case "1":
+                envName = "prod";
+                baseUrl = mockProdUrl;
+                break;
+            case "2":
+                envName = "dev";
+                baseUrl = mockDevUrl;
+                break;
+            case "3":
+                envName = "qa";
+                baseUrl = mockDevUrl;
+                break;
+            default:
+                return ResponseEntity.badRequest().build();
         }
 
         return apiRepository.findById(apiId).map(api -> {
             String apiName = api.getNombre().replaceAll("\\s+","").toLowerCase();
-            String urlBase = "http://localhost:8083/mock/" + envName + "/" + apiName;
+            String urlBase = baseUrl + "/mock/" + envName + "/" + apiName;
             return ResponseEntity.ok(Map.of("urlBase", urlBase));
         }).orElse(ResponseEntity.notFound().build());
+
+
     }
 
     @GetMapping("/{apiId}/active-environment")

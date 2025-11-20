@@ -7,6 +7,7 @@ import com.example.telitodev.service.SandboxService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -20,6 +21,15 @@ import java.util.stream.Collectors;
 
 @RestController
 public class ProxyController {
+
+
+    @Value("${mock.api.dev.url}")
+    private String mockDevUrl;
+
+    @Value("${mock.api.prod.url}")
+    private String mockProdUrl;
+
+
 
     @Autowired
     private SandboxService sandboxService;
@@ -61,29 +71,7 @@ public class ProxyController {
         public String getUrlBase() { return urlBase; }
         public String getApiNombre() { return apiNombre; }
     }
-//
-//    @GetMapping("/api/sandbox/list-available")
-//    public ResponseEntity<List<Map<String, Object>>> getAvailableApisForSandbox(Authentication authentication) {
-//
-//        String userEmail = authentication.getName();
-//        Usuario usuario = usuarioRepository.findByCorreo(userEmail);
-//
-//        if (usuario == null) {
-//            List<Api> apisPublicas = apiRepository.findByDominio_IdDominio(11);
-//            return buildApiResponse(apisPublicas);
-//        }
-//
-//        if (usuario.getOrganizacion() == null) {
-//            List<Api> apisPublicas = apiRepository.findByDominio_IdDominio(11);
-//            return buildApiResponse(apisPublicas);
-//        }
-//
-//        Integer idOrganizacionUsuario = usuario.getOrganizacion().getIdOrganizacion();
-//
-//        List<Api> apisDisponibles = apiRepository.findApisByOrgProjectsAndPublic(idOrganizacionUsuario);
-//
-//        return buildApiResponse(apisDisponibles);
-//    }
+
 
     private ResponseEntity<List<Map<String, Object>>> buildApiResponse(List<Api> apis) {
         List<Map<String, Object>> response = apis.stream().map(api -> {
@@ -111,10 +99,14 @@ public class ProxyController {
             String urlBase;
 
             if (request.getTargetUrl().startsWith("http")) {
+                System.out.println("DEBUG SANDBOX: Ejecutando URL ABSOLUTA. Se ignora la configuración de API/Entorno.");
+
                 urlBase = "";
                 pathTemplate = request.getTargetUrl();
 
             } else {
+                System.out.println("DEBUG SANDBOX: Ejecutando con RUTA RELATIVA. API ID: " + request.getApiId() + ", Entorno ID: " + request.getEnvironmentId());
+
 
                 if (request.getApiId() == null || request.getApiId() == 0) {
                     throw new RuntimeException("Debe seleccionar una API para rutas relativas.");
@@ -152,10 +144,14 @@ public class ProxyController {
                     final String MOCK_SERVER_URL = "http://localhost:8083/mock/";
 
                     urlBase = MOCK_SERVER_URL + mockEntorno + "/" + apiName;
+                    System.out.println("DEBUG SANDBOX: SELECCIÓN MOCK. Entorno: " + mockEntorno + ". URL BASE MOCK: " + MOCK_SERVER_URL);
+
 
                     pathTemplate = (request.getTargetUrl().startsWith("/")) ? request.getTargetUrl() : "/" + request.getTargetUrl();
 
                 } else {
+                    System.out.println("DEBUG SANDBOX: SELECCIÓN REAL. ID Entorno: " + request.getEnvironmentId() + " (no mock)");
+
 
                     urlBase = getUrlBaseFromDb(request.getApiId());
                 }
@@ -163,6 +159,8 @@ public class ProxyController {
 
 
             HttpMethod method = HttpMethod.valueOf(request.getMethod().toUpperCase());
+            String urlToCall = urlBase.replaceAll("/+$", "") + (pathTemplate.startsWith("http") ? "" : pathTemplate);
+            System.out.println("DEBUG SANDBOX: URL FINAL PARA LLAMADA: " + urlToCall);
 
             String bodyAsString = null;
             if (request.getBody() != null) {
@@ -188,6 +186,8 @@ public class ProxyController {
             return ResponseEntity.status(response.getStatusCode()).body(bodyMap);
 
         } catch (Exception e) {
+            System.err.println("DEBUG SANDBOX ERROR: Capturado el error: " + e.getMessage());
+
             e.printStackTrace();
             Map<String, Object> errorMap = new HashMap<>();
             errorMap.put("error", "Error de ejecución");
@@ -203,12 +203,12 @@ public class ProxyController {
         if (environmentId == null) return null;
 
         switch (environmentId) {
-            // IDs basados en tu HTML:
+
             case 2: // Desarrollo
                 return "dev";
-            case 3: // QA (Quality Assurance)
+            case 3:
                 return "qa";
-            case 1: // Producción
+            case 1:
                 return "prod";
             default:
                 return null;

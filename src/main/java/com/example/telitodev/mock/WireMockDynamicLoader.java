@@ -24,7 +24,7 @@ public class WireMockDynamicLoader {
         String pathTemplate = sd.path.replaceAll("\\{[^/]+\\}", "([^/]+)");
 
         String fullPattern = "/mock/" + sd.entorno + "/" + sd.apiName + pathTemplate;
-        System.out.println("🔗 WIREMOCK REGISTRADO: " + sd.method + " EN EL PATRÓN: " + fullPattern);
+        System.out.println(" WIREMOCK REGISTRADO: " + sd.method + " EN EL PATRÓN: " + fullPattern);
 
 
         com.github.tomakehurst.wiremock.client.MappingBuilder builder;
