@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="utf-8" />
+    <title>Documentación API - Telito</title>
+    <title>API 1 - Información</title>
+    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-socials.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-payments.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-vendors.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-marketing.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-themes.css?1757307620" rel="stylesheet" />
+    <link href="/tabler/preview/css/demo.css?1757307620" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/tabler/dist/js/tabler-theme.min.js"></script>
+    <style>
+        .bg-activo{
+            background-color: rgba(var(--tblr-success-rgb), 0.1);
+            color: var(--tblr-success);
+        }
+        .bg-deprecado{
+            background-color: rgba(var(--tblr-warning-rgb), 0.1);
+            color: var(--tblr-warning);
+        }
+        .bg-inactivo{
+            background-color: rgba(var(--tblr-danger-rgb), 0.1);
+            color: var(--tblr-danger);
+        }
+    </style>
+</head>
+<body>
+<script src="/tabler/dist/js/tabler-theme.min.js"></script>
+
+<div class="page">
+    <header th:replace="desarrollador/header :: header" sec:authorize="hasRole('DEV')"></header>
+    <header th:replace="admin/header :: header" sec:authorize="hasRole('SUPERADMIN')"></header>
+    <header th:replace="po/header_po :: header" sec:authorize="hasRole('PO')"></header>
+    <header th:replace="qa/header_qa :: header" sec:authorize="hasRole('QA')"></header>
+
+    <div class="page-wrapper">
+        <div class="page-body">
+            <div class="container-xl">
+                <!-- Header de navegación -->
+                <div class="row mb-4">
+                    <div class="col">
+                        <div class="page-pretitle">Documentación</div>
+                        <h1 class="page-title" th:text="${api.nombre}">API 1</h1>
+                    </div>
+                    <!-- Acción para QA -->
+                    <div sec:authorize="hasRole('QA')" class="col-md-auto">
+                        <a class="btn btn-primary" th:href="@{/qa/crearFeedback/{apiId}(apiId=${api.idApi})}">
+                            <i class="fas fa-comment-dots me-2"></i>Generar Feedback
+                        </a>
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div th:replace="general/docs/docSidebar :: docs-sidebar(${api.idApi}, 'info', ${nombresSecs})"></div>
+
+                    <!-- Contenido principal -->
+                    <div class="col-lg-9 col-md-7">
+                        <div id="doc-content" style="min-height: auto">
+                        <!-- Aquí se renderiza dinámicamente -->
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/tabler/dist/js/tabler.min.js"></script>
+
+<script th:inline="javascript">
+    $(document).ready(function() {
+        const idApi = [[${api.idApi}]];
+
+        // Manejar clics en secciones
+        $('.seccion-link').on('click', function(e) {
+            e.preventDefault();
+
+            const $this = $(this);
+            const seccion = $this.data('seccion');
+
+            if ($this.hasClass('active')) return;
+
+            $('.seccion-link').removeClass('active');
+            $this.addClass('active');
+
+            cargarContenidoSeccionConAnimacion(idApi, seccion);
+        });
+
+        cargarContenidoSeccionConAnimacion(idApi, 'info');
+    });
+
+    function cargarContenidoSeccionConAnimacion(idApi, seccion) {
+        const $contenedor = $('#doc-content');
+        // Animación de fade out
+        $contenedor.fadeOut(300, function() {
+            // Mostrar loading
+            $contenedor.html(`
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2">Cargando ${seccion}...</p>
+                </div>
+            `).fadeIn(300);
+
+            // Hacer petición AJAX
+            $.ajax({
+                url: '/documentacion/'+idApi+'/'+encodeURIComponent(seccion)+'/.html',
+                type: 'GET',
+                success: function(html) {
+                    $contenedor.fadeOut(300, function() {
+                        $contenedor.html(html).fadeIn(300);
+
+                    });
+                },
+                error: function(xhr, status, error) {
+                    $contenedor.html(`
+                        <div class="alert alert-danger">
+                            <h5>Error al cargar la sección</h5>
+                            <p>No se pudo cargar el contenido de "${seccion}".</p>
+                            <small>Error: ${error}</small>
+                        </div>
+                    `).fadeIn(300);
+                }
+            });
+        });
+    }
+</script>
+
+</body>
+</html>

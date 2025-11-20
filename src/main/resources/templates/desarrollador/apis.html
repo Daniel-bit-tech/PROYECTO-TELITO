@@ -529,24 +529,6 @@
         console.log(`Filtro ${filterCategory} ${isChecked ? 'activado' : 'desactivado'}`);
       });
     });
-
-
-    document.querySelectorAll('.btn-api').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const apiCard = this.closest('.api-card');
-        const apiName = apiCard.querySelector('.api-title').textContent;
-
-        if (this.classList.contains('btn-primary')) {
-
-          console.log(`Abriendo documentación de: ${apiName}`);
-          alert(`Redirigiendo a la documentación de ${apiName}`);
-        } else {
-
-          console.log(`Abriendo sandbox de: ${apiName}`);
-          alert(`Abriendo sandbox para probar ${apiName}`);
-        }
-      });
-    });
   </script>
 
   <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>

@@ -86,33 +86,36 @@ public class ApiController extends BaseController {
         return "desarrollador/apis";
     }
 
-//    @GetMapping("/{id}/docs")
-//    @PreAuthorize("hasAnyRole('DEV','SUPERADMIN','QA','PO')")
+//    @GetMapping("/{idApi}/docs")
 //    @PreAuthorize("isAuthenticated()")
-//    public String detalleApi(@PathVariable Integer id,
-//                             Model model, Authentication auth, HttpSession session) {
-//
-//        boolean apiExists = apiRepository.existsById(id);
-//        if (apiExists) {
-//
-//            List<Documentacion> docs = documentacionRepository.findByApi_IdApiOrderByFechaCreacionDesc(id);
-//            model.addAttribute("docs", docs);
-//        }
-//
-//        // Obtener el usuario correcto considerando impersonación usando BaseController
+//    public String verDocsApi(@PathVariable Integer idApi,
+//                             Model model, Authentication auth, HttpSession session) throws IOException {
 //        Usuario usuario = getCurrentUser(auth, session);
 //        model.addAttribute("usuario", usuario);
-//
 //        // Agregar información de impersonación al modelo usando BaseController
 //        addImpersonationAttributes(model, session);
 //
-//        return "general/docs/documentacion";
+//        Optional<Api> apiX = apiRepository.findById(idApi);
+//        if (apiX.isPresent()) {
+//            Api api = apiX.get();
+//            model.addAttribute("api", api);
+//        } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No existe el api");
+//
+//        Documentacion documentacion = documentacionRepository.findByApi_IdApiAndFormato(idApi, Documentacion.FormatoDoc.MARKDOWN);
+//
+//        List<String> nombresSecs = docMDService.nombresSecsReadme(idApi);
+//        model.addAttribute("nombresSecs", nombresSecs);
+//
+//        return "general/docs/apiDoc";
 //    }
-
     @GetMapping("/{idApi}/docs")
     @PreAuthorize("isAuthenticated()")
-    public String verDocsApi(@PathVariable Integer idApi,
-                             Model model, Authentication auth, HttpSession session) throws IOException {
+    public String vistaBaseDocsApi(@PathVariable Integer idApi,
+                             Model model, Authentication auth, HttpSession session) {
+        Usuario usuario = getCurrentUser(auth, session);
+        model.addAttribute("usuario", usuario);
+        // Agregar información de impersonación al modelo usando BaseController
+        addImpersonationAttributes(model, session);
 
         Optional<Api> apiX = apiRepository.findById(idApi);
         if (apiX.isPresent()) {
@@ -120,20 +123,12 @@ public class ApiController extends BaseController {
             model.addAttribute("api", api);
         } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No existe el api");
 
-        List<String> nombresSecs = docMDService.nombresSecsDoc(idApi);
-        
         Documentacion documentacion = documentacionRepository.findByApi_IdApiAndFormato(idApi, Documentacion.FormatoDoc.MARKDOWN);
-//        String content = documentacion.getContenido();
+
+        List<String> nombresSecs = docMDService.nombresSecsReadme(idApi);
         model.addAttribute("nombresSecs", nombresSecs);
 
-        // Obtener el usuario correcto considerando impersonación usando BaseController
-        Usuario usuario = getCurrentUser(auth, session);
-        model.addAttribute("usuario", usuario);
-
-        // Agregar información de impersonación al modelo usando BaseController
-        addImpersonationAttributes(model, session);
-
-        return "general/docs/apiDoc";
+        return "general/docs/docsApiBase";
     }
 
 

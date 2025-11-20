@@ -6,7 +6,9 @@ import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
 import com.example.telitodev.service.S3Services.S3DocsApiService;
 import com.example.telitodev.service.creacionApi.DocApiService;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -161,7 +163,12 @@ public class GestionApisController extends BaseController {
                         }
                         ObjectMapper objectMapper = new ObjectMapper();
                         try {
-                            Object jsonContent = objectMapper.readValue(readme.getContenido(), Object.class);
+
+                            JsonNode jsonNode = objectMapper.readTree(readme.getContenido());
+                            objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+                            String jsonContent = objectMapper.writeValueAsString(jsonNode);
+
                             model.addAttribute("contenidoJson", jsonContent);
                         } catch (Exception e) {
                             model.addAttribute("contenidoJson", readme.getContenido()); // Fallback como string

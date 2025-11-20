@@ -18,6 +18,11 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
     Optional<Api> findById(Integer idApi);
 
+    @Query("SELECT a FROM Api a " +
+            "WHERE a.estadoApi.idEstado != 2 " +
+            "AND a.idApi = :idApi")
+    Optional<Api> findActiveApiById(@Param("idApi") Integer idApi);
+
 
     @Query(value = "SELECT DISTINCT a.* FROM api a " +
             "JOIN proyecto_has_api pha ON a.idAPI = pha.idAPI " +

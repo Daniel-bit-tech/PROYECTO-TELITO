@@ -393,7 +393,6 @@
                 idTag: $("#tagApi").val()
             }),
             success: function(resp) {
-                $("#nuevoApiModal").ar("hide");
                 window.location.href = "/dev/int/misApis/" + resp.idApi;
             },
             error: function(xhr) {

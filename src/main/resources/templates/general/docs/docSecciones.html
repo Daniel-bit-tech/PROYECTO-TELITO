@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <div th:fragment="info(api)" class="card ms-3">
+        <div class="card-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h2 class="card-title">Información General</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <!-- Tarjetas de métricas principales -->
+            <!--                                <div class="row mb-4">-->
+            <!--                                    <div class="col-md-3">-->
+            <!--                                        <div class="card card-sm bg-primary text-white">-->
+            <!--                                            <div class="card-body">-->
+            <!--                                                <div class="row align-items-center">-->
+            <!--                                                    <div class="col-auto">-->
+            <!--                                                        <i class="fas fa-plug fa-2x"></i>-->
+            <!--                                                    </div>-->
+            <!--                                                    <div class="col">-->
+            <!--                                                        <div class="font-weight-medium">15 Endpoints</div>-->
+            <!--                                                        <div class="text-white-50">Total disponible</div>-->
+            <!--                                                    </div>-->
+            <!--                                                </div>-->
+            <!--                                            </div>-->
+            <!--                                        </div>-->
+            <!--                                    </div>-->
+            <!--                                    <div class="col-md-3">-->
+            <!--                                        <div class="card card-sm bg-success text-white">-->
+            <!--                                            <div class="card-body">-->
+            <!--                                                <div class="row align-items-center">-->
+            <!--                                                    <div class="col-auto">-->
+            <!--                                                        <i class="fas fa-check-circle fa-2x"></i>-->
+            <!--                                                    </div>-->
+            <!--                                                    <div class="col">-->
+            <!--                                                        <div class="font-weight-medium">12 Activos</div>-->
+            <!--                                                        <div class="text-white-50">En producción</div>-->
+            <!--                                                    </div>-->
+            <!--                                                </div>-->
+            <!--                                            </div>-->
+            <!--                                        </div>-->
+            <!--                                    </div>-->
+            <!--                                    <div class="col-md-3">-->
+            <!--                                        <div class="card card-sm bg-warning text-white">-->
+            <!--                                            <div class="card-body">-->
+            <!--                                                <div class="row align-items-center">-->
+            <!--                                                    <div class="col-auto">-->
+            <!--                                                        <i class="fas fa-tools fa-2x"></i>-->
+            <!--                                                    </div>-->
+            <!--                                                    <div class="col">-->
+            <!--                                                        <div class="font-weight-medium">3 Testing</div>-->
+            <!--                                                        <div class="text-white-50">En desarrollo</div>-->
+            <!--                                                    </div>-->
+            <!--                                                </div>-->
+            <!--                                            </div>-->
+            <!--                                        </div>-->
+            <!--                                    </div>-->
+            <!--                                    <div class="col-md-3">-->
+            <!--                                        <div class="card card-sm bg-info text-white">-->
+            <!--                                            <div class="card-body">-->
+            <!--                                                <div class="row align-items-center">-->
+            <!--                                                    <div class="col-auto">-->
+            <!--                                                        <i class="fas fa-shield-alt fa-2x"></i>-->
+            <!--                                                    </div>-->
+            <!--                                                    <div class="col">-->
+            <!--                                                        <div class="font-weight-medium">100% Seguro</div>-->
+            <!--                                                        <div class="text-white-50">JWT + HTTPS</div>-->
+            <!--                                                    </div>-->
+            <!--                                                </div>-->
+            <!--                                            </div>-->
+            <!--                                        </div>-->
+            <!--                                    </div>-->
+            <!--                                </div>-->
+
+            <!-- Panel de información principal -->
+            <div class="row">
+                <div class="col-md-8">
+                    <!-- Información de la API -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-book me-2"></i>
+                                DESCRIPCIÓN DE LA API
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info bg-info-lt">
+                                <div class="d-flex">
+                                    <div class="me-3">
+                                        <i class="fas fa-rocket fa-2x text-info"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="alert-title" th:text="${api.nombre}">API de apis</h4>
+                                        <p class="mb-0" th:text="${api.descripcion}">
+                                            Esta API proporciona funcionalidades completas para ...
+                                            ...
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h5 class="mt-4">Características Destacadas</h5>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="avatar avatar-sm bg-green text-white me-3"></span>
+                                        <div>
+                                            <strong>Operaciones CRUD</strong>
+                                            <div class="text-muted">Create, Read, Update, Delete</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="avatar avatar-sm bg-blue text-white me-3">⚡</span>
+                                        <div>
+                                            <strong>Alta disponibilidad</strong>
+                                            <div class="text-muted">99.9% uptime garantizado</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="avatar avatar-sm bg-purple text-white me-3">🔍</span>
+                                        <div>
+                                            <strong>Búsqueda avanzada</strong>
+                                            <div class="text-muted">Filtrado y paginación</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="avatar avatar-sm bg-orange text-white me-3">🔒</span>
+                                        <div>
+                                            <strong>Autenticación JWT</strong>
+                                            <div class="text-muted">Tokens seguros</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="avatar avatar-sm bg-red text-white me-3">📊</span>
+                                        <div>
+                                            <strong>Logs de auditoría</strong>
+                                            <div class="text-muted">Traza completa</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="avatar avatar-sm bg-cyan text-white me-3">🌐</span>
+                                        <div>
+                                            <strong>Soporte CORS</strong>
+                                            <div class="text-muted">Cross-origin requests</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Información técnica -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Información Técnica</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="list-group list-group-flush">
+                                <div class="list-group-item px-0">
+                                    <div class="row align-items-center">
+                                        <div class="col">
+                                            <strong>Última Version</strong>
+                                        </div>
+                                        <div class="col-auto">
+                                            <span class="badge bg-blue text-blue-fg" th:if="${not #lists.isEmpty(api.versionesApi)}" th:text="${api.versionesApi[#lists.size(api.versionesApi)-1].version}">Sin versión</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <div class="row align-items-center">
+                                        <div class="col">
+                                            <strong>Estado</strong>
+                                        </div>
+                                        <div class="col-auto">
+                                            <span class="badge" th:styleappend="' badge-'+${api.estadoApi.estado.toLowerCase()}" th:text="${api.estadoApi.estado}">TESTING</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <div class="row align-items-center">
+                                        <div class="col">
+                                            <strong>Lanzamiento</strong>
+                                        </div>
+                                        <div class="col-auto" th:text="${#dates.format(api.fechaCreacion, 'dd/MM/yyyy')}">
+                                            12/09/2026
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <div class="row align-items-center">
+                                        <div class="col">
+                                            <strong>Dominio</strong>
+                                        </div>
+                                        <div class="col-auto" th:text="${api.dominio.nombre}">
+                                            Clientes/REST
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="list-group-item px-0">
+                                    <div class="row align-items-center">
+                                        <div class="col">
+                                            <strong>Tag</strong>
+                                        </div>
+                                        <div class="col-auto" th:text="${api.tag.nombre}">
+                                            Seguridad
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--                                                    <div class="list-group-item px-0">-->
+                                <!--                                                        <div class="row align-items-center">-->
+                                <!--                                                            <div class="col">-->
+                                <!--                                                                <strong>Límite Rate</strong>-->
+                                <!--                                                            </div>-->
+                                <!--                                                            <div class="col-auto">-->
+                                <!--                                                                1000/hr-->
+                                <!--                                                            </div>-->
+                                <!--                                                        </div>-->
+                                <!--                                                    </div>-->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--                                        &lt;!&ndash; Acciones rápidas &ndash;&gt;-->
+                    <!--                                        <div class="card mt-3">-->
+                    <!--                                            <div class="card-body">-->
+                    <!--                                                <h4 class="card-title">Acciones Rápidas</h4>-->
+                    <!--                                                <div class="d-grid gap-2">-->
+                    <!--                                                    <a-->
+                    <!--                                                            class="btn btn-primary">-->
+                    <!--&lt;!&ndash;                                                            th:href="@{/docs/playground/{id}(id=${doc.id})}" &ndash;&gt;-->
+                    <!--                                                        <i class="fas fa-play me-2"></i>Probar API-->
+                    <!--                                                    </a>-->
+                    <!--                                                    <a-->
+                    <!--                                                            class="btn btn-outline-primary">-->
+                    <!--&lt;!&ndash;                                                            th:href="@{/docs/examples/{id}(id=${doc.id})}" &ndash;&gt;-->
+                    <!--                                                        <i class="fas fa-code me-2"></i>Ver Ejemplos-->
+                    <!--                                                    </a>-->
+                    <!--                                                    <a href="#" class="btn btn-outline-secondary">-->
+                    <!--                                                        <i class="fas fa-download me-2"></i>Descargar Spec-->
+                    <!--                                                    </a>-->
+                    <!--                                                </div>-->
+                    <!--                                            </div>-->
+                    <!--                                        </div>-->
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div th:fragment="sec" class="card ms-3">
+
+        <div class="card-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h2 class="card-title" th:text="${secName}">Información Sección</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div th:utext="${secHTML}"></div>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -9,6 +9,8 @@ import com.example.telitodev.repository.ContratoRepository;
 import com.example.telitodev.repository.DocumentacionRepository;
 import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.service.DocMDService;
+import com.example.telitodev.service.S3Services.S3DocsApiService;
+import com.example.telitodev.service.creacionApi.DocApiService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,6 +25,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,13 +41,15 @@ public class DocumentacionController {
     final DocumentacionRepository documentacionRepository;
     final ContratoRepository contratoRepository;
     final ApiRepository apiRepository;
+    final S3DocsApiService s3DocsApiService;
 
-    public DocumentacionController(DocMDService docMDService, UsuarioRepository usuarioRepository, DocumentacionRepository documentacionRepository, ContratoRepository contratoRepository, ApiRepository apiRepository) {
+    public DocumentacionController(DocMDService docMDService, UsuarioRepository usuarioRepository, DocumentacionRepository documentacionRepository, ContratoRepository contratoRepository, ApiRepository apiRepository, S3DocsApiService s3DocsApiService) {
         this.docMDService = docMDService;
         this.usuarioRepository = usuarioRepository;
         this.documentacionRepository = documentacionRepository;
         this.contratoRepository = contratoRepository;
         this.apiRepository = apiRepository;
+        this.s3DocsApiService = s3DocsApiService;
     }
 
     // Vista de contrato
@@ -60,7 +65,8 @@ public class DocumentacionController {
             model.addAttribute("api", api);
         } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No existe la api seleccionada");
 
-        List<String> nombresSecs = docMDService.nombresSecsDoc(idApi);
+
+        List<String> nombresSecs = docMDService.nombresSecsReadme(idApi);
         model.addAttribute("nombresSecs", nombresSecs);
 
         model.addAttribute("currentView", "contrato");
@@ -73,41 +79,17 @@ public class DocumentacionController {
 
         model.addAttribute("listaContratosApi", contratosApi);
 
-        if (idContrato == null) {
-            model.addAttribute("contratoApi", contratosApi.get(0));
-        } else {
-            ContratoApi contratoApi = contratoRepository.findByIdContratoApiAndVersionApi_Api_IdApi(idContrato, idApi);
-            if (contratoApi == null) {
-//                model.addAttribute("contratoApi", contratosApi.get(0));
-                redirectAttributes.addFlashAttribute("warn", "El contrato seleccionado no pertenece a la api seleccionada. Se muestra contrato válido");
-                return "redirect:/documentacion/"+idApi+"/contrato";
-            } else model.addAttribute("contratoApi", contratoApi);
+        ContratoApi contratoApi;
+        Optional<ContratoApi> contratoX = contratosApi.stream().filter(c->c.getIdContratoApi().equals(idContrato)).findFirst();
+        contratoApi = contratoX.orElseGet(() -> contratosApi.get(0));
+        model.addAttribute("contratoApi", contratoApi);
+        try {
+            model.addAttribute("scalarUrl", s3DocsApiService.generarUrlDescarga(contratoApi.getUrlContrato(), Duration.ofMinutes(5)));
+        } catch (DocApiService.DocValidationException e) {
+            model.addAttribute("scalarUrl", "/documentacion/"+contratoApi.getIdContratoApi()+"/openapi.json");
         }
 
         return "general/docs/contrato";
-    }
-
-    @GetMapping("/{idApi}/{section}")
-    public String mostrarVistaSecDoc(@PathVariable Integer idApi, @PathVariable String section, Model model, Authentication auth, HttpSession session) throws IOException {
-
-        System.out.println("SECTION: " + section);
-
-        Usuario usuario = obtenerUsuarioActual(auth, session);
-        model.addAttribute("usuario", usuario);
-
-        Optional<Api> apiX = apiRepository.findById(idApi);
-        if (apiX.isPresent()) {
-            Api api = apiX.get();
-            model.addAttribute("api", api);
-        } else throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No existe el api");
-
-        List<String> nombresSecs = docMDService.nombresSecsDoc(idApi);
-        model.addAttribute("nombresSecs", nombresSecs);
-
-        model.addAttribute("currentView", section);
-
-
-        return "general/docs/seccionDoc";
     }
 
 
@@ -117,8 +99,29 @@ public class DocumentacionController {
      * @return parseo de .md a html
      */
     @GetMapping("/{idApi}/{section}/.html")
-    @ResponseBody
-    public String getSection(@PathVariable Integer idApi, @PathVariable String section) throws IOException {
+    public String getSection(@PathVariable Integer idApi, @PathVariable String section, Model model) throws IOException {
+
+        System.out.println("SECTION: " + section);
+
+        Optional<Api> apiX = apiRepository.findById(idApi);
+        if (apiX.isPresent()) {
+            Api api = apiX.get();
+            model.addAttribute("api", api);
+
+            switch (section) {
+                case "info":
+                    model.addAttribute("api", api);
+                    return "general/docs/docSecciones :: info";
+                default:
+                    model.addAttribute("secName" , section);
+
+                    Map<String, String> sections = docMDService.mapeoSecsDoc(idApi);
+
+                    model.addAttribute("secHTML" , sections.getOrDefault(section, "<p>Sección no encontrada</p>"));
+                    return "general/docs/docSecciones :: sec";
+            }
+        }
+
         Map<String, String> sections = docMDService.mapeoSecsDoc(idApi);
         return sections.getOrDefault(section, "<p>Sección no encontrada</p>");
     }

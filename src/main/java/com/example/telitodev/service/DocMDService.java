@@ -1,6 +1,10 @@
 package com.example.telitodev.service;
 
+import com.example.telitodev.entity.Documentacion;
+import com.example.telitodev.repository.DocumentacionRepository;
+import com.example.telitodev.service.S3Services.S3DocsApiService;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vladsch.flexmark.ast.Heading;
@@ -22,8 +26,11 @@ public class DocMDService {
 
     private final Parser parser;
     private final HtmlRenderer renderer;
+    private final DocumentacionRepository documentacionRepository;
+    private final S3DocsApiService s3DocsApiService;
 
-    public DocMDService() {
+    public DocMDService(DocumentacionRepository documentacionRepository, S3DocsApiService s3DocsApiService) {
+        this.documentacionRepository = documentacionRepository;
         MutableDataSet options = new MutableDataSet();
 
         // Activar extensiones útiles
@@ -38,22 +45,29 @@ public class DocMDService {
         // Inicializar atributos de clase (no variables locales)
         this.parser = Parser.builder(options).build();
         this.renderer = HtmlRenderer.builder(options).build();
+        this.s3DocsApiService = s3DocsApiService;
     }
 
     public Map<String, String> mapeoSecsDoc(Integer idApi) throws IOException {
-        ClassPathResource resource = new ClassPathResource("/static/docsMD/API" + idApi + ".md");
-        if (!resource.exists()) {
+        // Obtener la documentación desde la base de datos
+        Documentacion doc = documentacionRepository.findByApi_IdApiAndFormatoAndDescripcion(idApi, Documentacion.FormatoDoc.MARKDOWN, "Documentación Técnica");
+
+        if (doc == null || doc.getUrlDocumento() == null) {
             return Collections.emptyMap();
         }
 
-        String md = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
-        if (md.trim().isEmpty()) {
-            return Collections.emptyMap();
+        String md;
+        try {
+            md = s3DocsApiService.descargarArchivoDesdeS3ComoString(doc.getUrlDocumento());
+        } catch (Exception e) {
+            throw new IOException("Error al descargar archivo desde S3: " + doc.getDescripcion(), e);
         }
+
+        if (md.trim().isEmpty()) return Collections.emptyMap();
 
         // Dividir por secciones (## Título)
         Map<String, String> sections = new LinkedHashMap<>();
-        String[] parts = md.split("(?m)^## "); // regex: línea que empieza con "## "
+        String[] parts = md.split("(?m)^## ");
 
         for (String part : parts) {
             if (part.isBlank() || part.startsWith("# ")) continue;
@@ -70,14 +84,35 @@ public class DocMDService {
     }
 
     // Solo los nombres de sección (para sidebar)
-    public List<String> nombresSecsDoc(Integer idApi) throws IOException {
+    public List<String> nombresSecsReadme(Integer idApi) {
 
-        Set<String> sections = mapeoSecsDoc(idApi).keySet();
-        if (sections.isEmpty()) {
-            return  Collections.emptyList();
+        Documentacion docReadme = documentacionRepository.findByApi_IdApiAndFormatoAndDescripcion(idApi, Documentacion.FormatoDoc.MARKDOWN,"Documentación Técnica");
+
+        if (docReadme == null || docReadme.getContenido() == null) {
+            return Collections.emptyList();
         }
 
-        return new ArrayList<>(sections);
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(docReadme.getContenido());
+
+            List<String> sections = new ArrayList<>();
+            root.fieldNames().forEachRemaining(sections::add);
+            return sections;
+        } catch (JsonProcessingException e) {
+            return Collections.emptyList();
+        }
+    }
+
+    public Map<String, Object> estructuraSecsReadme(Integer idApi) throws JsonProcessingException {
+        Documentacion docReadme = documentacionRepository.findByApi_IdApiAndFormatoAndDescripcion(idApi, Documentacion.FormatoDoc.MARKDOWN, "Descripcion Técnica");
+
+        if (docReadme == null || docReadme.getContenido() == null) {
+            return Collections.emptyMap();
+        }
+
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(docReadme.getContenido(), new TypeReference<Map<String, Object>>() {});
     }
 
     public String extraerCabecerasJsonFlexmark(String markdown) throws JsonProcessingException {

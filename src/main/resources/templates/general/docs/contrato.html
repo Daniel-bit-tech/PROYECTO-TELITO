@@ -8,6 +8,7 @@
     <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet"/>
     <link href="/tabler/preview/css/demo.css" rel="stylesheet"/>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/tabler/dist/js/tabler-theme.min.js"></script>
     <style>
         /* Override específico para el grid problem en responses */
@@ -61,86 +62,65 @@
                 </div>
 
                 <div class="row">
-                    <div class="col-lg-3 col-md-4 mb-4 mb-md-0">
-                        <!--                    <div th:replace="fragments/docs/sidebar :: docs-sidebar(${doc.id}, 'info')"></div>-->
-                        <div th:replace="general/docs/docSidebar :: docs-sidebar(${api.idApi}, ${currentView}, ${nombresSecs})"></div>
 
-                        <!-- Información rápida -->
-                        <div class="card mt-3">
-                            <div class="card-header">
-                                <h4 class="card-title">Detalles Rápidos</h4>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-2">
-                                    <strong>Base URL:</strong>
-                                    <code th:text="${api.endpointUrl}">https://api.telito.com/v1</code>
-                                </div>
-                                <!--                                <div class="mb-2">-->
-                                <!--                                    <strong>Formato:</strong>-->
-                                <!--                                    <span class="badge bg-blue text-blue-fg">JSON</span>-->
-                                <!--                                </div>-->
-                                <!--                                <div class="mb-2">-->
-                                <!--                                    <strong>Autenticación:</strong>-->
-                                <!--                                    <span class="badge bg-orange text-orange-fg" >JWT</span>-->
-                                <!--                                </div>-->
-                                <div>
-                                    <strong>Estado:</strong>
-                                    <span class="badge" th:classappend="' bg-'+${api.estadoApi.estado.toLowerCase()}"
-                                          th:text="${api.estadoApi.estado}">TESTING</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <div th:replace="general/docs/docSidebar :: docs-sidebar(${api.idApi}, ${currentView}, ${nombresSecs})"></div>
+
 
                     <!-- Contenido principal -->
-                    <div class="col-lg-9 col-md-6">
-                        <div class="card ms-3" th:if="${contratoValido}">
-                            <div class="card-header">
-                                <h2 class="card-title" th:text="'Contrato: '+${contratoApi.versionApi.version}">Contratos:</h2>
+                    <div class="col-lg-9 col-md-7">
 
-<!--                                    <div class="col-auto">-->
-<!--                                        <select class="form-select" name="contrato" id="contratoSelect">-->
-<!--                                            <option value="" disabled selected>Seleccione un contrato</option>-->
-<!--                                            <option th:each="contrato : ${listaContratosApi}"-->
-<!--                                                    th:value="${contrato.idContratoApi}"-->
-<!--                                                    th:text="${contrato.formato} + ' - Versión ' + ${contrato.versionApi.version}-->
-<!--                                                        + ' (' + ${#dates.format(contrato.fechaModificacion, 'dd-MM-yyyy')} + ')'">-->
-<!--                                            </option>-->
-<!--                                        </select>-->
-<!--                                    </div>-->
+                        <div id="doc-content" style="min-height: auto">
 
-                                <div class="card-actions">
-                                    <div class="dropdown">
-                                        <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
-                                            Seleccione contrato
-                                        </button>
-                                        <div class="dropdown-menu">
-                                            <a class="dropdown-item" th:each="contrato : ${listaContratosApi}"
-                                               th:href="@{'/documentacion/' + ${contrato.versionApi.api.idApi} + '/contrato/' + ${contrato.idContratoApi}}">
-                                                <div><strong th:text="${contrato.formato}"></strong></div>
-                                                <small th:text="'Versión ' + ${contrato.versionApi.version}"></small><br>
-                                                <small th:text="${#dates.format(contrato.fechaModificacion, 'dd-MM-yyyy')}"></small>
-                                            </a>
+                            <div class="card ms-3" th:if="${contratoValido}">
+                                <div class="card-header">
+                                    <h2 class="card-title" th:text="'Contrato: '+${contratoApi.versionApi.version}">Contratos:</h2>
+
+    <!--                                    <div class="col-auto">-->
+    <!--                                        <select class="form-select" name="contrato" id="contratoSelect">-->
+    <!--                                            <option value="" disabled selected>Seleccione un contrato</option>-->
+    <!--                                            <option th:each="contrato : ${listaContratosApi}"-->
+    <!--                                                    th:value="${contrato.idContratoApi}"-->
+    <!--                                                    th:text="${contrato.formato} + ' - Versión ' + ${contrato.versionApi.version}-->
+    <!--                                                        + ' (' + ${#dates.format(contrato.fechaModificacion, 'dd-MM-yyyy')} + ')'">-->
+    <!--                                            </option>-->
+    <!--                                        </select>-->
+    <!--                                    </div>-->
+
+                                    <div class="card-actions">
+                                        <div class="dropdown">
+                                            <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                                Seleccione contrato
+                                            </button>
+                                            <div class="dropdown-menu">
+                                                <a class="dropdown-item" th:each="contrato : ${listaContratosApi}"
+                                                   th:href="@{'/documentacion/' + ${contrato.versionApi.api.idApi} + '/contrato/' + ${contrato.idContratoApi}}">
+                                                    <div><strong th:text="${contrato.formato}"></strong></div>
+                                                    <small th:text="'Versión ' + ${contrato.versionApi.version}"></small><br>
+                                                    <small th:text="${#dates.format(contrato.fechaModificacion, 'dd-MM-yyyy')}"></small>
+                                                </a>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="card-body w-100" id="app">
-                                <!-- Aquí se renderiza dinámicamente -->
+                                <div class="card-body w-100" id="app">
+                                    <!-- Aquí se renderiza dinámicamente -->
 
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="card ms-3" style="min-height: auto" th:unless="${contratoValido}">
-                            <div class="card-header">
-                                <div class="row align-items-center">
-                                    <div class="col">
-                                        <h2 class="card-title">No se encontró ningún contrato para esta Api</h2>
+                            <div class="card ms-3" style="min-height: auto" th:unless="${contratoValido}">
+                                <div class="card-header">
+                                    <div class="row align-items-center">
+                                        <div class="col">
+                                            <h2 class="card-title">No se encontró ningún contrato para esta Api</h2>
+                                        </div>
                                     </div>
+                                </div>
+                                <div class="alert alert-info">
+                                    No se encontró ningún contrato para esta Api.
                                 </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -150,13 +130,15 @@
 
 <script src="/tabler/dist/js/tabler.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
-<script th:inline="javascript" th:if="${contratoApi != null}">
+<script th:inline="javascript" th:if="${contratoValido}">
+    const scalarUrl = [[${scalarUrl}]];
+
     const app = Scalar.createApiReference('#app', {
         theme: 'solarized',
         layout: 'modern',
         hideClientButton: true,
         showSidebar: false,
-        showToolbar: 'never',
+        showDeveloperTools: 'never',
         operationTitleSource: 'summary',
         _integration: 'html',
         isEditable: false,
@@ -169,9 +151,68 @@
         withDefaultFonts: true,
         defaultOpenAllTags: false,
         expandAllModelSections: false,
-        url: [[@{'/documentacion/' + ${contratoApi.idContratoApi} + '/openapi.json'}]]
-        // url: [[${presignedUrl}]]
+        // url: [[@{'/documentacion/' + ${contratoApi.idContratoApi} + '/openapi.json'}]]
+        url: [[${scalarUrl}]]
     })
 </script>
+
+<script th:inline="javascript">
+    $(document).ready(function() {
+        const idApi = [[${api.idApi}]];
+
+        // Manejar clics en secciones
+        $('.seccion-link').on('click', function(e) {
+            e.preventDefault();
+
+            const $this = $(this);
+            const seccion = $this.data('seccion');
+
+            if ($this.hasClass('active')) return;
+
+            $('.seccion-link, .contrato-link').removeClass('active');
+            $this.addClass('active');
+
+            cargarContenidoSeccionConAnimacion(idApi, seccion);
+        });
+    });
+
+    function cargarContenidoSeccionConAnimacion(idApi, seccion) {
+        const $contenedor = $('#doc-content');
+        // Animación de fade out
+        $contenedor.fadeOut(300, function() {
+            // Mostrar loading
+            $contenedor.html(`
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-2">Cargando ${seccion}...</p>
+                </div>
+            `).fadeIn(300);
+
+            // Hacer petición AJAX
+            $.ajax({
+                url: '/documentacion/'+idApi+'/'+encodeURIComponent(seccion)+'/.html',
+                type: 'GET',
+                success: function(html) {
+                    $contenedor.fadeOut(300, function() {
+                        $contenedor.html(html).fadeIn(300);
+
+                    });
+                },
+                error: function(xhr, status, error) {
+                    $contenedor.html(`
+                        <div class="alert alert-danger">
+                            <h5>Error al cargar la sección</h5>
+                            <p>No se pudo cargar el contenido de "${seccion}".</p>
+                            <small>Error: ${error}</small>
+                        </div>
+                    `).fadeIn(300);
+                }
+            });
+        });
+    }
+</script>
+
 </body>
 </html>
