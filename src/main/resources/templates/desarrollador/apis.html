@@ -490,10 +490,8 @@
     </div>
     </div>
 
-    <div id="footer-placeholder"></div>
-  </div>
-
-  <script>
+    <div th:replace="~{desarrollador/footer :: footer}"></div>
+</div>  <script>
 
       document.getElementById('filterForm').addEventListener('submit', function() {
           document.getElementById('nombreHidden').value = document.getElementById('search').value;

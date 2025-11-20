@@ -1,3 +1,7 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="footer">
 <footer class="footer footer-transparent d-print-none">
     <div class="container-xl">
         <div class="row text-center align-items-center flex-row-reverse">
@@ -18,3 +22,406 @@
         </div>
     </div>
 </footer>
+
+<!-- Chatbot global -->
+<style>
+    /* Botón flotante del chatbot */
+    .chat-fab {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--tblr-primary) 0%, #0054a6 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+
+    .chat-fab:hover {
+        transform: scale(1.1);
+        box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+    }
+
+    .chat-fab.active {
+        background: #dc3545;
+    }
+
+    .chat-fab .fa-times {
+        display: none;
+    }
+
+    .chat-fab.active .fa-robot {
+        display: none;
+    }
+
+    .chat-fab.active .fa-times {
+        display: block;
+    }
+
+    /* Contenedor del chat flotante */
+    .chat-container-global {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        width: 380px;
+        height: 550px;
+        background-color: var(--tblr-bg-surface);
+        border-radius: 12px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        overflow: hidden;
+        display: none;
+        flex-direction: column;
+        z-index: 999;
+        animation: slideUp 0.3s ease-out;
+    }
+
+    .chat-container-global.show {
+        display: flex;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .chat-header-global {
+        padding: 1.25rem 1.5rem;
+        background: linear-gradient(135deg, var(--tblr-primary) 0%, #0054a6 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-weight: 500;
+    }
+
+    .chat-header-global i {
+        font-size: 20px;
+    }
+
+    .chat-messages-global {
+        flex: 1;
+        padding: 1.25rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.875rem;
+        background-color: #f8f9fa;
+    }
+
+    .chat-messages-global::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .chat-messages-global::-webkit-scrollbar-thumb {
+        background-color: rgba(0,0,0,0.2);
+        border-radius: 3px;
+    }
+
+    .message-global {
+        max-width: 85%;
+        padding: 0.875rem 1rem;
+        border-radius: 12px;
+        line-height: 1.5;
+        font-size: 0.9rem;
+        word-wrap: break-word;
+    }
+
+    .message-bot-global {
+        background-color: white;
+        color: #1f2937;
+        align-self: flex-start;
+        border-bottom-left-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .message-user-global {
+        background: linear-gradient(135deg, var(--tblr-primary) 0%, #0054a6 100%);
+        color: white;
+        align-self: flex-end;
+        border-bottom-right-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .chat-input-global {
+        padding: 1rem;
+        border-top: 1px solid var(--tblr-border-color);
+        display: flex;
+        gap: 0.75rem;
+        background-color: white;
+    }
+
+    .chat-input-global input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid var(--tblr-border-color);
+        border-radius: 20px;
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .chat-input-global input:focus {
+        border-color: var(--tblr-primary);
+    }
+
+    .chat-input-global button {
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, var(--tblr-primary) 0%, #0054a6 100%);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        cursor: pointer;
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s;
+    }
+
+    .chat-input-global button:hover {
+        transform: scale(1.05);
+    }
+
+    @media (max-width: 1024px) {
+        .chat-container-global {
+            width: 90%;
+            max-width: 380px;
+            right: 15px;
+            bottom: 100px;
+        }
+        
+        .chat-fab {
+            right: 15px;
+        }
+        
+        .chat-fab:hover {
+            transform: scale(1.1);
+        }
+    }
+
+    @media (max-width: 480px) {
+        .chat-container-global {
+            width: calc(100% - 30px);
+            left: 15px;
+            right: 15px;
+            bottom: 90px;
+        }
+        
+        .chat-fab {
+            right: 15px;
+        }
+    }
+</style>
+
+<!-- Botón flotante del chatbot -->
+<button class="chat-fab" id="chat-fab-global">
+    <i class="fas fa-robot"></i>
+    <i class="fas fa-times"></i>
+</button>
+
+<!-- Ventana del chat (flotante) -->
+<div class="chat-container-global" id="chat-container-global">
+    <div class="chat-header-global">
+        <i class="fas fa-robot"></i>
+        <span>Asistente Virtual de Telito</span>
+    </div>
+    <div class="chat-messages-global" id="chat-messages-global">
+        <!-- Los mensajes se cargarán dinámicamente desde sessionStorage -->
+    </div>
+    <div class="chat-input-global">
+        <input type="text" id="chat-input-global" placeholder="Escribe tu mensaje...">
+        <button id="send-message-global"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>
+
+<script>
+    // Control del botón flotante del chatbot con persistencia de conversación
+    (function() {
+        const chatFabGlobal = document.getElementById('chat-fab-global');
+        const chatContainerGlobal = document.getElementById('chat-container-global');
+        const chatInputGlobal = document.getElementById('chat-input-global');
+        const sendMessageBtnGlobal = document.getElementById('send-message-global');
+        const chatMessagesGlobal = document.getElementById('chat-messages-global');
+        const CHAT_STORAGE_KEY = 'telito_chatbot_history';
+
+        if (!chatFabGlobal || !chatContainerGlobal) return;
+
+        // Cargar historial de conversación al inicio
+        loadChatHistory();
+
+        chatFabGlobal.addEventListener('click', function(e) {
+            e.stopPropagation();
+            chatContainerGlobal.classList.toggle('show');
+            chatFabGlobal.classList.toggle('active');
+        });
+
+        // Cerrar el chat al hacer clic fuera de él
+        document.addEventListener('click', function(event) {
+            const isClickInsideChat = chatContainerGlobal.contains(event.target);
+            const isClickOnFab = chatFabGlobal.contains(event.target);
+            
+            if (!isClickInsideChat && !isClickOnFab && chatContainerGlobal.classList.contains('show')) {
+                chatContainerGlobal.classList.remove('show');
+                chatFabGlobal.classList.remove('active');
+            }
+        });
+
+        sendMessageBtnGlobal.addEventListener('click', sendMessageGlobal);
+        chatInputGlobal.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessageGlobal();
+            }
+        });
+
+        // Obtener CSRF token para las peticiones POST
+        const csrfTokenGlobal = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+        const csrfHeaderGlobal = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+        // Función para cargar el historial desde sessionStorage
+        function loadChatHistory() {
+            const history = sessionStorage.getItem(CHAT_STORAGE_KEY);
+            console.log('🔍 Cargando historial del chat...', history ? 'Encontrado' : 'No encontrado');
+            
+            if (history) {
+                try {
+                    const messages = JSON.parse(history);
+                    console.log('📝 Mensajes en historial:', messages.length);
+                    chatMessagesGlobal.innerHTML = '';
+                    messages.forEach(msg => {
+                        addMessageToDOM(msg.text, msg.sender, false); // false = no guardar en storage
+                    });
+                    console.log('✅ Historial cargado exitosamente');
+                } catch (e) {
+                    console.error('❌ Error al cargar historial del chat:', e);
+                    initializeWelcomeMessages();
+                }
+            } else {
+                console.log('ℹ️ No hay historial previo, mostrando mensajes de bienvenida');
+                initializeWelcomeMessages();
+            }
+        }
+
+        // Función para inicializar mensajes de bienvenida
+        function initializeWelcomeMessages() {
+            chatMessagesGlobal.innerHTML = '';
+            addMessageToDOM('¡Hola! Soy el asistente virtual de Telito. ¿En qué puedo ayudarte hoy? Puedo responder preguntas sobre nuestras APIs, documentación o ayudarte a crear un ticket de soporte.', 'bot');
+            addMessageToDOM('Algunas preguntas frecuentes:<br>• ¿Cómo obtener una API Key?<br>• ¿Dónde encontrar documentación?<br>• ¿Cómo probar endpoints?<br><br>Escribe tu pregunta o escribe "ticket" para hablar con un agente.', 'bot');
+        }
+
+        // Función para guardar el historial en sessionStorage
+        function saveChatHistory() {
+            const messages = [];
+            chatMessagesGlobal.querySelectorAll('.message-global').forEach(msg => {
+                const isBot = msg.classList.contains('message-bot-global');
+                messages.push({
+                    text: msg.innerHTML,
+                    sender: isBot ? 'bot' : 'user'
+                });
+            });
+            sessionStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages));
+            console.log('💾 Historial guardado:', messages.length, 'mensajes');
+        }
+
+        async function sendMessageGlobal() {
+            const message = chatInputGlobal.value.trim();
+
+            if (message === '') return;
+
+            // Añadir mensaje del usuario a la UI y guardar
+            addMessageToDOM(message, 'user');
+            chatInputGlobal.value = '';
+
+            // Mostrar indicador de escritura
+            const typingIndicator = addMessageToDOM('Escribiendo...', 'bot', false);
+            
+            try {
+                // Llamar al endpoint del backend
+                const response = await fetch('/dev/soporte/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(csrfHeaderGlobal && csrfTokenGlobal ? { [csrfHeaderGlobal]: csrfTokenGlobal } : {})
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Eliminar indicador de escritura
+                typingIndicator.remove();
+                
+                // Añadir respuesta del bot y guardar
+                addMessageToDOM(data.reply || 'Lo siento, no pude procesar tu mensaje.', 'bot');
+                
+                // Si el usuario mencionó "ticket", preguntar si quiere crear uno
+                if (message.toLowerCase().includes('ticket') || data.reply.toLowerCase().includes('ticket')) {
+                    setTimeout(() => {
+                        addMessageToDOM('¿Quieres que te ayude a crear un ticket ahora? Visita la sección de Soporte cuando estés listo.', 'bot');
+                    }, 1000);
+                }
+                
+            } catch (error) {
+                console.error('Error al comunicarse con el chatbot:', error);
+                typingIndicator.remove();
+                addMessageToDOM('Lo siento, hubo un error al procesar tu mensaje. Por favor, intenta de nuevo.', 'bot');
+            }
+        }
+
+        // Función mejorada para agregar mensajes al DOM
+        function addMessageToDOM(text, sender, saveHistory = true) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message-global', `message-${sender}-global`);
+            messageElement.innerHTML = text;
+
+            chatMessagesGlobal.appendChild(messageElement);
+            chatMessagesGlobal.scrollTop = chatMessagesGlobal.scrollHeight;
+            
+            // Guardar en sessionStorage si es necesario
+            if (saveHistory) {
+                saveChatHistory();
+            }
+            
+            return messageElement;
+        }
+
+        // Limpiar historial al hacer logout
+        // Detectar cuando el usuario hace logout
+        const logoutButtons = document.querySelectorAll('a[href*="logout"], button[onclick*="logout"]');
+        logoutButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                sessionStorage.removeItem(CHAT_STORAGE_KEY);
+            });
+        });
+
+        // También detectar el formulario de logout si existe
+        const logoutForm = document.querySelector('form[action*="logout"]');
+        if (logoutForm) {
+            logoutForm.addEventListener('submit', function() {
+                sessionStorage.removeItem(CHAT_STORAGE_KEY);
+            });
+        }
+    })();
+</script>
+</div>
+</body>
+</html>
