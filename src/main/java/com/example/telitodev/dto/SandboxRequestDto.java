@@ -9,6 +9,7 @@ public class SandboxRequestDto {
     private Map<String, String> headers;
     private Object body;
     private String apiKey;
+    private Integer environmentId;
 
     public String getApiKey() { return apiKey; }
     public void setApiKey(String apiKey) { this.apiKey = apiKey; }
@@ -27,5 +28,13 @@ public class SandboxRequestDto {
 
     public void setBody(Object body) {
         this.body = body;
+    }
+
+    public Integer getEnvironmentId() {
+        return environmentId;
+    }
+
+    public void setEnvironmentId(Integer environmentId) {
+        this.environmentId = environmentId;
     }
 }

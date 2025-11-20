@@ -1,0 +1,6 @@
+{
+  "entorno": "QA",
+  "estatus": "ERROR_400",
+  "mensaje": "Error de validación: El campo 'token' es obligatorio para el entorno QA.",
+  "codigo_interno": "ERR-QA-VALID-005"
+}

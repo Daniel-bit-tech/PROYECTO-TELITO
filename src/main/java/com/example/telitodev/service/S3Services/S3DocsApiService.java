@@ -17,6 +17,9 @@ import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
+import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -324,7 +327,20 @@ public class S3DocsApiService {
         }
     }
 
-    
-    
 
+
+    public String obtenerContenidoS3(String key) {
+        try {
+            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(key)
+                    .build();
+
+            ResponseInputStream<GetObjectResponse> s3Object = s3Client.getObject(getObjectRequest);
+            return new String(s3Object.readAllBytes(), StandardCharsets.UTF_8);
+
+        } catch (Exception e) {
+            throw new RuntimeException("error papu", e);
+        }
+    }
 }

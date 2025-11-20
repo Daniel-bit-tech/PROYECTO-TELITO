@@ -60,29 +60,81 @@
 
                     <div>
                         <div class="card mb-3">
-                            <div class="card-header"><h3 class="card-title">1. Configuración</h3></div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <label class="form-label">Seleccionar API</label>
-                                    <select id="api-select" class="form-select">
-                                        <option value="" selected disabled>Cargando APIs...</option>
-                                    </select>
-                                </div>
+                            <div class="card mb-3">
+                                <div class="card-header"><h3 class="card-title">1. Configuración</h3></div>
+                                <div class="card-body">
 
-                                <div class="mb-3">
-                                    <label class="form-label">Entorno</label>
-                                    <select id="environment-select" class="form-select">
-                                        <option value="2">Desarrollo (Restringido: Solo GET/POST)</option>
-                                        <option value="3">QA (Quality Assurance)</option>
-                                        <option value="1">Producción</option>
-                                    </select>
-                                </div>
+                                    <!-- Seleccionar API -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Seleccionar API</label>
+                                        <select id="api-select" class="form-select">
+                                            <option value="" selected disabled>Cargando APIs...</option>
+                                        </select>
+                                    </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label">API Key <small class="text-muted">(Opcional si usas Auth)</small></label>
-                                    <input type="text" id="apiKey" class="form-control" placeholder="Tu API Key">
+                                    <!-- Entorno -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Entorno</label>
+                                        <select id="environment-select" class="form-select">
+                                            <option value="2">Desarrollo (Restringido)</option>
+                                            <option value="3">QA</option>
+                                            <option value="1">Producción</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- AUTH tipo POSTMAN -->
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold">Auth</label>
+                                        <select id="auth-type" class="form-select mb-2">
+                                            <option value="none" selected>None</option>
+                                            <option value="apikey">API Key</option>
+                                            <option value="bearer">Bearer Token</option>
+                                        </select>
+
+                                        <!-- API KEY -->
+                                        <div id="auth-apikey" style="display:none;">
+                                            <div class="row g-2 mb-2">
+                                                <div class="col-4">
+                                                    <input id="auth-apikey-key" type="text" class="form-control" placeholder="Key">
+                                                </div>
+                                                <div class="col-6">
+                                                    <input id="auth-apikey-value" type="text" class="form-control" placeholder="Value">
+                                                </div>
+                                            </div>
+
+                                            <select id="auth-apikey-addto" class="form-select">
+                                                <option value="header">Add to: Header</option>
+                                                <option value="query">Add to: Query Params</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- BEARER -->
+                                        <div id="auth-bearer" style="display:none;">
+                                            <input id="auth-bearer-token" type="text" class="form-control" placeholder="Token...">
+                                        </div>
+                                    </div>
+
+                                    <!-- HEADERS TIPO POSTMAN -->
+                                    <label class="form-label fw-bold">Headers (como Postman)</label>
+
+                                    <table class="table table-bordered" id="headers-table">
+                                        <thead>
+                                        <tr>
+                                            <th style="width:40%">Key</th>
+                                            <th style="width:50%">Value</th>
+                                            <th style="width:10%"></th>
+                                        </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+
+                                    <button id="add-header-row" type="button" class="btn btn-secondary w-100 mb-3">
+                                        + Add Header
+                                    </button>
+
                                 </div>
                             </div>
+
                         </div>
 
                         <div class="card">
@@ -116,11 +168,10 @@
                                     <textarea id="request-body" class="form-control" rows="5" placeholder='{"campo": "valor"}'></textarea>
                                 </div>
 
-                                <div class="mt-4 text-end">
-                                    <button id="send-request-btn" class="btn btn-primary w-100">
-                                        <i class="fas fa-paper-plane me-2"></i>Enviar Petición
-                                    </button>
-                                </div>
+                                <button id="send-request-btn" class="btn btn-primary w-100" onclick="sendRequest()">
+                                    <i class="fas fa-paper-plane me-2"></i>Enviar Petición
+                                </button>
+
                             </div>
                         </div>
 
@@ -185,6 +236,8 @@
 
     async function handleApiChange() {
         CURRENT_API_ID = this.value;
+        await loadActiveEnvironment(CURRENT_API_ID);
+
         await loadEndpointsForApi(CURRENT_API_ID);
         await updateBaseUrl();
     }
@@ -203,11 +256,25 @@
                 return;
             }
 
-            endpoints.forEach(path => {
+            endpoints.forEach(fullPath => {
+                const parts = fullPath.split(' ', 2);
+                const method = parts[0];
+                const path = parts[1];
+
                 const item = document.createElement('button');
                 item.className = 'list-group-item list-group-item-action d-flex align-items-center';
-                item.innerHTML = `<span class="endpoint-method method-get">GET</span> <span class="text-truncate">${path}</span>`;
-                item.onclick = () => selectEndpointFromList(path);
+
+
+
+                item.innerHTML = `
+        <span class="endpoint-method method-${method.toLowerCase()}">${method}</span>
+        <span class="text-truncate">${path}</span>
+    `;
+
+                item.onclick = () => {
+                    setMethod(method);
+                    selectEndpointFromList(path);
+                };
                 listDiv.appendChild(item);
             });
         } catch (err) {
@@ -215,49 +282,82 @@
         }
     }
 
+    let LAST_ACTIVE_ENV_ID = 2;
     async function handleEnvironmentChange() {
-        const envId = document.getElementById('environment-select').value;
-        const methodBtn = document.getElementById('method-btn');
-        const dropdownItems = document.querySelectorAll('#method-dropdown .dropdown-item');
+        const envSelect = document.getElementById('environment-select');
+        const newEnvId = envSelect.value;
 
-
-        if (envId === "2") {
-            dropdownItems.forEach(item => {
-                const txt = item.textContent.trim();
-                if (txt === 'PUT' || txt === 'DELETE') {
-                    item.classList.add('method-disabled');
-                } else {
-                    item.classList.remove('method-disabled');
-                }
-            });
-            const currentMethod = methodBtn.textContent.trim();
-            if (currentMethod === 'PUT' || currentMethod === 'DELETE') {
-                setMethod('GET');
-                alert("En entorno DESARROLLO, los métodos PUT y DELETE están restringidos por política del curso.");
-            }
-        } else {
-            dropdownItems.forEach(item => item.classList.remove('method-disabled'));
+        if (!CURRENT_API_ID) {
+            return;
         }
 
-        if (CURRENT_API_ID) await updateBaseUrl();
+        if (newEnvId == LAST_ACTIVE_ENV_ID) {
+            return;
+        }
+
+        const message = "¿Deseas cambiar de entorno?";
+
+        if (!window.confirm(message)) {
+
+            console.log("Cambio de entorno cancelado. Revertiendo selección.");
+
+            envSelect.value = LAST_ACTIVE_ENV_ID;
+
+            return;
+        }
+
+
+        try {
+            const result = await saveActiveEnvironment(CURRENT_API_ID, newEnvId);
+
+            if (result.success) {
+                await updateBaseUrl();
+                LAST_ACTIVE_ENV_ID = newEnvId;
+            } else {
+                alert(result.error);
+
+                envSelect.value = LAST_ACTIVE_ENV_ID;
+            }
+        } catch (e) {
+            alert("Error de comunicación al guardar el entorno.");
+            envSelect.value = LAST_ACTIVE_ENV_ID;
+        }
     }
 
     async function updateBaseUrl() {
         if (!CURRENT_API_ID) return;
         const envId = document.getElementById('environment-select').value;
+        const apiSelect = document.getElementById('api-select');
+        const apiName = apiSelect.options[apiSelect.selectedIndex].textContent.toLowerCase().replace(/\s+/g, '');
 
-        try {
-            const resp = await fetch(`/api/sandbox/${CURRENT_API_ID}/entorno/${envId}/url-base`);
-            if (resp.ok) {
-                const data = await resp.json();
-                API_BASE_URL = data.urlBase || "";
-                updateUrlPreview();
-            } else {
-                API_BASE_URL = "";
-                document.getElementById('url-preview').textContent = "⚠ No hay URL configurada para este entorno.";
+        if (envId === '2' || envId === '3' || envId === '1') {
+
+            let envName = '';
+            if (envId === '2') envName = 'dev';
+            else if (envId === '3') envName = 'qa';
+            else if (envId === '1') envName = 'prod';
+
+            API_BASE_URL = `http://localhost:8083/mock/${envName}/${apiName}`;
+            console.log(`DEBUG JS: Usando URL de MOCK para entorno ${envName}: ${API_BASE_URL}`);
+
+            updateUrlPreview();
+
+        } else {
+
+            console.log(`DEBUG JS: Intentando obtener URL REAL de la BD para ID ${envId}`);
+            try {
+                const resp = await fetch(`/api/sandbox/${CURRENT_API_ID}/entorno/${envId}/url-base`);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    API_BASE_URL = data.urlBase || "";
+                    updateUrlPreview();
+                } else {
+                    API_BASE_URL = "";
+                    document.getElementById('url-preview').textContent = "No hay URL configurada para este entorno.";
+                }
+            } catch (e) {
+                console.error("Error al obtener URL de la BD:", e);
             }
-        } catch (e) {
-            console.error(e);
         }
     }
 
@@ -298,65 +398,206 @@
     }
 
     async function sendRequest() {
-        if (!CURRENT_API_ID) { alert("Selecciona una API primero."); return; }
 
-        const apiId = parseInt(CURRENT_API_ID);
-        const apiKey = document.getElementById('apiKey').value;
-        const env = document.getElementById('environment-select').value;
         const targetUrl = document.getElementById('targetUrl').value;
         const method = document.getElementById('method-btn').textContent.trim();
         let body = document.getElementById('request-body').value;
 
+        const isAbsoluteUrl = targetUrl.startsWith('http');
+
+        if (!isAbsoluteUrl && !CURRENT_API_ID) {
+            alert("Selecciona una API primero.");
+            return;
+        }
+
+        const environmentId = document.getElementById('environment-select').value;
         const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
         const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
 
-        // Parsear Body si no está vacío
         try {
-            if(body && method !== 'GET') body = JSON.parse(body);
-            else body = null;
-        } catch(e) {
+            if (body && method !== 'GET' && method !== 'DELETE') {
+                body = JSON.parse(body);
+            } else {
+                body = null;
+            }
+        } catch (e) {
             alert("El cuerpo (Body) debe ser un JSON válido.");
             return;
         }
 
-        // Visual feedback
         document.getElementById('response-body-pre').textContent = "Enviando petición...";
 
+        let finalHeaders = getHeadersFromTable();
+
+
+        let urlFinal = document.getElementById('url-preview').textContent.replace("URL Final: ", "");
+        urlFinal = applyAuth(finalHeaders, urlFinal);
 
 
         const requestData = {
-            apiId: apiId,
+            apiId: isAbsoluteUrl ? 0 : parseInt(CURRENT_API_ID),
             method: method,
-            targetUrl: targetUrl,
-            apiKey: apiKey,
-            body: body
+            targetUrl: urlFinal,
+            headers: finalHeaders,
+            body: body,
+            environmentId: environmentId
         };
 
         try {
             const start = performance.now();
             const resp = await fetch('/api/sandbox/execute', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    [csrfHeader]: csrfToken
+                },
                 body: JSON.stringify(requestData)
             });
             const end = performance.now();
 
             const result = await resp.json();
 
-
             document.getElementById('response-time').textContent = Math.round(end - start) + " ms";
+
             const statusBadge = document.getElementById('response-status');
             statusBadge.textContent = "STATUS: " + (result.statusCode || resp.status);
 
             if ((result.statusCode || resp.status) < 300) statusBadge.className = "badge bg-success";
             else statusBadge.className = "badge bg-danger";
 
-            document.getElementById('response-body-pre').textContent = JSON.stringify(result.data || result, null, 2);
+            document.getElementById('response-body-pre').textContent =
+                JSON.stringify(result.data || result, null, 2);
 
         } catch (err) {
             document.getElementById('response-body-pre').textContent = "Error de conexión: " + err.message;
         }
     }
+
+
+
+    document.getElementById("auth-type").addEventListener("change", function () {
+        document.getElementById("auth-apikey").style.display = "none";
+        document.getElementById("auth-bearer").style.display = "none";
+
+        if (this.value === "apikey") document.getElementById("auth-apikey").style.display = "block";
+        if (this.value === "bearer") document.getElementById("auth-bearer").style.display = "block";
+    });
+
+    document.getElementById("add-header-row").addEventListener("click", function () {
+        const tbody = document.querySelector("#headers-table tbody");
+        const tr = document.createElement("tr");
+
+        tr.innerHTML = `
+        <td><input class="form-control header-key" placeholder="Content-Type"></td>
+        <td><input class="form-control header-value" placeholder="application/json"></td>
+        <td><button class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">X</button></td>
+    `;
+
+        tbody.appendChild(tr);
+    });
+
+    function getHeadersFromTable() {
+        const headers = {};
+        const rows = document.querySelectorAll("#headers-table tbody tr");
+
+        rows.forEach(row => {
+            const key = row.querySelector(".header-key").value.trim();
+            const value = row.querySelector(".header-value").value.trim();
+            if (key) headers[key] = value;
+        });
+
+        return headers;
+    }
+
+    function applyAuth(headers, url) {
+        const type = document.getElementById("auth-type").value;
+
+        if (type === "apikey") {
+            const key = document.getElementById("auth-apikey-key").value;
+            const value = document.getElementById("auth-apikey-value").value;
+            const addTo = document.getElementById("auth-apikey-addto").value;
+
+            if (addTo === "header") headers[key] = value;
+            else if (addTo === "query") url += (url.includes("?") ? "&" : "?") + `${key}=${value}`;
+        }
+
+        if (type === "bearer") {
+            const token = document.getElementById("auth-bearer-token").value;
+            headers["Authorization"] = "Bearer " + token;
+        }
+
+        return url;
+    }
+
+    async function saveActiveEnvironment(apiId, envId) {
+        if (!apiId) {
+            console.warn("No se puede guardar: API ID no seleccionado.");
+            return;
+        }
+
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+
+        try {
+            const url = `/api/sandbox/save-active-environment?apiId=${apiId}&envId=${envId}`;
+            const resp = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    [csrfHeader]: csrfToken
+                }
+            });
+
+            if (resp.ok) {
+                console.log(" Entorno activo guardado en BD.");
+                return { success: true };
+            } else {
+                const errorText = await resp.text();
+                console.error("Fallo al guardar entorno en BD.", errorText);
+                return { success: false, error: errorText };
+            }
+        } catch (e) {
+            console.error("Error de red al llamar al endpoint de guardado.", e);
+            return { success: false, error: "Error de red o servidor no disponible." };
+        }
+    }
+
+
+    async function loadActiveEnvironment(apiId) {
+        try {
+            const resp = await fetch(`/api/sandbox/${apiId}/active-environment`);
+            const data = await resp.json();
+
+            const envSelect = document.getElementById('environment-select');
+
+            if (data && data.activeEnvId) {
+                envSelect.value = data.activeEnvId;
+                LAST_ACTIVE_ENV_ID = data.activeEnvId;
+            } else {
+                envSelect.value = "2";
+                LAST_ACTIVE_ENV_ID = 2;
+            }
+
+        } catch (err) {
+            console.error("Error cargando entorno activo", err);
+            envSelect.value = "2";
+            LAST_ACTIVE_ENV_ID = 2;
+        }
+    }
+
+
+
+    async function handleApiChange() {
+        CURRENT_API_ID = this.value;
+
+
+        await loadActiveEnvironment(CURRENT_API_ID);
+
+        await loadEndpointsForApi(CURRENT_API_ID);
+        await updateBaseUrl();
+    }
+
+
+
 
 
     setMethod('GET');

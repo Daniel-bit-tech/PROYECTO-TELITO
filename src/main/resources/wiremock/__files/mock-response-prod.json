@@ -1,0 +1,9 @@
+{
+  "entorno": "PROD",
+  "estatus": "CREADO",
+  "mensaje": "Recurso creado exitosamente en el ambiente de producción.",
+  "datos": {
+    "id_transaccion": "PROD-TXN-9999",
+    "timestamp": "2025-11-18T17:25:00Z"
+  }
+}
