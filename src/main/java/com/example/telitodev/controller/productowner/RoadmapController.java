@@ -138,7 +138,7 @@ public class RoadmapController {
             @RequestBody Map<String, String> request,
             HttpServletRequest httpRequest) {
 
-        System.out.println("=== 🚀 SOLICITUD CAMBIAR ESTADO ===");
+        System.out.println("=== 🚀 SOLICITUD CAMBIAR ESTADOS ===");
         System.out.println("📝 API ID: " + apiId);
         System.out.println("🌐 Método: " + httpRequest.getMethod());
         System.out.println("📍 URL: " + httpRequest.getRequestURL());
