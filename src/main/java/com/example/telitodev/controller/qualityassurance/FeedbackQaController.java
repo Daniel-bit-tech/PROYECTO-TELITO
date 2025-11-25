@@ -45,7 +45,7 @@ public class FeedbackQaController extends BaseController {
     public String showFeedbackView(Model model, Authentication auth, HttpSession session,
                                    @RequestParam(defaultValue = "0") int page,
                                    @RequestParam(defaultValue = "8") int size) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
 
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
@@ -65,7 +65,7 @@ public class FeedbackQaController extends BaseController {
 
     @GetMapping("/feedbackDetalle/{id}")
     public String showFeedbackDetalleView(Model model, @PathVariable("id") int idFeedback, Authentication auth, HttpSession session) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
 
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
@@ -84,7 +84,7 @@ public class FeedbackQaController extends BaseController {
 
     @GetMapping("/crearFeedback/{apiId}")
     public String madeFeedback(@PathVariable("apiId") Integer apiId, Model model, Authentication auth, HttpSession session) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
 
         // Obtener la API por su id
         Optional<Api> apiOptional = apiRepository.findById(apiId);
@@ -144,7 +144,7 @@ public class FeedbackQaController extends BaseController {
             redirectAttributes.addFlashAttribute("submittedCalificacion", calificacion);
             return "redirect:/qa/crearFeedback/" + apiId;
         }
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
 
         Api api = apiRepository.findById(apiId).orElseThrow(() -> new RuntimeException("API no encontrada"));
 

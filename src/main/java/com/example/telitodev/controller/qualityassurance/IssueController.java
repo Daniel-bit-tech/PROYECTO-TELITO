@@ -56,7 +56,7 @@ public class IssueController extends BaseController {
                                 @RequestParam(defaultValue = "0") int page,
                                 @RequestParam(defaultValue = "10") int size) {
 
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
         addImpersonationAttributes(model, session);
         model.addAttribute("usuario", usuario);
 
@@ -98,7 +98,7 @@ public class IssueController extends BaseController {
     @GetMapping("/issueDetalle/{idIssue}/{idReporte}")
     public String showIssueDetalleView(Model model, Authentication auth, HttpSession session,
                                        @PathVariable Integer idIssue, @PathVariable Integer idReporte) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
 
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
@@ -134,7 +134,7 @@ public class IssueController extends BaseController {
     @GetMapping("/issueRealizar")
     public String madeIssue(Model model, Authentication auth, HttpSession session,
                             @RequestParam("idReporte") Integer idReporte) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
 
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
@@ -158,13 +158,13 @@ public class IssueController extends BaseController {
 
     //Creando un nuevo issue
     @PostMapping("/crearIssue")
-    public String crearIssue(Model model, Authentication auth,
+    public String crearIssue(Model model, Authentication auth, HttpSession session,
                              @RequestParam("idReporte") Integer idReporte,
                              @RequestParam("descripcion") String descripcion,
                              @RequestParam("estado") String estado,
                              RedirectAttributes redirectAttributes) {
 
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
 
         Reporte reporte = reporteRepository.findById(idReporte).orElse(null);
@@ -247,7 +247,7 @@ public class IssueController extends BaseController {
             return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
         }
         // Obtener el usuario
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
 
         // Buscar el Issue y Reporte por sus ID
         IssueId issueId = new IssueId(idIssue, idReporte);
@@ -335,11 +335,11 @@ public class IssueController extends BaseController {
 
     @PostMapping("/issueCerrar/{idIssue}/{idReporte}")
     public String cerrarIssue(@PathVariable Integer idIssue, @PathVariable Integer idReporte,
-                              RedirectAttributes redirectAttributes, Authentication auth) {
+                              RedirectAttributes redirectAttributes, Authentication auth, HttpSession session) {
 
 
         // Obtener el usuario
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
 
         IssueId issueId = new IssueId(idIssue, idReporte);
         Issue issue = issueRepository.findById(issueId).orElse(null);

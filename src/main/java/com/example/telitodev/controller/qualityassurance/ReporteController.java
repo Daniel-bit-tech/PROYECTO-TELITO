@@ -66,7 +66,7 @@ public class ReporteController extends BaseController {
                                    @RequestParam(defaultValue = "10") int size) {
 
         // Obtener usuario autenticado y datos de impersonación
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
         addImpersonationAttributes(model, session);
         model.addAttribute("usuario", usuario);
 
@@ -115,7 +115,7 @@ public class ReporteController extends BaseController {
     @GetMapping("/reporteDetalle")
     public String showReporteDetalleView(Model model, Authentication auth, HttpSession session,
                                          @RequestParam("idReporte") Integer idReporte) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
 
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
@@ -141,7 +141,7 @@ public class ReporteController extends BaseController {
 
     @GetMapping("/crearReporte")
     public String madeReport(Model model, Authentication auth, HttpSession session){
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
 
         List<ApiProyectoDTO> apisParaValidar = apiRepository.findApisToReportForQa(usuario.getDni());
         model.addAttribute("apis", apisParaValidar);
@@ -170,7 +170,7 @@ public class ReporteController extends BaseController {
                                     Authentication auth,
                                     HttpSession session) {
 
-            Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+            Usuario usuario = getCurrentUser(auth, session);
 
         boolean hasErrors = false;
 

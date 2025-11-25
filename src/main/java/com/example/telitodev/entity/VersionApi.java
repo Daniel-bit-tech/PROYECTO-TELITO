@@ -2,7 +2,7 @@ package com.example.telitodev.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -20,7 +20,7 @@ public class VersionApi {
     private String estadoVersion;
     
     @Column(name = "fecha_publicacion")
-    private Timestamp fechaPublicacion;
+    private LocalDate fechaPublicacion;
     
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
@@ -41,7 +41,7 @@ public class VersionApi {
     public VersionApi() {}
     
     public VersionApi(Integer idVersion, String version, String estadoVersion, 
-                     Timestamp fechaPublicacion, Api api) {
+                     LocalDate fechaPublicacion, Api api) {
         this.idVersion = idVersion;
         this.version = version;
         this.estadoVersion = estadoVersion;
@@ -74,11 +74,11 @@ public class VersionApi {
         this.estadoVersion = estadoVersion;
     }
     
-    public Timestamp getFechaPublicacion() {
+    public LocalDate getFechaPublicacion() {
         return fechaPublicacion;
     }
     
-    public void setFechaPublicacion(Timestamp fechaPublicacion) {
+    public void setFechaPublicacion(LocalDate fechaPublicacion) {
         this.fechaPublicacion = fechaPublicacion;
     }
     

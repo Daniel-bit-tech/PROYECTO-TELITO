@@ -46,8 +46,14 @@ public class CatalogoqaController extends BaseController {
                                 @RequestParam(required = false) List<String> tags,
                                 Model model, Authentication auth, HttpSession session) {
 
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        // Obtener el usuario correcto considerando la impersonación
+        Usuario usuario = getCurrentUser(auth, session);
         String dni = usuario.getDni();
+
+        System.out.println("🔍 CatalogoqaController - Obteniendo APIs para QA:");
+        System.out.println("  - DNI utilizado: " + dni);
+        System.out.println("  - Usuario: " + usuario.getNombre());
+        System.out.println("  - ¿Impersonando?: " + isImpersonating(session));
 
         // Configurar la paginación
         Pageable pageable = PageRequest.of(page, size);

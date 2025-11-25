@@ -80,8 +80,8 @@ public class QaController extends BaseController {
         Integer NnotificacionesSinLeer = notificacionRepository.countByUsuarioAndLeido(usuario, false);
         model.addAttribute("NnotificacionesSinLeer", NnotificacionesSinLeer);
 
-        // Obtener el QA en sesión
-        Usuario qaSesion = usuarioRepository.findByCorreo(auth.getName());
+        // Obtener el QA en sesión (con soporte de impersonación)
+        Usuario qaSesion = getCurrentUser(auth, session);
 
         List<Issue> ultimos3Issues = issueRepository.findTop5ByCreadorOrderByFechaCreacionDesc(qaSesion);
 
@@ -192,7 +192,7 @@ public class QaController extends BaseController {
 
     @GetMapping("/apiDetalle")
     public String showRoadmapView(Model model, Authentication auth, HttpSession session) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
         
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
@@ -203,7 +203,7 @@ public class QaController extends BaseController {
 
     @GetMapping("/soporte")
     public String showSoporte(Model model, Authentication auth, HttpSession session) {
-        Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        Usuario usuario = getCurrentUser(auth, session);
         
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
