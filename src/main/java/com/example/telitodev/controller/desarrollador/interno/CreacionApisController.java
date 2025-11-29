@@ -104,7 +104,7 @@ public class CreacionApisController extends BaseController {
         api.setDominio(new Dominio(apiDto.getIdDominio()));
         api.setTag(new Tag(apiDto.getIdTag()));
         api.setEstadoApi(estadoApiRepository.getByEstado("Inactivo"));
-        api.setUsuario(usuario);
+        api.setEquipo(usuario.getEquipo());
         api.setFechaCreacion(Timestamp.valueOf(LocalDateTime.now()));
         apiRepository.save(api);
 
@@ -130,7 +130,7 @@ public class CreacionApisController extends BaseController {
         addImpersonationAttributes(model, session);
 
         Api api = apiRepository.findById(apiDto.getIdApi())
-                .filter(a -> a.getUsuario().equals(usuario))
+                .filter(a -> a.getEquipo().equals(usuario.getEquipo()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo encontrar la API solicitada."));
 
         apiDto.setNombre(api.getNombre());
@@ -165,7 +165,7 @@ public class CreacionApisController extends BaseController {
         Usuario usuario = getCurrentUser(auth, session);
 
         Api api = apiRepository.findById(versionContratoDto.getIdApi())
-                .filter(a -> a.getUsuario().equals(usuario))
+                .filter(a -> a.getEquipo().equals(usuario.getEquipo()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo guardar la versión."));
 
         Boolean versionExiste = versionApiRepository.existsByVersionAndApi_IdApi(versionContratoDto.getVersion(), api.getIdApi());
@@ -212,7 +212,7 @@ public class CreacionApisController extends BaseController {
         Usuario usuario = getCurrentUser(auth, session);
 
         Api api = apiRepository.findById(versionContratoDto.getIdApi())
-                .filter(a -> a.getUsuario().equals(usuario))
+                .filter(a -> a.getEquipo().equals(usuario.getEquipo()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo encontrar la Api para está versión."));
 
         VersionApi versionApi = null;
@@ -261,7 +261,7 @@ public class CreacionApisController extends BaseController {
         Usuario usuario = getCurrentUser(auth, session);
 
         VersionApi version = versionApiRepository.findById(idVersion)
-                .filter(v -> v.getApi().getUsuario().equals(usuario))
+                .filter(v -> v.getApi().getEquipo().equals(usuario.getEquipo()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo encontrar la Version solicitada."));
 
         try {
@@ -289,11 +289,15 @@ public class CreacionApisController extends BaseController {
         Usuario usuario = getCurrentUser(auth, session);
 
         Api api = apiRepository.findById(requestDto.getIdApi())
-                .filter(a -> a.getUsuario().equals(usuario))
+                .filter(a -> a.getEquipo().equals(usuario.getEquipo()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo guardar la documentación"));
-        VersionApi versionApi = versionApiRepository.findById(requestDto.getIdVersion())
-                .filter(v -> v.getApi().equals(api))
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo guardar la documentación"));
+
+        VersionApi versionApi = null;
+        if (requestDto.getIdVersion()!=null || requestDto.getIdVersion()==0) {
+            versionApi = versionApiRepository.findById(requestDto.getIdVersion())
+                    .filter(v -> v.getApi().equals(api))
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo guardar la documentación"));
+        }
 
         try {
             if (requestDto.getFiles() != null) {
@@ -307,7 +311,7 @@ public class CreacionApisController extends BaseController {
                     if (requestDto.getIdVersion() == 0) {
                         requestDto.setIdVersion(null);
                     }
-//                    docApiService.validaryProcesarDocs(requestDto, versionApi, erroresDoc);
+                    docApiService.validaryProcesarDocs(requestDto, versionApi, erroresDoc);
                 } else throw new DocApiService.DocValidationException("La cantidad de archivos recibidos ("+archivos.size()+") no coincide con la cantidad de descripciones o formatos.");
 
                 response.put("success", true);
@@ -334,14 +338,14 @@ public class CreacionApisController extends BaseController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Documento no encontrado"));
 
         // Validar que el doc pertenece al usuario
-        if (!doc.getApi().getUsuario().equals(usuario)) {
+        if (!doc.getApi().getEquipo().equals(usuario.getEquipo())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No autorizado para eliminar este documento");
         }
 
         try {
             System.out.println("Intentando eliminar el Documento "+idDoc);
-//            s3DocsApiService.eliminarDocFileS3(idDoc);
-//            documentacionRepository.delete(doc);
+            s3DocsApiService.eliminarDocFileS3(idDoc);
+            documentacionRepository.delete(doc);
             response.put("success", true);
             response.put("message", "Documentación eliminada correctamente");
             return ResponseEntity.ok(response);
@@ -364,7 +368,7 @@ public class CreacionApisController extends BaseController {
         Usuario usuario = getCurrentUser(auth, session);
 
         Api api = apiRepository.findById(docMdDto.getIdApi())
-                .filter(a -> a.getUsuario().equals(usuario))
+                .filter(a -> a.getEquipo().equals(usuario.getEquipo()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la API solicitada"));
 
         if (bindingResult.hasErrors()) {
@@ -421,7 +425,7 @@ public class CreacionApisController extends BaseController {
     Usuario usuario = getCurrentUser(auth, session);
 
     Api api = apiRepository.findById(docAltoNivelDto.getIdApi())
-        .filter(a -> a.getUsuario().equals(usuario))
+        .filter(a -> a.getEquipo().equals(usuario.getEquipo()))
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la API solicitada"));
 
         if (bindingResult.hasErrors()) {

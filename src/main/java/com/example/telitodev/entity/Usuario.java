@@ -60,6 +60,10 @@ public class Usuario {
     @JoinColumn(name = "idOrganizacion", nullable = true, insertable = true, updatable = true)
     private Organizacion organizacion;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idEquipo", nullable = true)
+    private Equipo equipo;
+
     // Relaciones con otras entidades
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
@@ -101,17 +105,13 @@ public class Usuario {
     @JsonIgnore
     private List<AuditLog> auditLogs;
 
-    @OneToMany(mappedBy = "usuarioLider", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Proyecto> proyectosLiderados;
-
     // relaciones para la tabla SolAccesoOrg
 
     @OneToMany(mappedBy = "usuarioSolicitante", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<SolAccesoOrg> solicitudesAccesoOrgEnviadas;
+    private List<SolAccesoEquipo> solicitudesAccesoEquipoEnviadas;
 
     @OneToMany(mappedBy = "usuarioRevisor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<SolAccesoOrg> solicitudesAccesoOrgRevisadas;
+    private List<SolAccesoEquipo> solicitudesAccesoEquipoRevisadas;
 
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
@@ -191,14 +191,6 @@ public class Usuario {
         this.alias = alias;
     }
 
-    public List<Proyecto> getProyectosLiderados() {
-        return proyectosLiderados;
-    }
-
-    public void setProyectosLiderados(List<Proyecto> proyectosLiderados) {
-        this.proyectosLiderados = proyectosLiderados;
-    }
-
     public Timestamp getFechaRegistro() {
         return fechaRegistro;
     }
@@ -229,6 +221,13 @@ public class Usuario {
 
     public void setOrganizacion(Organizacion organizacion) {
         this.organizacion = organizacion;
+    }
+
+    public Equipo getEquipo() {
+        return equipo;
+    }
+    public void setEquipo(Equipo equipo) {
+        this.equipo = equipo;
     }
 
     public List<Sesion> getSesiones() {
@@ -358,19 +357,17 @@ public class Usuario {
     }
 
     // nuevos setters y getters para la tabla SolAccesoOrg
-    public List<SolAccesoOrg> getSolicitudesAccesoOrgEnviadas() {
-        return solicitudesAccesoOrgEnviadas;
+    public List<SolAccesoEquipo> getSolicitudesAccesoEquipoEnviadas() {
+        return solicitudesAccesoEquipoEnviadas;
+    }
+    public void setSolicitudesAccesoEquipoEnviadas(List<SolAccesoEquipo> solicitudesAccesoEquipoEnviadas) {
+        this.solicitudesAccesoEquipoEnviadas = solicitudesAccesoEquipoEnviadas;
     }
 
-    public void setSolicitudesAccesoOrgEnviadas(List<SolAccesoOrg> solicitudesAccesoOrgEnviadas) {
-        this.solicitudesAccesoOrgEnviadas = solicitudesAccesoOrgEnviadas;
+    public List<SolAccesoEquipo> getSolicitudesAccesoEquipoRevisadas() {
+        return solicitudesAccesoEquipoRevisadas;
     }
-
-    public List<SolAccesoOrg> getSolicitudesAccesoOrgRevisadas() {
-        return solicitudesAccesoOrgRevisadas;
-    }
-
-    public void setSolicitudesAccesoOrgRevisadas(List<SolAccesoOrg> solicitudesAccesoOrgRevisadas) {
-        this.solicitudesAccesoOrgRevisadas = solicitudesAccesoOrgRevisadas;
+    public void setSolicitudesAccesoEquipoRevisadas(List<SolAccesoEquipo> solicitudesAccesoEquipoRevisadas) {
+        this.solicitudesAccesoEquipoRevisadas = solicitudesAccesoEquipoRevisadas;
     }
 }

@@ -17,12 +17,8 @@ public class Proyecto {
     private Integer idProyecto;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idOrganizacion")
-    private Organizacion organizacion;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="dni_po_lider",nullable = false)
-    private Usuario usuarioLider;
+    @JoinColumn(name = "idEquipo")
+    private Equipo equipo;
 
     @Size(min = 5, max = 45)
     @NotBlank
@@ -66,18 +62,11 @@ public class Proyecto {
         this.idProyecto = idProyecto;
     }
 
-    public Organizacion getOrganizacion() {
-        return organizacion;
+    public Equipo getEquipo() {
+        return equipo;
     }
-    public void setOrganizacion(Organizacion organizacion) {
-        this.organizacion = organizacion;
-    }
-
-    public Usuario getUsuarioLider() {
-        return usuarioLider;
-    }
-    public void setUsuarioLider(Usuario usuarioLider) {
-        this.usuarioLider = usuarioLider;
+    public void setEquipo(Equipo equipo) {
+        this.equipo = equipo;
     }
 
     public String getNombre() {

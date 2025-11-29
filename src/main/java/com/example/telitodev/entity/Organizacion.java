@@ -23,16 +23,20 @@ public class Organizacion {
     @Column(name = "descripcion", length = 100)
     private String descripcion;
 
+    @Column(name = "dominio_correo", length = 50)
+    private String dominioCorreo;
+
+    @Column(name = "publica", length = 100)
+    private Boolean publica;
+
     //Relaciones
     @OneToMany(mappedBy = "organizacion",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Usuario> usuarios;
 
     @OneToMany(mappedBy = "organizacion",fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<Proyecto> proyectos;
+    private List<Equipo> equipos;
 
     //Get y Set
-
-
     public Integer getIdOrganizacion() {
         return idOrganizacion;
     }
@@ -61,6 +65,20 @@ public class Organizacion {
         this.descripcion = descripcion;
     }
 
+    public String getDominioCorreo() {
+        return dominioCorreo;
+    }
+    public void setDominioCorreo(String dominioCorreo) {
+        this.dominioCorreo = dominioCorreo;
+    }
+
+    public Boolean getPublica() {
+        return publica;
+    }
+    public void setPublica(Boolean publica) {
+        this.publica = publica;
+    }
+
     public List<Usuario> getUsuarios() {
         return usuarios;
     }
@@ -68,10 +86,10 @@ public class Organizacion {
         this.usuarios = usuarios;
     }
 
-    public List<Proyecto> getProyectos() {
-        return proyectos;
+    public List<Equipo> getEquipos() {
+        return equipos;
     }
-    public void setProyectos(List<Proyecto> proyectos) {
-        this.proyectos = proyectos;
+    public void setEquipos(List<Equipo> equipos) {
+        this.equipos = equipos;
     }
 }
