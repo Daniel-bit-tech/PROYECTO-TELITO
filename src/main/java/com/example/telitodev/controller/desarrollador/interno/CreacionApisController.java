@@ -6,8 +6,6 @@ import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
 import com.example.telitodev.service.S3Services.S3DocsApiService;
 import com.example.telitodev.service.creacionApi.ContratoApiService;
-import com.example.telitodev.service.FileSecurityService;
-import com.example.telitodev.service.TextSecurityService;
 import com.example.telitodev.service.creacionApi.DocApiService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -19,7 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -30,51 +27,39 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
-import lombok.extern.slf4j.Slf4j;
-
-import javax.print.Doc;
-
-@Slf4j
 @Controller
 @PreAuthorize("hasAnyRole('DEV','DEVINT')")
-@RequestMapping(value = {"/dev/int", "/dev/int/misApis"})
+@RequestMapping(value = { "/dev/int", "/dev/int/misApis" })
 public class CreacionApisController extends BaseController {
 
     private final DominioRepository dominioRepository;
     private final TagRepository tagRepository;
-    private final ContratoRepository contratoRepository;
     private final ApiRepository apiRepository;
     private final DocumentacionRepository documentacionRepository;
     private final EstadoApiRepository estadoApiRepository;
     private final VersionApiRepository versionApiRepository;
 
-    private final FileSecurityService fileSecurityService;
-    private final TextSecurityService textSecurityService;
     private final ContratoApiService contratoApiService;
     private final DocApiService docApiService;
-    private final DocAltoNivelRepository docAltoNivelRepository;
     private final S3DocsApiService s3DocsApiService;
 
     public CreacionApisController(DominioRepository dominioRepository,
-                                  TagRepository tagRepository,
-                                  ContratoRepository contratoRepository,
-                                  ApiRepository apiRepository, DocumentacionRepository documentacionRepository,
-                                  EstadoApiRepository estadoApiRepository,
-                                  VersionApiRepository versionApiRepository,
-                                  FileSecurityService fileSecurityService,
-                                  TextSecurityService textSecurityService, ContratoApiService contratoApiService, DocApiService docApiService, DocAltoNivelRepository docAltoNivelRepository, S3DocsApiService s3DocsApiService) {
+            TagRepository tagRepository,
+            ApiRepository apiRepository,
+            DocumentacionRepository documentacionRepository,
+            EstadoApiRepository estadoApiRepository,
+            VersionApiRepository versionApiRepository,
+            ContratoApiService contratoApiService,
+            DocApiService docApiService,
+            S3DocsApiService s3DocsApiService) {
         this.dominioRepository = dominioRepository;
         this.tagRepository = tagRepository;
-        this.contratoRepository = contratoRepository;
         this.apiRepository = apiRepository;
         this.documentacionRepository = documentacionRepository;
         this.estadoApiRepository = estadoApiRepository;
         this.versionApiRepository = versionApiRepository;
-        this.fileSecurityService = fileSecurityService;
-        this.textSecurityService = textSecurityService;
         this.contratoApiService = contratoApiService;
         this.docApiService = docApiService;
-        this.docAltoNivelRepository = docAltoNivelRepository;
         this.s3DocsApiService = s3DocsApiService;
     }
 
@@ -82,8 +67,8 @@ public class CreacionApisController extends BaseController {
     @PostMapping("/guardarApi")
     @ResponseBody
     public ResponseEntity<?> crearApi(Authentication auth, HttpSession session,
-                                   @RequestBody @Valid ApiCreacionDTO apiDto,
-                                   BindingResult bindingResult, HttpServletRequest request) {
+            @RequestBody @Valid ApiCreacionDTO apiDto,
+            BindingResult bindingResult, HttpServletRequest request) {
 
         Usuario usuario = getCurrentUser(auth, session);
 
@@ -94,9 +79,7 @@ public class CreacionApisController extends BaseController {
         }
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
-            bindingResult.getFieldErrors().forEach(error ->
-                    errors.put(error.getField(), error.getDefaultMessage())
-            );
+            bindingResult.getFieldErrors().forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
             return ResponseEntity.badRequest().body(Map.of("errors", errors));
         }
 
@@ -115,8 +98,7 @@ public class CreacionApisController extends BaseController {
         // Devolver JSON de éxito
         return ResponseEntity.ok(Map.of(
                 "msg", "Api " + api.getNombre() + " creada exitosamente",
-                "idApi", api.getIdApi()
-        ));
+                "idApi", api.getIdApi()));
     }
 
     @PostMapping("/editarApi")
@@ -158,9 +140,9 @@ public class CreacionApisController extends BaseController {
     @PostMapping("/guardarVersionApi")
     @ResponseBody
     public ResponseEntity<?> guardarVersionApi(Authentication auth, HttpSession session,
-                                    @ModelAttribute @Valid VersionContratoDTO versionContratoDto,
-                                    BindingResult bindingResult) {
-        Map<String,Object> response = new HashMap<>();
+                                        @ModelAttribute @Valid VersionContratoDTO versionContratoDto,
+                                        BindingResult bindingResult) {
+        Map<String, Object> response = new HashMap<>();
 
         Usuario usuario = getCurrentUser(auth, session);
 
@@ -174,7 +156,7 @@ public class CreacionApisController extends BaseController {
         }
 
         if (bindingResult.hasErrors()) {
-            Map<String,String> errors = new HashMap<>();
+            Map<String, String> errors = new HashMap<>();
             bindingResult.getFieldErrors().forEach(err -> errors.put(err.getField(), err.getDefaultMessage()));
             response.put("success", false);
             response.put("errors", errors);
@@ -216,7 +198,7 @@ public class CreacionApisController extends BaseController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo encontrar la Api para está versión."));
 
         VersionApi versionApi = null;
-        if (versionContratoDto.getIdVersion()!=null) {
+        if (versionContratoDto.getIdVersion() != null) {
             versionApi = versionApiRepository.findById(versionContratoDto.getIdVersion())
                     .filter(v -> v.getApi().equals(api))
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo encontrar la versión."));
@@ -225,7 +207,7 @@ public class CreacionApisController extends BaseController {
         }
 
         if (bindingResult.hasErrors()) {
-            Map<String,String> errors = new HashMap<>();
+            Map<String, String> errors = new HashMap<>();
             bindingResult.getFieldErrors().forEach(err -> errors.put(err.getField(), err.getDefaultMessage()));
             response.put("success", false);
             response.put("errors", errors);
@@ -293,7 +275,7 @@ public class CreacionApisController extends BaseController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo guardar la documentación"));
 
         VersionApi versionApi = null;
-        if (requestDto.getIdVersion()!=null || requestDto.getIdVersion()==0) {
+        if (requestDto.getIdVersion() != null || requestDto.getIdVersion() != 0) {
             versionApi = versionApiRepository.findById(requestDto.getIdVersion())
                     .filter(v -> v.getApi().equals(api))
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo guardar la documentación"));
@@ -372,7 +354,7 @@ public class CreacionApisController extends BaseController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la API solicitada"));
 
         if (bindingResult.hasErrors()) {
-            Map<String,String> errors = new HashMap<>();
+            Map<String, String> errors = new HashMap<>();
             bindingResult.getFieldErrors().forEach(err -> errors.put(err.getField(), err.getDefaultMessage()));
             response.put("success", false);
             response.put("errors", errors);
@@ -385,13 +367,13 @@ public class CreacionApisController extends BaseController {
             if (docMDX != null) {
                 // si existe doc en db, realmente no importa el id, pero validamos
                 if (!docMDX.getIdDocumentacion().equals(docMdDto.getIdDoc())) {
-                    //existe doc en db y mandaron id, coinciden. Usare info de la db
+                    // existe doc en db y mandaron id, coinciden. Usare info de la db
                     docApiService.validarYProcesarMDTecnico(docMdDto.getMdFile(), docMDX);
 
                 } else throw new DocApiService.DocValidationException("No se pudo encontrar documento Readme.");
             } else {
-                //no existe en db, crear nuevo
-                Documentacion readMe = new Documentacion(api,null,"Documentación técnica","General");
+                // no existe en db, crear nuevo
+                Documentacion readMe = new Documentacion(api, null, "Documentación técnica", "General");
                 readMe.setFormato(Documentacion.FormatoDoc.MARKDOWN);
                 if (docMdDto.getIdDoc()==null || docMdDto.getIdDoc()==0) {
                     docApiService.validarYProcesarMDTecnico(docMdDto.getMdFile(),readMe);
@@ -420,13 +402,13 @@ public class CreacionApisController extends BaseController {
     public ResponseEntity<?> guardarDocAltoNivel(Authentication auth, HttpSession session,
               @Valid @ModelAttribute DocAltoNivelDTO docAltoNivelDto, BindingResult bindingResult) {
 
-    Map<String, Object> response = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
 
-    Usuario usuario = getCurrentUser(auth, session);
+        Usuario usuario = getCurrentUser(auth, session);
 
-    Api api = apiRepository.findById(docAltoNivelDto.getIdApi())
-        .filter(a -> a.getEquipo().equals(usuario.getEquipo()))
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la API solicitada"));
+        Api api = apiRepository.findById(docAltoNivelDto.getIdApi())
+            .filter(a -> a.getEquipo().equals(usuario.getEquipo()))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la API solicitada"));
 
         if (bindingResult.hasErrors()) {
 

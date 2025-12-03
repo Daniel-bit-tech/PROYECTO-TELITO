@@ -113,9 +113,9 @@ public class Usuario {
     @OneToMany(mappedBy = "usuarioRevisor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<SolAccesoEquipo> solicitudesAccesoEquipoRevisadas;
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Api> misApis;
+//    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    @JsonIgnore
+//    private List<Api> misApis;
     // // //
 
     // Constructores
@@ -310,13 +310,13 @@ public class Usuario {
         this.auditLogs = auditLogs;
     }
 
-    public List<Api> getMisApis() {
-        return misApis;
-    }
-
-    public void setMisApis(List<Api> misApis) {
-        this.misApis = misApis;
-    }
+//    public List<Api> getMisApis() {
+//        return misApis;
+//    }
+//
+//    public void setMisApis(List<Api> misApis) {
+//        this.misApis = misApis;
+//    }
 
     // Getters y Setters para OAuth2
     public TipoAcceso getTipoAcceso() {

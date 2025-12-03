@@ -75,7 +75,7 @@ public class GestionApisController extends BaseController {
         addImpersonationAttributes(model, session);
 
 //        Page<Api> listaApis = apiRepository.findByUserOrgAndFilters(nombre, selDominios, selTags, selEstados, usuario.getOrganizacion().getIdOrganizacion(), pageable);
-        List<Api> listaApis = apiRepository.findByFilterAndDniUsuario(nombre, selDominios, selTags, usuario.getDni());
+        List<Api> listaApis = apiRepository.findByFiltersAndUserEquipo(nombre, selDominios, selTags, usuario.getEquipo().getIdEquipo());
         model.addAttribute("listaApis", listaApis);
 
         model.addAttribute("listaDominios", dominioRepository.findAll());
