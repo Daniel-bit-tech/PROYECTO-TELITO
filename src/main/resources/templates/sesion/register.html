@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" crossorigin="">
   <link rel="stylesheet" th:href="@{/login/assets/css/styles.css}">
@@ -86,6 +87,23 @@
       position: relative;
     }
 
+    /* Estilos para campos autocompletados por RENIEC */
+    .reniec-autocompleted {
+      background-color: rgba(76, 175, 80, 0.2) !important;
+      border-color: #4CAF50 !important;
+      color: #1a1a1a !important;
+      font-weight: 600 !important;
+    }
+
+    /* Asegurar que el texto se vea oscuro en campos autocompletados */
+    .login__input.reniec-autocompleted {
+      color: #1a1a1a !important;
+    }
+
+    .login__input.reniec-autocompleted::placeholder {
+      color: rgba(26, 26, 26, 0.5) !important;
+    }
+
 
   </style>
 
@@ -105,19 +123,19 @@
 
     <div class="login__inputs">
       <div class="login__box">
-        <input type="text" name="nombre" placeholder="Nombre" required class="login__input" th:value="${param.nombre}">
+        <input type="text" id="nombre" name="nombre" placeholder="Nombre" required class="login__input" th:value="${param.nombre}">
         <i class="ri-user-3-fill"></i>
       </div>
       <div class="login__box">
-        <input type="text" name="apellidoPaterno" placeholder="Apellido Paterno" required class="login__input" th:value="${param.apellidoPaterno}">
+        <input type="text" id="apellidoPaterno" name="apellidoPaterno" placeholder="Apellido Paterno" required class="login__input" th:value="${param.apellidoPaterno}">
         <i class="ri-user-3-fill"></i>
       </div>
       <div class="login__box">
-        <input type="text" name="apellidoMaterno" placeholder="Apellido Materno" class="login__input" th:value="${param.apellidoMaterno}">
+        <input type="text" id="apellidoMaterno" name="apellidoMaterno" placeholder="Apellido Materno" class="login__input" th:value="${param.apellidoMaterno}">
         <i class="ri-user-3-fill"></i>
       </div>
       <div class="login__box">
-        <input type="text" name="dni" placeholder="DNI" required class="login__input" pattern="[0-9]{8}" maxlength="8" th:value="${param.dni}">
+        <input type="text" id="dni" name="dni" placeholder="DNI (presiona Tab para autocompletar)" required class="login__input" pattern="[0-9]{8}" maxlength="8" th:value="${param.dni}">
         <i class="ri-id-card-fill"></i>
       </div>
       <div class="login__box">
@@ -152,6 +170,21 @@
     <button type="submit" class="login__button">Registrarse</button>
   </form>
 </div>
+
+<!-- Script de autocompletado RENIEC -->
+<script th:src="@{/js/reniec-autocomplete.js}"></script>
+<script>
+  // Inicializar el autocompletado de RENIEC cuando el DOM esté listo
+  document.addEventListener('DOMContentLoaded', function() {
+    initReniecAutocomplete({
+      dniInputId: 'dni',
+      nombresInputId: 'nombre',
+      apellidoPaternoInputId: 'apellidoPaterno',
+      apellidoMaternoInputId: 'apellidoMaterno',
+      autoTrigger: true,
+      showNotifications: true
+    });
+  });
+</script>
 </body>
 </html>
-
