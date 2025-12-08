@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title>Test RENIEC API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        .reniec-autocompleted {
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🆔 Prueba de API RENIEC</h1>
+        
+        <div class="info">
+            <strong>Instrucciones:</strong>
+            <p>Ingresa un DNI peruano válido de 8 dígitos y presiona Tab o Enter. Los datos se autocompletarán automáticamente.</p>
+            <p><strong>Ejemplo:</strong> 41784439</p>
+        </div>
+
+        <form id="testForm">
+            <div class="form-group">
+                <label for="dni">DNI *</label>
+                <input type="text" id="dni" name="dni" maxlength="8" placeholder="Ej: 41784439" required>
+            </div>
+
+            <div class="form-group">
+                <label for="nombres">Nombres</label>
+                <input type="text" id="nombres" name="nombres" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="apellidoPaterno">Apellido Paterno</label>
+                <input type="text" id="apellidoPaterno" name="apellidoPaterno" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="apellidoMaterno">Apellido Materno</label>
+                <input type="text" id="apellidoMaterno" name="apellidoMaterno" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="nombreCompleto">Nombre Completo</label>
+                <input type="text" id="nombreCompleto" name="nombreCompleto" readonly>
+            </div>
+
+            <button type="submit">Registrar</button>
+        </form>
+    </div>
+
+    <!-- Incluir la librería de autocomplete RENIEC -->
+    <script th:src="@{/js/reniec-autocomplete.js}"></script>
+    <script>
+        // Inicializar el autocomplete de RENIEC
+        document.addEventListener('DOMContentLoaded', function() {
+            initReniecAutocomplete({
+                dniInputId: 'dni',
+                nombresInputId: 'nombres',
+                apellidoPaternoInputId: 'apellidoPaterno',
+                apellidoMaternoInputId: 'apellidoMaterno',
+                nombreCompletoInputId: 'nombreCompleto',
+                autoTrigger: true,
+                showNotifications: true
+            });
+
+            // Manejar el envío del formulario
+            document.getElementById('testForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = {
+                    dni: document.getElementById('dni').value,
+                    nombres: document.getElementById('nombres').value,
+                    apellidoPaterno: document.getElementById('apellidoPaterno').value,
+                    apellidoMaterno: document.getElementById('apellidoMaterno').value
+                };
+
+                console.log('Datos del formulario:', formData);
+                alert('Formulario enviado! Ver consola para datos completos.');
+            });
+        });
+    </script>
+</body>
+</html>

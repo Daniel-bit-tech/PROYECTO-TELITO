@@ -70,6 +70,7 @@ public class SecurityConfig {
                         .requestMatchers("/oauth2/reset", "/oauth2/debug", "/oauth2-reset").permitAll()  // ⚡ ENDPOINTS OAUTH2 DEBUG
                         .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**", "/static/**").permitAll()
                         .requestMatchers("/error", "/acceso-denegado").permitAll()
+                        .requestMatchers("/api/reniec/**").permitAll()  // API RENIEC para autocompletar DNI
 
                         .requestMatchers("/cat","/playground.html").permitAll()
 
