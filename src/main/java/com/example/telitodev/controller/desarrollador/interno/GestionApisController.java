@@ -254,4 +254,40 @@ public class GestionApisController extends BaseController {
         return "desarrollador/interno/ajustesApi";
     }
 
+    @PostMapping("/estadoApi")
+    public String editarEstadoApi(Authentication auth, HttpSession session,
+                                 @RequestParam Integer idApi, @RequestParam Integer estadoApi,
+                                 RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = getCurrentUser(auth, session);
+
+        Api api = apiRepository.findById(idApi)
+                .filter(a -> a.getEquipo().equals(usuario.getEquipo()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo encontrar la Api solicitada."));
+
+        try {
+            EstadoApi nuevoEstadoApi = new EstadoApi();
+            api.setEstadoApi(nuevoEstadoApi);
+            apiRepository.save(api);
+
+            redirectAttributes.addFlashAttribute("toastMessage", "Estado actualizado correctamente");
+            redirectAttributes.addFlashAttribute("toastType", "success");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("toastMessage", "Estado inválido ");
+            redirectAttributes.addFlashAttribute("toastType", "error");
+        }
+
+        return "redirect:/dev/int/misApis/"+api.getIdApi()+"/ajustes";
+    }
+
+    @DeleteMapping("/eliminar")
+    public String eliminarApi(Authentication auth, HttpSession session,
+                              @RequestParam Integer idApi) {
+
+        Usuario usuario = getCurrentUser(auth, session);
+
+
+        return "redirect:/dev/int/misApis/";
+    }
+
 }
