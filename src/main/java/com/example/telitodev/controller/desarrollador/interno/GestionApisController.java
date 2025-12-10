@@ -59,7 +59,7 @@ public class GestionApisController extends BaseController {
 
 
     @GetMapping()
-    public String listaApisDeUsuario(@RequestParam(defaultValue = "0") int page,
+    public String listaApisDeEquipoUsuario(@RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "10") int size,
                                      @RequestParam(value = "dominios",required = false) List<Integer> selDominios,
                                      @RequestParam(value = "tags", required = false) List<Integer> selTags,
@@ -75,7 +75,10 @@ public class GestionApisController extends BaseController {
         addImpersonationAttributes(model, session);
 
 //        Page<Api> listaApis = apiRepository.findByUserOrgAndFilters(nombre, selDominios, selTags, selEstados, usuario.getOrganizacion().getIdOrganizacion(), pageable);
-        List<Api> listaApis = apiRepository.findByFilterAndDniUsuario(nombre, selDominios, selTags, usuario.getDni());
+        Integer idEquipoUsuario = Optional.ofNullable(usuario.getEquipo())
+                .map(Equipo::getIdEquipo)
+                .orElse(null);
+        List<Api> listaApis = apiRepository.findByFilterAndDniUsuario(nombre, selDominios, selTags, idEquipoUsuario);
         model.addAttribute("listaApis", listaApis);
 
         model.addAttribute("listaDominios", dominioRepository.findAll());

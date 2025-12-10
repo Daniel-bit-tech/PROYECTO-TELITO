@@ -59,18 +59,16 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
                                       @Param("idOrganizacion") Integer idOrganizacion,
                                       Pageable pageable);
     @Query("SELECT a FROM Api a " +
-            "JOIN a.equipo eq " +
-            "JOIN eq.usuarios u " +
             "LEFT JOIN a.dominio d " +
             "LEFT JOIN a.tag t " +
             "WHERE (:search IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :search, '%'))) " +
             "AND (:idDominios IS NULL OR d.idDominio IN :idDominios) " +
             "AND (:idTags IS NULL OR t.idTag IN :idTags) " +
-            "AND u.dni = :dniUsuario")
+            "AND a.equipo.idEquipo = :idEquipoUsuario")
     List<Api> findByFilterAndDniUsuario(@Param("search") String search,
                                         @Param("idDominios") List<Integer> idDominios,
                                         @Param("idTags") List<Integer> idTags,
-                                        @Param("dniUsuario") String dniUsuario);
+                                        @Param("idEquipoUsuario") Integer idEquipoUsuario);
 
     List<Api> findByNombreContainingIgnoreCase(String nombre);
 
@@ -117,26 +115,26 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
      */
 
-    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
-            "a.idApi, a.nombre, MIN(p.nombre), a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, MIN(p.usuarioLider.dni)) " +
-            "FROM ProyectoHasApi pha " +
-            "JOIN pha.api a " +
-            "JOIN pha.proyecto p " +
-            "JOIN a.apiHasEntornos ahe " +
-            "JOIN ahe.entorno e " +
-            "JOIN a.dominio d " +
-            "JOIN a.tag t " +
-            "WHERE p.equipo.organizacion.idOrganizacion = (SELECT u.equipo.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
-            "AND e.nombre = 'QA' " +
-            "AND (:nombre IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
-            "AND (:dominios IS NULL OR d.nombre IN :dominios) " +
-            "AND (:tags IS NULL OR t.nombre IN :tags) " +
-            "GROUP BY a.idApi, a.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion")
-    Page<ApiProyectoDTO> findApisForQaCatalog(@Param("dni") String dni,
-                                              @Param("nombre") String nombre,
-                                              @Param("dominios") List<String> dominios,
-                                              @Param("tags") List<String> tags,
-                                              Pageable pageable);
+//    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
+//            "a.idApi, a.nombre, MIN(p.nombre), a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, MIN(p.usuarioLider.dni)) " +
+//            "FROM ProyectoHasApi pha " +
+//            "JOIN pha.api a " +
+//            "JOIN pha.proyecto p " +
+//            "JOIN a.apiHasEntornos ahe " +
+//            "JOIN ahe.entorno e " +
+//            "JOIN a.dominio d " +
+//            "JOIN a.tag t " +
+//            "WHERE p.equipo.organizacion.idOrganizacion = (SELECT u.equipo.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
+//            "AND e.nombre = 'QA' " +
+//            "AND (:nombre IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
+//            "AND (:dominios IS NULL OR d.nombre IN :dominios) " +
+//            "AND (:tags IS NULL OR t.nombre IN :tags) " +
+//            "GROUP BY a.idApi, a.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion")
+//    Page<ApiProyectoDTO> findApisForQaCatalog(@Param("dni") String dni,
+//                                              @Param("nombre") String nombre,
+//                                              @Param("dominios") List<String> dominios,
+//                                              @Param("tags") List<String> tags,
+//                                              Pageable pageable);
 
     @Query("SELECT COUNT(DISTINCT a.idApi) " +
             "FROM Api a " +
@@ -152,20 +150,20 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
      * Devuelve una lista completa (sin paginar) de las APIs que un QA necesita validar.
      * Incluye el DNI del PO Líder para usar en el formulario de creación de reportes.
      */
-    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
-            "a.idApi, a.nombre, MIN(p.nombre), a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, MIN(p.usuarioLider.dni)) " +
-            "FROM Api a " +
-            "JOIN a.apiHasEntornos ahe " +
-            "JOIN ahe.entorno e " +
-            "JOIN ProyectoHasApi pha ON pha.api = a " +
-            "JOIN pha.proyecto p " +
-            "JOIN a.dominio d " +
-            "JOIN a.tag t " +
-            "WHERE p.equipo.organizacion.idOrganizacion = (SELECT u.equipo.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
-            "AND e.nombre = 'QA' " +
-            "GROUP BY a.idApi, a.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion " +
-            "ORDER BY a.nombre ASC")
-    List<ApiProyectoDTO> findApisToReportForQa(@Param("dni") String dni);
+//    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
+//            "a.idApi, a.nombre, MIN(p.nombre), a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, MIN(p.usuarioLider.dni)) " +
+//            "FROM Api a " +
+//            "JOIN a.apiHasEntornos ahe " +
+//            "JOIN ahe.entorno e " +
+//            "JOIN ProyectoHasApi pha ON pha.api = a " +
+//            "JOIN pha.proyecto p " +
+//            "JOIN a.dominio d " +
+//            "JOIN a.tag t " +
+//            "WHERE p.equipo.organizacion.idOrganizacion = (SELECT u.equipo.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
+//            "AND e.nombre = 'QA' " +
+//            "GROUP BY a.idApi, a.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion " +
+//            "ORDER BY a.nombre ASC")
+//    List<ApiProyectoDTO> findApisToReportForQa(@Param("dni") String dni);
 
 
     /* ===== CONSULTAS ADICIONALES PARA ADMIN DASHBOARD ===== */
