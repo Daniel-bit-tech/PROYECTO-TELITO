@@ -1,7 +1,7 @@
 package com.example.telitodev.repository;
 
-import com.example.telitodev.entity.SolAccesoOrg;
-import com.example.telitodev.entity.SolAccesoOrg.EstadoSolicitud;
+import com.example.telitodev.entity.SolAccesoEquipo;
+import com.example.telitodev.entity.SolAccesoEquipo.EstadoSolicitud;
 import com.example.telitodev.entity.Usuario;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,16 +14,16 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface SolAccesoOrgRepository extends JpaRepository<SolAccesoOrg, Integer> {
+public interface SolAccesoEquipoRepository extends JpaRepository<SolAccesoEquipo, Integer> {
 
     // Buscar solicitudes por estado
-    List<SolAccesoOrg> findByEstado(EstadoSolicitud estado);
+    List<SolAccesoEquipo> findByEstado(EstadoSolicitud estado);
 
     // Buscar solicitudes por estado con paginación
-    Page<SolAccesoOrg> findByEstado(EstadoSolicitud estado, Pageable pageable);
+    Page<SolAccesoEquipo> findByEstado(EstadoSolicitud estado, Pageable pageable);
 
     // Buscar solicitudes por usuario solicitante
-    List<SolAccesoOrg> findByUsuarioSolicitanteDni(String dniSolicitante);
+    List<SolAccesoEquipo> findByUsuarioSolicitanteDni(String dniSolicitante);
 
 
 
@@ -31,36 +31,36 @@ public interface SolAccesoOrgRepository extends JpaRepository<SolAccesoOrg, Inte
     boolean existsByDniAndEstado(String dni, EstadoSolicitud estado);
 
     // Buscar solicitud por DNI del solicitado
-    Optional<SolAccesoOrg> findByDni(String dni);
+    Optional<SolAccesoEquipo> findByDni(String dni);
 
     // Contar solicitudes por estado
     long countByEstado(EstadoSolicitud estado);
 
     // Búsqueda avanzada con múltiples filtros para administradores
-    @Query("SELECT s FROM SolAccesoOrg s WHERE " +
+    @Query("SELECT s FROM SolAccesoEquipo s WHERE " +
             "(:estado IS NULL OR s.estado = :estado) AND " +
             "(:idEquipo IS NULL OR s.equipoDestino.idEquipo = :idEquipo) AND " +
             "(:dniSolicitante IS NULL OR s.usuarioSolicitante.dni = :dniSolicitante)")
-    Page<SolAccesoOrg> findByFiltrosAvanzados(
+    Page<SolAccesoEquipo> findByFiltrosAvanzados(
             @Param("estado") EstadoSolicitud estado,
             @Param("idEquipo") Integer idEquipo,
             @Param("dniSolicitante") String dniSolicitante,
             Pageable pageable);
 
     // Buscar solicitudes pendientes por equipo destino
-    @Query("SELECT s FROM SolAccesoOrg s WHERE s.estado = 'PENDIENTE' AND s.equipoDestino.idEquipo = :idEquipo")
-    List<SolAccesoOrg> findPendientesByEquipo(@Param("idEquipo") Integer idEquipo);
+    @Query("SELECT s FROM SolAccesoEquipo s WHERE s.estado = 'PENDIENTE' AND s.equipoDestino.idEquipo = :idEquipo")
+    List<SolAccesoEquipo> findPendientesByEquipo(@Param("idEquipo") Integer idEquipo);
 
     // Obtener estadísticas de solicitudes por equipo
     @Query("SELECT s.equipoDestino.nombre, COUNT(s), s.estado " +
-            "FROM SolAccesoOrg s " +
+            "FROM SolAccesoEquipo s " +
             "GROUP BY s.equipoDestino.nombre, s.estado")
     List<Object[]> getEstadisticasPorEquipo();
 
     // Este query es para el historial de solicitudes
 
     // Buscar todas las solicitudes realizadas por un usuario solicitante específico (POR EL PO)
-    @Query("SELECT s FROM SolAccesoOrg s WHERE s.usuarioSolicitante.dni = :dniSolicitante ORDER BY s.fechaSolicitud DESC")
-    List<SolAccesoOrg> findByUsuarioSolicitanteDniOrderByFechaDesc(@Param("dniSolicitante") String dniSolicitante);
+    @Query("SELECT s FROM SolAccesoEquipo s WHERE s.usuarioSolicitante.dni = :dniSolicitante ORDER BY s.fechaSolicitud DESC")
+    List<SolAccesoEquipo> findByUsuarioSolicitanteDniOrderByFechaDesc(@Param("dniSolicitante") String dniSolicitante);
 
 }

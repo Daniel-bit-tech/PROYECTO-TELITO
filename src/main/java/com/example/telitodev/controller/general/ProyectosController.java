@@ -159,7 +159,6 @@ public class ProyectosController extends BaseController {
             return "redirect:/proyectos";
         }
 
-        proyecto.setUsuarioLider(usuario);
         proyecto.setEquipo(usuario.getEquipo());
         proyecto.setFechaInicio(LocalDate.now());
         proyecto.setPublico(true);
@@ -188,8 +187,7 @@ public class ProyectosController extends BaseController {
         
         Optional<Proyecto> proyectoOptional = proyectoRepository.findById(id);
         if (proyectoOptional.isPresent() &&
-                proyectoOptional.get().getEquipo().equals(usuario.getEquipo())
-                && proyectoOptional.get().getUsuarioLider().equals(usuario)) {
+                proyectoOptional.get().getEquipo().equals(usuario.getEquipo())) {
             model.addAttribute("proyecto", proyectoOptional.get());
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No tiene permiso para configurar este proyecto");
@@ -231,11 +229,10 @@ public class ProyectosController extends BaseController {
             Proyecto existente = proyectoRepository.findById(proyecto.getIdProyecto())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-            if (usuario.getEquipo().equals(existente.getEquipo()) && existente.getUsuarioLider().equals(usuario)) {
+            if (usuario.getEquipo().equals(existente.getEquipo())) {
                 proyecto.setNombre(existente.getNombre());
                 proyecto.setFechaInicio(existente.getFechaInicio());
                 proyecto.setEquipo(existente.getEquipo());
-                proyecto.setUsuarioLider(existente.getUsuarioLider());
             } else {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto");
             }
@@ -244,7 +241,6 @@ public class ProyectosController extends BaseController {
             System.out.println("Creando proy: "+proyecto.getNombre());
             // Creación
             proyecto.setEquipo(usuario.getEquipo());
-            proyecto.setUsuarioLider(usuario);
         }
 
         proyectoRepository.save(proyecto);

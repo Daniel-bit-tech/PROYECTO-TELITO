@@ -134,8 +134,7 @@ public class ProyectosPoController extends BaseController {
         ProyectoHasApi proyHasApi = proyHasApiRepository.findById(idProyHasApi)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto o la API."));
 
-        if (!proyHasApi.getProyecto().getUsuarioLider().equals(usuario)
-                && !proyHasApi.getProyecto().getOrganizacion().equals(usuario.getOrganizacion())) {
+        if (!proyHasApi.getProyecto().getEquipo().equals(usuario.getEquipo())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para editar este proyecto.");
         }
 
