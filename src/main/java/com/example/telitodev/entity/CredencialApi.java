@@ -30,7 +30,7 @@ public class CredencialApi {
     private Usuario usuario;
 
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idAPI", nullable = false)
     private Api api;
 

@@ -49,7 +49,23 @@ public class DeveloperController extends BaseController {
             System.out.println("Usuario obtenido: " + usuario.getCorreo());
 
             Integer NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(),true);
-            List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
+            List<CredencialApi> allCredenciales = credencialApiRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
+            
+            // Filtrar credenciales cuya API todavía existe
+            List<CredencialApi> credenciales = new java.util.ArrayList<>();
+            for (CredencialApi cred : allCredenciales) {
+                try {
+                    if (cred.getApi() != null) {
+                        // Forzar la inicialización del proxy
+                        cred.getApi().getIdApi();
+                        credenciales.add(cred);
+                    }
+                } catch (jakarta.persistence.EntityNotFoundException e) {
+                    System.out.println("⚠️ Credencial " + cred.getIdCredencialApi() + " referencia API eliminada");
+                } catch (Exception e) {
+                    System.out.println("⚠️ Credencial " + cred.getIdCredencialApi() + " error al cargar API: " + e.getClass().getSimpleName());
+                }
+            }
 
             List<Notificacion> notis = notificacionRepository.findTop5ByUsuarioDniAndLeidoOrderByFechaDesc(usuario.getDni(), false);
             Integer Nnotis = notificacionRepository.countByUsuario_DniAndLeido(usuario.getDni(),false);

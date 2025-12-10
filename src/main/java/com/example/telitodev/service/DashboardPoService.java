@@ -28,7 +28,7 @@ public class DashboardPoService {
 
         DashboardPoDTO dto = new DashboardPoDTO();
 
-        List<Proyecto> proyectos = proyectoRepository.findByOrganizacion_IdOrganizacion(idOrganizacion);
+        List<Proyecto> proyectos = proyectoRepository.findByEquipoOrganizacionId(idOrganizacion);
         List<Api> apis = proyectoHasApiRepository.findApisByProyectosIn(proyectos);
 
         dto.setTotalProyectos(proyectos.size());

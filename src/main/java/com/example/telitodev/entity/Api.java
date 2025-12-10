@@ -32,8 +32,8 @@ public class Api {
     private Tag tag;
 
     @ManyToOne
-    @JoinColumn(name = "idUsuario", nullable = false)
-    private Usuario usuario;
+    @JoinColumn(name = "idEquipo", nullable = true) // Made optional to handle orphaned data
+    private Equipo equipo;
 
     @Column(name = "endpointURL", nullable = false, length = 45)
     private String endpointUrl;
@@ -91,13 +91,13 @@ public class Api {
     public Api() {}
     
     public Api(String nombre, String descripcion, Timestamp fechaCreacion, 
-               Dominio dominio, Tag tag, Usuario usuario, String endpointUrl) {
+               Dominio dominio, Tag tag, Equipo equipo, String endpointUrl) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.fechaCreacion = fechaCreacion;
         this.dominio = dominio;
         this.tag = tag;
-        this.usuario = usuario;
+        this.equipo = equipo;
         this.endpointUrl = endpointUrl;
     }
 
@@ -265,12 +265,12 @@ public class Api {
         this.versionesApi = versionesApi;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public Equipo getEquipo() {
+        return equipo;
     }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    
+    public void setEquipo(Equipo equipo) {
+        this.equipo = equipo;
     }
 
     public doc_alto_nivel getDocAltoNivel() {

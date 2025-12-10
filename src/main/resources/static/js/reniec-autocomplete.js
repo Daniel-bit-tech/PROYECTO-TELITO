@@ -164,7 +164,8 @@
         if (config.nombresInputId) {
             const nombresInput = document.getElementById(config.nombresInputId);
             if (nombresInput) {
-                nombresInput.value = data.nombres || '';
+                // La API puede devolver 'nombres' o 'nombre_completo'
+                nombresInput.value = data.nombres || data.nombre || '';
                 nombresInput.dispatchEvent(new Event('input', { bubbles: true }));
             }
         }
@@ -172,7 +173,8 @@
         if (config.apellidoPaternoInputId) {
             const apPaternoInput = document.getElementById(config.apellidoPaternoInputId);
             if (apPaternoInput) {
-                apPaternoInput.value = data.apellidoPaterno || '';
+                // La API devuelve con guión bajo: apellido_paterno
+                apPaternoInput.value = data.apellido_paterno || data.apellidoPaterno || '';
                 apPaternoInput.dispatchEvent(new Event('input', { bubbles: true }));
             }
         }
@@ -180,7 +182,8 @@
         if (config.apellidoMaternoInputId) {
             const apMaternoInput = document.getElementById(config.apellidoMaternoInputId);
             if (apMaternoInput) {
-                apMaternoInput.value = data.apellidoMaterno || '';
+                // La API devuelve con guión bajo: apellido_materno
+                apMaternoInput.value = data.apellido_materno || data.apellidoMaterno || '';
                 apMaternoInput.dispatchEvent(new Event('input', { bubbles: true }));
             }
         }

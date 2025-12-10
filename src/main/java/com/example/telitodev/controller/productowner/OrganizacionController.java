@@ -141,58 +141,97 @@
     // MÉTODO ORIGINAL - CON SOPORTE DE IMPERSONACIÓN
     @GetMapping("/solicitudAcceso")
     public String showSolicitudAcceso(Model model, Authentication auth, HttpSession session) {
+        System.out.println("🔍 === INICIANDO showSolicitudAcceso ===");
+        System.out.println("  - Auth: " + (auth != null ? auth.getName() : "null"));
+        System.out.println("  - Session ID: " + (session != null ? session.getId() : "null"));
+        
         try {
+            System.out.println("  ➤ Paso 1: Obteniendo usuario actual...");
             Usuario usuario = getCurrentUser(auth, session);
+            if (usuario == null) {
+                System.err.println("  ❌ ERROR: getCurrentUser devolvió null");
+                throw new RuntimeException("No se pudo obtener el usuario actual");
+            }
+            System.out.println("  ✓ Usuario obtenido: " + usuario.getDni() + " - " + usuario.getNombre());
             model.addAttribute("usuario", usuario);
 
-            // Agregar atributos de impersonación
+            System.out.println("  ➤ Paso 2: Agregando atributos de impersonación...");
             addImpersonationAttributes(model, session);
-            // 1. Cargar organizaciones para el dropdown
-                List<Organizacion> organizaciones = organizacionService.obtenerTodasOrganizacionesOrdenadas();
-                model.addAttribute("organizaciones", organizaciones);
-    
-                // 2. Cargar estadísticas de solicitudes del usuario
-                List<SolAccesoOrg> solicitudesUsuario = solAccesoOrgService.obtenerSolicitudesPorUsuario(usuario.getDni());
-    
-                long totalSolicitudes = solicitudesUsuario.size();
-                long solicitudesPendientes = solicitudesUsuario.stream()
-                        .filter(SolAccesoOrg::isPendiente)
-                        .count();
-                long solicitudesAprobadas = solicitudesUsuario.stream()
-                        .filter(SolAccesoOrg::isAprobada)
-                        .count();
-    
-                model.addAttribute("totalSolicitudes", totalSolicitudes);
-                model.addAttribute("solicitudesPendientes", solicitudesPendientes);
-                model.addAttribute("solicitudesAprobadas", solicitudesAprobadas);
-    
-                // 3. Verificar si el usuario es administrador para mostrar enlace de gestión
-                boolean esAdmin = usuario.getRol().getIdRol() == 1 || usuario.getRol().getIdRol() == 2;
-                model.addAttribute("esAdmin", esAdmin);
-    
-                if (esAdmin) {
-                    // 4. Si es admin, cargar estadísticas globales
-                    long totalPendientesGlobal = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoOrg.EstadoSolicitud.PENDIENTE);
-                    model.addAttribute("totalPendientesGlobal", totalPendientesGlobal);
-                }
-    
-                // 5. Crear objeto vacío para el formulario (para th:object)
-                SolAccesoOrg solicitud = new SolAccesoOrg();
-                model.addAttribute("solicitud", solicitud);
-    
-                return "po/solicitudAcceso";
-    
-            } catch (Exception e) {
-                // En caso de error, cargar datos básicos
-                Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-                model.addAttribute("usuario", usuario);
-                model.addAttribute("error", "Error al cargar el formulario: " + e.getMessage());
-                return "po/solicitudAcceso";
+            System.out.println("  ✓ Atributos de impersonación agregados");
+            
+            System.out.println("  ➤ Paso 3: Cargando organizaciones...");
+            List<Organizacion> organizaciones = organizacionService.obtenerTodasOrganizacionesOrdenadas();
+            System.out.println("  ✓ Organizaciones cargadas: " + (organizaciones != null ? organizaciones.size() : 0));
+            model.addAttribute("organizaciones", organizaciones != null ? organizaciones : new ArrayList<>());
+
+            System.out.println("  ➤ Paso 4: Cargando solicitudes del usuario...");
+            List<SolAccesoOrg> solicitudesUsuario = solAccesoOrgService.obtenerSolicitudesPorUsuario(usuario.getDni());
+            System.out.println("  ✓ Solicitudes cargadas: " + (solicitudesUsuario != null ? solicitudesUsuario.size() : 0));
+
+            long totalSolicitudes = solicitudesUsuario != null ? solicitudesUsuario.size() : 0;
+            long solicitudesPendientes = solicitudesUsuario != null ? solicitudesUsuario.stream()
+                    .filter(SolAccesoOrg::isPendiente)
+                    .count() : 0;
+            long solicitudesAprobadas = solicitudesUsuario != null ? solicitudesUsuario.stream()
+                    .filter(SolAccesoOrg::isAprobada)
+                    .count() : 0;
+
+            model.addAttribute("totalSolicitudes", totalSolicitudes);
+            model.addAttribute("solicitudesPendientes", solicitudesPendientes);
+            model.addAttribute("solicitudesAprobadas", solicitudesAprobadas);
+
+            System.out.println("  ➤ Paso 5: Verificando permisos de admin...");
+            boolean esAdmin = usuario.getRol() != null && 
+                              (usuario.getRol().getIdRol() == 1 || usuario.getRol().getIdRol() == 2);
+            model.addAttribute("esAdmin", esAdmin);
+            System.out.println("  ✓ Es admin: " + esAdmin);
+
+            if (esAdmin) {
+                System.out.println("  ➤ Paso 6: Cargando estadísticas globales (admin)...");
+                long totalPendientesGlobal = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoOrg.EstadoSolicitud.PENDIENTE);
+                model.addAttribute("totalPendientesGlobal", totalPendientesGlobal);
+                System.out.println("  ✓ Pendientes globales: " + totalPendientesGlobal);
             }
+
+            System.out.println("  ➤ Paso 7: Creando objeto de solicitud vacío...");
+            SolAccesoOrg solicitud = new SolAccesoOrg();
+            model.addAttribute("solicitud", solicitud);
+            System.out.println("  ✓ Objeto solicitud creado");
+
+            System.out.println("✅ === showSolicitudAcceso COMPLETADO ===");
+            return "po/solicitudAcceso";
+
+        } catch (Exception e) {
+            System.err.println("❌ === ERROR EN showSolicitudAcceso ===");
+            System.err.println("  - Mensaje: " + e.getMessage());
+            System.err.println("  - Tipo: " + e.getClass().getName());
+            e.printStackTrace();
+            
+            // Intentar recuperar datos mínimos
+            try {
+                Usuario usuario = usuarioRepository.findByCorreo(auth != null ? auth.getName() : "");
+                if (usuario != null) {
+                    model.addAttribute("usuario", usuario);
+                }
+            } catch (Exception ex) {
+                System.err.println("  ❌ No se pudo cargar usuario de fallback: " + ex.getMessage());
+            }
+            
+            model.addAttribute("organizaciones", new ArrayList<>());
+            model.addAttribute("solicitud", new SolAccesoOrg());
+            model.addAttribute("totalSolicitudes", 0L);
+            model.addAttribute("solicitudesPendientes", 0L);
+            model.addAttribute("solicitudesAprobadas", 0L);
+            model.addAttribute("esAdmin", false);
+            model.addAttribute("error", "Error al cargar el formulario. Por favor, intenta nuevamente.");
+            
+            System.err.println("  → Retornando vista con datos mínimos");
+            return "po/solicitudAcceso";
         }
+    }
     
-        // Método auxiliar para obtener APIs únicas de la organización
-        private List<Api> obtenerApisUnicasDeOrganizacion(Organizacion organizacion) {
+    // Método auxiliar para obtener APIs únicas de la organización
+    private List<Api> obtenerApisUnicasDeOrganizacion(Organizacion organizacion) {
             try {
                 // Opción 1: Usar el método del repository si existe
                 List<Proyecto> proyectosConApis = proyectoRepository.findByOrganizacionIdWithApis(organizacion.getIdOrganizacion());
@@ -206,15 +245,15 @@
                             .collect(Collectors.toList());
                 }
     
-                // Opción 2: Si no hay proyectos con APIs, usar las relaciones lazy
-                if (organizacion.getProyectos() != null) {
-                    return organizacion.getProyectos().stream()
-                            .filter(proyecto -> proyecto.getProyectoHasApis() != null)
-                            .flatMap(proyecto -> proyecto.getProyectoHasApis().stream())
-                            .map(ProyectoHasApi::getApi)
-                            .distinct()
-                            .collect(Collectors.toList());
-                }
+                // COMENTADO: Organizacion ya no tiene relación directa con Proyecto, ahora es a través de Equipo
+                // if (organizacion.getProyectos() != null) {
+                //     return organizacion.getProyectos().stream()
+                //             .filter(proyecto -> proyecto.getProyectoHasApis() != null)
+                //             .flatMap(proyecto -> proyecto.getProyectoHasApis().stream())
+                //             .map(ProyectoHasApi::getApi)
+                //             .distinct()
+                //             .collect(Collectors.toList());
+                // }
     
             } catch (Exception e) {
                 // Si hay error de lazy loading, devolver lista vacía
@@ -284,25 +323,21 @@
                         return "redirect:/po/solicitudAcceso";
                     }
     
-                    // CASO 1: Usuario EXISTE + SIN organización → CREAR SOLICITUD
-                    System.out.println("✅ Usuario existe y NO tiene organización - Creando solicitud...");
-    
-                    // Crear organización destino
-                    Organizacion organizacionDestino = new Organizacion();
-                    organizacionDestino.setIdOrganizacion(idOrganizacionDestino);
-                    solicitud.setOrganizacionDestino(organizacionDestino);
-    
-                    // Usar el NUEVO método para usuarios existentes
+                // CASO 1: Usuario EXISTE + SIN organización → CREAR SOLICITUD
+                System.out.println("✅ Usuario existe y NO tiene organización - Creando solicitud...");
+
+                // Crear equipo destino (idOrganizacionDestino es realmente el ID del equipo)
+                Equipo equipoDestino = new Equipo();
+                equipoDestino.setIdEquipo(idOrganizacionDestino);
+                solicitud.setEquipoDestino(equipoDestino);                    // Usar el NUEVO método para usuarios existentes
                     SolAccesoOrg solicitudGuardada = solAccesoOrgService.crearSolicitudParaUsuarioExistente(
                             solicitud, usuarioSolicitante.getDni()
                     );
     
-                    System.out.println("✅ SOLICITUD GUARDADA CON ID: " + solicitudGuardada.getIdSolicitudOrg());
-                    redirectAttributes.addFlashAttribute("success",
-                            "✅ Solicitud enviada exitosamente para " + usuarioTarget.getNombre() +
-                                    " " + usuarioTarget.getApellidoPaterno() + ". ID: " + solicitudGuardada.getIdSolicitudOrg());
-    
-                } else {
+                System.out.println("✅ SOLICITUD GUARDADA CON ID: " + solicitudGuardada.getIdSolicitudEquipo());
+                redirectAttributes.addFlashAttribute("success",
+                        "✅ Solicitud enviada exitosamente para " + usuarioTarget.getNombre() +
+                                " " + usuarioTarget.getApellidoPaterno() + ". ID: " + solicitudGuardada.getIdSolicitudEquipo());                } else {
                     // CASO 3: Usuario NO EXISTE → ERROR
                     System.out.println("❌ Usuario NO registrado en el sistema: " + solicitud.getDni());
                     redirectAttributes.addFlashAttribute("error",

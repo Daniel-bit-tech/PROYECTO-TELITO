@@ -4,13 +4,13 @@ import jakarta.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "sol_acceso_org")
+@Table(name = "sol_acceso_equipo")
 public class SolAccesoOrg {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idSolicitudOrg")
-    private Integer idSolicitudOrg;
+    @Column(name = "idSolicitudEquipo")
+    private Integer idSolicitudEquipo;
 
     @Column(name = "nombre", nullable = false, length = 50)
     private String nombre;
@@ -30,8 +30,9 @@ public class SolAccesoOrg {
     @Column(name = "motivo_integracion", nullable = false, columnDefinition = "TEXT")
     private String motivoIntegracion;
 
-    @Column(name = "responsabilidades", nullable = false, columnDefinition = "TEXT")
-    private String responsabilidades;
+    // TODO: Column doesn't exist in database table sol_acceso_equipo
+    // @Column(name = "responsabilidades", nullable = false, columnDefinition = "TEXT")
+    // private String responsabilidades;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 20)
@@ -48,15 +49,15 @@ public class SolAccesoOrg {
 
     // Relaciones
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idUsuario_solicitante", nullable = false, insertable = true, updatable = true)
+    @JoinColumn(name = "idUsuario_solicitante", referencedColumnName = "dni", nullable = false, insertable = true, updatable = true)
     private Usuario usuarioSolicitante;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idOrganizacion_destino", nullable = false, insertable = true, updatable = true)
-    private Organizacion organizacionDestino;
+    @JoinColumn(name = "idEquipo_destino", nullable = false, insertable = true, updatable = true)
+    private Equipo equipoDestino;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idUsuario_revisor", insertable = false, updatable = true)
+    @JoinColumn(name = "idUsuario_revisor", referencedColumnName = "dni", nullable = true, insertable = true, updatable = true)
     private Usuario usuarioRevisor;
 
     // Constructores
@@ -66,26 +67,26 @@ public class SolAccesoOrg {
     }
 
     public SolAccesoOrg(String nombre, String apellido, String correo, String dni,
-                        String motivoIntegracion, String responsabilidades,
-                        Usuario usuarioSolicitante, Organizacion organizacionDestino) {
+                        String motivoIntegracion, // String responsabilidades,
+                        Usuario usuarioSolicitante, Equipo equipoDestino) {
         this();
         this.nombre = nombre;
         this.apellido = apellido;
         this.correo = correo;
         this.dni = dni;
         this.motivoIntegracion = motivoIntegracion;
-        this.responsabilidades = responsabilidades;
+        // this.responsabilidades = responsabilidades;
         this.usuarioSolicitante = usuarioSolicitante;
-        this.organizacionDestino = organizacionDestino;
+        this.equipoDestino = equipoDestino;
     }
 
     // Getters y Setters
-    public Integer getIdSolicitudOrg() {
-        return idSolicitudOrg;
+    public Integer getIdSolicitudEquipo() {
+        return idSolicitudEquipo;
     }
 
-    public void setIdSolicitudOrg(Integer idSolicitudOrg) {
-        this.idSolicitudOrg = idSolicitudOrg;
+    public void setIdSolicitudEquipo(Integer idSolicitudEquipo) {
+        this.idSolicitudEquipo = idSolicitudEquipo;
     }
 
     public String getNombre() {
@@ -136,13 +137,14 @@ public class SolAccesoOrg {
         this.motivoIntegracion = motivoIntegracion;
     }
 
-    public String getResponsabilidades() {
-        return responsabilidades;
-    }
+    // TODO: Column doesn't exist in database
+    // public String getResponsabilidades() {
+    //     return responsabilidades;
+    // }
 
-    public void setResponsabilidades(String responsabilidades) {
-        this.responsabilidades = responsabilidades;
-    }
+    // public void setResponsabilidades(String responsabilidades) {
+    //     this.responsabilidades = responsabilidades;
+    // }
 
     public EstadoSolicitud getEstado() {
         return estado;
@@ -184,12 +186,12 @@ public class SolAccesoOrg {
         this.usuarioSolicitante = usuarioSolicitante;
     }
 
-    public Organizacion getOrganizacionDestino() {
-        return organizacionDestino;
+    public Equipo getEquipoDestino() {
+        return equipoDestino;
     }
 
-    public void setOrganizacionDestino(Organizacion organizacionDestino) {
-        this.organizacionDestino = organizacionDestino;
+    public void setEquipoDestino(Equipo equipoDestino) {
+        this.equipoDestino = equipoDestino;
     }
 
     public Usuario getUsuarioRevisor() {
@@ -223,7 +225,7 @@ public class SolAccesoOrg {
     @Override
     public String toString() {
         return "SolAccesoOrg{" +
-                "idSolicitudOrg=" + idSolicitudOrg +
+                "idSolicitudEquipo=" + idSolicitudEquipo +
                 ", nombre='" + nombre + '\'' +
                 ", apellido='" + apellido + '\'' +
                 ", correo='" + correo + '\'' +

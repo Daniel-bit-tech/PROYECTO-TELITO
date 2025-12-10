@@ -34,10 +34,12 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
 import java.util.Collection;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
@@ -56,12 +58,8 @@ public class SecurityConfig {
     @Autowired
     private OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
 
-    // COMENTADO TEMPORALMENTE PARA OAUTH2 TESTING
-    // @Autowired
-    // private SessionRegistry sessionRegistry;
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
 
         http
                 .authorizeHttpRequests(authz -> authz
@@ -78,6 +76,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/apis/**").authenticated()
                         .requestMatchers("/api/onboarding/**").authenticated()
                         .requestMatchers("/api/validate-session").authenticated()
+                        .requestMatchers("/api/session-debug/**").authenticated()
 
 
                         //  la página y la API del Sandbox
@@ -131,29 +130,29 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .rememberMe(remember -> remember
-                        .key("remember-me")
+                        .key("remember-me-telito-key-2025")
                         .rememberMeParameter("remember-me")
-                        .tokenValiditySeconds(7200)
-                        .userDetailsService(usuarioDetailService))      //.tokenRepository(persistentTokenRepository(dataSource)) para cookies persistentes
-//                .exceptionHandling(exception -> exception
-//                        .accessDeniedPage("/acceso-denegado")
-//                )
+                        .tokenValiditySeconds(604800) // 7 días
+                        .userDetailsService(usuarioDetailService))
+                .exceptionHandling(exception -> exception
+                        .accessDeniedPage("/acceso-denegado")
+                )
                 .csrf(csrf -> csrf
                         .ignoringRequestMatchers(
                                 "/qa/**",
                                 "/api/onboarding/**",
                                 "/po/registrarFeedbackEnBacklog",
-                                "/po/roadmap/**",  // ✅ AGREGAR ESTA LÍNEA
+                                "/po/roadmap/**",
                                 "/api/sandbox/**"
                         )
                 )
-                // Control de sesiones concurrentes y seguridad de sesión - SIMPLIFICADO PARA OAUTH2
+                // Control de sesiones concurrentes y seguridad de sesión
                 .sessionManagement(session -> session
-                        .sessionFixation().migrateSession() // Prevenir session fixation attacks
+                        .sessionFixation().changeSessionId() // Cambiar ID de sesión después del login
                         .invalidSessionUrl("/login?invalid=true")
-                        .maximumSessions(5) // Aumentado para OAuth2
-                        .maxSessionsPreventsLogin(false) // Permitir login, expulsar sesión más antigua
-                        // .sessionRegistry(sessionRegistry)  // COMENTADO TEMPORALMENTE
+                        .maximumSessions(5)
+                        .maxSessionsPreventsLogin(false)
+                        .sessionRegistry(sessionRegistry)
                         .expiredUrl("/login?expired=true")
                 )
                 // Agregar filtros personalizados
@@ -220,6 +219,11 @@ public class SecurityConfig {
     }
 
     @Bean
+    public SessionRegistry sessionRegistry() {
+        return new org.springframework.security.core.session.SessionRegistryImpl();
+    }
+
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(8);
     }
@@ -249,14 +253,11 @@ public class SecurityConfig {
     /**
      * Bean requerido para el manejo de eventos de sesión HTTP
      * Necesario para el funcionamiento correcto del SessionRegistry
-     * COMENTADO TEMPORALMENTE PARA OAUTH2 TESTING
      */
-    /*
     @Bean
-    public HttpSessionEventPublisher httpSessionEventPublisher() {
-        return new HttpSessionEventPublisher();
+    public org.springframework.security.web.session.HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new org.springframework.security.web.session.HttpSessionEventPublisher();
     }
-    */
 
     /**
      * Bean para manejar las solicitudes de autorización OAuth2

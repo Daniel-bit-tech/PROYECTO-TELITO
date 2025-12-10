@@ -485,13 +485,20 @@
               </div>
 
               <div class="api-info">
-                <div class="api-name" th:text="${cred.api.nombre}">Nombre API</div>
+                <div class="api-name">
+                  <th:block th:if="${cred.api != null}">
+                    <span th:text="${cred.api.nombre}">Nombre API</span>
+                  </th:block>
+                  <th:block th:unless="${cred.api != null}">
+                    <span>API Eliminada</span>
+                  </th:block>
+                </div>
 
                 <div class="api-meta">
-                  <span th:if="${cred.api.versionesApi != null and !cred.api.versionesApi.isEmpty()}"
+                  <span th:if="${cred.api != null and cred.api.versionesApi != null and !cred.api.versionesApi.isEmpty()}"
                         th:text="${cred.api.versionesApi.get(0).getVersion()}">v1.X
                   </span>
-                  <span th:unless="${cred.api.versionesApi != null and !cred.api.versionesApi.isEmpty()}">Sin versión</span>
+                  <span th:if="${cred.api == null or cred.api.versionesApi == null or cred.api.versionesApi.isEmpty()}">Sin versión</span>
                   <span>•</span>
                   <span>
           Credencial creada:
@@ -501,8 +508,14 @@
               </div>
 
               <button class="api-action"
+                      th:if="${cred.api != null}"
                       th:onclick="'location.href=\'/apis/' + ${cred.api.idApi} + '/docs\''">
                 Ver Documentación
+              </button>
+              <button class="api-action" style="background-color: #e53e3e; cursor: not-allowed;" 
+                      th:unless="${cred.api != null}" 
+                      disabled>
+                API No Disponible
               </button>
             </li>
           </ul>

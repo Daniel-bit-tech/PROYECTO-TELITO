@@ -34,7 +34,7 @@ public interface IssueRepository extends JpaRepository<Issue, IssueId> {
           AND (:inicio IS NULL OR i.fechaCreacion >= :inicio)
           AND (:fin IS NULL OR i.fechaCreacion <= :fin)
           AND (:nombre IS NULL OR LOWER(i.descripcion) LIKE LOWER(CONCAT('%', :nombre, '%')))
-          AND i.reporte.api.usuario.dni = :dniUsuario
+          AND i.reporte.api.equipo.idEquipo = (SELECT u.equipo.idEquipo FROM Usuario u WHERE u.dni = :dniUsuario)
     """)
     Page<Issue> findByFiltersForDev(
             @Param("estados") List<String> estados,

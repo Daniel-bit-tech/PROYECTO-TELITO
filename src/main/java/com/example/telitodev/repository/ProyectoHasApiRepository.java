@@ -21,7 +21,7 @@ public interface ProyectoHasApiRepository extends JpaRepository<ProyectoHasApi, 
     @Query("SELECT DISTINCT pha.api FROM ProyectoHasApi pha WHERE pha.proyecto IN :proyectos")
     List<Api> findApisByProyectosIn(@Param("proyectos") List<Proyecto> proyectos);
 
-    @Query("SELECT DISTINCT pha.api FROM ProyectoHasApi pha WHERE pha.proyecto.organizacion.idOrganizacion = :orgId")
+    @Query("SELECT DISTINCT pha.api FROM ProyectoHasApi pha WHERE pha.proyecto.equipo.organizacion.idOrganizacion = :orgId")
     List<Api> findDistinctApisByOrganizacionId(@Param("orgId") Integer orgId);
 
 }

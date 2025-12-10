@@ -42,8 +42,8 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
 
     @Query("SELECT a FROM Api a " +
-            "JOIN a.usuario u " +
-            "JOIN u.organizacion o " +
+            "JOIN a.equipo eq " +
+            "JOIN eq.organizacion o " +
             "LEFT JOIN a.dominio d " +
             "LEFT JOIN a.tag t " +
             "LEFT JOIN a.estadoApi e " +
@@ -59,12 +59,14 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
                                       @Param("idOrganizacion") Integer idOrganizacion,
                                       Pageable pageable);
     @Query("SELECT a FROM Api a " +
+            "JOIN a.equipo eq " +
+            "JOIN eq.usuarios u " +
             "LEFT JOIN a.dominio d " +
             "LEFT JOIN a.tag t " +
             "WHERE (:search IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :search, '%'))) " +
             "AND (:idDominios IS NULL OR d.idDominio IN :idDominios) " +
             "AND (:idTags IS NULL OR t.idTag IN :idTags) " +
-            "AND a.usuario.dni = :dniUsuario")
+            "AND u.dni = :dniUsuario")
     List<Api> findByFilterAndDniUsuario(@Param("search") String search,
                                         @Param("idDominios") List<Integer> idDominios,
                                         @Param("idTags") List<Integer> idTags,
@@ -124,7 +126,7 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
             "JOIN ahe.entorno e " +
             "JOIN a.dominio d " +
             "JOIN a.tag t " +
-            "WHERE p.organizacion.idOrganizacion = (SELECT u.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
+            "WHERE p.equipo.organizacion.idOrganizacion = (SELECT u.equipo.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
             "AND e.nombre = 'QA' " +
             "AND (:nombre IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
             "AND (:dominios IS NULL OR d.nombre IN :dominios) " +
@@ -142,7 +144,7 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
             "JOIN ahe.entorno e " +
             "JOIN ProyectoHasApi pha ON pha.api = a " +
             "JOIN pha.proyecto p " +
-            "WHERE p.organizacion.idOrganizacion = (SELECT u.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
+            "WHERE p.equipo.organizacion.idOrganizacion = (SELECT u.equipo.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
             "AND e.nombre = 'QA'")
     Integer countApisForQaValidation(@Param("dni") String dni);
 
@@ -159,7 +161,7 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
             "JOIN pha.proyecto p " +
             "JOIN a.dominio d " +
             "JOIN a.tag t " +
-            "WHERE p.organizacion.idOrganizacion = (SELECT u.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
+            "WHERE p.equipo.organizacion.idOrganizacion = (SELECT u.equipo.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
             "AND e.nombre = 'QA' " +
             "GROUP BY a.idApi, a.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion " +
             "ORDER BY a.nombre ASC")
@@ -197,11 +199,11 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
     @Query("SELECT DISTINCT a FROM Api a " +
             "JOIN ProyectoHasApi pha ON pha.api = a " +
             "JOIN pha.proyecto p " +
-            "WHERE p.organizacion.idOrganizacion = :idOrganizacion " +
+            "WHERE p.equipo.organizacion.idOrganizacion = :idOrganizacion " +
             "AND a.estadoApi.idEstado != 2")
     List<Api> findApisDisponiblesPorOrganizacion(@Param("idOrganizacion") Integer idOrganizacion);
 
-    @Query("SELECT a FROM Api a WHERE a.usuario.organizacion.idOrganizacion = :organizacionId")
+    @Query("SELECT a FROM Api a WHERE a.equipo.organizacion.idOrganizacion = :organizacionId")
     List<Api> findByOrganizacionId(@Param("organizacionId") Integer organizacionId);
 
 

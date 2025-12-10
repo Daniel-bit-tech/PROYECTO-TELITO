@@ -64,8 +64,31 @@ public class QaController extends BaseController {
         }
 
         Usuario usuario = getCurrentUser(auth, session);
-        Integer NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(),true);
-        List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_Dni(usuario.getDni());
+        Integer NCredenciales = 0;
+        List<CredencialApi> credenciales = new ArrayList<>();
+        
+        try {
+            NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(), true);
+            List<CredencialApi> allCredenciales = credencialApiRepository.findByUsuario_Dni(usuario.getDni());
+            
+            // Filtrar credenciales cuya API todavía existe
+            for (CredencialApi cred : allCredenciales) {
+                try {
+                    if (cred.getApi() != null) {
+                        cred.getApi().getIdApi(); // Forzar inicialización
+                        credenciales.add(cred);
+                    }
+                } catch (jakarta.persistence.EntityNotFoundException e) {
+                    System.out.println("⚠️ Credencial " + cred.getIdCredencialApi() + " referencia API eliminada");
+                } catch (Exception e) {
+                    System.out.println("⚠️ Credencial " + cred.getIdCredencialApi() + " error al cargar API: " + e.getClass().getSimpleName());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("⚠️ Error al cargar credenciales para usuario " + usuario.getDni() + ": " + e.getMessage());
+            // Si hay error cargando credenciales, continuar con listas vacías
+        }
+        
         List<Notificacion> notis = notificacionRepository.findByUsuario_Dni(usuario.getDni());
         Integer Nnotis = notificacionRepository.countByUsuario_DniAndLeido(usuario.getDni(),false);
         
@@ -80,10 +103,8 @@ public class QaController extends BaseController {
         Integer NnotificacionesSinLeer = notificacionRepository.countByUsuarioAndLeido(usuario, false);
         model.addAttribute("NnotificacionesSinLeer", NnotificacionesSinLeer);
 
-        // Obtener el QA en sesión
-        Usuario qaSesion = usuarioRepository.findByCorreo(auth.getName());
-
-        List<Issue> ultimos3Issues = issueRepository.findTop5ByCreadorOrderByFechaCreacionDesc(qaSesion);
+        // Usar el usuario ya obtenido en lugar de buscarlo de nuevo
+        List<Issue> ultimos3Issues = issueRepository.findTop5ByCreadorOrderByFechaCreacionDesc(usuario);
 
 
 // Pasar la lista al modelo

@@ -437,11 +437,11 @@
                                 <div class="api-card">
                                     <div class="api-header">
                                         <div>
-                                            <h3 class="api-title" th:text="${issue.reporte.api.nombre}"></h3> <!-- Nombre de la API -->
+                                            <h3 class="api-title" th:text="${apiSafeData != null and apiSafeData[issue.id.idIssue] != null ? apiSafeData[issue.id.idIssue]['nombre'] : 'API no disponible'}">API Name</h3>
                                             <span class="api-status status-production"
-                                                  th:text="${issue.reporte.api.dominio.nombre}">Producción</span>
+                                                  th:text="${apiSafeData != null and apiSafeData[issue.id.idIssue] != null ? apiSafeData[issue.id.idIssue]['dominio'] : 'N/A'}">Producción</span>
                                             <span class="api-status status-production"
-                                                  th:text="${issue.reporte.api.tag.nombre}">Producción</span>
+                                                  th:text="${apiSafeData != null and apiSafeData[issue.id.idIssue] != null ? apiSafeData[issue.id.idIssue]['tag'] : 'N/A'}">Producción</span>
                                         </div>
                                     </div>
                                     <div class="row">

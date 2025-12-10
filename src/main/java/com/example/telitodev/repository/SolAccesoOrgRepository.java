@@ -39,23 +39,23 @@ public interface SolAccesoOrgRepository extends JpaRepository<SolAccesoOrg, Inte
     // Búsqueda avanzada con múltiples filtros para administradores
     @Query("SELECT s FROM SolAccesoOrg s WHERE " +
             "(:estado IS NULL OR s.estado = :estado) AND " +
-            "(:idOrganizacion IS NULL OR s.organizacionDestino.idOrganizacion = :idOrganizacion) AND " +
+            "(:idEquipo IS NULL OR s.equipoDestino.idEquipo = :idEquipo) AND " +
             "(:dniSolicitante IS NULL OR s.usuarioSolicitante.dni = :dniSolicitante)")
     Page<SolAccesoOrg> findByFiltrosAvanzados(
             @Param("estado") EstadoSolicitud estado,
-            @Param("idOrganizacion") Integer idOrganizacion,
+            @Param("idEquipo") Integer idEquipo,
             @Param("dniSolicitante") String dniSolicitante,
             Pageable pageable);
 
-    // Buscar solicitudes pendientes por organización destino
-    @Query("SELECT s FROM SolAccesoOrg s WHERE s.estado = 'PENDIENTE' AND s.organizacionDestino.idOrganizacion = :idOrganizacion")
-    List<SolAccesoOrg> findPendientesByOrganizacion(@Param("idOrganizacion") Integer idOrganizacion);
+    // Buscar solicitudes pendientes por equipo destino
+    @Query("SELECT s FROM SolAccesoOrg s WHERE s.estado = 'PENDIENTE' AND s.equipoDestino.idEquipo = :idEquipo")
+    List<SolAccesoOrg> findPendientesByEquipo(@Param("idEquipo") Integer idEquipo);
 
-    // Obtener estadísticas de solicitudes por organización
-    @Query("SELECT s.organizacionDestino.nombre, COUNT(s), s.estado " +
+    // Obtener estadísticas de solicitudes por equipo
+    @Query("SELECT s.equipoDestino.nombre, COUNT(s), s.estado " +
             "FROM SolAccesoOrg s " +
-            "GROUP BY s.organizacionDestino.nombre, s.estado")
-    List<Object[]> getEstadisticasPorOrganizacion();
+            "GROUP BY s.equipoDestino.nombre, s.estado")
+    List<Object[]> getEstadisticasPorEquipo();
 
     // Este query es para el historial de solicitudes
 

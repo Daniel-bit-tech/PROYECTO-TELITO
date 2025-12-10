@@ -113,7 +113,8 @@
                         <div th:each="feedback : ${feedbackPage.content}" class="col-md-6 col-lg-3">
                             <div class="card">
                                 <div class="card-body">
-                                    <h3 class="card-title" th:text="${feedback.api.nombre}">API o Recurso</h3>
+                                    <h3 class="card-title" th:text="${feedback.api != null ? feedback.api.nombre : 'API Eliminada'}">API o Recurso</h3>
+                                    <span th:if="${feedback.api == null}" class="badge bg-danger-lt">API no disponible</span>
 
                                     <h3 class="card-title mt-4">Comentario</h3>
                                     <!-- Usamos #strings.abbreviate para cortar comentarios largos -->

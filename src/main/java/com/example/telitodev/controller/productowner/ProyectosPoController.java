@@ -72,11 +72,11 @@ public class ProyectosPoController extends BaseController {
             // Mostrar proyectos de su organización
             Integer organizacionId = usuario.getOrganizacion().getIdOrganizacion();
             if (filtro != null && filtro.equals("activos")) {
-                listaProyectos = proyectoRepository.findByActivoAndOrganizacion_IdOrganizacion(true, organizacionId);
+                listaProyectos = proyectoRepository.findByActivoAndEquipoOrganizacionId(true, organizacionId);
             } else if (filtro != null && filtro.equals("privados")) {
-                listaProyectos = proyectoRepository.findByPublicoAndOrganizacion_IdOrganizacion(false, organizacionId);
+                listaProyectos = proyectoRepository.findByPublicoAndEquipoOrganizacionId(false, organizacionId);
             } else {
-                listaProyectos = proyectoRepository.findByOrganizacion_IdOrganizacion(organizacionId);
+                listaProyectos = proyectoRepository.findByEquipoOrganizacionId(organizacionId);
             }
         }
 
@@ -134,8 +134,8 @@ public class ProyectosPoController extends BaseController {
         ProyectoHasApi proyHasApi = proyHasApiRepository.findById(idProyHasApi)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto o la API."));
 
-        if (!proyHasApi.getProyecto().getUsuarioLider().equals(usuario)
-                && !proyHasApi.getProyecto().getOrganizacion().equals(usuario.getOrganizacion())) {
+        if (!proyHasApi.getProyecto().getUsuarioLider().equals(usuario) &&
+                !proyHasApi.getProyecto().getEquipo().equals(usuario.getEquipo())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para editar este proyecto.");
         }
 
