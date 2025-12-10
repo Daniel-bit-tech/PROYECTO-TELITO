@@ -91,13 +91,13 @@ public class Api {
     public Api() {}
     
     public Api(String nombre, String descripcion, Timestamp fechaCreacion, 
-               Dominio dominio, Tag tag, Equipo equipo, String endpointUrl) {
+               Dominio dominio, Tag tag, Usuario usuario, String endpointUrl) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.fechaCreacion = fechaCreacion;
         this.dominio = dominio;
         this.tag = tag;
-        this.equipo = equipo;
+        this.usuario = usuario;
         this.endpointUrl = endpointUrl;
     }
 

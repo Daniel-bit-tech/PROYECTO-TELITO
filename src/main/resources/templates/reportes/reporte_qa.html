@@ -31,11 +31,11 @@
         <div class="datagrid">
             <div class="datagrid-item">
                 <div class="datagrid-title">API Validada:</div>
-                <div class="datagrid-content" th:text="${reporte.api.nombre}">Nombre API</div>
+                <div class="datagrid-content" th:text="${reporte.api?.nombre ?: 'API no disponible'}">Nombre API</div>
             </div>
             <div class="datagrid-item">
                 <div class="datagrid-title">Dominio / Tag:</div>
-                <div class="datagrid-content" th:text="|${reporte.api.dominio.nombre} / ${reporte.api.tag.nombre}|">Dominio / Tag</div>
+                <div class="datagrid-content" th:text="|${reporte.api?.dominio?.nombre ?: 'N/A'} / ${reporte.api?.tag?.nombre ?: 'N/A'}|">Dominio / Tag</div>
             </div>
 
             <div class="datagrid-item">

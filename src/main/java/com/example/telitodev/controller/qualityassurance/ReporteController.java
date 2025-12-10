@@ -28,7 +28,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/qa")
-@PreAuthorize("hasAnyRole('QA', 'SADMIN')")
+@PreAuthorize("hasAnyRole('QA', 'SUPERADMIN')")
 public class ReporteController extends BaseController {
 
     @Autowired

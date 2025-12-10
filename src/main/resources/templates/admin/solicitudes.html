@@ -411,7 +411,7 @@
                                 <tbody>
                                     <tr th:each="solicitud : ${solicitudesOrganizacion}">
                                         <td>
-                                            <span class="solicitud-tipo tipo-organizacion">#<span th:text="${solicitud.idSolicitudOrg}">1</span></span>
+                                            <span class="solicitud-tipo tipo-organizacion">#<span th:text="${solicitud.idSolicitudEquipo}">1</span></span>
                                         </td>
                                         <td>
                                             <div>
@@ -423,7 +423,7 @@
                                             <span th:text="${solicitud.dni}">12345678</span>
                                         </td>
                                         <td>
-                                            <span th:text="${solicitud.organizacionDestino.nombre}">Organización</span>
+                                            <span th:text="${solicitud.equipoDestino.organizacion.nombre}">Organización</span>
                                         </td>
                                         <td>
                                             <span class="badge badge-custom badge-pendiente" th:text="${solicitud.estado}">PENDIENTE</span>
@@ -433,14 +433,16 @@
                                         </td>
                                         <td>
                                             <div class="action-buttons">
-                                                <form th:action="@{/admin/solicitudes/organizacion/{id}/aprobar(id=${solicitud.idSolicitudOrg})}" method="post" class="d-inline">
+                                                <form th:action="@{/admin/solicitudes/organizacion/{id}/aprobar(id=${solicitud.idSolicitudEquipo})}" method="post" class="d-inline">
                                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                    <button type="submit" style="display:none;" class="btn-submit-hidden"></button>
                                                     <button type="button" class="btn btn-success btn-sm" onclick="aprobarSolicitud(this, 'ORG')">
                                                         <i class="fas fa-check"></i>
                                                     </button>
                                                 </form>
-                                                <form th:action="@{/admin/solicitudes/organizacion/{id}/rechazar(id=${solicitud.idSolicitudOrg})}" method="post" class="d-inline">
+                                                <form th:action="@{/admin/solicitudes/organizacion/{id}/rechazar(id=${solicitud.idSolicitudEquipo})}" method="post" class="d-inline">
                                                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                                                    <button type="submit" style="display:none;" class="btn-submit-hidden"></button>
                                                     <button type="button" class="btn btn-danger btn-sm" onclick="rechazarSolicitud(this, 'ORG')">
                                                         <i class="fas fa-times"></i>
                                                     </button>
@@ -580,17 +582,30 @@
                 `Aprobar Solicitud de ${tipo}`;
             document.getElementById('confirmarAccion').textContent = 'Aprobar';
             document.getElementById('confirmarAccion').className = 'btn btn-success ms-auto';
+            document.getElementById('confirmarAccion').disabled = false;
             
-            // Usar Bootstrap 5 directamente después de que se cargue
-            if (typeof bootstrap !== 'undefined') {
-                const modalElement = document.getElementById('comentariosModal');
-                const modal = new bootstrap.Modal(modalElement);
-                modal.show();
-                console.log('🏠 Modal de comentarios mostrado');
-            } else {
-                // Fallback si Bootstrap no está disponible
-                console.warn('⚠️ Bootstrap no está disponible, usando jQuery como fallback');
-                $('#comentariosModal').modal('show');
+            // Intentar abrir modal con múltiples métodos
+            const modalElement = document.getElementById('comentariosModal');
+            try {
+                if (typeof bootstrap !== 'undefined') {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                    console.log('🏠 Modal mostrado con Bootstrap');
+                } else if (typeof $ !== 'undefined' && $.fn.modal) {
+                    $('#comentariosModal').modal('show');
+                    console.log('🏠 Modal mostrado con jQuery');
+                } else {
+                    console.warn('⚠️ Mostrando modal manualmente');
+                    modalElement.style.display = 'block';
+                    modalElement.classList.add('show');
+                    document.body.classList.add('modal-open');
+                    const backdrop = document.createElement('div');
+                    backdrop.className = 'modal-backdrop fade show';
+                    document.body.appendChild(backdrop);
+                }
+            } catch (e) {
+                console.error('❌ Error al mostrar modal:', e);
+                alert('Error al abrir el modal');
             }
         }
 
@@ -620,17 +635,30 @@
                 `Rechazar Solicitud de ${tipo}`;
             document.getElementById('confirmarAccion').textContent = 'Rechazar';
             document.getElementById('confirmarAccion').className = 'btn btn-danger ms-auto';
+            document.getElementById('confirmarAccion').disabled = false;
             
-            // Usar Bootstrap 5 directamente después de que se cargue
-            if (typeof bootstrap !== 'undefined') {
-                const modalElement = document.getElementById('comentariosModal');
-                const modal = new bootstrap.Modal(modalElement);
-                modal.show();
-                console.log('🏠 Modal de comentarios mostrado');
-            } else {
-                // Fallback si Bootstrap no está disponible
-                console.warn('⚠️ Bootstrap no está disponible, usando jQuery como fallback');
-                $('#comentariosModal').modal('show');
+            // Intentar abrir modal con múltiples métodos
+            const modalElement = document.getElementById('comentariosModal');
+            try {
+                if (typeof bootstrap !== 'undefined') {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                    console.log('🏠 Modal mostrado con Bootstrap');
+                } else if (typeof $ !== 'undefined' && $.fn.modal) {
+                    $('#comentariosModal').modal('show');
+                    console.log('🏠 Modal mostrado con jQuery');
+                } else {
+                    console.warn('⚠️ Mostrando modal manualmente');
+                    modalElement.style.display = 'block';
+                    modalElement.classList.add('show');
+                    document.body.classList.add('modal-open');
+                    const backdrop = document.createElement('div');
+                    backdrop.className = 'modal-backdrop fade show';
+                    document.body.appendChild(backdrop);
+                }
+            } catch (e) {
+                console.error('❌ Error al mostrar modal:', e);
+                alert('Error al abrir el modal');
             }
         }
 
@@ -663,62 +691,71 @@
                     console.log('✅ Comentarios agregados al formulario:', comentarios.trim());
                 }
                 
+                // Cerrar modal usando jQuery como fallback
+                const modalElement = document.getElementById('comentariosModal');
+                try {
+                    if (typeof bootstrap !== 'undefined') {
+                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                        if (modalInstance) {
+                            modalInstance.hide();
+                            console.log('🏠 Modal cerrado con Bootstrap');
+                        }
+                    } else if (typeof $ !== 'undefined' && $.fn.modal) {
+                        $('#comentariosModal').modal('hide');
+                        console.log('🏠 Modal cerrado con jQuery');
+                    } else {
+                        // Cerrar manualmente
+                        modalElement.style.display = 'none';
+                        modalElement.classList.remove('show');
+                        document.body.classList.remove('modal-open');
+                        const backdrop = document.querySelector('.modal-backdrop');
+                        if (backdrop) backdrop.remove();
+                        console.log('🏠 Modal cerrado manualmente');
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Error al cerrar modal:', e);
+                }
+                
                 // Mostrar estado de carga
                 const botonConfirmar = document.getElementById('confirmarAccion');
                 const textoOriginal = botonConfirmar.textContent;
-                botonConfirmar.disabled = true;
                 botonConfirmar.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Procesando...';
+                botonConfirmar.disabled = true;
                 
-                // Cerrar modal usando Bootstrap 5
-                const modalElement = document.getElementById('comentariosModal');
-                const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                if (modalInstance) {
-                    modalInstance.hide();
-                    console.log('🏠 Modal cerrado');
-                }
-                
-                // Enviar formulario después de cerrar el modal
+                // Enviar formulario después de un pequeño delay para que el modal se cierre
                 setTimeout(function() {
                     try {
-                        console.log('📤 Enviando formulario...');
-                        console.log('🔍 Verificando formulario antes del envío:', formActual);
+                        console.log('📤 Enviando formulario AHORA...');
+                        console.log('🔍 Form action:', formActual.action);
+                        console.log('🔍 Form method:', formActual.method);
                         
-                        if (formActual && typeof formActual.submit === 'function') {
-                            formActual.submit();
-                            console.log('✅ Formulario enviado exitosamente');
+                        // Buscar el botón submit oculto y hacer click en él
+                        const submitButton = formActual.querySelector('.btn-submit-hidden');
+                        if (submitButton) {
+                            console.log('✅ Botón submit encontrado, haciendo click...');
+                            submitButton.click();
+                            console.log('✅ Click ejecutado en el botón submit');
                         } else {
-                            throw new Error('Formulario no válido o método submit no disponible');
+                            console.warn('⚠️ Botón submit no encontrado, intentando submit directo');
+                            formActual.submit();
                         }
+                        console.log('✅ Formulario enviado - esperando respuesta del servidor...');
                     } catch (error) {
                         console.error('❌ Error al enviar formulario:', error);
-                        alert('Error al procesar la solicitud. Por favor, intenta de nuevo.');
-                        // Restaurar botón en caso de error
+                        alert('Error al procesar la solicitud: ' + error.message);
                         botonConfirmar.disabled = false;
                         botonConfirmar.textContent = textoOriginal;
-                        botonConfirmar.className = 'btn btn-primary ms-auto';
                     }
-                }, 300);
+                }, 200);
                 
-                // Limpiar form actual después de un delay
+                // Limpiar variables
                 setTimeout(function() {
                     formActual = null;
                     document.getElementById('comentarios').value = '';
                     console.log('🧹 Variables limpiadas');
-                }, 1000);
-                
-                // Restaurar botón después de un tiempo como backup
-                setTimeout(function() {
-                    const botonConfirmar = document.getElementById('confirmarAccion');
-                    if (botonConfirmar) {
-                        botonConfirmar.disabled = false;
-                        botonConfirmar.textContent = textoOriginal;
-                        botonConfirmar.className = 'btn btn-primary ms-auto';
-                        console.log('🔄 Botón restaurado como backup');
-                    }
-                }, 5000);
+                }, 2000);
             } else {
                 console.error('❌ No se encontró el formulario para enviar');
-                console.error('📝 formActual es:', formActual);
                 alert('Error: No se pudo encontrar el formulario. Por favor, intenta de nuevo.');
             }
         });

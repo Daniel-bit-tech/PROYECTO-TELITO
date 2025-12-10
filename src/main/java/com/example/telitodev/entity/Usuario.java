@@ -61,7 +61,7 @@ public class Usuario {
     private Organizacion organizacion;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idEquipo", nullable = true)
+    @JoinColumn(name = "idEquipo", nullable = true, insertable = true, updatable = true)
     private Equipo equipo;
 
     // Relaciones con otras entidades
@@ -113,9 +113,10 @@ public class Usuario {
     @OneToMany(mappedBy = "usuarioRevisor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<SolAccesoEquipo> solicitudesAccesoEquipoRevisadas;
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Api> misApis;
+    // COMENTADO: Api ahora usa Equipo, no Usuario
+    // @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    // @JsonIgnore
+    // private List<Api> misApis;
     // // //
 
     // Constructores
@@ -310,13 +311,14 @@ public class Usuario {
         this.auditLogs = auditLogs;
     }
 
-    public List<Api> getMisApis() {
-        return misApis;
-    }
-
-    public void setMisApis(List<Api> misApis) {
-        this.misApis = misApis;
-    }
+    // COMENTADO: Api ahora usa Equipo, no Usuario
+    // public List<Api> getMisApis() {
+    //     return misApis;
+    // }
+    //
+    // public void setMisApis(List<Api> misApis) {
+    //     this.misApis = misApis;
+    // }
 
     // Getters y Setters para OAuth2
     public TipoAcceso getTipoAcceso() {

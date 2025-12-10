@@ -3,10 +3,10 @@ package com.example.telitodev.service;
 import com.example.telitodev.entity.SolAccesoOrg;
 import com.example.telitodev.entity.SolAccesoOrg.EstadoSolicitud;
 import com.example.telitodev.entity.Usuario;
-import com.example.telitodev.entity.Organizacion;
+import com.example.telitodev.entity.Equipo;
 import com.example.telitodev.repository.SolAccesoOrgRepository;
 import com.example.telitodev.repository.UsuarioRepository;
-import com.example.telitodev.repository.OrganizacionRepository;
+import com.example.telitodev.repository.EquipoRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,14 +22,14 @@ public class SolAccesoOrgService {
 
     private final SolAccesoOrgRepository solAccesoOrgRepository;
     private final UsuarioRepository usuarioRepository;
-    private final OrganizacionRepository organizacionRepository;
+    private final EquipoRepository equipoRepository;
 
     public SolAccesoOrgService(SolAccesoOrgRepository solAccesoOrgRepository,
                                UsuarioRepository usuarioRepository,
-                               OrganizacionRepository organizacionRepository) {
+                               EquipoRepository equipoRepository) {
         this.solAccesoOrgRepository = solAccesoOrgRepository;
         this.usuarioRepository = usuarioRepository;
-        this.organizacionRepository = organizacionRepository;
+        this.equipoRepository = equipoRepository;
     }
 
     // Crear nueva solicitud
@@ -40,10 +40,10 @@ public class SolAccesoOrgService {
             throw new RuntimeException("Usuario solicitante no encontrado");
         }
 
-        // Validar que la organización destino existe
-        Optional<Organizacion> organizacionDestino = organizacionRepository.findById(solicitud.getOrganizacionDestino().getIdOrganizacion());
-        if (organizacionDestino.isEmpty()) {
-            throw new RuntimeException("Organización destino no encontrada");
+        // Validar que el equipo destino existe
+        Optional<Equipo> equipoDestino = equipoRepository.findById(solicitud.getEquipoDestino().getIdEquipo());
+        if (equipoDestino.isEmpty()) {
+            throw new RuntimeException("Equipo destino no encontrado");
         }
 
         // Validar que no existe solicitud pendiente para el mismo DNI
@@ -56,9 +56,9 @@ public class SolAccesoOrgService {
             throw new RuntimeException("El DNI ya está registrado en el sistema");
         }
 
-        // Asignar usuario solicitante y organización destino
+        // Asignar usuario solicitante y equipo destino
         solicitud.setUsuarioSolicitante(usuarioSolicitante);
-        solicitud.setOrganizacionDestino(organizacionDestino.get());
+        solicitud.setEquipoDestino(equipoDestino.get());
 
         return solAccesoOrgRepository.save(solicitud);
     }
@@ -98,9 +98,9 @@ public class SolAccesoOrgService {
         return solAccesoOrgRepository.findByUsuarioSolicitanteDni(dniUsuario);
     }
 
-    // Obtener solicitudes pendientes por organización
-    public List<SolAccesoOrg> obtenerSolicitudesPendientesPorOrganizacion(Integer idOrganizacion) {
-        return solAccesoOrgRepository.findPendientesByOrganizacion(idOrganizacion);
+    // Obtener solicitudes pendientes por equipo
+    public List<SolAccesoOrg> obtenerSolicitudesPendientesPorEquipo(Integer idEquipo) {
+        return solAccesoOrgRepository.findPendientesByEquipo(idEquipo);
     }
 
     // Aprobar solicitud
@@ -120,15 +120,15 @@ public class SolAccesoOrgService {
                 throw new RuntimeException("Usuario revisor no encontrado");
             }
 
-            // ✅ ACTUALIZAR ORGANIZACIÓN DEL USUARIO OBJETIVO
+            // ✅ ACTUALIZAR EQUIPO DEL USUARIO OBJETIVO
             Usuario usuarioObjetivo = usuarioRepository.findByDni(solicitud.getDni());
             if (usuarioObjetivo != null) {
-                usuarioObjetivo.setOrganizacion(solicitud.getOrganizacionDestino());
+                usuarioObjetivo.setEquipo(solicitud.getEquipoDestino());
                 usuarioRepository.save(usuarioObjetivo);
-                System.out.println("✅ Usuario " + usuarioObjetivo.getNombre() + " asignado a organización: " + 
-                    solicitud.getOrganizacionDestino().getNombre());
+                System.out.println("✅ Usuario " + usuarioObjetivo.getNombre() + " asignado a equipo: " + 
+                    solicitud.getEquipoDestino().getNombre());
             } else {
-                System.out.println("⚠️ Usuario con DNI " + solicitud.getDni() + " no encontrado para asignar organización");
+                System.out.println("⚠️ Usuario con DNI " + solicitud.getDni() + " no encontrado para asignar equipo");
             }
 
             // Actualizar estado y datos de revisión
@@ -200,16 +200,16 @@ public class SolAccesoOrgService {
 
         Usuario usuarioTarget = usuarioTargetOpt.get();
 
-        // Validar que la organización destino existe
-        Optional<Organizacion> organizacionDestino = organizacionRepository.findById(solicitud.getOrganizacionDestino().getIdOrganizacion());
-        if (organizacionDestino.isEmpty()) {
-            throw new RuntimeException("Organización destino no encontrada");
+        // Validar que el equipo destino existe
+        Optional<Equipo> equipoDestino = equipoRepository.findById(solicitud.getEquipoDestino().getIdEquipo());
+        if (equipoDestino.isEmpty()) {
+            throw new RuntimeException("Equipo destino no encontrado");
         }
 
-        // ✅ VALIDACIÓN 1: Usuario NO tiene organización aprobada (usando método EXISTENTE)
+        // ✅ VALIDACIÓN 1: Usuario NO tiene equipo aprobado (usando método EXISTENTE)
         if (solAccesoOrgRepository.existsByDniAndEstado(dniTarget, EstadoSolicitud.APROBADA)) {
             throw new RuntimeException("El usuario " + usuarioTarget.getNombre() + " " + usuarioTarget.getApellidoPaterno() +
-                    " ya pertenece a una organización. No puede ser agregado a otra.");
+                    " ya pertenece a un equipo. No puede ser agregado a otro.");
         }
 
         // ✅ VALIDACIÓN 2: No existe solicitud pendiente para este DNI (usando método EXISTENTE)
@@ -217,9 +217,9 @@ public class SolAccesoOrgService {
             throw new RuntimeException("Ya existe una solicitud pendiente para el DNI: " + dniTarget);
         }
 
-        // SOLO asignar usuario solicitante y organización destino
+        // SOLO asignar usuario solicitante y equipo destino
         solicitud.setUsuarioSolicitante(usuarioSolicitante);
-        solicitud.setOrganizacionDestino(organizacionDestino.get());
+        solicitud.setEquipoDestino(equipoDestino.get());
 
         return solAccesoOrgRepository.save(solicitud);
 

@@ -436,7 +436,7 @@
                 <div class="row g-2 align-items-center">
 
                     <div class="col" >
-                        <h2 th:text="|Issue de ${issue.reporte.api.nombre}|"></h2>
+                        <h2 th:text="|Issue de ${issue.reporte?.api?.nombre ?: 'API no disponible'}|"></h2>
                     </div>
 
                     <div th:if="${issue.estado != 'Corregido'}" class="col-md-auto">
@@ -459,7 +459,7 @@
                             <div class="datagrid">
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Dominio/Tags</div>
-                                    <div class="datagrid-content" th:text="|${issue.reporte.api.dominio.nombre}/${issue.reporte.api.tag.nombre}|"></div>
+                                    <div class="datagrid-content" th:text="|${issue.reporte?.api?.dominio?.nombre ?: 'N/A'}/${issue.reporte?.api?.tag?.nombre ?: 'N/A'}|"></div>
                                 </div>
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Versión</div>

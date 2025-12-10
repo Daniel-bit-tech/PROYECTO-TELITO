@@ -435,11 +435,11 @@
                                 <div class="api-card">
                                     <div class="api-header">
                                         <div>
-                                            <h3>Reporte #<span th:text="|${reporte.idReporte}: ${reporte.api.nombre}|"></span></h3>
+                                            <h3>Reporte #<span th:text="|${reporte.idReporte}: ${reporte.api?.nombre ?: 'API no disponible'}|"></span></h3>
                                             <span class="api-status status-production"
-                                                  th:text="${reporte.api.dominio.nombre}">Producción</span>
+                                                  th:text="${reporte.api?.dominio?.nombre ?: 'N/A'}">Producción</span>
                                             <span class="api-status status-production"
-                                                  th:text="${reporte.api.tag.nombre}">Producción</span>
+                                                  th:text="${reporte.api?.tag?.nombre ?: 'N/A'}">Producción</span>
                                         </div>
                                     </div>
 
