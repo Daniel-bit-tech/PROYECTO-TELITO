@@ -1,7 +1,6 @@
 package com.example.telitodev.entity;
 
 import jakarta.persistence.*;
-
 import java.sql.Date;
 import java.util.List;
 
@@ -14,7 +13,7 @@ public class Equipo {
     @Column(name = "idEquipo")
     private Integer idEquipo;
 
-    @Column(name = "nombre", nullable = false, length = 45)
+    @Column(name = "nombre", length = 45, nullable = false)
     private String nombre;
 
     @Column(name = "fecha_creacion", nullable = false)
@@ -25,18 +24,20 @@ public class Equipo {
     private byte[] logo;
 
     @ManyToOne
-    @JoinColumn(name = "idOrganizacion")
+    @JoinColumn(name = "idOrganizacion", nullable = false)
     private Organizacion organizacion;
 
     //Relaciones
     @OneToMany(mappedBy = "equipo",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Usuario> usuarios;
 
-    @OneToMany(mappedBy = "equipo",fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "equipo", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Proyecto> proyectos;
 
+    @OneToMany(mappedBy = "equipo", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<Api> apis;
 
-    //Get and Set
+    //Getters y Setters
     public Integer getIdEquipo() {
         return idEquipo;
     }
@@ -56,13 +57,6 @@ public class Equipo {
     }
     public void setFechaCreacion(Date fechaCreacion) {
         this.fechaCreacion = fechaCreacion;
-    }
-
-    public byte[] getLogo() {
-        return logo;
-    }
-    public void setLogo(byte[] logo) {
-        this.logo = logo;
     }
 
     public Organizacion getOrganizacion() {

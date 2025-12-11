@@ -1,6 +1,7 @@
 package com.example.telitodev.controller.desarrollador;
 
 import com.example.telitodev.controller.BaseController;
+import com.example.telitodev.dto.CredencialApiDTO;
 import com.example.telitodev.entity.CredencialApi;
 import com.example.telitodev.entity.Notificacion;
 import com.example.telitodev.entity.Ticket;
@@ -49,7 +50,38 @@ public class DeveloperController extends BaseController {
             System.out.println("Usuario obtenido: " + usuario.getCorreo());
 
             Integer NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(),true);
-            List<CredencialApi> credenciales = credencialApiRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
+            List<CredencialApi> allCredenciales = credencialApiRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
+            
+            // Convertir a DTOs con datos seguros
+            List<CredencialApiDTO> credenciales = new java.util.ArrayList<>();
+            for (CredencialApi cred : allCredenciales) {
+                try {
+                    if (cred.getApi() != null) {
+                        // Cargar datos del API de forma segura
+                        String apiNombre = cred.getApi().getNombre();
+                        Integer apiId = cred.getApi().getIdApi();
+                        String apiVersion = cred.getApi().getVersionesApi() != null && !cred.getApi().getVersionesApi().isEmpty() 
+                            ? cred.getApi().getVersionesApi().iterator().next().getVersion() 
+                            : "N/A";
+                        
+                        CredencialApiDTO dto = new CredencialApiDTO(
+                            cred.getIdCredencialApi(),
+                            cred.getApiKey(),
+                            cred.getFechaCreacion(),
+                            cred.getEstado(),
+                            apiNombre,
+                            apiId,
+                            apiVersion
+                        );
+                        credenciales.add(dto);
+                        System.out.println("✅ Credencial " + cred.getIdCredencialApi() + " válida para API " + apiNombre);
+                    }
+                } catch (jakarta.persistence.EntityNotFoundException e) {
+                    System.out.println("⚠️ Credencial " + cred.getIdCredencialApi() + " referencia API eliminada");
+                } catch (Exception e) {
+                    System.out.println("⚠️ Credencial " + cred.getIdCredencialApi() + " error al cargar API: " + e.getClass().getSimpleName());
+                }
+            }
 
             List<Notificacion> notis = notificacionRepository.findTop5ByUsuarioDniAndLeidoOrderByFechaDesc(usuario.getDni(), false);
             Integer Nnotis = notificacionRepository.countByUsuario_DniAndLeido(usuario.getDni(),false);

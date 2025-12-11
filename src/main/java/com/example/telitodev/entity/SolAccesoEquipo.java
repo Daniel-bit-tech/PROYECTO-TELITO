@@ -30,6 +30,10 @@ public class SolAccesoEquipo {
     @Column(name = "motivo_integracion", nullable = false, columnDefinition = "TEXT")
     private String motivoIntegracion;
 
+    // TODO: Column doesn't exist in database table sol_acceso_equipo
+    // @Column(name = "responsabilidades", nullable = false, columnDefinition = "TEXT")
+    // private String responsabilidades;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "estado", nullable = false, length = 20)
     private EstadoSolicitud estado;
@@ -50,7 +54,7 @@ public class SolAccesoEquipo {
 
     // Relaciones
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idUsuario_solicitante", nullable = false, insertable = true, updatable = true)
+    @JoinColumn(name = "idUsuario_solicitante", referencedColumnName = "dni", nullable = false, insertable = true, updatable = true)
     private Usuario usuarioSolicitante;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -58,7 +62,7 @@ public class SolAccesoEquipo {
     private Equipo equipoDestino;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idUsuario_revisor", insertable = false, updatable = true)
+    @JoinColumn(name = "idUsuario_revisor", referencedColumnName = "dni", nullable = true, insertable = true, updatable = true)
     private Usuario usuarioRevisor;
 
     // Constructores
@@ -75,6 +79,7 @@ public class SolAccesoEquipo {
         this.correo = correo;
         this.dni = dni;
         this.motivoIntegracion = motivoIntegracion;
+        // this.responsabilidades = responsabilidades;
         this.usuarioSolicitante = usuarioSolicitante;
         this.equipoDestino = equipoDestino;
     }
@@ -83,6 +88,7 @@ public class SolAccesoEquipo {
     public Integer getIdSolicitudEquipo() {
         return idSolicitudEquipo;
     }
+
     public void setIdSolicitudEquipo(Integer idSolicitudEquipo) {
         this.idSolicitudEquipo = idSolicitudEquipo;
     }
@@ -135,6 +141,15 @@ public class SolAccesoEquipo {
         this.motivoIntegracion = motivoIntegracion;
     }
 
+    // TODO: Column doesn't exist in database
+    // public String getResponsabilidades() {
+    //     return responsabilidades;
+    // }
+
+    // public void setResponsabilidades(String responsabilidades) {
+    //     this.responsabilidades = responsabilidades;
+    // }
+
     public EstadoSolicitud getEstado() {
         return estado;
     }
@@ -185,6 +200,7 @@ public class SolAccesoEquipo {
     public Equipo getEquipoDestino() {
         return equipoDestino;
     }
+
     public void setEquipoDestino(Equipo equipoDestino) {
         this.equipoDestino = equipoDestino;
     }

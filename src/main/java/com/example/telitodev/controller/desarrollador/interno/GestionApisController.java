@@ -59,7 +59,7 @@ public class GestionApisController extends BaseController {
 
 
     @GetMapping()
-    public String listaApisDeUsuario(@RequestParam(defaultValue = "0") int page,
+    public String listaApisDeEquipoUsuario(@RequestParam(defaultValue = "0") int page,
                                      @RequestParam(defaultValue = "10") int size,
                                      @RequestParam(value = "dominios",required = false) List<Integer> selDominios,
                                      @RequestParam(value = "tags", required = false) List<Integer> selTags,
@@ -75,7 +75,10 @@ public class GestionApisController extends BaseController {
         addImpersonationAttributes(model, session);
 
 //        Page<Api> listaApis = apiRepository.findByUserOrgAndFilters(nombre, selDominios, selTags, selEstados, usuario.getOrganizacion().getIdOrganizacion(), pageable);
-        List<Api> listaApis = apiRepository.findByFiltersAndUserEquipo(nombre, selDominios, selTags, usuario.getEquipo().getIdEquipo());
+        Integer idEquipoUsuario = Optional.ofNullable(usuario.getEquipo())
+                .map(Equipo::getIdEquipo)
+                .orElse(null);
+        List<Api> listaApis = apiRepository.findByFilterAndDniUsuario(nombre, selDominios, selTags, idEquipoUsuario);
         model.addAttribute("listaApis", listaApis);
 
         model.addAttribute("listaDominios", dominioRepository.findAll());
@@ -249,6 +252,42 @@ public class GestionApisController extends BaseController {
 
         model.addAttribute("currentView", "ajustes");
         return "desarrollador/interno/ajustesApi";
+    }
+
+    @PostMapping("/estadoApi")
+    public String editarEstadoApi(Authentication auth, HttpSession session,
+                                 @RequestParam Integer idApi, @RequestParam Integer estadoApi,
+                                 RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = getCurrentUser(auth, session);
+
+        Api api = apiRepository.findById(idApi)
+                .filter(a -> a.getEquipo().equals(usuario.getEquipo()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo encontrar la Api solicitada."));
+
+        try {
+            EstadoApi nuevoEstadoApi = new EstadoApi();
+            api.setEstadoApi(nuevoEstadoApi);
+            apiRepository.save(api);
+
+            redirectAttributes.addFlashAttribute("toastMessage", "Estado actualizado correctamente");
+            redirectAttributes.addFlashAttribute("toastType", "success");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("toastMessage", "Estado inválido ");
+            redirectAttributes.addFlashAttribute("toastType", "error");
+        }
+
+        return "redirect:/dev/int/misApis/"+api.getIdApi()+"/ajustes";
+    }
+
+    @DeleteMapping("/eliminar")
+    public String eliminarApi(Authentication auth, HttpSession session,
+                              @RequestParam Integer idApi) {
+
+        Usuario usuario = getCurrentUser(auth, session);
+
+
+        return "redirect:/dev/int/misApis/";
     }
 
 }

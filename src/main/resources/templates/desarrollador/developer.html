@@ -485,13 +485,12 @@
               </div>
 
               <div class="api-info">
-                <div class="api-name" th:text="${cred.api.nombre}">Nombre API</div>
+                <div class="api-name">
+                  <span th:text="${cred.apiNombre}">Nombre API</span>
+                </div>
 
                 <div class="api-meta">
-                  <span th:if="${cred.api.versionesApi != null and !cred.api.versionesApi.isEmpty()}"
-                        th:text="${cred.api.versionesApi.get(0).getVersion()}">v1.X
-                  </span>
-                  <span th:unless="${cred.api.versionesApi != null and !cred.api.versionesApi.isEmpty()}">Sin versión</span>
+                  <span th:text="${cred.apiVersion}">v1.X</span>
                   <span>•</span>
                   <span>
           Credencial creada:
@@ -501,7 +500,7 @@
               </div>
 
               <button class="api-action"
-                      th:onclick="'location.href=\'/apis/' + ${cred.api.idApi} + '/docs\''">
+                      th:onclick="'location.href=\'/apis/' + ${cred.apiId} + '/docs\''">
                 Ver Documentación
               </button>
             </li>

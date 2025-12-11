@@ -33,11 +33,11 @@
         <div class="datagrid">
             <div class="datagrid-item">
                 <div class="datagrid-title">API Afectada:</div>
-                <div class="datagrid-content" th:text="${issue.reporte.api.nombre}"></div>
+                <div class="datagrid-content" th:text="${issue.reporte?.api?.nombre ?: 'API no disponible'}"></div>
             </div>
             <div class="datagrid-item">
                 <div class="datagrid-title">Dominio/Tags:</div>
-                <div class="datagrid-content" th:text="|${issue.reporte.api.dominio.nombre} / ${issue.reporte.api.tag.nombre}|"></div>
+                <div class="datagrid-content" th:text="|${issue.reporte?.api?.dominio?.nombre ?: 'N/A'} / ${issue.reporte?.api?.tag?.nombre ?: 'N/A'}|"></div>
             </div>
             <div class="datagrid-item">
                 <div class="datagrid-title">Creado por:</div>

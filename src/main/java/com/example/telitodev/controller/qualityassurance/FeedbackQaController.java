@@ -25,7 +25,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/qa")
-@PreAuthorize("hasAnyRole('QA', 'SADMIN')")
+@PreAuthorize("hasAnyRole('QA', 'SUPERADMIN')")
 public class FeedbackQaController extends BaseController {
 
     @Autowired
@@ -54,11 +54,38 @@ public class FeedbackQaController extends BaseController {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        // Filtrar feedbacks del usuario autenticado
+        // Usar consulta normal sin JOIN FETCH para evitar FetchNotFoundException
         Page<Feedback> feedbackPage = feedbackRepository.findByUsuario(usuario, pageable);
-        model.addAttribute("feedbackPage", feedbackPage);
+        
+        // Filtrar feedbacks cuya API todavía existe
+        List<Feedback> validFeedbacks = new java.util.ArrayList<>();
+        for (Feedback feedback : feedbackPage.getContent()) {
+            try {
+                // Intentar acceder a la API para verificar que existe
+                if (feedback.getApi() != null) {
+                    // Forzar la inicialización del proxy
+                    feedback.getApi().getIdApi();
+                    validFeedbacks.add(feedback);
+                }
+            } catch (jakarta.persistence.EntityNotFoundException e) {
+                // El feedback referencia una API eliminada (captura también FetchNotFoundException)
+                System.out.println("⚠️ Feedback " + feedback.getIdFeedback() + " referencia API eliminada - omitido");
+            } catch (Exception e) {
+                // Cualquier otro error de lazy loading
+                System.out.println("⚠️ Feedback " + feedback.getIdFeedback() + " error al cargar API: " + e.getClass().getSimpleName());
+            }
+        }
+        
+        // Crear una nueva página con solo los feedbacks válidos
+        Page<Feedback> validFeedbackPage = new PageImpl<>(
+            validFeedbacks,
+            pageable,
+            validFeedbacks.size()
+        );
+        
+        model.addAttribute("feedbackPage", validFeedbackPage);
         model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", feedbackPage.getTotalPages());
+        model.addAttribute("totalPages", validFeedbackPage.getTotalPages());
 
         return "qa/feedback";
     }

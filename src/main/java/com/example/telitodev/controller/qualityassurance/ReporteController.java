@@ -28,7 +28,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/qa")
-@PreAuthorize("hasAnyRole('QA', 'SADMIN')")
+@PreAuthorize("hasAnyRole('QA', 'SUPERADMIN')")
 public class ReporteController extends BaseController {
 
     @Autowired
@@ -143,10 +143,10 @@ public class ReporteController extends BaseController {
     public String madeReport(Model model, Authentication auth, HttpSession session){
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
-        List<ApiProyectoDTO> apisParaValidar = apiRepository.findApisToReportForQa(usuario.getDni());
-        model.addAttribute("apis", apisParaValidar);
+//        List<ApiProyectoDTO> apisParaValidar = apiRepository.findApisToReportForQa(usuario.getDni());
+//        model.addAttribute("apis", apisParaValidar);
 
-        System.out.println("Lonigut es: "+apisParaValidar.size());
+//        System.out.println("Lonigut es: "+apisParaValidar.size());
 
         // Lista de estados para el combobox
         List<String> estados = List.of("Aprobado", "Fallido");
@@ -219,8 +219,8 @@ public class ReporteController extends BaseController {
 
         // Si se encontró algún error, recargamos la vista del formulario con los mensajes
         if (hasErrors) {
-            List<ApiProyectoDTO> apisParaValidar = apiRepository.findApisToReportForQa(usuario.getDni());
-            model.addAttribute("apisParaValidar", apisParaValidar);
+//            List<ApiProyectoDTO> apisParaValidar = apiRepository.findApisToReportForQa(usuario.getDni());
+//            model.addAttribute("apisParaValidar", apisParaValidar);
             model.addAttribute("estadosReporte", List.of("Aprobado", "Fallido"));
             addImpersonationAttributes(model, session);
             model.addAttribute("usuario", usuario);

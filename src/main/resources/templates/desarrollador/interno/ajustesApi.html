@@ -99,36 +99,29 @@
             </div>
 
             <!-- ====== Sección Eliminación ====== -->
-<!--            <div class="card border shadow-sm">-->
-<!--              <div class="card-body">-->
-<!--                <h3 class="card-title mb-2 text-danger">-->
-<!--                  <i class="fas fa-trash-alt me-2"></i> Eliminar API-->
-<!--                </h3>-->
+            <div class="card border shadow-sm">
+              <div class="card-body">
+                <h3 class="card-title mb-2 text-danger">
+                  <i class="fas fa-trash-alt me-2"></i> Eliminar API
+                </h3>
 
-<!--                &lt;!&ndash; Sección de eliminación definitiva &ndash;&gt;-->
-<!--                <div class="alert alert-danger d-flex align-items-center" role="alert">-->
-<!--                  <i class="fas fa-triangle-exclamation me-2"></i>-->
-<!--                  <div>-->
-<!--                    <strong>Precaución:</strong> Esta acción eliminará permanentemente la API-->
-<!--                    <span class="fw-bold" th:text="${api.nombre}">Nombre API</span> y todos sus datos relacionados.-->
-<!--&lt;!&ndash;                    Esta API da soporte para <span class="fw-bold" th:text="${contProyectos}+'proyectos'">0</span>&ndash;&gt;-->
-<!--                  </div>-->
-<!--                </div>-->
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                  <i class="fas fa-triangle-exclamation me-2"></i>
+                  <div>
+                    <strong>Precaución:</strong> Esta acción eliminará permanentemente la API
+                    <span class="fw-bold" th:text="${api.nombre}">Nombre API</span> y todos sus datos relacionados.
+                  </div>
+                </div>
 
-<!--                <p class="text-muted">-->
-<!--                  Eliminar esta API borrará todos sus datos, versiones y documentación asociada. Esta acción <strong>no es reversible</strong>.-->
-<!--                </p>-->
-
-<!--                <form th:action="@{'/dev/int/misApis/' + ${api.idApi} + '/eliminar'}"-->
-<!--                      method="post"-->
-<!--                      onsubmit="return confirm('¿Seguro que deseas eliminar esta API permanentemente? Es usada');">-->
-<!--                  <input type="hidden" name="_method" value="delete"/>-->
-<!--                  <button type="submit" class="btn btn-danger mt-2">-->
-<!--                    <i class="fas fa-trash me-1"></i> Eliminar permanentemente-->
-<!--                  </button>-->
-<!--                </form>-->
-<!--              </div>-->
-<!--            </div>-->
+                <p class="text-muted">
+                  Eliminar esta API borrará todos sus datos, versiones y documentación asociada. Esta acción <strong>no es reversible</strong>.
+                </p>
+                
+                <button class="btn btn-danger mt-2" th:classappend= data-bs-toggle="modal" data-bs-target="#modalEliminarApi">
+                  <i class="fas fa-trash me-1"></i> Eliminar permanentemente
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -136,6 +129,54 @@
   </div>
 </div>
 
+<!--Modal confirmacion eliminacion-->
+    <div class="modal fade" id="modalEliminarApi" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Confirmar eliminación
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <p>
+                        ¿Estás seguro de que deseas eliminar la API
+                        <strong th:text="${api.nombre}">Nombre API</strong>?
+                    </p>
+                    
+                    <p class="text-muted">
+                        Esta acción eliminará permanentemente todos sus datos y no se puede deshacer.
+                    </p>
+                    
+                    <!--
+                    <div class="alert alert-warning">
+                      Esta API está siendo usada por <strong th:text="${contProyectos}">0</strong> proyectos.
+                    </div>
+                    -->
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    
+                    <form th:action="@{'/dev/int/misApis/eliminar'}" method="post">
+                        <input type="hidden" name="idApi" value="${idApi}"/>
+                        <input type="hidden" name="_method" value="delete"/>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i> Eliminar definitivamente
+                        </button>
+                    </form>
+                </div>
+            
+            </div>
+        </div>
+    </div>
+
+    
 <!-- JS de Tabler -->
 <script src="/tabler/dist/js/tabler.min.js"></script>
 

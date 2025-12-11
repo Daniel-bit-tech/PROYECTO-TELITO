@@ -70,7 +70,7 @@
                 <div class="row g-2 align-items-center">
 
                     <div class="col" >
-                        <h2 th:text="${reporte.api.nombre}"></h2>
+                        <h2 th:text="${reporte.api?.nombre ?: 'API no disponible'}"></h2>
                     </div>
                     <!-- Page title actions -->
 
@@ -101,7 +101,7 @@
                             <div class="datagrid">
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Dominio/Tags</div>
-                                    <div class="datagrid-content"><span th:text="${reporte.api.dominio.nombre}"></span>/<span th:text="${reporte.api.tag.nombre}"></span></div>
+                                    <div class="datagrid-content"><span th:text="${reporte.api?.dominio?.nombre ?: 'N/A'}"></span>/<span th:text="${reporte.api?.tag?.nombre ?: 'N/A'}"></span></div>
                                 </div>
                                 <div class="datagrid-item">
                                     <div class="datagrid-title">Versión</div>

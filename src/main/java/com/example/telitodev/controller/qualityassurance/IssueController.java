@@ -24,7 +24,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/qa")
-@PreAuthorize("hasAnyRole('QA', 'SADMIN')")
+@PreAuthorize("hasAnyRole('QA', 'SUPERADMIN')")
 public class IssueController extends BaseController {
     @Autowired
     private IssueRepository issueRepository;
@@ -80,6 +80,35 @@ public class IssueController extends BaseController {
             issuePage = issueRepository.findByFilters(estados, inicio, fin, nombre, pageable);
             page = lastPage;
         }
+
+        // Pre-inicializar las relaciones de API para evitar EntityNotFoundException en la vista
+        // Creamos un mapa con información segura de las APIs
+        java.util.Map<Integer, java.util.Map<String, String>> apiSafeData = new java.util.HashMap<>();
+        for (Issue issue : issuePage.getContent()) {
+            Integer issueId = issue.getId().getIdIssue();
+            java.util.Map<String, String> apiData = new java.util.HashMap<>();
+            try {
+                if (issue.getReporte() != null && issue.getReporte().getApi() != null) {
+                    Api api = issue.getReporte().getApi();
+                    apiData.put("nombre", api.getNombre());
+                    apiData.put("dominio", api.getDominio() != null ? 
+                        api.getDominio().getNombre() : "N/A");
+                    apiData.put("tag", api.getTag() != null ? 
+                        api.getTag().getNombre() : "N/A");
+                } else {
+                    apiData.put("nombre", "API no disponible");
+                    apiData.put("dominio", "N/A");
+                    apiData.put("tag", "N/A");
+                }
+            } catch (Exception e) {
+                // Capturar cualquier excepción de lazy loading o entidad no encontrada
+                apiData.put("nombre", "API no disponible");
+                apiData.put("dominio", "N/A");
+                apiData.put("tag", "N/A");
+            }
+            apiSafeData.put(issueId, apiData);
+        }
+        model.addAttribute("apiSafeData", apiSafeData);
 
         // Pasamos el objeto Page completo a la vista para mayor consistencia
         model.addAttribute("issuePage", issuePage);
@@ -207,13 +236,13 @@ public class IssueController extends BaseController {
         newIssue.setCreador(usuario);
         issueRepository.save(newIssue); // Guardar el Issue
 
-        // Crear la notificación
-        Notificacion notif = new Notificacion();
-        notif.setMensaje("Se ha creado un nuevo issue para tu API: " + newIssue.getReporte().getApi().getNombre());
-        notif.setLeido(false);
-        notif.setFecha(new Timestamp(System.currentTimeMillis()));
-        notif.setUsuario(newIssue.getReporte().getApi().getUsuario()); // propietario de la API
-        notificacionRepository.save(notif);
+        // COMENTADO: API ahora usa Equipo, no tiene usuario directo
+        // Notificacion notif = new Notificacion();
+        // notif.setMensaje("Se ha creado un nuevo issue para tu API: " + newIssue.getReporte().getApi().getNombre());
+        // notif.setLeido(false);
+        // notif.setFecha(new Timestamp(System.currentTimeMillis()));
+        // notif.setUsuario(newIssue.getReporte().getApi().getUsuario()); // propietario de la API
+        // notificacionRepository.save(notif);
 
         ActividadReciente actividad = new ActividadReciente();
         actividad.setTitulo("Nuevo Issue");
@@ -311,16 +340,16 @@ public class IssueController extends BaseController {
         // Guardar el comentario
         comentarioRepository.save(newComentario);
 
-        // Después de guardar el comentario
-        Usuario desarrollador = issue.getReporte().getApi().getUsuario(); // propietario de la API
-
-        Notificacion notif = new Notificacion();
-        notif.setMensaje("El QA " + usuario.getNombre() +
-                " comentó en el foro del Issue de tu API: " + issue.getReporte().getApi().getNombre());
-        notif.setLeido(false);
-        notif.setFecha(new Timestamp(System.currentTimeMillis()));
-        notif.setUsuario(desarrollador); // receptor
-        notificacionRepository.save(notif);
+        // COMENTADO: API ahora usa Equipo, no tiene usuario directo
+        // Usuario desarrollador = issue.getReporte().getApi().getUsuario(); // propietario de la API
+        // 
+        // Notificacion notif = new Notificacion();
+        // notif.setMensaje("El QA " + usuario.getNombre() +
+        //         " comentó en el foro del Issue de tu API: " + issue.getReporte().getApi().getNombre());
+        // notif.setLeido(false);
+        // notif.setFecha(new Timestamp(System.currentTimeMillis()));
+        // notif.setUsuario(desarrollador); // receptor
+        // notificacionRepository.save(notif);
 
         // Registrar la actividad reciente
         ActividadReciente actividad = new ActividadReciente();
@@ -352,16 +381,16 @@ public class IssueController extends BaseController {
         issue.setEstado("Corregido");
         issueRepository.save(issue);
 
-        // Opcional: enviar notificación al desarrollador
-        Usuario dev = issue.getReporte().getApi().getUsuario();
-        if(dev != null){
-            Notificacion notif = new Notificacion();
-            notif.setMensaje("El QA cerró el Issue: " + issue.getReporte().getApi().getNombre());
-            notif.setLeido(false);
-            notif.setFecha(new Timestamp(System.currentTimeMillis()));
-            notif.setUsuario(dev);
-            notificacionRepository.save(notif);
-        }
+        // COMENTADO: API ahora usa Equipo, no tiene usuario directo
+        // Usuario dev = issue.getReporte().getApi().getUsuario();
+        // if(dev != null){
+        //     Notificacion notif = new Notificacion();
+        //     notif.setMensaje("El QA cerró el Issue: " + issue.getReporte().getApi().getNombre());
+        //     notif.setLeido(false);
+        //     notif.setFecha(new Timestamp(System.currentTimeMillis()));
+        //     notif.setUsuario(dev);
+        //     notificacionRepository.save(notif);
+        // }
 
         // Registrar la actividad reciente
         ActividadReciente actividad = new ActividadReciente();

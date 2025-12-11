@@ -81,11 +81,11 @@ public class ProyectosController extends BaseController {
             // Mostrar proyectos de su organización
             Integer organizacionId = usuario.getOrganizacion().getIdOrganizacion();
             if (filtro != null && filtro.equals("activos")) {
-                listaProyectos = proyectoRepository.findByActivoAndOrganizacion_IdOrganizacion(true, organizacionId);
+                listaProyectos = proyectoRepository.findByActivoAndEquipoOrganizacionId(true, organizacionId);
             } else if (filtro != null && filtro.equals("ocultos")) {
-                listaProyectos = proyectoRepository.findByPublicoAndOrganizacion_IdOrganizacion(false, organizacionId);
+                listaProyectos = proyectoRepository.findByPublicoAndEquipoOrganizacionId(false, organizacionId);
             } else {
-                listaProyectos = proyectoRepository.findByOrganizacion_IdOrganizacion(organizacionId);
+                listaProyectos = proyectoRepository.findByEquipoOrganizacionId(organizacionId);
             }
         }
 
@@ -131,8 +131,8 @@ public class ProyectosController extends BaseController {
 
         if (proyecto.getPublico() ||
                 usuario.getRol().getNombreRol().equals("SUPERADMIN") ||
-//                (usuario.getRol().getNombreRol().equals("PO") && proyecto.getOrganizacion().equals(usuario.getOrganizacion()))) {
-                (usuario.getOrganizacion() != null && proyecto.getOrganizacion().equals(usuario.getOrganizacion()))) {
+//                (usuario.getRol().getNombreRol().equals("PO") && proyecto.getEquipo().equals(usuario.getEquipo())))
+                (usuario.getEquipo() != null && proyecto.getEquipo().equals(usuario.getEquipo()))) {
             model.addAttribute("proyecto", proyecto);
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes ver los detalles de este proyecto");
@@ -154,13 +154,12 @@ public class ProyectosController extends BaseController {
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
 
-        if (usuario.getOrganizacion()==null) {
-            redirectAttributes.addFlashAttribute("msg", "No puedes crear proyectos hasta pertenecer a una organización");
+        if (usuario.getEquipo()==null) {
+            redirectAttributes.addFlashAttribute("msg", "No puedes crear proyectos hasta pertenecer a un equipo");
             return "redirect:/proyectos";
         }
 
-        proyecto.setUsuarioLider(usuario);
-        proyecto.setOrganizacion(usuario.getOrganizacion());
+        proyecto.setEquipo(usuario.getEquipo());
         proyecto.setFechaInicio(LocalDate.now());
         proyecto.setPublico(true);
         proyecto.setActivo(true);
@@ -188,8 +187,7 @@ public class ProyectosController extends BaseController {
         
         Optional<Proyecto> proyectoOptional = proyectoRepository.findById(id);
         if (proyectoOptional.isPresent() &&
-                proyectoOptional.get().getOrganizacion().equals(usuario.getOrganizacion()) &&
-                proyectoOptional.get().getUsuarioLider().equals(usuario)) {
+                proyectoOptional.get().getEquipo().equals(usuario.getEquipo())) {
             model.addAttribute("proyecto", proyectoOptional.get());
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No tiene permiso para configurar este proyecto");
@@ -231,11 +229,10 @@ public class ProyectosController extends BaseController {
             Proyecto existente = proyectoRepository.findById(proyecto.getIdProyecto())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-            if (usuario.getOrganizacion().equals(existente.getOrganizacion()) && existente.getUsuarioLider().equals(usuario)) {
+            if (usuario.getEquipo().equals(existente.getEquipo())) {
                 proyecto.setNombre(existente.getNombre());
                 proyecto.setFechaInicio(existente.getFechaInicio());
-                proyecto.setOrganizacion(existente.getOrganizacion());
-                proyecto.setUsuarioLider(existente.getUsuarioLider());
+                proyecto.setEquipo(existente.getEquipo());
             } else {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto");
             }
@@ -243,8 +240,7 @@ public class ProyectosController extends BaseController {
 
             System.out.println("Creando proy: "+proyecto.getNombre());
             // Creación
-            proyecto.setOrganizacion(usuario.getOrganizacion());
-            proyecto.setUsuarioLider(usuario);
+            proyecto.setEquipo(usuario.getEquipo());
         }
 
         proyectoRepository.save(proyecto);
@@ -263,13 +259,13 @@ public class ProyectosController extends BaseController {
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
-        // Verificar que el usuario tenga una organización asignada
-        if (usuario.getOrganizacion() == null) {
-            logger.error("Usuario {} intenta agregar APIs a proyecto pero no tiene organización asignada", usuario.getCorreo());
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes modificar proyectos porque no tienes una organización asignada. Contacta al administrador.");
+        // Verificar que el usuario tenga un equipo asignado
+        if (usuario.getEquipo() == null) {
+            logger.error("Usuario {} intenta agregar APIs a proyecto pero no tiene equipo asignado", usuario.getCorreo());
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes modificar proyectos porque no tienes un equipo asignado. Contacta al administrador.");
         }
 
-        if (!usuario.getOrganizacion().equals(proyecto.getOrganizacion())) {
+        if (!usuario.getEquipo().equals(proyecto.getEquipo())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para modificar este proyecto");
         }
 

@@ -1008,28 +1008,19 @@
     
     console.log('🐛 Funciones de debug registradas. Usa debugTheme() en la consola.');
 
-    // === SISTEMA DE TEMA SIMPLIFICADO - SOBRESCRIBE FUNCIONALIDAD ANTERIOR ===
-    setTimeout(function() {
-        console.log('🎨 Inicializando sistema de tema simplificado...');
+    // === SISTEMA DE TEMA UNIFICADO Y SIMPLIFICADO ===
+    (function() {
+        console.log('🎨 Inicializando sistema de tema unificado...');
         
         // Detectar tema actual
         const systemTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         const savedTheme = localStorage.getItem('theme') || systemTheme;
         
-        // Buscar botones
-        const darkBtn = document.getElementById('themeDarkBtn');
-        const lightBtn = document.getElementById('themeLightBtn');
-        
-        if (!darkBtn || !lightBtn) {
-            console.error('No se encontraron los botones de tema');
-            return;
-        }
-        
-        // Función simple para aplicar tema
-        function applySimpleTheme(theme) {
-            console.log('Aplicando tema:', theme);
+        // Función única para aplicar tema
+        function applyTheme(theme) {
+            console.log('🎨 Aplicando tema:', theme);
             
-            // Aplicar atributo
+            // Aplicar atributos
             document.documentElement.setAttribute('data-bs-theme', theme);
             document.body.setAttribute('data-bs-theme', theme);
             
@@ -1037,61 +1028,73 @@
             localStorage.setItem('theme', theme);
             
             // Actualizar visibilidad de botones
-            if (theme === 'dark') {
-                darkBtn.style.display = 'none';
-                lightBtn.style.display = 'flex';
-            } else {
-                darkBtn.style.display = 'flex';
-                lightBtn.style.display = 'none';
+            const darkBtn = document.getElementById('themeDarkBtn');
+            const lightBtn = document.getElementById('themeLightBtn');
+            
+            if (darkBtn && lightBtn) {
+                if (theme === 'dark') {
+                    darkBtn.style.display = 'none';
+                    lightBtn.style.display = 'flex';
+                } else {
+                    darkBtn.style.display = 'flex';
+                    lightBtn.style.display = 'none';
+                }
             }
             
-            console.log('Tema aplicado:', theme);
+            console.log('✅ Tema aplicado:', theme);
         }
         
-        // Aplicar tema inicial
-        applySimpleTheme(savedTheme);
+        // Función de inicialización
+        function initTheme() {
+            console.log('🔧 Inicializando controles de tema...');
+            
+            const darkBtn = document.getElementById('themeDarkBtn');
+            const lightBtn = document.getElementById('themeLightBtn');
+            
+            if (!darkBtn || !lightBtn) {
+                console.warn('⚠️ Botones de tema no encontrados, reintentando...');
+                return false;
+            }
+            
+            // Limpiar listeners anteriores
+            const newDarkBtn = darkBtn.cloneNode(true);
+            const newLightBtn = lightBtn.cloneNode(true);
+            darkBtn.parentNode.replaceChild(newDarkBtn, darkBtn);
+            lightBtn.parentNode.replaceChild(newLightBtn, lightBtn);
+            
+            // Agregar event listeners
+            newDarkBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                applyTheme('dark');
+            });
+            
+            newLightBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                applyTheme('light');
+            });
+            
+            // Aplicar tema inicial
+            applyTheme(savedTheme);
+            
+            console.log('✅ Sistema de tema inicializado correctamente');
+            return true;
+        }
         
-        // Limpiar event listeners anteriores y agregar nuevos
-        const newDarkBtn = darkBtn.cloneNode(true);
-        const newLightBtn = lightBtn.cloneNode(true);
+        // Intentar inicialización cuando el DOM esté listo
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(initTheme, 50);
+            });
+        } else {
+            setTimeout(initTheme, 50);
+        }
         
-        darkBtn.parentNode.replaceChild(newDarkBtn, darkBtn);
-        lightBtn.parentNode.replaceChild(newLightBtn, lightBtn);
+        // Exponer función global para cambiar tema desde cualquier parte
+        window.changeTheme = applyTheme;
         
-        // Event listeners simples
-        newDarkBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Click botón oscuro');
-            applySimpleTheme('dark');
-        });
-        
-        newLightBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Click botón claro');
-            applySimpleTheme('light');
-        });
-        
-        console.log('✅ Sistema de tema simplificado inicializado');
-        
-    }, 100);
-
-    // === SISTEMA DE TEMA SIMPLE - COPIADO DEL PO ===
-    document.querySelectorAll('.theme-switcher').forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            const theme = this.classList.contains('hide-theme-dark') ? 'dark' : 'light';
-            document.documentElement.setAttribute('data-bs-theme', theme);
-            localStorage.setItem('theme', theme);
-            console.log('🎨 Tema cambiado a:', theme);
-        });
-    });
-
-    // Aplicar tema guardado
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    document.documentElement.setAttribute('data-bs-theme', savedTheme);
-    console.log('🎨 Tema inicial aplicado:', savedTheme);
+    })();
 
     document.addEventListener("DOMContentLoaded", function() {
         let path = window.location.pathname;

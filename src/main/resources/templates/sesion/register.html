@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/3.5.0/remixicon.css" crossorigin="">
   <link rel="stylesheet" th:href="@{/login/assets/css/styles.css}">
@@ -86,6 +87,34 @@
       position: relative;
     }
 
+    /* Estilos para campos autocompletados por RENIEC */
+    .reniec-autocompleted {
+      background-color: rgba(76, 175, 80, 0.15) !important;
+      border-color: #4CAF50 !important;
+      color: #000000 !important;
+      font-weight: 600 !important;
+    }
+
+    /* Asegurar que el texto se vea negro en campos autocompletados */
+    .login__input.reniec-autocompleted {
+      color: #000000 !important;
+    }
+
+    .login__input.reniec-autocompleted::placeholder {
+      color: rgba(0, 0, 0, 0.5) !important;
+    }
+
+    /* Estilo especial para el campo DNI (campo principal) */
+    #dni {
+      border: 2px solid rgba(186, 85, 211, 0.6);
+      box-shadow: 0 0 10px rgba(186, 85, 211, 0.3);
+    }
+
+    #dni:focus {
+      border-color: rgb(186, 85, 211);
+      box-shadow: 0 0 15px rgba(186, 85, 211, 0.5);
+    }
+
 
   </style>
 
@@ -104,21 +133,24 @@
     </div>
 
     <div class="login__inputs">
-      <div class="login__box">
-        <input type="text" name="nombre" placeholder="Nombre" required class="login__input" th:value="${param.nombre}">
-        <i class="ri-user-3-fill"></i>
-      </div>
-      <div class="login__box">
-        <input type="text" name="apellidoPaterno" placeholder="Apellido Paterno" required class="login__input" th:value="${param.apellidoPaterno}">
-        <i class="ri-user-3-fill"></i>
-      </div>
-      <div class="login__box">
-        <input type="text" name="apellidoMaterno" placeholder="Apellido Materno" class="login__input" th:value="${param.apellidoMaterno}">
-        <i class="ri-user-3-fill"></i>
-      </div>
-      <div class="login__box">
-        <input type="text" name="dni" placeholder="DNI" required class="login__input" pattern="[0-9]{8}" maxlength="8" th:value="${param.dni}">
+      <!-- DNI va primero para autocompletado -->
+      <div class="login__box" style="grid-column: 1 / -1;">
+        <input type="text" id="dni" name="dni" placeholder="DNI (8 dígitos - presiona Tab para autocompletar)" required class="login__input" pattern="[0-9]{8}" maxlength="8" th:value="${param.dni}">
         <i class="ri-id-card-fill"></i>
+      </div>
+      
+      <!-- Campos que se autocompletarán -->
+      <div class="login__box">
+        <input type="text" id="nombre" name="nombre" placeholder="Nombre" required class="login__input" th:value="${param.nombre}">
+        <i class="ri-user-3-fill"></i>
+      </div>
+      <div class="login__box">
+        <input type="text" id="apellidoPaterno" name="apellidoPaterno" placeholder="Apellido Paterno" required class="login__input" th:value="${param.apellidoPaterno}">
+        <i class="ri-user-3-fill"></i>
+      </div>
+      <div class="login__box">
+        <input type="text" id="apellidoMaterno" name="apellidoMaterno" placeholder="Apellido Materno" class="login__input" th:value="${param.apellidoMaterno}">
+        <i class="ri-user-3-fill"></i>
       </div>
       <div class="login__box">
         <input type="email" name="correo" placeholder="Correo institucional" required class="login__input" th:value="${param.correo}">
@@ -133,25 +165,43 @@
         <input type="password" name="confirmarContrasena" placeholder="Confirmar Contraseña" required class="login__input" minlength="8">
         <i class="ri-lock-2-fill"></i>
       </div>
-
-
-      <div class="login__roles" style="margin-top: 20px; text-align: left;">
-        <label style="display: inline-flex; align-items: center; margin-right: 20px; color: #fff; font-family: 'Orbitron', sans-serif;">
-          <input type="radio" name="rol" value="desarrollador" required style="margin-right: 8px;" th:checked="${param.rol == 'desarrollador'}">
-          Desarrollador
-        </label>
-        <label style="display: inline-flex; align-items: center; color: #fff; font-family: 'Orbitron', sans-serif;">
-          <input type="radio" name="rol" value="qa" required style="margin-right: 8px;" th:checked="${param.rol == 'qa'}">
-          QA
-        </label>
-      </div>
-
-
     </div>
+
+    <!-- Campo oculto para el rol (siempre será desarrollador) -->
+    <input type="hidden" name="rol" value="desarrollador">
 
     <button type="submit" class="login__button">Registrarse</button>
   </form>
 </div>
+
+<!-- Script de autocompletado RENIEC -->
+<script th:src="@{/js/reniec-autocomplete.js}"></script>
+<script>
+  // Inicializar el autocompletado de RENIEC cuando el DOM esté listo
+  document.addEventListener('DOMContentLoaded', function() {
+    initReniecAutocomplete({
+      dniInputId: 'dni',
+      nombresInputId: 'nombre',
+      apellidoPaternoInputId: 'apellidoPaterno',
+      apellidoMaternoInputId: 'apellidoMaterno',
+      autoTrigger: true,
+      showNotifications: true
+    });
+
+    // Agregar instrucción visual para el usuario
+    const dniInput = document.getElementById('dni');
+    if (dniInput) {
+      dniInput.addEventListener('focus', function() {
+        this.placeholder = 'Ingresa 8 dígitos y presiona Tab o Enter';
+      });
+      
+      dniInput.addEventListener('blur', function() {
+        if (this.value.length === 0) {
+          this.placeholder = 'DNI (8 dígitos - presiona Tab para autocompletar)';
+        }
+      });
+    }
+  });
+</script>
 </body>
 </html>
-
