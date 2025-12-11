@@ -793,7 +793,7 @@
     initTabs();
     initDocModals();
 
-    // Manejador para el formulario de upload de contrato
+    // Manejador para el formulario de upload de readme
     $("#markdownUploadForm").on("submit", function(e) {
       e.preventDefault();
 
@@ -851,6 +851,47 @@
         }
       });
 
+    });
+
+    // Manejador para el formulario de doc alto nivel
+    $(document).on("submit", "#docAltoNivelForm", function(e) {
+      e.preventDefault();
+
+      const form = this;
+      const submitBtn = $(form).find("button[type='submit']");
+      const formData = new FormData(form);
+
+      const originalText = submitBtn.html();
+      submitBtn.prop("disabled", true);
+      submitBtn.html('<span class="spinner-border spinner-border-sm"></span> Guardando...');
+
+      $.ajax({
+        url: '/dev/int/misApis/editarDocAltoNivel',
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers: {
+          'X-CSRF-TOKEN': $('meta[name="_csrf"]').attr('content')
+        },
+        success: function(data) {
+          if (data.success) {
+            showToast(data.message || "Documentación de alto nivel actualizada", "success");
+            // Recargar sección actual
+            const activeTab = document.querySelector('[data-section].active');
+            if (activeTab) loadSection(activeTab.getAttribute('data-section'));
+          } else {
+            showToast(data.message || "Error al guardar", "danger");
+          }
+        },
+        error: function(xhr) {
+          showToast("Error inesperado", "danger");
+        },
+        complete: function() {
+          submitBtn.prop("disabled", false);
+          submitBtn.html(originalText);
+        }
+      });
     });
   });
 </script>

@@ -1,6 +1,7 @@
 package com.example.telitodev.dto;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 public class DocAltoNivelDTO {
 
@@ -8,23 +9,28 @@ public class DocAltoNivelDTO {
 
     private Integer idApi;
 
-    @NotNull
+    @NotNull(message = "Esta sección es requerida")
+    @Size(min = 50, max = 400, message = "Debe tener entre 50 y 400 caracteres.")
     private String beneficios;
 
-    @NotNull
-
+    @NotNull(message = "Esta sección es requerida")
+    @Size(min = 50, max = 400, message = "Debe tener entre 50 y 400 caracteres.")
     private String limitaciones;
 
-    @NotNull
+    @NotNull(message = "Esta sección es requerida")
+    @Size(min = 50, max = 400, message = "Debe tener entre 50 y 400 caracteres.")
     private String flujoFuncional;
 
-    @NotNull
+    @NotNull(message = "Esta sección es requerida")
+    @Size(min = 50, max = 400, message = "Debe tener entre 50 y 400 caracteres.")
     private String sla;
 
-    @NotNull
+    @NotNull(message = "Esta sección es requerida")
+    @Size(min = 50, max = 400, message = "Debe tener entre 50 y 400 caracteres.")
     private String costos;
 
-    @NotNull
+    @NotNull(message = "Esta sección es requerida")
+    @Size(min = 50, max = 400, message = "Debe tener entre 50 y 400 caracteres.")
     private String ejemplosIntegracion;
 
 

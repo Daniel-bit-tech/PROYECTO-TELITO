@@ -154,5 +154,80 @@
         </div>
     </div>
 
+    <div th:fragment="docaltonivel(docAltoNivel)">
+
+        <h3 class="card-title mb-2">Documentación Alto Nivel</h3>
+        <p class="card-subtitle">Información estratégica para Product Owners y stakeholders</p>
+
+        <form id="docAltoNivelForm" th:action="@{/dev/int/misApis/editarDocAltoNivel}" th:object="${docAltoNivel}" method="post">
+            <input type="hidden" name="idApi" th:value="${docAltoNivel.api.idApi}">
+            <input type="hidden" th:field="*{idDoc}"/>
+
+            <div class="row">
+                <!-- Beneficios -->
+                <div class="mb-3 col-md-6 col-12">
+                    <label class="form-label">Beneficios</label>
+                    <textarea th:field="*{beneficios}" class="form-control" rows="4" th:classappend="${#fields.hasErrors('beneficios')} ? 'is-invalid' : ''"
+                              placeholder="Describa los beneficios de usar esta API..." minlength="50" maxlength="400" required></textarea>
+                    <small class="form-hint">¿Qué ventajas ofrece esta API a los consumidores?</small>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('beneficios')}" th:errors="*{beneficios}"></div>
+                </div>
+                <!-- Limitaciones -->
+                <div class="mb-3 col-md-6 col-12">
+                    <label class="form-label">Limitaciones</label>
+                    <textarea th:field="*{limitaciones}" class="form-control" rows="4" th:classappend="${#fields.hasErrors('limitaciones')} ? 'is-invalid' : ''"
+                              placeholder="Describa las limitaciones conocidas de la API..." minlength="50" maxlength="400" required></textarea>
+                    <small class="form-hint">¿Existen límites de uso, restricciones técnicas o funcionales?</small>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('limitaciones')}" th:errors="*{limitaciones}"></div>
+                </div>
+
+                <!-- Flujo Funcional -->
+                <div class="mb-3 col-md-6 col-12">
+                    <label class="form-label">Flujo Funcional</label>
+                    <textarea th:field="*{flujoFuncional}" class="form-control" rows="4" th:classappend="${#fields.hasErrors('flujoFuncional')} ? 'is-invalid' : ''"
+                              placeholder="Describa el flujo funcional de la API..." minlength="50" maxlength="400" required></textarea>
+                    <small class="form-hint">¿Cómo interactúa el usuario o sistema con la API? Describa el flujo.</small>
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('flujoFuncional')}" th:errors="*{flujoFuncional}"></div>
+                </div>
+                <!-- SLA -->
+                <div class="mb-3 col-md-6 col-12">
+                    <label class="form-label">SLA (Acuerdo de Nivel de Servicio)</label>
+                    <textarea th:field="*{sla}" class="form-control" rows="4" th:classappend="${#fields.hasErrors('sla')} ? 'is-invalid' : ''"
+                              placeholder="Describa los acuerdos de nivel de servicio..." minlength="50" maxlength="400" required></textarea>
+                    <small class="form-hint">Disponibilidad, tiempo de respuesta, soporte, etc.</small>
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('sla')}" th:errors="*{sla}"></div>
+                </div>
+
+                <!-- Costos -->
+                <div class="mb-3 col-md-6 col-12">
+                    <label class="form-label">Costos</label>
+                    <textarea th:field="*{costos}" class="form-control" rows="4" th:classappend="${#fields.hasErrors('costos')} ? 'is-invalid' : ''"
+                              placeholder="Describa la estructura de costos asociada..." minlength="50" maxlength="400" required></textarea>
+                    <small class="form-hint">¿Existen costos de uso? Describa la estructura de precios si aplica.</small>
+                    <div class="invalid-feedback d-block" th:if="${#fields.hasErrors('costos')}" th:errors="*{costos}"></div>
+                </div>
+
+                <!-- Ejemplos de Integración -->
+                <div class="mb-3 col-md-6 col-12">
+                    <label class="form-label">Ejemplos de Integración</label>
+                    <textarea th:field="*{ejemplosIntegracion}" class="form-control" rows="4" th:classappend="${#fields.hasErrors('ejemplosIntegracion')} ? 'is-invalid' : ''"
+                              placeholder="Proporcione ejemplos de cómo integrar con la API..." minlength="50" maxlength="400" required></textarea>
+                    <small class="form-hint">Incluya escenarios de uso, casos específicos, etc.</small>
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('ejemplosIntegracion')}" th:errors="*{ejemplosIntegracion}"></div>
+                </div>
+            </div>
+
+            <div class="col-12 text-end mt-3">
+                <button type="reset" class="btn btn-outline-secondary me-2 gap-2">
+                    <i class="fas fa-x"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary gap-2">
+                    <i class="fas fa-save"></i> Guardar
+                </button>
+            </div>
+        </form>
+
+    </div>
+
 </body>
 </html>

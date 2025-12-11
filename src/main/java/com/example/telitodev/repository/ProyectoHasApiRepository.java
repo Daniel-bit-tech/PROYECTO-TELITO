@@ -16,6 +16,8 @@ public interface ProyectoHasApiRepository extends JpaRepository<ProyectoHasApi, 
 
     List<ProyectoHasApi> findByProyecto_IdProyecto(Integer id);
 
+    List<ProyectoHasApi> findByApi_IdApi(Integer id);
+
     ProyectoHasApi findByProyecto_IdProyectoAndApi_IdApi(Integer idProyecto, Integer idApi);
 
     @Query("SELECT DISTINCT pha.api FROM ProyectoHasApi pha WHERE pha.proyecto IN :proyectos")

@@ -62,6 +62,15 @@ public class doc_alto_nivel {
         actualizadoEn = Instant.now();
     }
 
+
+    //Constructores
+
+    public doc_alto_nivel() {}
+
+    public doc_alto_nivel(Api api) {
+        this.api = api;
+    }
+
     // Getters and Setters
 
     public Integer getIdDoc() {

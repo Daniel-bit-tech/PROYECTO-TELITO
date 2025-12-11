@@ -42,16 +42,17 @@ public class CreacionApisController extends BaseController {
     private final ContratoApiService contratoApiService;
     private final DocApiService docApiService;
     private final S3DocsApiService s3DocsApiService;
+    private final DocAltoNivelRepository docAltoNivelRepository;
 
     public CreacionApisController(DominioRepository dominioRepository,
-            TagRepository tagRepository,
-            ApiRepository apiRepository,
-            DocumentacionRepository documentacionRepository,
-            EstadoApiRepository estadoApiRepository,
-            VersionApiRepository versionApiRepository,
-            ContratoApiService contratoApiService,
-            DocApiService docApiService,
-            S3DocsApiService s3DocsApiService) {
+                                  TagRepository tagRepository,
+                                  ApiRepository apiRepository,
+                                  DocumentacionRepository documentacionRepository,
+                                  EstadoApiRepository estadoApiRepository,
+                                  VersionApiRepository versionApiRepository,
+                                  ContratoApiService contratoApiService,
+                                  DocApiService docApiService,
+                                  S3DocsApiService s3DocsApiService, DocAltoNivelRepository docAltoNivelRepository) {
         this.dominioRepository = dominioRepository;
         this.tagRepository = tagRepository;
         this.apiRepository = apiRepository;
@@ -61,6 +62,7 @@ public class CreacionApisController extends BaseController {
         this.contratoApiService = contratoApiService;
         this.docApiService = docApiService;
         this.s3DocsApiService = s3DocsApiService;
+        this.docAltoNivelRepository = docAltoNivelRepository;
     }
 
     /* ==================== PASO 1 - Crear por primera vez ==================== */
@@ -397,27 +399,41 @@ public class CreacionApisController extends BaseController {
         }
     }
 
-    @PostMapping("/guardarDocAltoNivel")
+    @PostMapping("/editarDocAltoNivel")
     @ResponseBody
-    public ResponseEntity<?> guardarDocAltoNivel(Authentication auth, HttpSession session,
-              @Valid @ModelAttribute DocAltoNivelDTO docAltoNivelDto, BindingResult bindingResult) {
+    public ResponseEntity<?> editarDocAltoNivel(Authentication auth, HttpSession session,
+                                     @Valid @ModelAttribute DocAltoNivelDTO docDto, BindingResult bindingResult) {
 
         Map<String, Object> response = new HashMap<>();
 
         Usuario usuario = getCurrentUser(auth, session);
 
-        Api api = apiRepository.findById(docAltoNivelDto.getIdApi())
+        Api api = apiRepository.findById(docDto.getIdApi())
             .filter(a -> a.getEquipo().equals(usuario.getEquipo()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró la API solicitada"));
 
-        if (bindingResult.hasErrors()) {
+        doc_alto_nivel docAltoNivel = docAltoNivelRepository.findByApi_IdApi(api.getIdApi())
+                .orElseGet(() -> new doc_alto_nivel(api));
 
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = new HashMap<>();
+            bindingResult.getFieldErrors().forEach(err -> errors.put(err.getField(), err.getDefaultMessage()));
+            response.put("success", false);
+            response.put("errors", errors);
             return ResponseEntity.badRequest().body(response);
         }
 
-        response.put("success", true);
-        response.put("message", "Documentación guardada correctamente");
-        return ResponseEntity.ok(response);
+        docAltoNivel.setBeneficios(docDto.getBeneficios());
+        docAltoNivel.setLimitaciones(docDto.getLimitaciones());
+        docAltoNivel.setFlujoFuncional(docDto.getFlujoFuncional());
+        docAltoNivel.setSla(docDto.getSla());
+        docAltoNivel.setCostos(docDto.getCostos());
+        docAltoNivel.setEjemplosIntegracion(docDto.getEjemplosIntegracion());
 
+        docAltoNivelRepository.save(docAltoNivel);
+
+        response.put("success", true);
+        response.put("message", "Documentación de alto nivel guardada correctamente");
+        return ResponseEntity.ok(response);
     }
 }

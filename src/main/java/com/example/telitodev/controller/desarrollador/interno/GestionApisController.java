@@ -43,8 +43,10 @@ public class GestionApisController extends BaseController {
     final ProyectoRepository proyectoRepository;
     final ContratoRepository contratoRepository;
     private final S3DocsApiService s3DocsApiService;
+    private final ProyectoHasApiRepository proyectoHasApiRepository;
+    private final DocAltoNivelRepository docAltoNivelRepository;
 
-    public GestionApisController(ApiRepository apiRepository, UsuarioRepository usuarioRepository, DocumentacionRepository documentacionRepository, DominioRepository dominioRepository, TagRepository tagRepository, EstadoApiRepository estadoApiRepository, VersionApiRepository versionApiRepository, ProyectoRepository proyectoRepository, ContratoRepository contratoRepository, S3DocsApiService s3DocsApiService) {
+    public GestionApisController(ApiRepository apiRepository, UsuarioRepository usuarioRepository, DocumentacionRepository documentacionRepository, DominioRepository dominioRepository, TagRepository tagRepository, EstadoApiRepository estadoApiRepository, VersionApiRepository versionApiRepository, ProyectoRepository proyectoRepository, ContratoRepository contratoRepository, S3DocsApiService s3DocsApiService, ProyectoHasApiRepository proyectoHasApiRepository, DocAltoNivelRepository docAltoNivelRepository) {
         this.apiRepository = apiRepository;
         this.usuarioRepository = usuarioRepository;
         this.documentacionRepository = documentacionRepository;
@@ -55,6 +57,8 @@ public class GestionApisController extends BaseController {
         this.proyectoRepository = proyectoRepository;
         this.contratoRepository = contratoRepository;
         this.s3DocsApiService = s3DocsApiService;
+        this.proyectoHasApiRepository = proyectoHasApiRepository;
+        this.docAltoNivelRepository = docAltoNivelRepository;
     }
 
 
@@ -178,6 +182,17 @@ public class GestionApisController extends BaseController {
                         }
                     }
                     return "desarrollador/interno/secciones :: readme";
+
+                case "docaltonivel":
+                    Optional<doc_alto_nivel> docAltoNivel = docAltoNivelRepository.findByApi_IdApi(api.getIdApi());
+                    if (docAltoNivel.isPresent()) {
+                        model.addAttribute("docAltoNivel", docAltoNivel.get());
+                    } else {
+                        model.addAttribute("docAltoNivel", new doc_alto_nivel(api));
+                    }
+
+                    return "desarrollador/interno/secciones :: docaltonivel";
+
                 default:
                     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sección no encontrada");
             }
@@ -250,6 +265,10 @@ public class GestionApisController extends BaseController {
             model.addAttribute("listaEstados", estadoApiRepository.findAll());
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se pudo encontrar la API solicitada");
 
+        List<ProyectoHasApi> proyectos = proyectoHasApiRepository.findByApi_IdApi(idApi);
+        model.addAttribute("contProyectos", proyectos.size());
+        model.addAttribute("contProd", proyectos.stream().filter(p -> p.getEntorno().getNombre().equals("Producción")).count());
+
         model.addAttribute("currentView", "ajustes");
         return "desarrollador/interno/ajustesApi";
     }
@@ -280,14 +299,34 @@ public class GestionApisController extends BaseController {
         return "redirect:/dev/int/misApis/"+api.getIdApi()+"/ajustes";
     }
 
-    @DeleteMapping("/eliminar")
+    @PostMapping("/eliminar")
     public String eliminarApi(Authentication auth, HttpSession session,
-                              @RequestParam Integer idApi) {
+                              @RequestParam Integer idApi, RedirectAttributes redirectAttributes) {
 
         Usuario usuario = getCurrentUser(auth, session);
 
+        Api api = apiRepository.findById(idApi)
+                .filter(a -> a.getEquipo().equals(usuario.getEquipo()))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN, "No se pudo eliminar la Api."));
 
-        return "redirect:/dev/int/misApis/";
+        try {
+            List<ProyectoHasApi> proyectos = proyectoHasApiRepository.findByApi_IdApi(idApi);
+            long count = proyectos.stream().filter(p -> p.getEntorno().getNombre().equals("Producción")).count();
+
+            if (!proyectos.isEmpty() || count > 0) {
+                throw new Exception();
+            }
+
+            apiRepository.delete(api);
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("toastMessage", "No se pudo eliminar la Api "+api.getNombre());
+            redirectAttributes.addFlashAttribute("toastType", "error");
+            return "redirect:/dev/int/misApis/"+api.getIdApi()+"/ajustes";
+        }
+        redirectAttributes.addFlashAttribute("toastMessage", "Api "+api.getNombre()+" eliminada correctamente");
+        redirectAttributes.addFlashAttribute("toastType", "success");
+        return "redirect:/dev/int/misApis";
     }
 
 }
