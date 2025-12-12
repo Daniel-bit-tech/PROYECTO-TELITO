@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -166,21 +167,7 @@ public class OnboardingService {
     }
 
 
-    public List<ApiResponse> obtenerApisDisponibles(String dniUsuario) {
-        Usuario usuario = usuarioRepository.findByDni(dniUsuario);
-        if (usuario == null || usuario.getOrganizacion() == null) {
-            System.err.println("ADVERTENCIA: No se pueden obtener APIs disponibles. El usuario " + dniUsuario + " no tiene una organización asignada.");
-            return List.of();
-        }
 
-        Integer idOrganizacion = usuario.getOrganizacion().getIdOrganizacion();
-
-        List<Api> apis = apiRepository.findApisDisponiblesPorOrganizacion(idOrganizacion);
-
-        return apis.stream()
-                .map(this::mapearAApiResponse)
-                .collect(Collectors.toList());
-    }
 
     public String obtenerDniPorCorreo(String correo) {
         Usuario usuario = usuarioRepository.findByCorreo(correo);
@@ -386,4 +373,23 @@ public class OnboardingService {
                 .map(this::mapearASolicitudAccesoResponse)
                 .collect(Collectors.toList());
     }
+
+    public List<ApiResponse> obtenerApisDisponibles(String dniUsuario) {
+        // Obtener el usuario
+        Usuario usuario = usuarioRepository.findByDni(dniUsuario);
+        if (usuario == null || usuario.getOrganizacion() == null) {
+            return Collections.emptyList();
+        }
+
+        // Buscar APIs disponibles para la organización del usuario
+        List<Api> apis = apiRepository.findApisDisponiblesParaOrganizacion(
+                usuario.getOrganizacion().getIdOrganizacion()
+        );
+
+        // Convertir a DTOs ApiResponse usando el mapeador que ya tienes
+        return apis.stream()
+                .map(this::mapearAApiResponse)
+                .collect(Collectors.toList());
+    }
+
 }

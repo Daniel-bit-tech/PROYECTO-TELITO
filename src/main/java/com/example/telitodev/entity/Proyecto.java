@@ -16,13 +16,14 @@ public class Proyecto {
     @Column(name = "idProyecto")
     private Integer idProyecto;
 
+    // RELACIÓN CON EQUIPO
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idOrganizacion")
-    private Organizacion organizacion;
+    @JoinColumn(name = "idEquipo")
+    private Equipo equipo;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="dni_po_lider",nullable = false)
-    private Usuario usuarioLider;
+    //@ManyToOne(fetch = FetchType.LAZY)
+    //@JoinColumn(name="dni_po_lider",nullable = false)
+    //private Usuario usuarioLider;
 
     @Size(min = 5, max = 45)
     @NotBlank
@@ -66,19 +67,11 @@ public class Proyecto {
         this.idProyecto = idProyecto;
     }
 
-    public Organizacion getOrganizacion() {
-        return organizacion;
-    }
-    public void setOrganizacion(Organizacion organizacion) {
-        this.organizacion = organizacion;
-    }
+    //public Organizacion getOrganizacion() {return organizacion;}
+    //public void setOrganizacion(Organizacion organizacion) {this.organizacion = organizacion;}
 
-    public Usuario getUsuarioLider() {
-        return usuarioLider;
-    }
-    public void setUsuarioLider(Usuario usuarioLider) {
-        this.usuarioLider = usuarioLider;
-    }
+    //public Usuario getUsuarioLider() {return usuarioLider;}
+    //public void setUsuarioLider(Usuario usuarioLider) {this.usuarioLider = usuarioLider;}
 
     public String getNombre() {
         return nombre;
@@ -134,5 +127,14 @@ public class Proyecto {
     }
     public void setProyectoHasApis(List<ProyectoHasApi> proyectoHasApis) {
         this.proyectoHasApis = proyectoHasApis;
+    }
+
+    // AÑADE ESTOS GETTER Y SETTER:
+    public Equipo getEquipo() {
+        return equipo;
+    }
+
+    public void setEquipo(Equipo equipo) {
+        this.equipo = equipo;
     }
 }

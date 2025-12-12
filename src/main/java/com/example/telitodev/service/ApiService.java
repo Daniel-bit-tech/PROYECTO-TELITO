@@ -1,6 +1,7 @@
 package com.example.telitodev.service;
 
 import com.example.telitodev.entity.Api;
+import com.example.telitodev.entity.Equipo;
 import com.example.telitodev.repository.ApiRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,19 @@ public class ApiService {
     }
 
 
+    // Obtener todas las APIs
     public List<Api> getAllApis() {
         return apiRepository.findAll();
     }
+
+    // Obtener APIs asociadas a un equipo específico
+    public List<Api> getApisByEquipo(Equipo equipo) {
+        return apiRepository.findByEquipo(equipo);
+    }
+
+    // Obtener APIs disponibles para una organización específica
+    public List<Api> getApisByOrganizacion(Integer idOrganizacion) {
+        return apiRepository.findApisDisponiblesParaOrganizacion(idOrganizacion);
+    }
+
 }

@@ -11,30 +11,44 @@ import java.util.List;
 @Repository
 public interface ProyectoRepository extends JpaRepository<Proyecto, Integer> {
 
+    // Proyectos donde el usuario pertenece a la organización del equipo
+    List<Proyecto> findByEquipo_Organizacion_Usuarios_Dni(String dni);
 
-    List<Proyecto> findByOrganizacion_Usuarios_Dni(@Param("dni") String dni);
+    List<Proyecto> findByActivoAndEquipo_Organizacion_Usuarios_Dni(Boolean activo, String dni);
 
-    List<Proyecto> findByActivoAndOrganizacion_Usuarios_Dni(Boolean activo, String organizacion_usuarios_dni);
+    List<Proyecto> findByPublicoAndEquipo_Organizacion_Usuarios_Dni(Boolean publico, String dni);
 
-    List<Proyecto> findByPublicoAndOrganizacion_Usuarios_Dni(Boolean publico, String organizacion_usuarios_dni);
+    // Proyectos por organización (vía Equipo -> Organizacion)
+    List<Proyecto> findByEquipo_Organizacion_IdOrganizacion(Integer idOrganizacion);
 
-    // Consultas por organización (más apropiadas)
-    List<Proyecto> findByOrganizacion_IdOrganizacion(Integer idOrganizacion);
-    
-    List<Proyecto> findByActivoAndOrganizacion_IdOrganizacion(Boolean activo, Integer idOrganizacion);
-    
-    List<Proyecto> findByPublicoAndOrganizacion_IdOrganizacion(Boolean publico, Integer idOrganizacion);
+    List<Proyecto> findByActivoAndEquipo_Organizacion_IdOrganizacion(Boolean activo, Integer idOrganizacion);
 
+    List<Proyecto> findByPublicoAndEquipo_Organizacion_IdOrganizacion(Boolean publico, Integer idOrganizacion);
+
+    // Filtros simples
     List<Proyecto> findByPublico(Boolean publico);
     List<Proyecto> findByActivo(Boolean activo);
 
-
-    // Para obtener proyectos activos de una organización específica
-    @Query("SELECT p FROM Proyecto p WHERE p.organizacion.idOrganizacion = :organizacionId AND p.activo = true")
+    // Proyectos activos de una organización específica
+    @Query("""
+       SELECT DISTINCT p
+       FROM Proyecto p
+       JOIN p.equipo e
+       JOIN e.organizacion o
+       WHERE o.idOrganizacion = :organizacionId
+         AND p.activo = true
+       """)
     List<Proyecto> findProyectosActivosByOrganizacionId(@Param("organizacionId") Integer organizacionId);
 
-    // Para obtener proyectos con sus APIs cargadas
-    @Query("SELECT p FROM Proyecto p LEFT JOIN FETCH p.proyectoHasApis pha LEFT JOIN FETCH pha.api WHERE p.organizacion.idOrganizacion = :organizacionId")
+    // Proyectos de una organización con sus APIs cargadas
+    @Query("""
+       SELECT DISTINCT p
+       FROM Proyecto p
+       JOIN p.equipo e
+       JOIN e.organizacion o
+       LEFT JOIN FETCH p.proyectoHasApis pha
+       LEFT JOIN FETCH pha.api
+       WHERE o.idOrganizacion = :organizacionId
+       """)
     List<Proyecto> findByOrganizacionIdWithApis(@Param("organizacionId") Integer organizacionId);
-
 }

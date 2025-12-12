@@ -39,51 +39,67 @@
             this.organizacionService = organizacionService;
             this.apiRepository = apiRepository;
         }
-    
+
         @GetMapping("/organizacion")
         public String showOrganizacion(Model model, Authentication auth, HttpSession session) {
             try {
-                // 1. Obtener usuario logueado
+                // 1. Usuario logueado (soporta impersonación por BaseController)
                 Usuario usuario = getCurrentUser(auth, session);
                 model.addAttribute("usuario", usuario);
-                // Agregar atributos de impersonación
                 addImpersonationAttributes(model, session);
-    
-                // 2. Obtener organización del usuario
-                Organizacion organizacion = organizacionRepository.findByUsuarioDni(usuario.getDni());
-    
-                if (organizacion == null) {
-                    // Si no tiene organización, mostrar página vacía
-                    return "po/organizacion";
-                }
-    
-                model.addAttribute("organizacion", organizacion);
-    
-                // 3. Obtener miembros de la organización (con roles cargados)
-                List<Usuario> miembros = usuarioRepository.findByOrganizacionIdWithRol(organizacion.getIdOrganizacion());
-                model.addAttribute("miembros", miembros);
-    
-                // 4. Obtener proyectos activos de la organización
-                List<Proyecto> proyectosActivos = proyectoRepository.findProyectosActivosByOrganizacionId(organizacion.getIdOrganizacion());
-                model.addAttribute("proyectosActivos", proyectosActivos);
-    
-                // 5. Obtener APIs únicas de la organización
-                // En el controller, reemplaza la línea:
-                List<Api> apisUnicas = apiRepository.findByOrganizacionId(organizacion.getIdOrganizacion());
-                model.addAttribute("apis", apisUnicas);
-    
-            return "po/organizacion";
 
-        } catch (Exception e) {
-            // En caso de error, igual mostrar la página pero sin datos adicionales
-            Usuario usuario = getCurrentUser(auth, session);
-            model.addAttribute("usuario", usuario);
-            addImpersonationAttributes(model, session);
-            return "po/organizacion";
+                // 2. Equipo del usuario (nuevo foco de la vista)
+                Equipo equipo = usuario.getEquipo();
+                model.addAttribute("equipo", equipo);
+
+                // 3. Organización (derivada del equipo o, en su defecto, del usuario)
+                Organizacion organizacion = null;
+                if (equipo != null) {
+                    organizacion = equipo.getOrganizacion();
+                } else {
+                    // fallback por si el usuario tiene org pero aún no equipo
+                    organizacion = usuario.getOrganizacion();
+                }
+                model.addAttribute("organizacion", organizacion);
+
+                // 4. Miembros del equipo
+                List<Usuario> miembros = Collections.emptyList();
+                if (equipo != null && equipo.getUsuarios() != null) {
+                    miembros = equipo.getUsuarios();
+                }
+                model.addAttribute("miembros", miembros);
+
+                // 5. APIs del equipo
+                List<Api> apis = Collections.emptyList();
+                if (equipo != null && equipo.getApis() != null) {
+                    apis = equipo.getApis();
+                }
+                model.addAttribute("apis", apis);
+
+                // 6. Proyectos activos del equipo
+                List<Proyecto> proyectosActivos = Collections.emptyList();
+                if (equipo != null && equipo.getProyectos() != null) {
+                    proyectosActivos = equipo.getProyectos()
+                            .stream()
+                            .filter(p -> Boolean.TRUE.equals(p.getActivo()))
+                            .collect(Collectors.toList());
+                }
+                model.addAttribute("proyectosActivos", proyectosActivos);
+
+                // 7. Renderizar la misma vista (que ahora ya cambiamos a “MI Equipo”)
+                return "po/organizacion";
+
+            } catch (Exception e) {
+                // En caso de error, mostrar la página pero al menos con el usuario cargado
+                Usuario usuario = getCurrentUser(auth, session);
+                model.addAttribute("usuario", usuario);
+                addImpersonationAttributes(model, session);
+                return "po/organizacion";
+            }
         }
-    }        // metodo para mostrar el historial de solicitudes de acceso
-    
-            // Método para el historial (NUEVO)
+
+
+        // Método para el historial (NUEVO)
             // Método para el historial - ACTUALIZADO CON DATOS REALES
         @GetMapping("/historialSolicitudes")
         public String mostrarHistorialSolicitudes(Model model, Authentication auth, HttpSession session) {
@@ -205,17 +221,20 @@
                             .distinct()
                             .collect(Collectors.toList());
                 }
-    
+
                 // Opción 2: Si no hay proyectos con APIs, usar las relaciones lazy
-                if (organizacion.getProyectos() != null) {
-                    return organizacion.getProyectos().stream()
+                if (organizacion.getEquipos() != null) {
+                    return organizacion.getEquipos().stream()
+                            .filter(equipo -> equipo.getProyectos() != null)
+                            .flatMap(equipo -> equipo.getProyectos().stream())
                             .filter(proyecto -> proyecto.getProyectoHasApis() != null)
                             .flatMap(proyecto -> proyecto.getProyectoHasApis().stream())
                             .map(ProyectoHasApi::getApi)
                             .distinct()
                             .collect(Collectors.toList());
                 }
-    
+
+
             } catch (Exception e) {
                 // Si hay error de lazy loading, devolver lista vacía
             }

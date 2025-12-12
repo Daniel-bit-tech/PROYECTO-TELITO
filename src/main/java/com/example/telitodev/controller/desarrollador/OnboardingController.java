@@ -90,10 +90,10 @@ public class OnboardingController extends BaseController {
             // Usuario con organización - cargar datos normalmente
             model.addAttribute("usuarioNuevo", false);
             try {
-                List<ApiResponse> apisDisponibles = onboardingService.obtenerApisDisponibles(usuario.getDni());
+                //List<ApiResponse> apisDisponibles = onboardingService.obtenerApisDisponibles(usuario.getDni());
                 List<CredencialApiResponse> misCredenciales = onboardingService.obtenerCredencialesUsuario(usuario.getDni());
 
-                model.addAttribute("apisDisponibles", apisDisponibles);
+                //model.addAttribute("apisDisponibles", apisDisponibles);
                 model.addAttribute("misCredenciales", misCredenciales);
                 model.addAttribute("totalCredenciales", misCredenciales.size());
 

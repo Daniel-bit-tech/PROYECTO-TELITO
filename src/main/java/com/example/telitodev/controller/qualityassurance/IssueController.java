@@ -212,7 +212,7 @@ public class IssueController extends BaseController {
         notif.setMensaje("Se ha creado un nuevo issue para tu API: " + newIssue.getReporte().getApi().getNombre());
         notif.setLeido(false);
         notif.setFecha(new Timestamp(System.currentTimeMillis()));
-        notif.setUsuario(newIssue.getReporte().getApi().getUsuario()); // propietario de la API
+        notif.setUsuario(newIssue.getReporte().getApi().getUsuarioPropietario()); // propietario de la API
         notificacionRepository.save(notif);
 
         ActividadReciente actividad = new ActividadReciente();
@@ -312,7 +312,7 @@ public class IssueController extends BaseController {
         comentarioRepository.save(newComentario);
 
         // Después de guardar el comentario
-        Usuario desarrollador = issue.getReporte().getApi().getUsuario(); // propietario de la API
+        Usuario desarrollador = issue.getReporte().getApi().getUsuarioPropietario(); // propietario de la API
 
         Notificacion notif = new Notificacion();
         notif.setMensaje("El QA " + usuario.getNombre() +
@@ -353,7 +353,7 @@ public class IssueController extends BaseController {
         issueRepository.save(issue);
 
         // Opcional: enviar notificación al desarrollador
-        Usuario dev = issue.getReporte().getApi().getUsuario();
+        Usuario dev = issue.getReporte().getApi().getUsuarioPropietario();
         if(dev != null){
             Notificacion notif = new Notificacion();
             notif.setMensaje("El QA cerró el Issue: " + issue.getReporte().getApi().getNombre());

@@ -72,11 +72,11 @@ public class ProyectosPoController extends BaseController {
             // Mostrar proyectos de su organización
             Integer organizacionId = usuario.getOrganizacion().getIdOrganizacion();
             if (filtro != null && filtro.equals("activos")) {
-                listaProyectos = proyectoRepository.findByActivoAndOrganizacion_IdOrganizacion(true, organizacionId);
+                listaProyectos = proyectoRepository.findByActivoAndEquipo_Organizacion_IdOrganizacion(true, organizacionId);
             } else if (filtro != null && filtro.equals("privados")) {
-                listaProyectos = proyectoRepository.findByPublicoAndOrganizacion_IdOrganizacion(false, organizacionId);
+                listaProyectos = proyectoRepository.findByPublicoAndEquipo_Organizacion_IdOrganizacion(false, organizacionId);
             } else {
-                listaProyectos = proyectoRepository.findByOrganizacion_IdOrganizacion(organizacionId);
+                listaProyectos = proyectoRepository.findByEquipo_Organizacion_IdOrganizacion(organizacionId);
             }
         }
 
@@ -113,7 +113,7 @@ public class ProyectosPoController extends BaseController {
             model.addAttribute("usuario", usuario);
             model.addAttribute("currentPortal", "po");
 
-            model.addAttribute("apisDisponibles", apiRepository.findApisNotAssociatedWithProyecto(id));
+            model.addAttribute("apisDisponibles", apiRepository.findApiNotAssociatedWithProyecto(id));
             model.addAttribute("entornosDisponibles", entornoRepository.findAll());
 
             model.addAttribute("nuevaAsociacion", nuevaAsociacion);
@@ -134,10 +134,10 @@ public class ProyectosPoController extends BaseController {
         ProyectoHasApi proyHasApi = proyHasApiRepository.findById(idProyHasApi)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto o la API."));
 
-        if (!proyHasApi.getProyecto().getUsuarioLider().equals(usuario)
-                && !proyHasApi.getProyecto().getOrganizacion().equals(usuario.getOrganizacion())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para editar este proyecto.");
-        }
+        //(if (!proyHasApi.getProyecto().getUsuarioLider().equals(usuario)
+        //        && !proyHasApi.getProyecto().getEquipo().equals(usuario.getOrganizacion())) {
+        //    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para editar este proyecto.");
+        //}
 
         Integer currentEntornoId = proyHasApi.getEntorno().getIdEntorno();
         Integer newEntornoId = idEntorno;

@@ -143,7 +143,7 @@ public class ReporteController extends BaseController {
     public String madeReport(Model model, Authentication auth, HttpSession session){
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
-        List<ApiProyectoDTO> apisParaValidar = apiRepository.findApisToReportForQa(usuario.getDni());
+        List<Api> apisParaValidar = apiRepository.findApisToReportForQa();
         model.addAttribute("apis", apisParaValidar);
 
         System.out.println("Lonigut es: "+apisParaValidar.size());
@@ -219,7 +219,7 @@ public class ReporteController extends BaseController {
 
         // Si se encontró algún error, recargamos la vista del formulario con los mensajes
         if (hasErrors) {
-            List<ApiProyectoDTO> apisParaValidar = apiRepository.findApisToReportForQa(usuario.getDni());
+            List<Api> apisParaValidar = apiRepository.findApisToReportForQa();
             model.addAttribute("apisParaValidar", apisParaValidar);
             model.addAttribute("estadosReporte", List.of("Aprobado", "Fallido"));
             addImpersonationAttributes(model, session);

@@ -612,7 +612,7 @@
               <i class="fas fa-info-circle"></i> Ver Detalles
             </a>
             <a sec:authorize="hasRole('PO')"
-               th:if="${usuario.organizacion.idOrganizacion == proyecto.organizacion.idOrganizacion}"
+               th:if="${proyecto.equipo.organizacion.idOrganizacion == proyecto.equipo.organizacion.idOrganizacion}"
                class="btn btn-outline btn-light" th:href="@{'/proyectos/' + ${proyecto.idProyecto}+'/config'}">
               <i class="fas fa-cog"></i> Configurar
             </a>

@@ -39,97 +39,118 @@ public class RoadmapController {
         if (auth != null && auth.isAuthenticated()) {
             Usuario usuario = obtenerUsuarioActual(auth, session);
             model.addAttribute("usuario", usuario);
-            System.out.println("👤 Usuario: " + usuario.getNombre());
-        }
+            System.out.println("👤 Usuario (para roadmap): " + usuario.getNombre());
 
-        // Obtener todas las APIs
-        List<Api> allApis = apiRepository.findAll();
-        System.out.println("📊 Total de APIs encontradas: " + allApis.size());
+            // 🔹 AQUÍ filtramos las APIs según equipo/organización
+            List<Api> allApis;
 
-        List<Map<String,Object>> roadmapData = new ArrayList<>();
-        List<Map<String,Object>> roadmapControls = new ArrayList<>();
+            if (usuario.getEquipo() != null) {
+                // Caso normal: PO con equipo asignado → solo APIs de su equipo
+                System.out.println("📌 Usuario con equipo: " + usuario.getEquipo().getNombre());
+                allApis = apiRepository.findByEquipo(usuario.getEquipo());
 
-        // Obtener datos para los controles (todas las APIs)
-        for (Api api : allApis) {
-            Map<String, Object> control = new HashMap<>();
-            control.put("apiId", api.getIdApi());
-            control.put("apiNombre", api.getNombre());
+            } else if (usuario.getOrganizacion() != null) {
+                // Si por diseño tienes PO a nivel organización (sin equipo concreto)
+                System.out.println("🏢 Usuario sin equipo pero con organización: "
+                        + usuario.getOrganizacion().getNombre());
+                allApis = apiRepository.findApisDisponiblesParaOrganizacion(
+                        usuario.getOrganizacion().getIdOrganizacion()
+                );
 
-            // Buscar el estado actual de la API
-            Optional<Roadmap> roadmapOpt = roadmapRepository.findByApiIdApi(api.getIdApi());
-            String estadoActual;
-            if (roadmapOpt.isPresent()) {
-                estadoActual = roadmapOpt.get().getEstado();
-                System.out.println("✅ API " + api.getNombre() + " - Estado: " + estadoActual);
-
-                // Solo agregar a roadmapData si no está en "Sin estado"
-                if (!"Sin estado".equals(estadoActual)) {
-                    Map<String, Object> roadmapItem = new HashMap<>();
-                    roadmapItem.put("api", api.getNombre());
-                    roadmapItem.put("apiId", api.getIdApi());
-
-                    // Generar fechas basadas en el estado actual
-                    Date fechaModificacion = roadmapOpt.get().getFechaModificacion();
-                    Date startDate;
-                    Date endDate;
-
-                    switch(estadoActual) {
-                        case "Próxima":
-                            startDate = fechaModificacion;
-                            Calendar cal = Calendar.getInstance();
-                            cal.setTime(fechaModificacion);
-                            cal.add(Calendar.DAY_OF_MONTH, 15);
-                            endDate = cal.getTime();
-                            break;
-
-                        case "En desarrollo":
-                            startDate = fechaModificacion;
-                            Calendar cal2 = Calendar.getInstance();
-                            cal2.setTime(fechaModificacion);
-                            cal2.add(Calendar.DAY_OF_MONTH, 30);
-                            endDate = cal2.getTime();
-                            break;
-
-                        case "Nueva":
-                            startDate = fechaModificacion;
-                            Calendar cal3 = Calendar.getInstance();
-                            cal3.setTime(fechaModificacion);
-                            cal3.add(Calendar.DAY_OF_MONTH, 15);
-                            endDate = cal3.getTime();
-                            break;
-
-                        default:
-                            startDate = fechaModificacion;
-                            endDate = fechaModificacion;
-                    }
-
-                    roadmapItem.put("start", startDate.toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate().toString());
-                    roadmapItem.put("end", endDate.toInstant()
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDate().toString());
-                    roadmapItem.put("estado", estadoActual);
-
-                    roadmapData.add(roadmapItem);
-                }
             } else {
-                estadoActual = "Sin estado";
-                System.out.println("❌ API " + api.getNombre() + " - Sin roadmap, estado por defecto: " + estadoActual);
+                // Usuario sin equipo ni organización (caso raro)
+                System.out.println("⚠️ Usuario sin equipo ni organización, no se mostrarán APIs");
+                allApis = Collections.emptyList();
             }
 
-            control.put("currentEstado", estadoActual);
-            roadmapControls.add(control);
+            System.out.println("📊 Total de APIs visibles para el usuario: " + allApis.size());
+
+            // A partir de aquí tu código tal cual, usando allApis
+            List<Map<String,Object>> roadmapData = new ArrayList<>();
+            List<Map<String,Object>> roadmapControls = new ArrayList<>();
+
+            for (Api api : allApis) {
+                Map<String, Object> control = new HashMap<>();
+                control.put("apiId", api.getIdApi());
+                control.put("apiNombre", api.getNombre());
+
+                Optional<Roadmap> roadmapOpt = roadmapRepository.findByApiIdApi(api.getIdApi());
+                String estadoActual;
+                if (roadmapOpt.isPresent()) {
+                    estadoActual = roadmapOpt.get().getEstado();
+                    System.out.println("✅ API " + api.getNombre() + " - Estado: " + estadoActual);
+
+                    if (!"Sin estado".equals(estadoActual)) {
+                        Map<String, Object> roadmapItem = new HashMap<>();
+                        roadmapItem.put("api", api.getNombre());
+                        roadmapItem.put("apiId", api.getIdApi());
+
+                        Date fechaModificacion = roadmapOpt.get().getFechaModificacion();
+                        Date startDate;
+                        Date endDate;
+
+                        switch (estadoActual) {
+                            case "Próxima":
+                                startDate = fechaModificacion;
+                                Calendar cal = Calendar.getInstance();
+                                cal.setTime(fechaModificacion);
+                                cal.add(Calendar.DAY_OF_MONTH, 15);
+                                endDate = cal.getTime();
+                                break;
+
+                            case "En desarrollo":
+                                startDate = fechaModificacion;
+                                Calendar cal2 = Calendar.getInstance();
+                                cal2.setTime(fechaModificacion);
+                                cal2.add(Calendar.DAY_OF_MONTH, 30);
+                                endDate = cal2.getTime();
+                                break;
+
+                            case "Nueva":
+                                startDate = fechaModificacion;
+                                Calendar cal3 = Calendar.getInstance();
+                                cal3.setTime(fechaModificacion);
+                                cal3.add(Calendar.DAY_OF_MONTH, 15);
+                                endDate = cal3.getTime();
+                                break;
+
+                            default:
+                                startDate = fechaModificacion;
+                                endDate = fechaModificacion;
+                        }
+
+                        roadmapItem.put("start", startDate.toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate().toString());
+                        roadmapItem.put("end", endDate.toInstant()
+                                .atZone(ZoneId.systemDefault())
+                                .toLocalDate().toString());
+                        roadmapItem.put("estado", estadoActual);
+
+                        roadmapData.add(roadmapItem);
+                    }
+                } else {
+                    estadoActual = "Sin estado";
+                    System.out.println("❌ API " + api.getNombre() + " - Sin roadmap, estado por defecto: " + estadoActual);
+                }
+
+                control.put("currentEstado", estadoActual);
+                roadmapControls.add(control);
+            }
+
+            System.out.println("📈 Roadmap Data: " + roadmapData.size() + " elementos");
+            System.out.println("🎮 Roadmap Controls: " + roadmapControls.size() + " elementos");
+
+            model.addAttribute("roadmapData", roadmapData);
+            model.addAttribute("roadmapControls", roadmapControls);
+
+            return "po/roadmap";
         }
 
-        System.out.println("📈 Roadmap Data: " + roadmapData.size() + " elementos");
-        System.out.println("🎮 Roadmap Controls: " + roadmapControls.size() + " elementos");
-
-        model.addAttribute("roadmapData", roadmapData);
-        model.addAttribute("roadmapControls", roadmapControls);
-
-        return "po/roadmap";
+        // Si por algún motivo no hay auth
+        return "redirect:/login";
     }
+
 
     @PostMapping("/roadmap/{apiId}/estado")
     @ResponseBody
@@ -171,7 +192,7 @@ public class RoadmapController {
             System.out.println("📝 API encontrada: " + api.getNombre());
 
             // Buscar si ya existe un roadmap para esta API
-            Optional<Roadmap> roadmapOpt = roadmapRepository.findByApiIdApi(apiId);
+            Optional<Roadmap> roadmapOpt = roadmapRepository.findFirstByApiIdApiOrderByFechaModificacionDesc(apiId);
 
             Roadmap roadmap;
             if (roadmapOpt.isPresent()) {
@@ -217,7 +238,7 @@ public class RoadmapController {
 
         try {
             // Buscar si existe un roadmap para esta API
-            Optional<Roadmap> roadmapOpt = roadmapRepository.findByApiIdApi(apiId);
+            Optional<Roadmap> roadmapOpt = roadmapRepository.findFirstByApiIdApiOrderByFechaModificacionDesc(apiId);
 
             if (roadmapOpt.isPresent()) {
                 Roadmap roadmap = roadmapOpt.get();

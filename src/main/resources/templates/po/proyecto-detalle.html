@@ -62,8 +62,8 @@
 <!--                                                    <span class="avatar avatar-2 rounded" style="background-image: url(/static/org-logo.png)"> </span>-->
                                                 </div>
                                                 <div class="col">
-                                                    <div class="font-weight-medium" th:text="${proyecto.organizacion.nombre}">Organización X</div>
-                                                    <div class="text-secondary">ID Organización: <span th:text="${proyecto.organizacion.idOrganizacion}">12345</span></div>
+                                                    <div class="font-weight-medium" th:text="${proyecto.equipo.organizacion.nombre}">Organización X</div>
+                                                    <div class="text-secondary">ID Organización: <span th:text="${proyecto.equipo.organizacion.idOrganizacion}">12345</span></div>
                                                 </div>
                                                 <div class="col-auto">
                                                     <span class="badge bg-indigo text-indigo-fg">Org</span>
@@ -106,7 +106,7 @@
                             <div class="card-header">
                                 <h3 class="card-title">Información del Proyecto</h3>
                                 <div class="card-actions">
-                                    <a th:if="${usuario.organizacion.idOrganizacion == proyecto.organizacion.idOrganizacion}"
+                                    <a th:if="${proyecto.equipo.organizacion.idOrganizacion == proyecto.equipo.organizacion.idOrganizacion}"
                                             class="btn btn-primary btn-3" th:href="@{'/proyectos/' + ${proyecto.idProyecto}+'/config'}">
                                         <i class="icon fas fa-cog"></i> Configurar
                                     </a>
@@ -163,7 +163,7 @@
                             <div class="card-header">
                                 <h3 class="card-title">APIs Asociadas</h3>
                                 <div class="card-actions">
-                                    <button th:if="${usuario.organizacion.idOrganizacion == proyecto.organizacion.idOrganizacion}"
+                                    <button th:if="${proyecto.equipo.organizacion.idOrganizacion == proyecto.equipo.organizacion.idOrganizacion}"
                                             class="btn btn-outline btn-primary" id="add-apis" onclick="abrirModalAgregarApi()">
                                         <i class="icon fas fa-plus"></i> Agregar
                                     </button>

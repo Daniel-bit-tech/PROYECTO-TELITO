@@ -4,12 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    
+
     <!-- CSRF Token para AJAX requests -->
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
-    
-    <title>TELITO DEVELOPER PORTAL | Organización</title>
+
+    <title>TELITO DEVELOPER PORTAL | Equipo</title>
     <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler.css?1757307620" rel="stylesheet" />
     <link href="/tabler/dist/css/tabler-flags.css?1757307620" rel="stylesheet" />
@@ -204,39 +204,73 @@
 <script src="/tabler/dist/js/tabler-theme.min.js?1757307620"></script>
 <div class="page">
 
-    <!-- Header específico para PO - SIEMPRE usar el header PO en esta vista -->
+    <!-- Header específico para PO -->
     <header th:replace="~{po/header_po :: header}"></header>
 
     <div class="content">
         <div class="organization-container">
             <div class="organization-header">
-                <h1 class="organization-title">MI Organización</h1>
-                <p class="organization-subtitle">Información general de la organización y proyectos asociados</p>
+                <h1 class="organization-title">MI Equipo</h1>
+                <p class="organization-subtitle">
+                    Información general de tu equipo dentro de la organización y proyectos asociados
+                </p>
             </div>
 
-            <!-- Información de la organización -->
-            <div class="organization-info" th:if="${organizacion != null}">
+            <!-- BLOQUE PRINCIPAL: datos del equipo -->
+            <div class="organization-info" th:if="${equipo != null}">
+
+                <!-- Stats rápidas -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" th:text="${#lists.size(miembros)}">3</div>
+                        <div class="stat-label">Miembros del equipo</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" th:text="${#lists.size(apis)}">2</div>
+                        <div class="stat-label">APIs del equipo</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" th:text="${#lists.size(proyectosActivos)}">1</div>
+                        <div class="stat-label">Proyectos activos</div>
+                    </div>
+                </div>
+
                 <div class="info-grid">
                     <div>
                         <div class="info-section">
                             <h3 class="info-section-title">Información General</h3>
+
                             <div class="info-item">
-                                <span class="info-label">Nombre de la Organización:</span>
-                                <span class="info-value" th:text="${organizacion.nombre}">Telito Development Team</span>
+                                <span class="info-label">Nombre del Equipo:</span>
+                                <span class="info-value" th:text="${equipo.nombre}">Data Insights Team</span>
                             </div>
+
                             <div class="info-item">
-                                <span class="info-label">Descripción:</span>
-                                <span class="info-value" th:text="${organizacion.descripcion}">Equipo de desarrollo especializado en APIs y microservicios</span>
+                                <span class="info-label">Organización:</span>
+                                <span class="info-value"
+                                      th:text="${equipo.organizacion != null ? equipo.organizacion.nombre : 'Sin organización'}">
+                                    Data Insights
+                                </span>
                             </div>
+
+                            <div class="info-item" th:if="${equipo.organizacion != null}">
+                                <span class="info-label">Descripción de la Organización:</span>
+                                <span class="info-value" th:text="${equipo.organizacion.descripcion}">
+                                    Consultora especializada en análisis de datos y BI
+                                </span>
+                            </div>
+
                             <div class="info-item">
-                                <span class="info-label">Fecha de Creación:</span>
-                                <!-- CORREGIDO: Formato simple para java.sql.Date -->
-                                <span class="info-value" th:text="${organizacion.fechaCreacion}">15/08/2025</span>
+                                <span class="info-label">Fecha de Creación del Equipo:</span>
+                                <span class="info-value"
+                                      th:text="${#dates.format(equipo.fechaCreacion, 'yyyy-MM-dd')}">
+                                    2024-05-10
+                                </span>
                             </div>
                         </div>
 
                         <div class="info-section">
-                            <h3 class="info-section-title">APIs de la Organización</h3>
+                            <h3 class="info-section-title">APIs del Equipo</h3>
                             <div class="apis-list" th:if="${not #lists.isEmpty(apis)}">
                                 <span class="api-tag" th:each="api : ${apis}">
                                     <i class="fas fa-code"></i>
@@ -244,7 +278,7 @@
                                 </span>
                             </div>
                             <div class="no-data" th:if="${#lists.isEmpty(apis)}">
-                                No hay APIs asociadas a esta organización
+                                No hay APIs asociadas a este equipo
                             </div>
                         </div>
                     </div>
@@ -255,19 +289,25 @@
                             <div class="members-list" th:if="${not #lists.isEmpty(miembros)}">
                                 <span class="member-tag" th:each="miembro : ${miembros}">
                                     <i class="fas fa-user"></i>
-                                    <span th:text="${miembro.nombre + ' ' + miembro.apellidoPaterno + ' ' + miembro.apellidoMaterno}">Juan Pérez</span>
-                                    <!-- CORREGIDO: Verificar si rol existe -->
-                                    <span class="member-role" th:if="${miembro.rol != null}" th:text="'(' + ${miembro.rol.nombreRol} + ')'">(Desarrollador)</span>
-                                    <span class="member-role" th:if="${miembro.rol == null}">(Sin rol)</span>
+                                    <span th:text="${miembro.nombre + ' ' + miembro.apellidoPaterno + ' ' + miembro.apellidoMaterno}">
+                                        Juan Pérez
+                                    </span>
+                                    <span class="member-role" th:if="${miembro.rol != null}"
+                                          th:text="'(' + ${miembro.rol.nombreRol} + ')'">
+                                        (Desarrollador)
+                                    </span>
+                                    <span class="member-role" th:if="${miembro.rol == null}">
+                                        (Sin rol)
+                                    </span>
                                 </span>
                             </div>
                             <div class="no-data" th:if="${#lists.isEmpty(miembros)}">
-                                No hay miembros en esta organización
+                                No hay miembros en este equipo
                             </div>
                         </div>
 
                         <div class="info-section">
-                            <h3 class="info-section-title">Proyectos Activos</h3>
+                            <h3 class="info-section-title">Proyectos Activos del Equipo</h3>
                             <div class="projects-list" th:if="${not #lists.isEmpty(proyectosActivos)}">
                                 <span class="project-tag" th:each="proyecto : ${proyectosActivos}">
                                     <i class="fas fa-project-diagram"></i>
@@ -275,18 +315,30 @@
                                 </span>
                             </div>
                             <div class="no-data" th:if="${#lists.isEmpty(proyectosActivos)}">
-                                No hay proyectos activos
+                                No hay proyectos activos en este equipo
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Mensaje si no hay organización -->
-            <div class="organization-info" th:if="${organizacion == null}">
+            <!-- Si el usuario tiene organización pero no equipo -->
+            <div class="organization-info" th:if="${equipo == null and organizacion != null}">
+                <div class="text-center">
+                    <h3>No estás asignado a ningún equipo</h3>
+                    <p class="text-muted">
+                        Perteneces a la organización
+                        <strong th:text="${organizacion.nombre}">Data Insights</strong>,
+                        pero aún no tienes un equipo asignado. Contacta al administrador.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Si no tiene ni organización ni equipo -->
+            <div class="organization-info" th:if="${equipo == null and organizacion == null}">
                 <div class="text-center">
                     <h3>No perteneces a ninguna organización</h3>
-                    <p class="text-muted">Contacta con un administrador para ser asignado a una organización.</p>
+                    <p class="text-muted">Contacta con un administrador para ser asignado a una organización y equipo.</p>
                 </div>
             </div>
 
@@ -294,7 +346,7 @@
             <div class="action-section">
                 <h3 class="action-title">¿Necesitas integrar nuevos miembros a tu equipo?</h3>
                 <p class="action-description">
-                    Solicita acceso para nuevos desarrolladores o QA que necesiten trabajar en los proyectos de esta organización.
+                    Solicita acceso para nuevos desarrolladores o QA que necesiten trabajar en los proyectos de este equipo.
                     El superadministrador revisará y aprobará la solicitud.
                 </p>
                 <a th:href="@{/po/solicitudAcceso}" class="btn-solicitud">
@@ -313,27 +365,24 @@
 
 <!-- Configuración automática de CSRF para AJAX requests -->
 <script>
-    // Configurar CSRF token automáticamente para todas las requests AJAX
     document.addEventListener('DOMContentLoaded', function() {
         const token = document.querySelector("meta[name='_csrf']")?.getAttribute("content");
         const header = document.querySelector("meta[name='_csrf_header']")?.getAttribute("content");
-        
+
         if (token && header) {
-            // Configurar CSRF para fetch API
             const originalFetch = window.fetch;
             window.fetch = function(url, options = {}) {
                 options.headers = options.headers || {};
                 options.headers[header] = token;
                 return originalFetch(url, options);
             };
-            
-            // Configurar CSRF para XMLHttpRequest
+
             const originalOpen = XMLHttpRequest.prototype.open;
             XMLHttpRequest.prototype.open = function() {
                 originalOpen.apply(this, arguments);
                 this.setRequestHeader(header, token);
             };
-            
+
             console.log('✅ CSRF configurado automáticamente para AJAX requests');
         } else {
             console.warn('⚠️ Token CSRF no encontrado');

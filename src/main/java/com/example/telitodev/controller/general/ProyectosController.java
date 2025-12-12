@@ -81,11 +81,11 @@ public class ProyectosController extends BaseController {
             // Mostrar proyectos de su organización
             Integer organizacionId = usuario.getOrganizacion().getIdOrganizacion();
             if (filtro != null && filtro.equals("activos")) {
-                listaProyectos = proyectoRepository.findByActivoAndOrganizacion_IdOrganizacion(true, organizacionId);
+                listaProyectos = proyectoRepository.findByActivoAndEquipo_Organizacion_IdOrganizacion(true, organizacionId);
             } else if (filtro != null && filtro.equals("ocultos")) {
-                listaProyectos = proyectoRepository.findByPublicoAndOrganizacion_IdOrganizacion(false, organizacionId);
+                listaProyectos = proyectoRepository.findByPublicoAndEquipo_Organizacion_IdOrganizacion(false, organizacionId);
             } else {
-                listaProyectos = proyectoRepository.findByOrganizacion_IdOrganizacion(organizacionId);
+                listaProyectos = proyectoRepository.findByEquipo_Organizacion_IdOrganizacion(organizacionId);
             }
         }
 
@@ -132,7 +132,7 @@ public class ProyectosController extends BaseController {
         if (proyecto.getPublico() ||
                 usuario.getRol().getNombreRol().equals("SUPERADMIN") ||
 //                (usuario.getRol().getNombreRol().equals("PO") && proyecto.getOrganizacion().equals(usuario.getOrganizacion()))) {
-                (usuario.getOrganizacion() != null && proyecto.getOrganizacion().equals(usuario.getOrganizacion()))) {
+                (usuario.getOrganizacion() != null && proyecto.getEquipo().equals(usuario.getOrganizacion()))) {
             model.addAttribute("proyecto", proyecto);
         } else {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes ver los detalles de este proyecto");
@@ -140,7 +140,7 @@ public class ProyectosController extends BaseController {
         model.addAttribute("listaApis", apiRepository.findAll());
         model.addAttribute("usuario", usuario);
 
-        model.addAttribute("apisDisponibles", apiRepository.findApisNotAssociatedWithProyecto(id));
+
         model.addAttribute("entornosDisponibles", entornoRepository.findAll());
         model.addAttribute("nuevaAsociacion", new ProyectoHasApi());
         return "po/proyectoDetalle";
@@ -159,8 +159,8 @@ public class ProyectosController extends BaseController {
             return "redirect:/proyectos";
         }
 
-        proyecto.setUsuarioLider(usuario);
-        proyecto.setOrganizacion(usuario.getOrganizacion());
+        //proyecto.setUsuarioLider(usuario);
+        proyecto.setEquipo(usuario.getEquipo());
         proyecto.setFechaInicio(LocalDate.now());
         proyecto.setPublico(true);
         proyecto.setActivo(true);
@@ -187,9 +187,10 @@ public class ProyectosController extends BaseController {
         addImpersonationAttributes(model, session);
         
         Optional<Proyecto> proyectoOptional = proyectoRepository.findById(id);
+
+        // esto iba aqui -> && proyectoOptional.get().getUsuarioLider().equals(usuario)
         if (proyectoOptional.isPresent() &&
-                proyectoOptional.get().getOrganizacion().equals(usuario.getOrganizacion()) &&
-                proyectoOptional.get().getUsuarioLider().equals(usuario)) {
+                proyectoOptional.get().getEquipo().equals(usuario.getOrganizacion())) {
             model.addAttribute("proyecto", proyectoOptional.get());
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No tiene permiso para configurar este proyecto");
@@ -231,11 +232,12 @@ public class ProyectosController extends BaseController {
             Proyecto existente = proyectoRepository.findById(proyecto.getIdProyecto())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
-            if (usuario.getOrganizacion().equals(existente.getOrganizacion()) && existente.getUsuarioLider().equals(usuario)) {
+            // esto iba a qui usuario.getOrganizacion().equals(existente.getEquipo()) && existente.getUsuarioLider().equals(usuario)
+            if (usuario.getOrganizacion().equals(existente.getEquipo())) {
                 proyecto.setNombre(existente.getNombre());
                 proyecto.setFechaInicio(existente.getFechaInicio());
-                proyecto.setOrganizacion(existente.getOrganizacion());
-                proyecto.setUsuarioLider(existente.getUsuarioLider());
+                proyecto.setEquipo(existente.getEquipo());
+                //proyecto.setUsuarioLider(existente.getUsuarioLider());
             } else {
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto");
             }
@@ -243,8 +245,8 @@ public class ProyectosController extends BaseController {
 
             System.out.println("Creando proy: "+proyecto.getNombre());
             // Creación
-            proyecto.setOrganizacion(usuario.getOrganizacion());
-            proyecto.setUsuarioLider(usuario);
+            proyecto.setEquipo(usuario.getEquipo());
+            //proyecto.setUsuarioLider(usuario);
         }
 
         proyectoRepository.save(proyecto);
@@ -269,7 +271,7 @@ public class ProyectosController extends BaseController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No puedes modificar proyectos porque no tienes una organización asignada. Contacta al administrador.");
         }
 
-        if (!usuario.getOrganizacion().equals(proyecto.getOrganizacion())) {
+        if (!usuario.getOrganizacion().equals(proyecto.getEquipo())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para modificar este proyecto");
         }
 

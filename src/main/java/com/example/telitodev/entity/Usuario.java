@@ -56,6 +56,10 @@ public class Usuario {
     @JoinColumn(name = "idRol", nullable = false, insertable = true, updatable = true)
     private Rol rol;
 
+    @ManyToOne
+    @JoinColumn(name = "idEquipo")
+    private Equipo equipo;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idOrganizacion", nullable = true, insertable = true, updatable = true)
     private Organizacion organizacion;
@@ -101,9 +105,9 @@ public class Usuario {
     @JsonIgnore
     private List<AuditLog> auditLogs;
 
-    @OneToMany(mappedBy = "usuarioLider", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Proyecto> proyectosLiderados;
+    //@OneToMany(mappedBy = "usuarioLider", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    //@JsonIgnore
+    //private List<Proyecto> proyectosLiderados;
 
     // relaciones para la tabla SolAccesoOrg
 
@@ -113,9 +117,11 @@ public class Usuario {
     @OneToMany(mappedBy = "usuarioRevisor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<SolAccesoOrg> solicitudesAccesoOrgRevisadas;
 
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Api> misApis;
+
+
+    //@OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    //@JsonIgnore
+    //private List<Api> misApis;
     // // //
 
     // Constructores
@@ -191,13 +197,9 @@ public class Usuario {
         this.alias = alias;
     }
 
-    public List<Proyecto> getProyectosLiderados() {
-        return proyectosLiderados;
-    }
+    //public List<Proyecto> getProyectosLiderados() {return proyectosLiderados;}
 
-    public void setProyectosLiderados(List<Proyecto> proyectosLiderados) {
-        this.proyectosLiderados = proyectosLiderados;
-    }
+    //public void setProyectosLiderados(List<Proyecto> proyectosLiderados) {this.proyectosLiderados = proyectosLiderados;}
 
     public Timestamp getFechaRegistro() {
         return fechaRegistro;
@@ -311,13 +313,9 @@ public class Usuario {
         this.auditLogs = auditLogs;
     }
 
-    public List<Api> getMisApis() {
-        return misApis;
-    }
+    //public List<Api> getMisApis() {return misApis;}
 
-    public void setMisApis(List<Api> misApis) {
-        this.misApis = misApis;
-    }
+    //public void setMisApis(List<Api> misApis) {this.misApis = misApis;}
 
     // Getters y Setters para OAuth2
     public TipoAcceso getTipoAcceso() {
@@ -372,5 +370,13 @@ public class Usuario {
 
     public void setSolicitudesAccesoOrgRevisadas(List<SolAccesoOrg> solicitudesAccesoOrgRevisadas) {
         this.solicitudesAccesoOrgRevisadas = solicitudesAccesoOrgRevisadas;
+    }
+
+    public Equipo getEquipo() {
+        return equipo;
+    }
+
+    public void setEquipo(Equipo equipo) {
+        this.equipo = equipo;
     }
 }

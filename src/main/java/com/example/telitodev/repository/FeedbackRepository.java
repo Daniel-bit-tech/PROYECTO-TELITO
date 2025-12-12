@@ -14,9 +14,9 @@ import java.util.List;
 
 @Repository
 public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
-    List<Feedback> findByUsuario_Dni(String dni);
-    List<Feedback> findByUsuario(Usuario usuario);
-    List<Feedback> findByApi_Usuario_Dni(String dniUsuario);
+    //List<Feedback> findByUsuario_Dni(String dni);
+    //List<Feedback> findByUsuario(Usuario usuario);
+    //List<Feedback> findByApi_Usuario_Dni(String dniUsuario);
     // NUEVO: Método que soporta paginación
     Page<Feedback> findByUsuario(Usuario usuario, Pageable pageable);
     List<Feedback> findByApiIn(List<Api> apis);

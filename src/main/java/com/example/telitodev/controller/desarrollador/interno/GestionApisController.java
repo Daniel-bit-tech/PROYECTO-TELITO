@@ -75,8 +75,8 @@ public class GestionApisController extends BaseController {
         addImpersonationAttributes(model, session);
 
 //        Page<Api> listaApis = apiRepository.findByUserOrgAndFilters(nombre, selDominios, selTags, selEstados, usuario.getOrganizacion().getIdOrganizacion(), pageable);
-        List<Api> listaApis = apiRepository.findByFilterAndDniUsuario(nombre, selDominios, selTags, usuario.getDni());
-        model.addAttribute("listaApis", listaApis);
+
+
 
         model.addAttribute("listaDominios", dominioRepository.findAll());
         model.addAttribute("listaTags", tagRepository.findAll());
@@ -98,7 +98,7 @@ public class GestionApisController extends BaseController {
         addImpersonationAttributes(model, session);
 
         Optional<Api> apiX = apiRepository.findById(idApi);
-        if (apiX.isPresent() && apiX.get().getUsuario().equals(usuario)) {
+        if (apiX.isPresent() && apiX.get().getUsuarioPropietario().equals(usuario)) {
             Api api = apiX.get();
             model.addAttribute("api", api);
 
@@ -132,7 +132,7 @@ public class GestionApisController extends BaseController {
         Usuario usuario = getCurrentUser(auth, session);
 
         Optional<Api> apiX = apiRepository.findById(idApi);
-        if (apiX.isPresent() && apiX.get().getUsuario().equals(usuario)) {
+        if (apiX.isPresent() && apiX.get().getUsuarioPropietario().equals(usuario)) {
             Api api = apiX.get();
             model.addAttribute("api", apiX.get());
 
@@ -194,7 +194,7 @@ public class GestionApisController extends BaseController {
         model.addAttribute("listaEstados", VersionApi.EstadoVersion.values());
 
         Optional<Api> apiX = apiRepository.findById(idApi);
-        if (apiX.isPresent() && apiX.get().getUsuario().equals(usuario)) {
+        if (apiX.isPresent() && apiX.get().getUsuarioPropietario().equals(usuario)) {
             Api api = apiX.get();
             model.addAttribute("api", api);
 
@@ -242,7 +242,7 @@ public class GestionApisController extends BaseController {
         addImpersonationAttributes(model, session);
 
         Optional<Api> apiX = apiRepository.findById(idApi);
-        if (apiX.isPresent() && apiX.get().getUsuario().equals(usuario)) {
+        if (apiX.isPresent() && apiX.get().getUsuarioPropietario().equals(usuario)) {
             model.addAttribute("api", apiX.get());
             model.addAttribute("listaEstados", estadoApiRepository.findAll());
         } else throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No se pudo encontrar la API solicitada");

@@ -27,11 +27,12 @@ public class Organizacion {
     @OneToMany(mappedBy = "organizacion",fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Usuario> usuarios;
 
-    @OneToMany(mappedBy = "organizacion",fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<Proyecto> proyectos;
+    @OneToMany(mappedBy = "organizacion", fetch = FetchType.LAZY)
+    private List<Equipo> equipos;
 
     //Get y Set
-
+    public List<Equipo> getEquipos() { return equipos; }
+    public void setEquipos(List<Equipo> equipos) { this.equipos = equipos; }
 
     public Integer getIdOrganizacion() {
         return idOrganizacion;
@@ -68,10 +69,5 @@ public class Organizacion {
         this.usuarios = usuarios;
     }
 
-    public List<Proyecto> getProyectos() {
-        return proyectos;
-    }
-    public void setProyectos(List<Proyecto> proyectos) {
-        this.proyectos = proyectos;
-    }
+
 }
