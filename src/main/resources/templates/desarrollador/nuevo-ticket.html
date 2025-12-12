@@ -47,8 +47,9 @@
                                         <label class="form-label required">API Relacionada</label>
                                         <select class="form-select" name="idApi" required>
                                             <option value="">Selecciona una API...</option>
-                                            <option th:each="api : ${apis}" th:value="${api.idApi}" th:text="${api.nombre}">API Name</option>
+                                            <option th:each="api : ${apis}" th:value="${api.idApi}" th:text="${api.nombre} + ' - ' + ${api.descripcion}">API Name</option>
                                         </select>
+                                        <small class="form-hint">Selecciona la API relacionada con tu consulta</small>
                                     </div>
                                     <div class="mb-3">
                                         <label class="form-label required">Descripción Detallada</label>

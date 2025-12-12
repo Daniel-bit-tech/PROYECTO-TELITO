@@ -100,24 +100,42 @@ public class SoporteController extends BaseController {
     public String showNuevoTicket(Model model, Authentication auth, HttpSession session) {
         
         try {
-            // Cargar la lista de APIs disponibles para el dropdown
-            List<Api> apis = apiRepository.findAll();
-            logger.info("APIs cargadas: " + (apis != null ? apis.size() : "null"));
+            logger.info("📋 Cargando formulario de nuevo ticket...");
             
-            if (apis == null || apis.isEmpty()) {
+            // Obtener usuario actual
+            Usuario usuario = getCurrentUser(auth, session);
+            model.addAttribute("usuario", usuario);
+            
+            // Cargar la lista de APIs usando query nativa para evitar problemas con lazy loading
+            List<Object[]> apisBasicas = apiRepository.findBasicApiInfo();
+            logger.info("APIs cargadas: " + (apisBasicas != null ? apisBasicas.size() : "null"));
+            
+            // Convertir a una lista simple para el formulario
+            List<Map<String, Object>> apisSimplificadas = new java.util.ArrayList<>();
+            
+            if (apisBasicas != null && !apisBasicas.isEmpty()) {
+                for (Object[] row : apisBasicas) {
+                    Map<String, Object> apiData = new HashMap<>();
+                    apiData.put("idApi", row[0]);
+                    apiData.put("nombre", row[1] != null ? row[1].toString() : "Sin nombre");
+                    apiData.put("descripcion", row[2] != null ? row[2].toString() : "Sin descripción");
+                    apisSimplificadas.add(apiData);
+                }
+            } else {
                 logger.warn("No hay APIs disponibles en la base de datos");
-                apis = new java.util.ArrayList<>();
             }
             
-            model.addAttribute("apis", apis);
+            model.addAttribute("apis", apisSimplificadas);
             
             // Agregar información de impersonación al modelo
             addImpersonationAttributes(model, session);
             
+            logger.info("✅ Formulario cargado correctamente con " + apisSimplificadas.size() + " APIs");
+            
             return "desarrollador/nuevo-ticket";
             
         } catch (Exception e) {
-            logger.error("Error al cargar formulario de nuevo ticket", e);
+            logger.error("❌ ERROR al cargar formulario de nuevo ticket: " + e.getMessage(), e);
             model.addAttribute("errorMessage", "Error al cargar el formulario: " + e.getMessage());
             return "error/500";
         }
@@ -298,26 +316,46 @@ public class SoporteController extends BaseController {
         Map<String, Object> response = new HashMap<>();
         
         try {
+            logger.info("📋 Obteniendo tickets del usuario...");
             Usuario usuario = getCurrentUser(auth, session);
+            logger.info("👤 Usuario: " + usuario.getDni());
+            
             List<Ticket> tickets = ticketRepository.findByUsuario_DniOrderByFechaCreacionDesc(usuario.getDni());
+            logger.info("✅ Tickets encontrados: " + tickets.size());
             
             List<Map<String, Object>> ticketsSimplificados = new java.util.ArrayList<>();
             for (Ticket ticket : tickets) {
-                Map<String, Object> ticketData = new HashMap<>();
-                ticketData.put("id", ticket.getIdTicket());
-                ticketData.put("asunto", ticket.getAsunto());
-                ticketData.put("estado", ticket.getEstado() ? "Activo" : "Cerrado");
-                ticketData.put("fechaCreacion", ticket.getFechaCreacion().toString());
-                ticketData.put("api", ticket.getApi() != null ? ticket.getApi().getNombre() : "N/A");
-                ticketsSimplificados.add(ticketData);
+                try {
+                    Map<String, Object> ticketData = new HashMap<>();
+                    ticketData.put("id", ticket.getIdTicket());
+                    ticketData.put("asunto", ticket.getAsunto());
+                    ticketData.put("estado", ticket.getEstado() ? "Activo" : "Cerrado");
+                    ticketData.put("fechaCreacion", ticket.getFechaCreacion() != null ? ticket.getFechaCreacion().toString() : "N/A");
+                    
+                    // Intentar obtener el nombre de la API de forma segura
+                    String apiNombre = "N/A";
+                    try {
+                        if (ticket.getApi() != null) {
+                            apiNombre = ticket.getApi().getNombre();
+                        }
+                    } catch (Exception apiEx) {
+                        logger.warn("No se pudo cargar el nombre de la API para ticket " + ticket.getIdTicket());
+                    }
+                    ticketData.put("api", apiNombre);
+                    
+                    ticketsSimplificados.add(ticketData);
+                } catch (Exception ticketEx) {
+                    logger.error("Error al procesar ticket " + ticket.getIdTicket(), ticketEx);
+                }
             }
             
             response.put("success", true);
             response.put("tickets", ticketsSimplificados);
             response.put("total", ticketsSimplificados.size());
+            logger.info("✅ Tickets procesados: " + ticketsSimplificados.size());
             
         } catch (Exception e) {
-            logger.error("Error al obtener tickets del usuario", e);
+            logger.error("❌ ERROR al obtener tickets del usuario: " + e.getMessage(), e);
             response.put("success", false);
             response.put("error", e.getMessage());
         }
@@ -335,36 +373,58 @@ public class SoporteController extends BaseController {
         Map<String, Object> response = new HashMap<>();
         
         try {
+            logger.info("🏢 Obteniendo información de organización...");
             Usuario usuario = getCurrentUser(auth, session);
+            logger.info("👤 Usuario: " + usuario.getDni());
             
             if (usuario.getOrganizacion() == null) {
+                logger.warn("⚠️ Usuario no tiene organización asignada");
                 response.put("success", false);
                 response.put("error", "No perteneces a ninguna organización");
                 return response;
             }
             
             Integer orgId = usuario.getOrganizacion().getIdOrganizacion();
-            List<Usuario> miembros = usuarioRepository.findByOrganizacion_IdOrganizacion(orgId);
+            logger.info("🏢 ID Organización: " + orgId);
+            
+            List<Usuario> miembros = usuarioRepository.findByOrganizacionIdWithRol(orgId);
+            logger.info("✅ Miembros encontrados: " + miembros.size());
             
             Map<String, Object> orgInfo = new HashMap<>();
             orgInfo.put("nombre", usuario.getOrganizacion().getNombre());
-            orgInfo.put("descripcion", usuario.getOrganizacion().getDescripcion());
+            orgInfo.put("descripcion", usuario.getOrganizacion().getDescripcion() != null ? usuario.getOrganizacion().getDescripcion() : "Sin descripción");
             
             List<Map<String, Object>> miembrosSimplificados = new java.util.ArrayList<>();
             Usuario productOwner = null;
             
             for (Usuario miembro : miembros) {
-                Map<String, Object> miembroData = new HashMap<>();
-                miembroData.put("nombre", miembro.getNombre() + " " + (miembro.getApellidoPaterno() != null ? miembro.getApellidoPaterno() : ""));
-                miembroData.put("correo", miembro.getCorreo());
-                miembroData.put("rol", miembro.getRol() != null ? miembro.getRol().getNombreRol() : "Desarrollador");
-                
-                if (miembro.getRol() != null && miembro.getRol().getNombreRol().equals("PO")) {
-                    productOwner = miembro;
-                    miembroData.put("esProductOwner", true);
+                try {
+                    Map<String, Object> miembroData = new HashMap<>();
+                    String nombreCompleto = miembro.getNombre();
+                    if (miembro.getApellidoPaterno() != null && !miembro.getApellidoPaterno().isEmpty()) {
+                        nombreCompleto += " " + miembro.getApellidoPaterno();
+                    }
+                    miembroData.put("nombre", nombreCompleto);
+                    miembroData.put("correo", miembro.getCorreo());
+                    
+                    String rolNombre = "Desarrollador";
+                    try {
+                        if (miembro.getRol() != null) {
+                            rolNombre = miembro.getRol().getNombreRol();
+                            if (rolNombre.equals("PO")) {
+                                productOwner = miembro;
+                                miembroData.put("esProductOwner", true);
+                            }
+                        }
+                    } catch (Exception rolEx) {
+                        logger.warn("No se pudo obtener rol del usuario " + miembro.getDni());
+                    }
+                    
+                    miembroData.put("rol", rolNombre);
+                    miembrosSimplificados.add(miembroData);
+                } catch (Exception miembroEx) {
+                    logger.error("Error al procesar miembro " + miembro.getDni(), miembroEx);
                 }
-                
-                miembrosSimplificados.add(miembroData);
             }
             
             orgInfo.put("miembros", miembrosSimplificados);

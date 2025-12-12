@@ -979,14 +979,22 @@
         const logoutButtons = document.querySelectorAll('a[href*="logout"], button[onclick*="logout"]');
         logoutButtons.forEach(btn => {
             btn.addEventListener('click', function() {
+                // Limpiar historial del chatbot
                 sessionStorage.removeItem(CHAT_STORAGE_KEY);
+                // Limpiar flag de notificación mostrada
+                sessionStorage.removeItem(NOTIFICATION_SHOWN_KEY);
+                console.log('🔄 Historial del chatbot limpiado en logout');
             });
         });
 
         const logoutForm = document.querySelector('form[action*="logout"]');
         if (logoutForm) {
             logoutForm.addEventListener('submit', function() {
+                // Limpiar historial del chatbot
                 sessionStorage.removeItem(CHAT_STORAGE_KEY);
+                // Limpiar flag de notificación mostrada
+                sessionStorage.removeItem(NOTIFICATION_SHOWN_KEY);
+                console.log('🔄 Historial del chatbot limpiado en logout');
             });
         }
     })();
