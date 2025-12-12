@@ -118,29 +118,26 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
      */
 
 
-    /*
     @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
-            "a.idApi, a.nombre, MIN(p.nombre), a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, MIN(p.usuarioLider.dni)) " +
-            "FROM ProyectoHasApi pha " +
-            "JOIN pha.api a " +
-            "JOIN pha.proyecto p " +
+            "a.idApi, a.nombre, eq.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, NULL) " +
+            "FROM Api a " +
+            "JOIN a.equipo eq " +
+            "JOIN eq.usuarios u " +
             "JOIN a.apiHasEntornos ahe " +
             "JOIN ahe.entorno e " +
             "JOIN a.dominio d " +
             "JOIN a.tag t " +
-            "WHERE p.equipo.organizacion.idOrganizacion = (SELECT u.equipo.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
+            "WHERE u.dni = :dni " +
             "AND e.nombre = 'QA' " +
             "AND (:nombre IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
             "AND (:dominios IS NULL OR d.nombre IN :dominios) " +
             "AND (:tags IS NULL OR t.nombre IN :tags) " +
-            "GROUP BY a.idApi, a.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion")
+            "GROUP BY a.idApi, a.nombre, eq.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion")
     Page<ApiProyectoDTO> findApisForQaCatalog(@Param("dni") String dni,
                                               @Param("nombre") String nombre,
                                               @Param("dominios") List<String> dominios,
                                               @Param("tags") List<String> tags,
                                               Pageable pageable);
-
-     */
 
     @Query("SELECT COUNT(DISTINCT a.idApi) " +
             "FROM Api a " +
