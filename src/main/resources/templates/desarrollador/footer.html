@@ -467,7 +467,21 @@
         // Función para inicializar mensajes de bienvenida
         function initializeWelcomeMessages() {
             chatMessagesGlobal.innerHTML = '';
-            addMessageToDOM('¡Hola! Soy el asistente virtual de Telito. ¿En qué puedo ayudarte?<br><br><strong>Puedo ayudarte a:</strong><br>• Responder preguntas sobre nuestras APIs<br>• Crear un ticket de soporte<br>• Guiarte en la documentación<br><br>Escribe "crear ticket" para iniciar un nuevo ticket de soporte.', 'bot');
+            let mensajeBienvenida = '¡Hola! 👋 Soy el asistente virtual de Telito. ¿En qué puedo ayudarte?<br><br>';
+            mensajeBienvenida += '<strong>Puedo ayudarte a:</strong><br>';
+            mensajeBienvenida += '📋 Ver el estado de tus tickets<br>';
+            mensajeBienvenida += '✨ Crear un nuevo ticket de soporte<br>';
+            mensajeBienvenida += '👤 Mostrarte tu información y equipo<br>';
+            mensajeBienvenida += '🏢 Conocer a tu Product Owner<br>';
+            mensajeBienvenida += '🔌 Listar las APIs disponibles<br>';
+            mensajeBienvenida += '❓ Responder preguntas sobre nuestras APIs<br><br>';
+            mensajeBienvenida += '<strong>Comandos útiles:</strong><br>';
+            mensajeBienvenida += '• "crear ticket" - Nuevo ticket<br>';
+            mensajeBienvenida += '• "mis tickets" - Ver tus tickets<br>';
+            mensajeBienvenida += '• "mi organización" - Info del equipo<br>';
+            mensajeBienvenida += '• "ayuda" - Ver todos los comandos<br>';
+            
+            addMessageToDOM(mensajeBienvenida, 'bot');
         }
 
         // Función para guardar el historial en sessionStorage
@@ -484,6 +498,191 @@
             console.log('💾 Historial guardado:', messages.length, 'mensajes');
         }
 
+        // ========== FUNCIONES INTELIGENTES DEL CHATBOT ==========
+        
+        // Función para obtener información del usuario
+        async function obtenerInfoUsuario() {
+            try {
+                const response = await fetch('/dev/soporte/chatbot/info-usuario');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const user = data.usuario;
+                    let mensaje = `👤 <strong>Tu Información:</strong><br><br>`;
+                    mensaje += `<strong>Nombre:</strong> ${user.nombre}<br>`;
+                    mensaje += `<strong>Rol:</strong> ${user.rol}<br>`;
+                    
+                    if (user.organizacion) {
+                        mensaje += `<strong>Organización:</strong> ${user.organizacion.nombre}<br>`;
+                    }
+                    
+                    if (user.equipo) {
+                        mensaje += `<strong>Equipo:</strong> ${user.equipo.nombre}<br>`;
+                    }
+                    
+                    addMessageToDOM(mensaje, 'bot');
+                } else {
+                    addMessageToDOM('❌ No pude obtener tu información. Intenta de nuevo.', 'bot');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToDOM('❌ Error al obtener tu información.', 'bot');
+            }
+        }
+
+        // Función para obtener tickets del usuario
+        async function obtenerMisTickets() {
+            try {
+                const response = await fetch('/dev/soporte/chatbot/mis-tickets');
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.total === 0) {
+                        addMessageToDOM('📋 No tienes tickets creados actualmente. ¿Quieres crear uno? Escribe "<strong>crear ticket</strong>".', 'bot');
+                        return;
+                    }
+                    
+                    let mensaje = `📋 <strong>Tus Tickets (${data.total}):</strong><br><br>`;
+                    
+                    data.tickets.slice(0, 5).forEach(ticket => {
+                        const estadoIcon = ticket.estado === 'Activo' ? '🟢' : '🔴';
+                        mensaje += `${estadoIcon} <strong>${ticket.asunto}</strong><br>`;
+                        mensaje += `&nbsp;&nbsp;&nbsp;Estado: ${ticket.estado} | API: ${ticket.api}<br>`;
+                        mensaje += `&nbsp;&nbsp;&nbsp;Creado: ${ticket.fechaCreacion.substring(0, 10)}<br><br>`;
+                    });
+                    
+                    if (data.total > 5) {
+                        mensaje += `<em>Mostrando los 5 más recientes de ${data.total} tickets...</em>`;
+                    }
+                    
+                    addMessageToDOM(mensaje, 'bot');
+                } else {
+                    addMessageToDOM('❌ No pude obtener tus tickets. Intenta de nuevo.', 'bot');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToDOM('❌ Error al obtener tus tickets.', 'bot');
+            }
+        }
+
+        // Función para obtener información de la organización
+        async function obtenerInfoOrganizacion() {
+            try {
+                const response = await fetch('/dev/soporte/chatbot/mi-organizacion');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const org = data.organizacion;
+                    let mensaje = `🏢 <strong>${org.nombre}</strong><br><br>`;
+                    mensaje += `${org.descripcion}<br><br>`;
+                    mensaje += `<strong>Total de Miembros:</strong> ${org.totalMiembros}<br><br>`;
+                    
+                    if (org.productOwner) {
+                        mensaje += `👨‍💼 <strong>Product Owner:</strong><br>`;
+                        mensaje += `${org.productOwner.nombre}<br>`;
+                        mensaje += `📧 ${org.productOwner.correo}<br><br>`;
+                    }
+                    
+                    mensaje += `<strong>Miembros del Equipo:</strong><br>`;
+                    org.miembros.slice(0, 6).forEach(miembro => {
+                        const roleIcon = miembro.rol === 'PO' ? '👨‍💼' : miembro.rol === 'QA' ? '🧪' : '👨‍💻';
+                        mensaje += `${roleIcon} ${miembro.nombre} - ${miembro.rol}<br>`;
+                    });
+                    
+                    if (org.totalMiembros > 6) {
+                        mensaje += `<em>... y ${org.totalMiembros - 6} miembros más</em>`;
+                    }
+                    
+                    addMessageToDOM(mensaje, 'bot');
+                } else {
+                    addMessageToDOM('❌ No perteneces a ninguna organización o hubo un error.', 'bot');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToDOM('❌ Error al obtener información de la organización.', 'bot');
+            }
+        }
+
+        // Función para obtener solo el Product Owner
+        async function obtenerProductOwner() {
+            try {
+                const response = await fetch('/dev/soporte/chatbot/mi-organizacion');
+                const data = await response.json();
+                
+                if (data.success && data.organizacion.productOwner) {
+                    const po = data.organizacion.productOwner;
+                    let mensaje = `👨‍💼 <strong>Product Owner de ${data.organizacion.nombre}:</strong><br><br>`;
+                    mensaje += `<strong>Nombre:</strong> ${po.nombre}<br>`;
+                    mensaje += `<strong>Correo:</strong> <a href="mailto:${po.correo}">${po.correo}</a><br><br>`;
+                    mensaje += `Puedes contactarlo directamente para consultas sobre el proyecto.`;
+                    
+                    addMessageToDOM(mensaje, 'bot');
+                } else {
+                    addMessageToDOM('❌ No se encontró un Product Owner asignado a tu organización.', 'bot');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToDOM('❌ Error al obtener información del Product Owner.', 'bot');
+            }
+        }
+
+        // Función para obtener APIs disponibles
+        async function obtenerAPIs() {
+            try {
+                const response = await fetch('/dev/soporte/chatbot/apis');
+                const data = await response.json();
+                
+                if (data.success && data.apis.length > 0) {
+                    let mensaje = `🔌 <strong>APIs Disponibles (${data.apis.length}):</strong><br><br>`;
+                    
+                    data.apis.slice(0, 10).forEach(api => {
+                        mensaje += `• <strong>${api.nombre}</strong><br>`;
+                        mensaje += `&nbsp;&nbsp;&nbsp;${api.descripcion}<br><br>`;
+                    });
+                    
+                    if (data.apis.length > 10) {
+                        mensaje += `<em>Mostrando las primeras 10 de ${data.apis.length} APIs...</em>`;
+                    }
+                    
+                    addMessageToDOM(mensaje, 'bot');
+                } else {
+                    addMessageToDOM('❌ No se encontraron APIs disponibles.', 'bot');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToDOM('❌ Error al obtener las APIs.', 'bot');
+            }
+        }
+
+        // Función para mostrar ayuda con todos los comandos
+        function mostrarAyuda() {
+            let mensaje = `💡 <strong>Comandos Disponibles:</strong><br><br>`;
+            mensaje += `<strong>📋 Tickets:</strong><br>`;
+            mensaje += `• "crear ticket" - Crear un nuevo ticket<br>`;
+            mensaje += `• "mis tickets" - Ver tus tickets<br><br>`;
+            
+            mensaje += `<strong>👤 Información Personal:</strong><br>`;
+            mensaje += `• "quién soy" - Tu información<br>`;
+            mensaje += `• "mi información" - Tu perfil<br><br>`;
+            
+            mensaje += `<strong>🏢 Organización:</strong><br>`;
+            mensaje += `• "mi organización" - Info del equipo<br>`;
+            mensaje += `• "mi product owner" - Contacto del PO<br>`;
+            mensaje += `• "miembros" - Lista del equipo<br><br>`;
+            
+            mensaje += `<strong>🔌 APIs:</strong><br>`;
+            mensaje += `• "apis disponibles" - Lista de APIs<br><br>`;
+            
+            mensaje += `<strong>❓ Ayuda:</strong><br>`;
+            mensaje += `• "ayuda" - Ver estos comandos<br><br>`;
+            
+            mensaje += `También puedes hacerme cualquier pregunta sobre nuestras APIs y servicios. ¡Estoy aquí para ayudarte! 😊`;
+            
+            addMessageToDOM(mensaje, 'bot');
+        }
+
+        // ========== FIN FUNCIONES INTELIGENTES ==========
+
         async function sendMessageGlobal() {
             const message = chatInputGlobal.value.trim();
 
@@ -493,14 +692,64 @@
             addMessageToDOM(message, 'user');
             chatInputGlobal.value = '';
 
+            const messageLower = message.toLowerCase();
+
             // Verificar si estamos en el flujo de creación de tickets
             if (ticketFlow.active) {
                 await processTicketFlow(message);
                 return;
             }
 
+            // ========== COMANDOS INTELIGENTES ==========
+            
+            // Comandos de información personal
+            if (messageLower.includes('quién soy') || messageLower.includes('quien soy') || 
+                messageLower.includes('mi información') || messageLower.includes('mi informacion') || 
+                messageLower.includes('mi perfil')) {
+                await obtenerInfoUsuario();
+                return;
+            }
+            
+            // Comandos de tickets
+            if (messageLower.includes('mis tickets') || messageLower.includes('cuántos tickets') || 
+                messageLower.includes('cuantos tickets') || messageLower.includes('estado de mis tickets')) {
+                await obtenerMisTickets();
+                return;
+            }
+            
+            // Comandos de organización completa
+            if ((messageLower.includes('mi organización') || messageLower.includes('mi organizacion') || 
+                messageLower.includes('mi equipo') || messageLower.includes('miembros')) && 
+                !messageLower.includes('product owner') && !messageLower.includes('po')) {
+                await obtenerInfoOrganizacion();
+                return;
+            }
+            
+            // Comandos de Product Owner
+            if (messageLower.includes('product owner') || messageLower.includes('mi po') || 
+                messageLower.includes('quién es mi po') || messageLower.includes('quien es mi po') ||
+                messageLower.includes('contacto del po')) {
+                await obtenerProductOwner();
+                return;
+            }
+            
+            // Comandos de APIs
+            if (messageLower.includes('apis disponibles') || messageLower.includes('lista de apis') || 
+                messageLower.includes('qué apis') || messageLower.includes('que apis') ||
+                (messageLower.includes('apis') && messageLower.includes('hay'))) {
+                await obtenerAPIs();
+                return;
+            }
+            
+            // Comando de ayuda
+            if (messageLower === 'ayuda' || messageLower.includes('qué puedes hacer') || 
+                messageLower.includes('que puedes hacer') || messageLower === 'comandos') {
+                mostrarAyuda();
+                return;
+            }
+
             // Verificar si el usuario quiere crear un ticket
-            if (message.toLowerCase().includes('crear ticket') || message.toLowerCase().includes('nuevo ticket')) {
+            if (messageLower.includes('crear ticket') || messageLower.includes('nuevo ticket')) {
                 await startTicketFlow();
                 return;
             }
