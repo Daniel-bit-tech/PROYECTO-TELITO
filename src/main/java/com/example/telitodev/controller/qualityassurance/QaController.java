@@ -122,21 +122,20 @@ public class QaController extends BaseController {
                 String tiempoTranscurrido = "";
                 if (days > 365) {
                     long years = days / 365;
-                    tiempoTranscurrido = years + " años";
+                    tiempoTranscurrido = years == 1 ? "Hace 1 año" : "Hace " + years + " años";
                 } else if (days > 30) {
                     long months = days / 30;
-                    tiempoTranscurrido = months + " meses";
+                    tiempoTranscurrido = months == 1 ? "Hace 1 mes" : "Hace " + months + " meses";
                 } else if (days > 0) {
-                    tiempoTranscurrido = days + " días";
+                    tiempoTranscurrido = days == 1 ? "Hace 1 día" : "Hace " + days + " días";
                 } else if (hours > 0) {
-                    tiempoTranscurrido = hours + " horas";
+                    tiempoTranscurrido = hours == 1 ? "Hace 1 hora" : "Hace " + hours + " horas";
                 } else if (minutes > 0) {
-                    tiempoTranscurrido = minutes + " minutos";
+                    tiempoTranscurrido = minutes == 1 ? "Hace 1 minuto" : "Hace " + minutes + " minutos";
                 } else {
-                    tiempoTranscurrido = "Hace poco";
+                    tiempoTranscurrido = "Hace un momento";
                 }
 
-                // Asignamos el tiempo transcurrido a la propiedad
                 issue.setTiempoTranscurrido(tiempoTranscurrido);
             } else {
                 issue.setTiempoTranscurrido("Fecha desconocida");
@@ -158,21 +157,20 @@ public class QaController extends BaseController {
                 String tiempoTranscurrido = "";
                 if (days > 365) {
                     long years = days / 365;
-                    tiempoTranscurrido = years + " años";
+                    tiempoTranscurrido = years == 1 ? "1 año" : years + " años";
                 } else if (days > 30) {
                     long months = days / 30;
-                    tiempoTranscurrido = months + " meses";
+                    tiempoTranscurrido = months == 1 ? "1 mes" : months + " meses";
                 } else if (days > 0) {
-                    tiempoTranscurrido = days + " días";
+                    tiempoTranscurrido = days == 1 ? "1 día" : days + " días";
                 } else if (hours > 0) {
-                    tiempoTranscurrido = hours + " horas";
+                    tiempoTranscurrido = hours == 1 ? "1 hora" : hours + " horas";
                 } else if (minutes > 0) {
-                    tiempoTranscurrido = minutes + " minutos";
+                    tiempoTranscurrido = minutes == 1 ? "1 minuto" : minutes + " minutos";
                 } else {
                     tiempoTranscurrido = "Hace poco";
                 }
 
-                // Asignamos el tiempo transcurrido a la propiedad de la actividad
                 actividad.setTiempoTranscurrido(tiempoTranscurrido);
             } else {
                 actividad.setTiempoTranscurrido("Fecha desconocida");
