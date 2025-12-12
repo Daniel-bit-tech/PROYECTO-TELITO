@@ -71,13 +71,15 @@ public class IssueController extends BaseController {
         }
 
         Pageable pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
-        Page<Issue> issuePage = issueRepository.findByFilters(estados, inicio, fin, nombre, pageable);
+        Page<Issue> issuePage = issueRepository.findByFiltersForTeam(estados, inicio, fin, nombre, usuario.getDni(), pageable);
 
         // Si la página solicitada está fuera de rango, redirigir a la última página válida.
         if (page >= issuePage.getTotalPages() && issuePage.getTotalPages() > 0) {
             int lastPage = issuePage.getTotalPages() - 1;
             pageable = PageRequest.of(lastPage, size, Sort.by("fechaCreacion").descending());
-            issuePage = issueRepository.findByFilters(estados, inicio, fin, nombre, pageable);
+            issuePage = issueRepository.findByFiltersForTeam(
+            estados, inicio, fin, nombre, usuario.getDni(), pageable
+        );
             page = lastPage;
         }
 
@@ -202,11 +204,8 @@ public class IssueController extends BaseController {
             return "redirect:/qa/reportes";
         }
 
-        // --- INICIO DE VALIDACIÓN ---
         if (descripcion == null || descripcion.trim().isEmpty()) {
-            // Si hay error, usamos RedirectAttributes para enviar el error a la página anterior
             redirectAttributes.addFlashAttribute("errorDescripcion", "La descripción no puede estar vacía.");
-            // Redirigimos de vuelta a la página del detalle del reporte desde donde se crea el issue
             return "redirect:/qa/reporteDetalle?idReporte=" + idReporte;
         }
 
@@ -214,35 +213,44 @@ public class IssueController extends BaseController {
             redirectAttributes.addFlashAttribute("errorDescripcion", "La descripción no puede superar los 200 caracteres.");
             return "redirect:/qa/reporteDetalle?idReporte=" + idReporte;
         }
-        // --- FIN DE VALIDACIÓN ---
 
-        // Verificar que el reporte tiene estado "Fallido"
         if (!"Fallido".equals(reporte.getEstado())) {
             redirectAttributes.addFlashAttribute("error", "Solo puedes crear un Issue para reportes en estado 'Fallido'.");
             return "redirect:/qa/reportes";
         }
 
-        // Crear el IssueId (composite key)
-        IssueId issueId = new IssueId(); // Si el idIssue es autogenerado, no es necesario pasarlo
+        IssueId issueId = new IssueId();
         issueId.setIdReporte(idReporte);
 
-        // Crear el nuevo Issue
         Issue newIssue = new Issue();
-        newIssue.setId(issueId);  // Asignar el IssueId
+        newIssue.setId(issueId);
         newIssue.setDescripcion(descripcion);
-        newIssue.setEstado("Reportado");  // Establecer el estado del Issue
-        newIssue.setReporte(reporte); // Asociar el Issue con el Reporte
+        newIssue.setEstado("Reportado");
+        newIssue.setReporte(reporte);
         newIssue.setFechaCreacion(new Timestamp(System.currentTimeMillis()));
         newIssue.setCreador(usuario);
-        issueRepository.save(newIssue); // Guardar el Issue
+        issueRepository.save(newIssue);
 
-        // COMENTADO: API ahora usa Equipo, no tiene usuario directo
-        // Notificacion notif = new Notificacion();
-        // notif.setMensaje("Se ha creado un nuevo issue para tu API: " + newIssue.getReporte().getApi().getNombre());
-        // notif.setLeido(false);
-        // notif.setFecha(new Timestamp(System.currentTimeMillis()));
-        // notif.setUsuario(newIssue.getReporte().getApi().getUsuario()); // propietario de la API
-        // notificacionRepository.save(notif);
+        // NOTIFICAR SOLO A DESARROLLADORES Y QAS DEL EQUIPO
+        Equipo equipoApi = newIssue.getReporte().getApi().getEquipo();
+        if (equipoApi != null && equipoApi.getUsuarios() != null) {
+            for (Usuario miembro : equipoApi.getUsuarios()) {
+                // No notificar al creador del issue
+                if (!miembro.getDni().equals(usuario.getDni())) {
+                    // Solo notificar a DEV y QA
+                    String rolMiembro = miembro.getRol().getNombreRol();
+                    if ("DEV".equals(rolMiembro) || "QA".equals(rolMiembro)) {
+                        Notificacion notif = new Notificacion();
+                        notif.setMensaje("Se ha creado un nuevo issue para la API: " + 
+                            newIssue.getReporte().getApi().getNombre());
+                        notif.setLeido(false);
+                        notif.setFecha(new Timestamp(System.currentTimeMillis()));
+                        notif.setUsuario(miembro);
+                        notificacionRepository.save(notif);
+                    }
+                }
+            }
+        }
 
         ActividadReciente actividad = new ActividadReciente();
         actividad.setTitulo("Nuevo Issue");
@@ -250,8 +258,7 @@ public class IssueController extends BaseController {
         actividad.setUsuario(usuario);
         actividadRecienteRepository.save(actividad);
 
-
-        return "redirect:/qa/issues"; // Redirigir a la lista de Issues
+        return "redirect:/qa/issues";
     }
 
     @PostMapping("/crearComentario")
@@ -261,24 +268,19 @@ public class IssueController extends BaseController {
                                     @RequestParam("idReporte") Integer idReporte,
                                     Authentication auth, RedirectAttributes redirectAttributes) {
 
-
         if (comentario == null || comentario.trim().isEmpty()) {
             redirectAttributes.addFlashAttribute("errorComentario", "El comentario no puede estar vacío.");
-            // No repoblamos el comentario porque estaba vacío
             return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
         }
 
-        // Validación 2: Comentario no puede exceder los 400 caracteres
         if (comentario.length() > 400) {
             redirectAttributes.addFlashAttribute("errorComentario", "El comentario no puede superar los 400 caracteres.");
-            // Devolvemos el comentario para que el usuario pueda editarlo
             redirectAttributes.addFlashAttribute("submittedComentario", comentario);
             return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
         }
-        // Obtener el usuario
+
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
-        // Buscar el Issue y Reporte por sus ID
         IssueId issueId = new IssueId(idIssue, idReporte);
         Issue issue = issueRepository.findById(issueId).orElse(null);
         if (issue == null) {
@@ -286,24 +288,18 @@ public class IssueController extends BaseController {
             return "redirect:/qa/issues";
         }
 
-        // Crear comentario
         Comentario newComentario = new Comentario();
         newComentario.setComentario(comentario);
         newComentario.setFecha(new Timestamp(System.currentTimeMillis()));
         newComentario.setIssue(issue);
         newComentario.setUsuario(usuario);
 
-        System.out.println("------------------");
-        System.out.println(archivos.length);
-        System.out.println("------------------");
-
         if (archivos != null && archivos.length > 0) {
             archivos = Arrays.stream(archivos)
-                    .filter(file -> !file.isEmpty()) // Filtramos los archivos vacíos
+                    .filter(file -> !file.isEmpty())
                     .toArray(MultipartFile[]::new);
         }
 
-        // Validaciones de archivos
         if (archivos != null && archivos.length > 5) {
             redirectAttributes.addFlashAttribute("error", "Máximo 5 archivos permitidos");
             return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
@@ -315,7 +311,6 @@ public class IssueController extends BaseController {
                 return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
             }
 
-            // Validar tipo de archivo (solo imágenes y logs)
             String contentType = archivo.getContentType();
             if (!contentType.equals("image/png") && !contentType.equals("image/jpeg") && !contentType.equals("text/plain")) {
                 redirectAttributes.addFlashAttribute("error", "Solo se permiten archivos de tipo .png, .jpg o .log");
@@ -323,13 +318,11 @@ public class IssueController extends BaseController {
             }
 
             try {
-                // Guardar archivo adjunto
                 Adjunto adjunto = new Adjunto();
                 adjunto.setNombre(archivo.getOriginalFilename());
                 adjunto.setComentario(newComentario);
                 adjunto.setArchivo(archivo.getBytes());
                 adjuntoRepository.save(adjunto);
-
             } catch (IOException e) {
                 e.printStackTrace();
                 redirectAttributes.addFlashAttribute("error", "Error al guardar el archivo");
@@ -337,37 +330,42 @@ public class IssueController extends BaseController {
             }
         }
 
-        // Guardar el comentario
         comentarioRepository.save(newComentario);
 
-        // COMENTADO: API ahora usa Equipo, no tiene usuario directo
-        // Usuario desarrollador = issue.getReporte().getApi().getUsuario(); // propietario de la API
-        // 
-        // Notificacion notif = new Notificacion();
-        // notif.setMensaje("El QA " + usuario.getNombre() +
-        //         " comentó en el foro del Issue de tu API: " + issue.getReporte().getApi().getNombre());
-        // notif.setLeido(false);
-        // notif.setFecha(new Timestamp(System.currentTimeMillis()));
-        // notif.setUsuario(desarrollador); // receptor
-        // notificacionRepository.save(notif);
+        // NOTIFICAR SOLO A DESARROLLADORES Y QAS DEL EQUIPO
+        Equipo equipoApi = issue.getReporte().getApi().getEquipo();
+        if (equipoApi != null && equipoApi.getUsuarios() != null) {
+            for (Usuario miembro : equipoApi.getUsuarios()) {
+                // No notificar al que comentó
+                if (!miembro.getDni().equals(usuario.getDni())) {
+                    // Solo notificar a DEV y QA
+                    String rolMiembro = miembro.getRol().getNombreRol();
+                    if ("DEV".equals(rolMiembro) || "QA".equals(rolMiembro)) {
+                        Notificacion notif = new Notificacion();
+                        notif.setMensaje("El usuario " + usuario.getNombre() +
+                            " comentó en el issue de la API: " + issue.getReporte().getApi().getNombre());
+                        notif.setLeido(false);
+                        notif.setFecha(new Timestamp(System.currentTimeMillis()));
+                        notif.setUsuario(miembro);
+                        notificacionRepository.save(notif);
+                    }
+                }
+            }
+        }
 
-        // Registrar la actividad reciente
         ActividadReciente actividad = new ActividadReciente();
         actividad.setTitulo("Nuevo Comentario");
         actividad.setDescripcion("Has dejado un comentario en el issue " + issue.getReporte().getApi().getNombre());
         actividad.setUsuario(usuario);
         actividadRecienteRepository.save(actividad);
 
-        // Redirigir de nuevo al detalle del Issue
         return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
     }
 
     @PostMapping("/issueCerrar/{idIssue}/{idReporte}")
     public String cerrarIssue(@PathVariable Integer idIssue, @PathVariable Integer idReporte,
-                              RedirectAttributes redirectAttributes, Authentication auth) {
+                          RedirectAttributes redirectAttributes, Authentication auth) {
 
-
-        // Obtener el usuario
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
         IssueId issueId = new IssueId(idIssue, idReporte);
@@ -375,31 +373,60 @@ public class IssueController extends BaseController {
 
         if (issue == null) {
             redirectAttributes.addFlashAttribute("error", "Issue no encontrado");
-            return "redirect:/issues"; // o tu listado de QA
+            return "redirect:/qa/issues";
         }
 
+        // Cambiar estado del issue a Corregido
         issue.setEstado("Corregido");
         issueRepository.save(issue);
 
-        // COMENTADO: API ahora usa Equipo, no tiene usuario directo
-        // Usuario dev = issue.getReporte().getApi().getUsuario();
-        // if(dev != null){
-        //     Notificacion notif = new Notificacion();
-        //     notif.setMensaje("El QA cerró el Issue: " + issue.getReporte().getApi().getNombre());
-        //     notif.setLeido(false);
-        //     notif.setFecha(new Timestamp(System.currentTimeMillis()));
-        //     notif.setUsuario(dev);
-        //     notificacionRepository.save(notif);
-        // }
+        // CAMBIAR EL ESTADO DEL REPORTE A "Aprobado"
+        Reporte reporte = issue.getReporte();
+        if (reporte != null) {
+            reporte.setEstado("Aprobado");
+            reporteRepository.save(reporte);
+        }
 
-        // Registrar la actividad reciente
+        // NOTIFICACIONES DIFERENCIADAS POR ROL
+        Equipo equipoApi = issue.getReporte().getApi().getEquipo();
+        if (equipoApi != null && equipoApi.getUsuarios() != null) {
+            for (Usuario miembro : equipoApi.getUsuarios()) {
+                // No notificar al que cerró el issue
+                if (!miembro.getDni().equals(usuario.getDni())) {
+                    String rolMiembro = miembro.getRol().getNombreRol();
+                    
+                    // Notificación para QAs y DEVs
+                    if ("DEV".equals(rolMiembro) || "QA".equals(rolMiembro)) {
+                        Notificacion notif = new Notificacion();
+                        notif.setMensaje("El issue de la API '" + 
+                            issue.getReporte().getApi().getNombre() + "' ha sido corregido");
+                        notif.setLeido(false);
+                        notif.setFecha(new Timestamp(System.currentTimeMillis()));
+                        notif.setUsuario(miembro);
+                        notificacionRepository.save(notif);
+                    }
+                    
+                    // Notificación especial para POs
+                    if ("PO".equals(rolMiembro)) {
+                        Notificacion notifPO = new Notificacion();
+                        notifPO.setMensaje("Su API '" + issue.getReporte().getApi().getNombre() + 
+                            "' ya ha sido arreglada y puede ser usada para su proyecto.");
+                        notifPO.setLeido(false);
+                        notifPO.setFecha(new Timestamp(System.currentTimeMillis()));
+                        notifPO.setUsuario(miembro);
+                        notificacionRepository.save(notifPO);
+                    }
+                }
+            }
+        }
+
         ActividadReciente actividad = new ActividadReciente();
         actividad.setTitulo("Issue corregido");
         actividad.setDescripcion("Has cerrado el issue de " + issue.getReporte().getApi().getNombre());
         actividad.setUsuario(usuario);
         actividadRecienteRepository.save(actividad);
 
-        redirectAttributes.addFlashAttribute("success", "Issue cerrado correctamente");
+        redirectAttributes.addFlashAttribute("success", "Issue cerrado correctamente. El reporte ha sido aprobado.");
         return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
     }
 }

@@ -16,20 +16,25 @@ import java.util.List;
 
 @Repository
 public interface IssueRepository extends JpaRepository<Issue, IssueId> {
-    @Query("SELECT i FROM Issue i " +
-            "WHERE (:estados IS NULL OR i.estado IN :estados) " +
-            "AND (:inicio IS NULL OR i.fechaCreacion >= :inicio) " +
-            "AND (:fin IS NULL OR i.fechaCreacion <= :fin) " +
-            "AND (:nombre IS NULL OR LOWER(i.descripcion) LIKE LOWER(CONCAT('%', :nombre, '%')))")
-    Page<Issue> findByFilters(@Param("estados") List<String> estados,
-                              @Param("inicio") Timestamp inicio,
-                              @Param("fin") Timestamp fin,
-                              @Param("nombre") String nombre,
-                              Pageable pageable);
+    @Query("""
+        SELECT i FROM Issue i
+        WHERE (:estados IS NULL OR i.estado IN :estados)
+          AND (:inicio IS NULL OR i.fechaCreacion >= :inicio)
+          AND (:fin IS NULL OR i.fechaCreacion <= :fin)
+          AND (:nombre IS NULL OR LOWER(i.descripcion) LIKE LOWER(CONCAT('%', :nombre, '%')))
+          AND i.reporte.api.equipo.idEquipo = (SELECT u.equipo.idEquipo FROM Usuario u WHERE u.dni = :dniUsuario)
+    """)
+    Page<Issue> findByFiltersForTeam(
+            @Param("estados") List<String> estados,
+            @Param("inicio") Timestamp inicio,
+            @Param("fin") Timestamp fin,
+            @Param("nombre") String nombre,
+            @Param("dniUsuario") String dniUsuario,
+            Pageable pageable
+    );
 
     @Query("""
-        SELECT i 
-        FROM Issue i 
+        SELECT i FROM Issue i
         WHERE (:estados IS NULL OR i.estado IN :estados)
           AND (:inicio IS NULL OR i.fechaCreacion >= :inicio)
           AND (:fin IS NULL OR i.fechaCreacion <= :fin)
