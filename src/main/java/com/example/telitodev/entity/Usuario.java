@@ -105,10 +105,6 @@ public class Usuario {
     @JsonIgnore
     private List<AuditLog> auditLogs;
 
-    @OneToMany(mappedBy = "usuarioLider", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JsonIgnore
-    private List<Proyecto> proyectosLiderados;
-
     // relaciones para la tabla SolAccesoOrg
 
     @OneToMany(mappedBy = "usuarioSolicitante", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -194,14 +190,6 @@ public class Usuario {
 
     public void setAlias(String alias) {
         this.alias = alias;
-    }
-
-    public List<Proyecto> getProyectosLiderados() {
-        return proyectosLiderados;
-    }
-
-    public void setProyectosLiderados(List<Proyecto> proyectosLiderados) {
-        this.proyectosLiderados = proyectosLiderados;
     }
 
     public Timestamp getFechaRegistro() {

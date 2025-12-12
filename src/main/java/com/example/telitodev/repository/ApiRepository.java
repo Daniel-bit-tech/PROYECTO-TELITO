@@ -117,6 +117,8 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
      */
 
+
+    /*
     @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
             "a.idApi, a.nombre, MIN(p.nombre), a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, MIN(p.usuarioLider.dni)) " +
             "FROM ProyectoHasApi pha " +
@@ -138,6 +140,8 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
                                               @Param("tags") List<String> tags,
                                               Pageable pageable);
 
+     */
+
     @Query("SELECT COUNT(DISTINCT a.idApi) " +
             "FROM Api a " +
             "JOIN a.apiHasEntornos ahe " +
@@ -152,6 +156,7 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
      * Devuelve una lista completa (sin paginar) de las APIs que un QA necesita validar.
      * Incluye el DNI del PO Líder para usar en el formulario de creación de reportes.
      */
+    /*
     @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
             "a.idApi, a.nombre, MIN(p.nombre), a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, MIN(p.usuarioLider.dni)) " +
             "FROM Api a " +
@@ -166,6 +171,8 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
             "GROUP BY a.idApi, a.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion " +
             "ORDER BY a.nombre ASC")
     List<ApiProyectoDTO> findApisToReportForQa(@Param("dni") String dni);
+    
+     */
 
 
     /* ===== CONSULTAS ADICIONALES PARA ADMIN DASHBOARD ===== */
