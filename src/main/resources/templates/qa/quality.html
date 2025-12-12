@@ -426,6 +426,7 @@
             </div>
 
             <div class="stats-grid">
+                <!-- Tarjeta 1: APIs para validar (Azul) -->
                 <div class="stat-card">
                     <div class="stat-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
                         <i class="fas fa-bolt"></i>
@@ -436,6 +437,31 @@
                     </div>
                 </div>
 
+                
+
+                <!-- Tarjeta 3: Feedbacks Creados (Verde) -->
+                <div class="stat-card">
+                    <div class="stat-icon" style="background-color: rgba(var(--tblr-success-rgb), 0.1); color: var(--tblr-success);">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" th:text="${feedbacksCreados}">0</div>
+                        <div class="stat-label">Feedbacks creados</div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 4: Reportes del Equipo (Naranja) -->
+                <div class="stat-card">
+                    <div class="stat-icon" style="background-color: rgba(var(--tblr-warning-rgb), 0.1); color: var(--tblr-warning);">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" th:text="${reportesDelEquipo}">0</div>
+                        <div class="stat-label">Reportes del equipo</div>
+                    </div>
+                </div>
+
+                <!-- Tarjeta 2: Issues no corregidos (Rojo) -->
                 <div class="stat-card">
                     <div class="stat-icon" style="background-color: rgba(var(--tblr-danger-rgb), 0.1); color: var(--tblr-danger);">
                         <i class="fas fa-exclamation-triangle"></i>

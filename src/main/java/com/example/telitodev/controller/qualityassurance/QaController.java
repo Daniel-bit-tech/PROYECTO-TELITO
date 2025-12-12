@@ -7,6 +7,7 @@ import com.example.telitodev.repository.*;
 import com.example.telitodev.repository.po.ActividadRecienteRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -41,6 +42,9 @@ public class QaController extends BaseController {
     final FeedbackRepository feedbackRepository;
     private final ApiRepository apiRepository;
     private final ActividadRecienteRepository actividadRecienteRepository;
+
+    @Autowired
+    private ReporteRepository reporteRepository;
 
 
 
@@ -89,7 +93,7 @@ public class QaController extends BaseController {
             // Si hay error cargando credenciales, continuar con listas vacías
         }
         
-        List<Notificacion> notis = notificacionRepository.findByUsuario_Dni(usuario.getDni());
+        List<Notificacion> notis = notificacionRepository.findTop5ByUsuarioDniAndLeidoOrderByFechaDesc(usuario.getDni(), false);
         Integer Nnotis = notificacionRepository.countByUsuario_DniAndLeido(usuario.getDni(),false);
         
         // Agregar atributos de impersonación
@@ -98,6 +102,17 @@ public class QaController extends BaseController {
         // Contar issues no corregidos
         Integer NissuesNoCorregidos = issueRepository.countByEstadoNot("Corregido");
         model.addAttribute("NissuesNoCorregidos", NissuesNoCorregidos);
+
+        // Contar feedbacks creados por el QA
+        Integer feedbacksCreados = feedbackRepository.countByUsuario(usuario);
+        model.addAttribute("feedbacksCreados", feedbacksCreados);
+
+        // Contar reportes del equipo del usuario
+        Integer reportesDelEquipo = 0;
+        if (usuario.getEquipo() != null) {
+            reportesDelEquipo = reporteRepository.countReportesByEquipo(usuario.getEquipo().getIdEquipo());
+        }
+        model.addAttribute("reportesDelEquipo", reportesDelEquipo);
 
         // Contar las notificaciones no leídas para el usuario
         Integer NnotificacionesSinLeer = notificacionRepository.countByUsuarioAndLeido(usuario, false);
@@ -157,18 +172,18 @@ public class QaController extends BaseController {
                 String tiempoTranscurrido = "";
                 if (days > 365) {
                     long years = days / 365;
-                    tiempoTranscurrido = years == 1 ? "1 año" : years + " años";
+                    tiempoTranscurrido = years == 1 ? "Hace 1 año" : "Hace " + years + " años";
                 } else if (days > 30) {
                     long months = days / 30;
-                    tiempoTranscurrido = months == 1 ? "1 mes" : months + " meses";
+                    tiempoTranscurrido = months == 1 ? "Hace 1 mes" : "Hace " + months + " meses";
                 } else if (days > 0) {
-                    tiempoTranscurrido = days == 1 ? "1 día" : days + " días";
+                    tiempoTranscurrido = days == 1 ? "Hace 1 día" : "Hace " + days + " días";
                 } else if (hours > 0) {
-                    tiempoTranscurrido = hours == 1 ? "1 hora" : hours + " horas";
+                    tiempoTranscurrido = hours == 1 ? "Hace 1 hora" : "Hace " + hours + " horas";
                 } else if (minutes > 0) {
-                    tiempoTranscurrido = minutes == 1 ? "1 minuto" : minutes + " minutos";
+                    tiempoTranscurrido = minutes == 1 ? "Hace 1 minuto" : "Hace " + minutes + " minutos";
                 } else {
-                    tiempoTranscurrido = "Hace poco";
+                    tiempoTranscurrido = "Hace un momento";
                 }
 
                 actividad.setTiempoTranscurrido(tiempoTranscurrido);
