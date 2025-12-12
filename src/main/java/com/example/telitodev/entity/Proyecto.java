@@ -20,6 +20,9 @@ public class Proyecto {
     @JoinColumn(name = "idEquipo")
     private Equipo equipo;
 
+    @Column(name = "dni_po_lider", length = 8, nullable = false)
+    private String dniPoLider;
+
     @Size(min = 5, max = 45)
     @NotBlank
     @Column(name = "nombre", length = 45, nullable = false)
@@ -123,5 +126,12 @@ public class Proyecto {
     }
     public void setProyectoHasApis(List<ProyectoHasApi> proyectoHasApis) {
         this.proyectoHasApis = proyectoHasApis;
+    }
+
+    public String getDniPoLider() {
+        return dniPoLider;
+    }
+    public void setDniPoLider(String dniPoLider) {
+        this.dniPoLider = dniPoLider;
     }
 }
