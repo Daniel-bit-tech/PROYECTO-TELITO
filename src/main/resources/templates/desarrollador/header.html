@@ -48,45 +48,59 @@
             padding: 0.5rem 0;
         }
 
-        .nav-link {
+        /* Estilos para los enlaces del navbar secundario */
+        .navbar-expand-md .navbar-nav .nav-link {
             color: rgba(255, 255, 255, 0.85) !important;
             font-weight: 500;
             padding: 0.75rem 1rem !important;
             border-radius: 8px;
-            margin: 0 0.1rem;
+            margin: 0 0.15rem;
             transition: var(--transition);
             position: relative;
         }
 
-        .nav-link:hover {
+        .navbar-expand-md .navbar-nav .nav-link:hover {
             color: white !important;
             background: rgba(255, 255, 255, 0.1);
             transform: translateY(-2px);
         }
 
-        .nav-link::after {
+        .navbar-expand-md .navbar-nav .nav-link::after {
             content: '';
             position: absolute;
-            bottom: 0;
+            bottom: 3px;
             left: 50%;
             width: 0;
-            height: 2px;
+            height: 3px;
             background: white;
+            border-radius: 2px;
             transition: var(--transition);
             transform: translateX(-50%);
         }
 
-        .nav-link:hover::after {
-            width: 70%;
+        .navbar-expand-md .navbar-nav .nav-link:hover::after {
+            width: 60%;
         }
 
-        .nav-link.active {
-            color: white !important;
-            background: rgba(255, 255, 255, 0.15);
+        /* Estilo para el enlace activo - más visible y profesional */
+        .navbar-expand-md .navbar-nav .nav-link.active {
+            color: var(--primary-color) !important;
+            background: white !important;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            font-weight: 600;
+            transform: translateY(-2px);
         }
 
-        .nav-link.active::after {
-            width: 70%;
+        .navbar-expand-md .navbar-nav .nav-link.active::after {
+            display: none;
+        }
+
+        .navbar-expand-md .navbar-nav .nav-link.active .nav-link-icon {
+            color: var(--primary-color) !important;
+        }
+
+        .navbar-expand-md .navbar-nav .nav-link.active .nav-link-title {
+            color: var(--primary-color) !important;
         }
 
         .nav-link-icon {
@@ -458,43 +472,89 @@
         return new bootstrap.Tooltip(tooltipTriggerEl)
     })
 
-
+    // Theme switcher
     document.querySelectorAll('.theme-switcher').forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
             const theme = this.classList.contains('hide-theme-dark') ? 'dark' : 'light';
             document.documentElement.setAttribute('data-bs-theme', theme);
-
-
             localStorage.setItem('theme', theme);
         });
     });
 
-
     const savedTheme = localStorage.getItem('theme') || 'light';
     document.documentElement.setAttribute('data-bs-theme', savedTheme);
 
-
-    document.addEventListener("DOMContentLoaded", function() {
-        let path = window.location.pathname;
-        let page = path.substring(path.lastIndexOf("/") + 1);
-
-        if (page === "" || page === "/") page = "developer.html";
-
-        const links = document.querySelectorAll('.nav-link');
-        links.forEach(link => {
-            let href = link.getAttribute('href');
+    // Función para activar el enlace correcto en el navbar
+    function activateNavLink() {
+        const currentPath = window.location.pathname;
+        console.log('📍 Path actual:', currentPath);
+        
+        // Buscar todos los enlaces del navbar en sub-navbar
+        const navLinks = document.querySelectorAll('.sub-navbar .nav-link');
+        console.log('🔗 Enlaces encontrados:', navLinks.length);
+        
+        // Remover cualquier clase active existente
+        navLinks.forEach(link => link.classList.remove('active'));
+        
+        let activated = false;
+        navLinks.forEach(link => {
+            const href = link.getAttribute('href');
             if (!href) return;
-
-            href = href.substring(href.lastIndexOf("/") + 1);
-
-            if (href.replace(".html","") === page.replace(".html","")) {
+            
+            let linkPath = href;
+            // Si es una URL completa, extraer solo el pathname
+            if (href.startsWith('http')) {
+                try {
+                    linkPath = new URL(href).pathname;
+                } catch (e) {
+                    console.error('Error parsing URL:', href);
+                    return;
+                }
+            }
+            
+            console.log('Comparando:', currentPath, 'con', linkPath);
+            
+            // Verificar coincidencia exacta primero
+            if (currentPath === linkPath) {
                 link.classList.add('active');
-            } else {
-                link.classList.remove('active');
+                console.log('✅ Enlace activo (exacto):', linkPath);
+                activated = true;
+                return;
+            }
+            
+            // Verificar coincidencia parcial para rutas con parámetros
+            if (linkPath !== '/dev/home' && linkPath !== '/home' && currentPath.startsWith(linkPath + '/')) {
+                link.classList.add('active');
+                console.log('✅ Enlace activo (parcial):', linkPath);
+                activated = true;
+                return;
             }
         });
-    });
+        
+        // Si no hay ningún enlace activo y estamos en /dev/home, activar Inicio
+        if (!activated && (currentPath === '/dev/home' || currentPath === '/' || currentPath === '/home')) {
+            const homeLink = document.querySelector('.sub-navbar .nav-link[href*="/dev/home"], .sub-navbar .nav-link[href="/home"]');
+            if (homeLink) {
+                homeLink.classList.add('active');
+                console.log('✅ Enlace Inicio activado por defecto');
+            }
+        }
+        
+        if (!activated) {
+            console.warn('⚠️ No se activó ningún enlace para:', currentPath);
+        }
+    }
+
+    // Ejecutar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', activateNavLink);
+    } else {
+        activateNavLink();
+    }
+
+    // También ejecutar después de un pequeño delay para asegurar que todo esté cargado
+    setTimeout(activateNavLink, 100);
 </script>
 </body>
 </html>

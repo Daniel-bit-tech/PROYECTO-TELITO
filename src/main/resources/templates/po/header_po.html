@@ -428,26 +428,38 @@
     document.documentElement.setAttribute('data-bs-theme', savedTheme);
 
 
-    document.addEventListener("DOMContentLoaded", function() {
-        let path = window.location.pathname;
-        let page = path.substring(path.lastIndexOf("/") + 1);
+    // Función para activar el enlace correcto en el navbar
+    function activateNavLink() {
+        const currentPath = window.location.pathname;
+        console.log('Current path:', currentPath);
 
-        if (page === "" || page === "/") page = "developer.html";
-
-        const links = document.querySelectorAll('.nav-link');
+        const links = document.querySelectorAll('.sub-navbar .nav-link');
+        console.log('Found links:', links.length);
+        
         links.forEach(link => {
-            let href = link.getAttribute('href');
+            const href = link.getAttribute('href');
             if (!href) return;
 
-            href = href.substring(href.lastIndexOf("/") + 1);
+            // Remover active de todos
+            link.classList.remove('active');
 
-            if (href.replace(".html","") === page.replace(".html","")) {
+            // Comparar la ruta completa
+            if (currentPath === href || currentPath.startsWith(href + '/')) {
                 link.classList.add('active');
-            } else {
-                link.classList.remove('active');
+                console.log('Activated link:', href);
             }
         });
-    });
+    }
+
+    // Ejecutar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', activateNavLink);
+    } else {
+        activateNavLink();
+    }
+
+    // También ejecutar después de un pequeño delay para asegurar que todo esté cargado
+    setTimeout(activateNavLink, 100);
 </script>
 </body>
 </html>

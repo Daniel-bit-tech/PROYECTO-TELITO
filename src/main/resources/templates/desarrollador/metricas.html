@@ -615,5 +615,58 @@
 
 <script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620|"></script>
 <script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
+
+<!-- Script para activar el enlace del navbar -->
+<script>
+    console.log('🚀 Script de activación del navbar cargado');
+    
+    function activateNavLink() {
+        const currentPath = window.location.pathname;
+        console.log('📍 Path actual:', currentPath);
+        
+        const navLinks = document.querySelectorAll('.sub-navbar .nav-link');
+        console.log('🔗 Enlaces encontrados:', navLinks.length);
+        
+        navLinks.forEach(link => link.classList.remove('active'));
+        
+        let activated = false;
+        navLinks.forEach(link => {
+            const href = link.getAttribute('href');
+            if (!href) return;
+            
+            console.log('🔍 Comparando:', currentPath, 'con', href);
+            
+            if (currentPath === href) {
+                link.classList.add('active');
+                console.log('✅ Enlace activo (exacto):', href);
+                activated = true;
+            } else if (href !== '/dev/home' && currentPath.startsWith(href + '/')) {
+                link.classList.add('active');
+                console.log('✅ Enlace activo (parcial):', href);
+                activated = true;
+            }
+        });
+        
+        if (!activated && (currentPath === '/dev/home' || currentPath === '/')) {
+            const homeLink = document.querySelector('.sub-navbar .nav-link[href*="/dev/home"]');
+            if (homeLink) {
+                homeLink.classList.add('active');
+                console.log('✅ Enlace Inicio activado por defecto');
+            }
+        }
+        
+        if (!activated) {
+            console.warn('⚠️ No se activó ningún enlace para:', currentPath);
+        }
+    }
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', activateNavLink);
+    } else {
+        activateNavLink();
+    }
+    
+    setTimeout(activateNavLink, 200);
+</script>
 </body>
 </html>
