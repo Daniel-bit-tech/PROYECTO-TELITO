@@ -12,6 +12,18 @@ import java.util.Optional;
 @Repository
 public interface SolicitudAccesoRepository extends JpaRepository<SolicitudAcceso, Integer> {
 
+
+    // Busca solicitudes donde la API pertenece al equipo X y el estado es false (Pendiente)
+    @Query("SELECT s FROM SolicitudAcceso s WHERE s.api.equipo.idEquipo = :idEquipo AND s.estado = false")
+    List<SolicitudAcceso> findPendientesPorEquipo(@Param("idEquipo") Integer idEquipo);
+
+
+    // Buscar todas las solicitudes de un usuario en específico
+    List<SolicitudAcceso> findByUsuario_Dni(String dni);
+
+    // para verificar
+    boolean existsByUsuario_DniAndApi_IdApi(String dni, Integer idApi);
+
     // Encontrar todas las solicitudes de un usuario
     List<SolicitudAcceso> findByUsuario_DniOrderByFechaSolicitudDesc(String dni);
 

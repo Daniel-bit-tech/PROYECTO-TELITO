@@ -448,6 +448,10 @@
                 <i class="fas fa-code-branch"></i>
                 <span th:text="${api.versionesApi != null and !api.versionesApi.isEmpty()? api.versionesApi.get(0).version : 'Sin versión'}"></span>
             </span>
+                <span class="meta-item" title="Equipo Propietario">
+                    <i class="fas fa-users"></i>
+                    <span th:text="${api.equipo != null ? api.equipo.nombre : 'General'}">Nombre Equipo</span>
+                </span>
               <span class="meta-item">
                 <i class="fas fa-bolt"></i>
                 <!-- Ejemplo: uptime fijo o calculado -->
@@ -462,15 +466,42 @@
 <!--                    th:text="${t}"></span>-->
             </div>
 
-            <div class="api-actions">
-              <a th:href="@{'/apis/' + ${api.idApi} + '/docs'}" class="btn-api btn-primary">
-                <i class="fas fa-book"></i> Documentación
-              </a>
-<!--              <a th:href="@{'/apis/' + ${api.idApi} + '/test'}" class="btn-api btn-outline">-->
-                <a th:href="@{/dev/sandbox}" class="btn-api btn-outline">
-                <i class="fas fa-play"></i> Probar
-              </a>
-            </div>
+              <div class="api-actions" th:with="estado=${accesoMap != null ? accesoMap.get(api.idApi) : 'ANONIMO'}">
+
+                  <th:block th:if="${estado == 'PROPIO' or estado == 'APROBADO'}">
+                      <a th:href="@{'/apis/' + ${api.idApi} + '/docs'}" class="btn-api btn-primary">
+                          <i class="fas fa-book"></i> Documentación
+                      </a>
+                      <a th:href="@{/dev/sandbox}" class="btn-api btn-outline">
+                          <i class="fas fa-play"></i> Probar
+                      </a>
+                  </th:block>
+
+                  <th:block th:if="${estado == 'PENDIENTE'}">
+                      <button class="btn-api btn-outline" disabled style="opacity: 0.7; cursor: not-allowed;">
+                          <i class="fas fa-clock"></i> Pendiente de Aprobación
+                      </button>
+                  </th:block>
+
+                  <th:block th:if="${estado == 'SOLICITAR'}">
+                      <a href="#" class="btn-api btn-primary"
+                         data-bs-toggle="modal"
+                         data-bs-target="#modalSolicitud"
+                         th:data-api-id="${api.idApi}"
+                         th:data-api-nombre="${api.nombre}"
+                         onclick="prepararModal(this)">
+                          <i class="fas fa-key"></i> Solicitar Acceso
+                      </a>
+                      <a th:href="@{'/apis/' + ${api.idApi} + '/docs'}" class="btn-api btn-outline">
+                          <i class="fas fa-info-circle"></i> Info
+                      </a>
+                  </th:block>
+
+                  <th:block th:if="${estado == 'ANONIMO'}">
+                      <a href="/login" class="btn-api btn-primary">Iniciar Sesión</a>
+                  </th:block>
+
+              </div>
           </div>
         </div>
         </div>
@@ -489,6 +520,38 @@
       </main>
     </div>
     </div>
+    <div class="modal modal-blur fade" id="modalSolicitud" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <form action="/apis/solicitar-acceso" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Solicitar Acceso a API</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">API Seleccionada</label>
+                            <input type="text" class="form-control" id="nombreApiModal" readonly>
+                            <input type="hidden" name="idApi" id="idApiModal">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Motivo de la solicitud</label>
+                            <textarea class="form-control" name="motivo" rows="3" placeholder="Explica brevemente para qué proyecto necesitas esta API..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary ms-auto">
+                            <i class="fas fa-paper-plane me-2"></i> Enviar Solicitud
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 
     <div th:replace="~{desarrollador/footer :: footer}"></div>
 </div>  <script>
@@ -527,6 +590,15 @@
         console.log(`Filtro ${filterCategory} ${isChecked ? 'activado' : 'desactivado'}`);
       });
     });
+
+    function prepararModal(elemento) {
+          const idApi = elemento.getAttribute('data-api-id');
+          const nombreApi = elemento.getAttribute('data-api-nombre');
+
+          document.getElementById('idApiModal').value = idApi;
+          document.getElementById('nombreApiModal').value = nombreApi;
+      }
+
   </script>
 
   <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>

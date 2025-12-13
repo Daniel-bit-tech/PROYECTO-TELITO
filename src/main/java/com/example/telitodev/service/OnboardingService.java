@@ -49,7 +49,44 @@ public class OnboardingService {
     }
 
 
+    public List<SolicitudAccesoResponse> obtenerSolicitudesPendientesPorEquipo(Integer idEquipo) {
 
+        List<SolicitudAcceso> entidades = solicitudAccesoRepository.findPendientesPorEquipo(idEquipo);
+
+
+        return entidades.stream().map(s -> {
+            SolicitudAccesoResponse dto = new SolicitudAccesoResponse();
+
+            dto.setIdSolicitudAcceso(s.getIdSolicitudAcceso());
+            dto.setApiId(s.getApi().getIdApi());
+            dto.setNombreApi(s.getApi().getNombre());
+
+
+            dto.setNombreProyecto(s.getNombreProyecto() != null ? s.getNombreProyecto() : "Proyecto Externo");
+            dto.setDescripcionUso(s.getDescripcionUso());
+            dto.setEstado(s.getEstado() ? "APROBADO" : "PENDIENTE");
+            dto.setFechaSolicitud(s.getFechaSolicitud());
+
+
+            Usuario dev = s.getUsuario();
+            dto.setDesarrollador(dev.getNombre() + " " + dev.getApellidoPaterno());
+            dto.setEmail(dev.getCorreo());
+            if (dev.getEquipo() != null) {
+                dto.setNombreEquipo(dev.getEquipo().getNombre());
+            } else {
+                dto.setNombreEquipo("Sin Equipo");
+            }
+
+            if (s.getFechaSolicitud() != null) {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                dto.setFechaFormatted(sdf.format(s.getFechaSolicitud()));
+            } else {
+                dto.setFechaFormatted("--/--/----");
+            }
+
+            return dto;
+        }).collect(Collectors.toList());
+    }
     public SolicitudAccesoResponse crearSolicitudAcceso(String dniUsuario, SolicitudAccesoRequest request) {
         Usuario usuario = usuarioRepository.findByDni(dniUsuario);
         if (usuario == null) {
@@ -124,6 +161,7 @@ public class OnboardingService {
         SolicitudAcceso solicitud = solicitudAccesoRepository.findById(idSolicitud)
                 .orElseThrow(() -> new RuntimeException("Solicitud no encontrada"));
         return mapearASolicitudAccesoResponse(solicitud);
+
     }
 
 
@@ -288,6 +326,7 @@ public class OnboardingService {
 
     private SolicitudAccesoResponse mapearASolicitudAccesoResponse(SolicitudAcceso solicitud) {
         String estado = "PENDIENTE";
+        String nombreEquipo = "Sin Equipo";
         if (solicitud.getEstado() != null && solicitud.getEstado()) {
 
             List<CredencialApi> credenciales = credencialApiRepository
@@ -317,6 +356,9 @@ public class OnboardingService {
             desarrollador = (nombre + " " + apellidoPaterno + " " + apellidoMaterno).trim();
             email = solicitud.getUsuario().getCorreo() != null ? solicitud.getUsuario().getCorreo() : "";
         }
+        if (solicitud.getUsuario() != null && solicitud.getUsuario().getEquipo() != null) {
+            nombreEquipo = solicitud.getUsuario().getEquipo().getNombre();
+        }
 
         return new SolicitudAccesoResponse(
                 solicitud.getIdSolicitudAcceso(),
@@ -329,7 +371,9 @@ public class OnboardingService {
                 solicitud.getDescripcionUso() != null ? solicitud.getDescripcionUso() : "",
                 desarrollador,
                 email,
-                fechaFormatted
+                fechaFormatted,
+                nombreEquipo
+
         );
     }
 

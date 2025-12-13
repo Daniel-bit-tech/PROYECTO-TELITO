@@ -143,14 +143,25 @@ public class SandboxApiController {
     }
 
     // --- OTROS ENDPOINTS ---
-
     @GetMapping("/list-available")
     public ResponseEntity<List<Map<String, Object>>> getAvailableApis(Authentication authentication) {
 
 
-        List<Api> apisDisponibles = apiRepository.findAll();
+        String userEmail = authentication.getName();
+        Usuario usuario = usuarioRepository.findByCorreo(userEmail);
 
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
+        //ObtIENE ID del Equipo y DNI
+        Integer idEquipo = (usuario.getEquipo() != null) ? usuario.getEquipo().getIdEquipo() : -1;
+        String dni = usuario.getDni();
+
+        //consulta filtrada
+        List<Api> apisDisponibles = apiRepository.findApisPermitidasParaSandbox(idEquipo, dni);
+
+        // Retornar la lista filtrada
         return buildApiResponse(apisDisponibles);
     }
 
