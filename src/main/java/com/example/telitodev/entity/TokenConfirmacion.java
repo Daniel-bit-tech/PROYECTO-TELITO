@@ -50,6 +50,9 @@ public class TokenConfirmacion {
     
     @Column(name = "id_rol_temporal", nullable = false)
     private Integer idRolTemporal;
+    
+    @Column(name = "id_organizacion_temporal")
+    private Integer idOrganizacionTemporal;
 
     // Constructores
     public TokenConfirmacion() {}
@@ -57,7 +60,7 @@ public class TokenConfirmacion {
     public TokenConfirmacion(String token, String email, String dniUsuario, 
                            String nombreTemporal, String apellidoPaternoTemporal, 
                            String apellidoMaternoTemporal, String contrasenaTemporal, 
-                           Integer idRolTemporal, String ipCreacion) {
+                           Integer idRolTemporal, Integer idOrganizacionTemporal, String ipCreacion) {
         this.token = token;
         this.email = email;
         this.dniUsuario = dniUsuario;
@@ -66,6 +69,7 @@ public class TokenConfirmacion {
         this.apellidoMaternoTemporal = apellidoMaternoTemporal;
         this.contrasenaTemporal = contrasenaTemporal;
         this.idRolTemporal = idRolTemporal;
+        this.idOrganizacionTemporal = idOrganizacionTemporal;
         this.ipCreacion = ipCreacion;
         this.fechaCreacion = LocalDateTime.now();
         this.fechaExpiracion = LocalDateTime.now().plusHours(24); // Token válido por 24 horas
@@ -183,6 +187,14 @@ public class TokenConfirmacion {
 
     public void setIdRolTemporal(Integer idRolTemporal) {
         this.idRolTemporal = idRolTemporal;
+    }
+    
+    public Integer getIdOrganizacionTemporal() {
+        return idOrganizacionTemporal;
+    }
+
+    public void setIdOrganizacionTemporal(Integer idOrganizacionTemporal) {
+        this.idOrganizacionTemporal = idOrganizacionTemporal;
     }
 
     // Métodos de utilidad

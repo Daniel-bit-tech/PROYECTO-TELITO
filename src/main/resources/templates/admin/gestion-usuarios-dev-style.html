@@ -2491,7 +2491,7 @@ async function createUserWithConfirmation() {
     // Convertir FormData a objeto
     const userData = {};
     for (let [key, value] of formData.entries()) {
-      if (key === 'idRol') {
+      if (key === 'idRol' || key === 'idOrganizacion') {
         userData[key] = parseInt(value);
       } else {
         userData[key] = value.trim();
