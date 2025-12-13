@@ -727,15 +727,6 @@
             <h3 class="card-title">
               <i class="fas fa-clock text-warning"></i> Tokens de Confirmación Pendientes
             </h3>
-            <div class="card-actions">
-              <button class="btn btn-sm btn-outline-primary" onclick="cargarTokensPendientes()">
-                <i class="fas fa-sync"></i> Actualizar
-              </button>
-              <!-- Botón de prueba temporal -->
-              <button class="btn btn-sm btn-warning" onclick="window.testActivacion()">
-                <i class="fas fa-bug"></i> Test
-              </button>
-            </div>
           </div>
 
           <div id="tokens-content">
@@ -1142,36 +1133,34 @@
         
         <form id="newUserForm">
           <div class="row">
-            <!-- Información básica -->
-            <div class="col-md-6">
+            <!-- DNI con botón de consulta RENIEC -->
+            <div class="col-md-8">
               <div class="mb-3">
                 <label for="newUserDni" class="form-label fw-bold">
                   <i class="fas fa-id-card me-1"></i>DNI <span class="text-danger">*</span>
                 </label>
                 <input type="text" class="form-control" id="newUserDni" name="dni" 
                        placeholder="Ej: 12345678" maxlength="8" pattern="[0-9]{8}" required>
-                <div class="form-text">Exactamente 8 dígitos</div>
+                <div class="form-text">Exactamente 8 dígitos - Los datos se auto-completarán</div>
               </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
               <div class="mb-3">
-                <label for="newUserEmail" class="form-label fw-bold">
-                  <i class="fas fa-envelope me-1"></i>Email <span class="text-danger">*</span>
-                </label>
-                <input type="email" class="form-control" id="newUserEmail" name="correo" 
-                       placeholder="usuario@ejemplo.com" required>
-                <div class="form-text">Se enviará el código de confirmación aquí</div>
+                <label class="form-label fw-bold">&nbsp;</label>
+                <button type="button" class="btn btn-primary w-100" id="btnConsultarReniec">
+                  <i class="fas fa-search me-1"></i>Consultar DNI
+                </button>
               </div>
             </div>
             
-            <!-- Nombres -->
+            <!-- Nombres (readonly después de consultar) -->
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="newUserNombre" class="form-label fw-bold">
                   <i class="fas fa-user me-1"></i>Nombre <span class="text-danger">*</span>
                 </label>
                 <input type="text" class="form-control" id="newUserNombre" name="nombre" 
-                       placeholder="Ej: Juan" required>
+                       placeholder="Se auto-completará" readonly required>
               </div>
             </div>
             <div class="col-md-6">
@@ -1180,7 +1169,7 @@
                   <i class="fas fa-user me-1"></i>Apellido Paterno <span class="text-danger">*</span>
                 </label>
                 <input type="text" class="form-control" id="newUserApellidoPaterno" name="apellidoPaterno" 
-                       placeholder="Ej: Pérez" required>
+                       placeholder="Se auto-completará" readonly required>
               </div>
             </div>
             
@@ -1190,11 +1179,54 @@
                   <i class="fas fa-user me-1"></i>Apellido Materno
                 </label>
                 <input type="text" class="form-control" id="newUserApellidoMaterno" name="apellidoMaterno" 
-                       placeholder="Ej: García">
+                       placeholder="Se auto-completará" readonly>
               </div>
             </div>
             
-            <!-- Rol -->
+            <!-- Organización -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="newUserOrganizacion" class="form-label fw-bold">
+                  <i class="fas fa-building me-1"></i>Organización <span class="text-danger">*</span>
+                </label>
+                <select class="form-select" id="newUserOrganizacion" name="idOrganizacion" required>
+                  <option value="">Seleccionar organización...</option>
+                  <option th:each="org : ${organizaciones}" 
+                          th:value="${org.idOrganizacion}" 
+                          th:text="${org.nombre}"
+                          th:attr="data-dominio=${org.dominioCorreo}">
+                    Organización
+                  </option>
+                </select>
+                <div class="form-text">Selecciona la organización del usuario</div>
+              </div>
+            </div>
+            
+            <!-- Email Corporativo (generado automáticamente) -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="newUserEmailCorporativo" class="form-label fw-bold">
+                  <i class="fas fa-envelope me-1"></i>Email Corporativo <span class="text-danger">*</span>
+                </label>
+                <input type="email" class="form-control" id="newUserEmailCorporativo" name="emailCorporativo" 
+                       placeholder="Se generará automáticamente" readonly required>
+                <div class="form-text">Email basado en el dominio de la organización</div>
+              </div>
+            </div>
+            
+            <!-- Email Personal -->
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="newUserEmail" class="form-label fw-bold">
+                  <i class="fas fa-envelope-open me-1"></i>Email Personal <span class="text-danger">*</span>
+                </label>
+                <input type="email" class="form-control" id="newUserEmail" name="correo" 
+                       placeholder="email.personal@ejemplo.com" required>
+                <div class="form-text">Se enviará el código de confirmación aquí</div>
+              </div>
+            </div>
+            
+            <!-- Rol (solo Developer) -->
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="newUserRol" class="form-label fw-bold">
@@ -1203,13 +1235,22 @@
                 <select class="form-select" id="newUserRol" name="idRol" required>
                   <option value="">Seleccionar rol...</option>
                   <option th:each="rol : ${roles}" 
-                          th:unless="${rol.nombreRol == 'SUPERADMIN' || rol.nombreRol == 'SADMIN'}"
+                          th:if="${rol.nombreRol == 'DEVELOPER' || rol.nombreRol == 'Developer'}"
+                          th:value="${rol.idRol}" 
+                          th:text="${rol.nombreRol + ' - ' + rol.descripcion}">
+                    Developer - Descripción
+                  </option>
+                  <!-- Otros roles comentados temporalmente -->
+                  <!--
+                  <option th:each="rol : ${roles}" 
+                          th:unless="${rol.nombreRol == 'SUPERADMIN' || rol.nombreRol == 'SADMIN' || rol.nombreRol == 'DEVELOPER' || rol.nombreRol == 'Developer'}"
                           th:value="${rol.idRol}" 
                           th:text="${rol.nombreRol + ' - ' + rol.descripcion}">
                     Rol - Descripción
                   </option>
+                  -->
                 </select>
-                <div class="form-text">Los usuarios no pueden ser SuperAdmin</div>
+                <div class="form-text">Por ahora solo se permite rol Developer</div>
               </div>
             </div>
             
@@ -2689,6 +2730,96 @@ document.getElementById('createNewUser').addEventListener('click', createUserWit
 // Event listener para confirmar código
 document.getElementById('confirmUserCode').addEventListener('click', confirmUserCode);
 
+// Event listener para consultar RENIEC
+document.getElementById('btnConsultarReniec').addEventListener('click', async function() {
+  const dniInput = document.getElementById('newUserDni');
+  const dni = dniInput.value.trim();
+  const btn = this;
+  
+  // Validar DNI
+  if (!/^[0-9]{8}$/.test(dni)) {
+    alert('❌ El DNI debe tener exactamente 8 dígitos numéricos');
+    return;
+  }
+  
+  try {
+    // Deshabilitar botón
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Consultando...';
+    
+    // Consultar API RENIEC
+    const response = await fetch(`/api/reniec/consultar/${dni}`, {
+      method: 'GET',
+      headers: {
+        [csrfHeader]: csrfToken
+      }
+    });
+    
+    const data = await response.json();
+    console.log('📡 Respuesta RENIEC:', data);
+    
+    if (response.ok && data.success) {
+      // Auto-completar campos con datos de RENIEC
+      document.getElementById('newUserNombre').value = data.data.nombres;
+      document.getElementById('newUserApellidoPaterno').value = data.data.apellidoPaterno;
+      document.getElementById('newUserApellidoMaterno').value = data.data.apellidoMaterno || '';
+      
+      alert('✅ Datos obtenidos correctamente de RENIEC');
+      
+      // Verificar si ya hay organización seleccionada para generar email
+      const orgSelect = document.getElementById('newUserOrganizacion');
+      if (orgSelect.value) {
+        generarEmailCorporativo();
+      }
+    } else {
+      alert('❌ ' + (data.mensaje || data.message || 'No se pudo obtener información del DNI'));
+    }
+  } catch (error) {
+    console.error('❌ Error consultando RENIEC:', error);
+    alert('❌ Error al consultar: ' + error.message);
+  } finally {
+    // Restaurar botón
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-search me-1"></i>Consultar DNI';
+  }
+});
+
+// Event listener para generar email corporativo cuando cambia la organización
+document.getElementById('newUserOrganizacion').addEventListener('change', generarEmailCorporativo);
+
+// Función para generar email corporativo
+function generarEmailCorporativo() {
+  const orgSelect = document.getElementById('newUserOrganizacion');
+  const nombre = document.getElementById('newUserNombre').value.trim();
+  const apellido = document.getElementById('newUserApellidoPaterno').value.trim();
+  
+  if (!orgSelect.value || !nombre || !apellido) {
+    return; // No generar si faltan datos
+  }
+  
+  // Obtener dominio de la organización seleccionada
+  const selectedOption = orgSelect.options[orgSelect.selectedIndex];
+  const dominio = selectedOption.getAttribute('data-dominio');
+  
+  if (!dominio) {
+    console.warn('⚠️ La organización no tiene dominio configurado');
+    return;
+  }
+  
+  // Generar email: nombre.apellido@dominio
+  const nombreLimpio = nombre.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quitar acentos
+    .replace(/\s+/g, '.'); // Espacios a puntos
+  const apellidoLimpio = apellido.toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, '.');
+  
+  const emailCorporativo = `${nombreLimpio}.${apellidoLimpio}@${dominio}`;
+  
+  document.getElementById('newUserEmailCorporativo').value = emailCorporativo;
+  console.log('📧 Email corporativo generado:', emailCorporativo);
+}
+
 // Limpiar formularios cuando se cierran los modales
 document.getElementById('newUserModal').addEventListener('hidden.bs.modal', function() {
   document.getElementById('newUserForm').reset();
@@ -2788,7 +2919,7 @@ console.log('Gestión de usuarios con funcionalidades CRUD cargada');
 /**
  * Reenviar email de confirmación
  */
-function reenviarToken(tokenId, email) {
+window.reenviarToken = function(tokenId, email) {
   if (!confirm(`¿Reenviar email de confirmación a ${email}?`)) {
     return;
   }
@@ -2819,7 +2950,7 @@ function reenviarToken(tokenId, email) {
 /**
  * Eliminar token específico
  */
-function eliminarToken(tokenId, email) {
+window.eliminarToken = function(tokenId, email) {
   if (!confirm(`¿Eliminar token de confirmación para ${email}?\\n\\nEsto permitirá crear un nuevo usuario con estos datos.`)) {
     return;
   }
@@ -2852,7 +2983,7 @@ function eliminarToken(tokenId, email) {
 /**
  * Activar cuenta manualmente
  */
-function activarCuentaManual(tokenId, email) {
+window.activarCuentaManual = function(tokenId, email) {
   console.log('=== FUNCIÓN activarCuentaManual LLAMADA ===');
   console.log('Token ID recibido:', tokenId);
   console.log('Email recibido:', email);

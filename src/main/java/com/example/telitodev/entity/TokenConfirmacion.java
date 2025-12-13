@@ -68,7 +68,7 @@ public class TokenConfirmacion {
         this.idRolTemporal = idRolTemporal;
         this.ipCreacion = ipCreacion;
         this.fechaCreacion = LocalDateTime.now();
-        this.fechaExpiracion = LocalDateTime.now().plusMinutes(3); // Token válido por 3 minutos (para pruebas)
+        this.fechaExpiracion = LocalDateTime.now().plusHours(24); // Token válido por 24 horas
         this.usado = false;
     }
 

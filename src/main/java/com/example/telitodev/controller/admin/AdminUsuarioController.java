@@ -68,6 +68,9 @@ public class AdminUsuarioController extends BaseController {
 
     @Autowired
     private TokenConfirmacionRepository tokenConfirmacionRepository;
+    
+    @Autowired
+    private com.example.telitodev.repository.OrganizacionRepository organizacionRepository;
 
     @Autowired
     private EmailService emailService;
@@ -117,6 +120,9 @@ public class AdminUsuarioController extends BaseController {
             // Obtener todos los roles para el filtro
             List<Rol> roles = rolRepository.findAll();
             
+            // Obtener todas las organizaciones para el modal de creación
+            List<com.example.telitodev.entity.Organizacion> organizaciones = organizacionRepository.findAll();
+            
             // Obtener usuarios con filtros aplicados (excluyendo al usuario actual)
             List<Usuario> todosLosUsuarios = obtenerUsuariosFiltrados(search, estado, rol, usuarioActual);
             
@@ -154,6 +160,7 @@ public class AdminUsuarioController extends BaseController {
             // Datos para el modelo
             model.addAttribute("usuarios", usuariosPaginados);
             model.addAttribute("roles", roles != null ? roles : new ArrayList<>());
+            model.addAttribute("organizaciones", organizaciones != null ? organizaciones : new ArrayList<>());
             model.addAttribute("totalUsuarios", totalUsuarios);
             model.addAttribute("usuariosActivos", usuariosActivos);
             model.addAttribute("usuariosInactivos", usuariosInactivos);
