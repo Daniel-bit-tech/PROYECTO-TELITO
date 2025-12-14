@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface VersionApiRepository extends JpaRepository<VersionApi, Integer> {
@@ -14,4 +15,7 @@ public interface VersionApiRepository extends JpaRepository<VersionApi, Integer>
     Boolean existsByVersionAndApi_IdApi(String version, Integer idApi);
 
     VersionApi findByIdVersionAndApi_IdApi(Integer idVersion, Integer idApi);
+
+    Optional<VersionApi> findTopByApi_IdApiOrderByIdVersionDesc(Integer idApi);
+
 }

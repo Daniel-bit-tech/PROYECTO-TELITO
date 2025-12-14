@@ -30,16 +30,19 @@ public class ProyectosPoController extends BaseController {
     final ProyectoRepository proyectoRepository;
     final EntornoRepository entornoRepository;
     final CredencialApiRepository credencialApiRepository;
+    final VersionApiRepository versionApiRepository;
 
     public ProyectosPoController(UsuarioRepository usuarioRepository, ApiRepository apiRepository, 
                                 ProyectoHasApiRepository proyHasApiRepository, ProyectoRepository proyectoRepository, 
-                                EntornoRepository entornoRepository, CredencialApiRepository credencialApiRepository) {
+                                EntornoRepository entornoRepository, CredencialApiRepository credencialApiRepository
+    , VersionApiRepository versionApiRepository) {
         this.usuarioRepository = usuarioRepository;
         this.apiRepository = apiRepository;
         this.proyHasApiRepository = proyHasApiRepository;
         this.proyectoRepository = proyectoRepository;
         this.entornoRepository = entornoRepository;
         this.credencialApiRepository = credencialApiRepository;
+        this.versionApiRepository = versionApiRepository;
     }
 
     @GetMapping()
@@ -125,6 +128,7 @@ public class ProyectosPoController extends BaseController {
             poEncargado = usuarioRepository.findPoEncargadoByEquipo(idEquipo).orElse(null);
         }
         model.addAttribute("poEncargado", poEncargado);
+
         // ========================================================================
 
         // ====== Permiso para configurar: solo si el PO logueado es el PO encargado del equipo ======
@@ -138,28 +142,37 @@ public class ProyectosPoController extends BaseController {
         boolean canManageApis = canManageProyecto(usuario, proyecto);
         model.addAttribute("canManageApis", canManageApis);
 
-
         // APIs asociadas / disponibles
         List<ProyectoHasApi> listaApis = proyHasApiRepository.findByProyecto_IdProyecto(proyecto.getIdProyecto());
-        List<Api> apiList = apiRepository.findAll();
-
-        ProyectoHasApi nuevaAsociacion = new ProyectoHasApi();
-        entornoRepository.findById(2).ifPresent(nuevaAsociacion::setEntorno);
-
-        model.addAttribute("proyecto", proyecto);
         model.addAttribute("listaApis", listaApis);
-        model.addAttribute("apiList", apiList);
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("currentPortal", "po");
 
-        model.addAttribute("apisDisponibles", apiRepository.findApiNotAssociatedWithProyecto(id));
+        Integer idEquipo = proyecto.getEquipo().getIdEquipo();
+
+        List<Integer> idsAsociados = listaApis.stream()
+                .map(x -> x.getApi().getIdApi())
+                .toList();
+
+        List<Api> apisDisponibles = idsAsociados.isEmpty()
+                ? apiRepository.findByEquipo_IdEquipo(idEquipo)
+                : apiRepository.findByEquipo_IdEquipoAndIdApiNotIn(idEquipo, idsAsociados);
+
+        model.addAttribute("apisDisponibles", apisDisponibles);
+
         model.addAttribute("entornosDisponibles", entornoRepository.findAll());
-        model.addAttribute("nuevaAsociacion", nuevaAsociacion);
+        model.addAttribute("proyecto", proyecto);
+
+        System.out.println("Proyecto=" + id
+                + " equipo=" + (proyecto.getEquipo() != null ? proyecto.getEquipo().getIdEquipo() : null)
+                + " listaApis=" + listaApis.size()
+                + " apisDisponibles=" + apisDisponibles.size());
+
+        model.addAttribute("usuario", usuario);
+        addImpersonationAttributes(model, session);
+
 
         return "po/proyecto-detalle";
-
-
     }
+
 
     @GetMapping("/{id}/config")
     public String configurarProyecto(@PathVariable Integer id,
@@ -285,10 +298,12 @@ public class ProyectosPoController extends BaseController {
     }
 
     @PostMapping("/{idProy}/addApis")
-    public String addApiToProject(@PathVariable("idProy") Integer idProyecto,
-                                  @ModelAttribute("nuevaAsociacion") ProyectoHasApi nuevaAsociacion,
-                                  RedirectAttributes redirectAttributes,
-                                  Authentication auth, HttpSession session) {
+    public String addApisToProject(@PathVariable("idProy") Integer idProyecto,
+                                   @RequestParam("apiId") Integer apiId,
+                                   @RequestParam("proposito") String proposito,
+                                   RedirectAttributes redirectAttributes,
+                                   Authentication auth,
+                                   HttpSession session) {
 
         Usuario usuario = getCurrentUser(auth, session);
 
@@ -296,42 +311,71 @@ public class ProyectosPoController extends BaseController {
         Proyecto proyecto = proyectoRepository.findById(idProyecto)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no encontrado"));
 
-        // 2) BLOQUEO: solo PO encargado (o SUPERADMIN si tu helper lo permite)
+        // 2) Permisos (PO encargado del equipo o SUPERADMIN)
         if (!canManageProyecto(usuario, proyecto)) {
             redirectAttributes.addFlashAttribute("error",
                     "🔒 Solo lectura: no tienes permisos para agregar APIs en este proyecto.");
             return "redirect:/po/proyectos/" + idProyecto;
         }
 
-        // 3) Validación de regla: entorno inicial debe ser Desarrollo (id=2)
-        Integer entornoInicialId = nuevaAsociacion.getEntorno().getIdEntorno();
-        if (!entornoInicialId.equals(2)) {
-            redirectAttributes.addFlashAttribute("error",
-                    "ERROR DE REGLA: La asociación inicial de una API debe comenzar obligatoriamente en 'Desarrollo'.");
+        // 3) Validaciones
+        if (apiId == null) {
+            redirectAttributes.addFlashAttribute("error", "Debes seleccionar una API.");
             return "redirect:/po/proyectos/" + idProyecto;
         }
 
-        try {
-            Api api = apiRepository.findById(nuevaAsociacion.getApi().getIdApi())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "API no encontrada"));
-
-            ProyectoHasApiId idClave = new ProyectoHasApiId(proyecto.getIdProyecto(), api.getIdApi());
-            nuevaAsociacion.setProyectoHasApiId(idClave);
-            nuevaAsociacion.setProyecto(proyecto);
-            nuevaAsociacion.setApi(api);
-
-            proyHasApiRepository.save(nuevaAsociacion);
-
-            redirectAttributes.addFlashAttribute("success",
-                    "API " + api.getNombre() + " asociada a Desarrollo con éxito.");
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error",
-                    "Error al intentar asociar la API: " + e.getMessage());
+        if (proposito == null || proposito.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "El propósito es obligatorio.");
+            return "redirect:/po/proyectos/" + idProyecto;
         }
 
+        // 4) Evitar duplicado en el MISMO proyecto
+        if (proyHasApiRepository.existsByProyecto_IdProyectoAndApi_IdApi(idProyecto, apiId)) {
+            redirectAttributes.addFlashAttribute("error", "Esa API ya está asociada a este proyecto.");
+            return "redirect:/po/proyectos/" + idProyecto;
+        }
+
+        // 5) Cargar API
+        Api api = apiRepository.findById(apiId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "API no encontrada"));
+
+        // (Opcional pero recomendable) Asegurar que la API pertenezca al equipo del proyecto
+        Integer idEquipoProyecto = proyecto.getEquipo().getIdEquipo();
+        if (api.getEquipo() == null || api.getEquipo().getIdEquipo() == null
+                || !api.getEquipo().getIdEquipo().equals(idEquipoProyecto)) {
+            redirectAttributes.addFlashAttribute("error", "No puedes asociar una API de otro equipo.");
+            return "redirect:/po/proyectos/" + idProyecto;
+        }
+
+        // 6) Entorno inicial fijo: Desarrollo (id=2)
+        Entorno entornoDesarrollo = entornoRepository.findById(2)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Entorno Desarrollo no encontrado"));
+
+        // 7) Version obligatoria (porque idVersion NOT NULL)
+        VersionApi version = versionApiRepository.findTopByApi_IdApiOrderByIdVersionDesc(apiId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "La API seleccionada no tiene versiones. Crea una versión primero."));
+
+        // 8) Crear asociación
+        ProyectoHasApi pha = new ProyectoHasApi();
+        pha.setProyectoHasApiId(new ProyectoHasApiId(idProyecto, apiId));
+        pha.setProyecto(proyecto);
+        pha.setApi(api);
+        pha.setEntorno(entornoDesarrollo);
+        pha.setVersion(version);
+        pha.setProposito(proposito.trim());
+        pha.setFechaAsociacion(new java.sql.Date(System.currentTimeMillis()));
+
+
+        // ajusta si tu tipo es otro
+
+        proyHasApiRepository.save(pha);
+
+        redirectAttributes.addFlashAttribute("success",
+                "API " + api.getNombre() + " agregada correctamente.");
         return "redirect:/po/proyectos/" + idProyecto;
     }
+
 
 
     @PostMapping("/{id}/config")

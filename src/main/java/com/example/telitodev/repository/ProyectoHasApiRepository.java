@@ -31,5 +31,9 @@ public interface ProyectoHasApiRepository extends JpaRepository<ProyectoHasApi, 
     """)
     List<Api> findDistinctApisByOrganizacionId(@Param("orgId") Integer orgId);
 
+    boolean existsByProyecto_IdProyectoAndApi_IdApi(Integer idProyecto, Integer idApi);
+
+
+
 }
 
