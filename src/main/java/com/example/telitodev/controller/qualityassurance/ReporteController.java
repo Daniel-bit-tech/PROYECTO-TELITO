@@ -143,10 +143,8 @@ public class ReporteController extends BaseController {
     public String madeReport(Model model, Authentication auth, HttpSession session){
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
-        //List<ApiProyectoDTO> apisParaValidar = apiRepository.findApisToReportForQa(usuario.getDni());
-        //model.addAttribute("apis", apisParaValidar);
-
-        //System.out.println("Lonigut es: "+apisParaValidar.size());
+        List<ApiProyectoDTO> apisParaValidar = apiRepository.findApisToReportForQa(usuario.getDni());
+        model.addAttribute("apisParaValidar", apisParaValidar);
 
         // Lista de estados para el combobox
         List<String> estados = List.of("Aprobado", "Fallido");
@@ -164,7 +162,6 @@ public class ReporteController extends BaseController {
     public String submitReporte(@RequestParam("apiId") Integer apiId,
                                     @RequestParam("estado") String estado,
                                     @RequestParam("descripcion") String descripcion,
-                                    @RequestParam("poLiderDni") String poLiderDni, // <-- ¡Aquí está!
                                     @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
                                     Model model,
                                     Authentication auth,
@@ -219,8 +216,8 @@ public class ReporteController extends BaseController {
 
         // Si se encontró algún error, recargamos la vista del formulario con los mensajes
         if (hasErrors) {
-            //List<ApiProyectoDTO> apisParaValidar = apiRepository.findApisToReportForQa(usuario.getDni());
-            //model.addAttribute("apisParaValidar", apisParaValidar);
+            List<ApiProyectoDTO> apisParaValidar = apiRepository.findApisToReportForQa(usuario.getDni());
+            model.addAttribute("apisParaValidar", apisParaValidar);
             model.addAttribute("estadosReporte", List.of("Aprobado", "Fallido"));
             addImpersonationAttributes(model, session);
             model.addAttribute("usuario", usuario);
@@ -279,32 +276,22 @@ public class ReporteController extends BaseController {
             }
         }
 
-        // Crear la notificación
-        Notificacion notif = new Notificacion();
-        notif.setMensaje("Se ha creado un nuevo reporte para la API: " + reporte.getApi().getNombre());
-        notif.setLeido(false);
-        notif.setFecha(new Timestamp(System.currentTimeMillis()));
-        notif.setUsuario(usuario); // propietario de la API
-        notificacionRepository.save(notif);
-
-        // Si el reporte fue APROBADO, notificar al PO Líder.
-        if ("Aprobado".equals(estado) && poLiderDni != null && !poLiderDni.isEmpty()) {
-
-            // Buscamos al PO Líder por su DNI
-            Optional<Usuario> poLiderOpt = usuarioRepository.findById(poLiderDni);
-
-            if (poLiderOpt.isPresent()) {
-                Usuario poLider = poLiderOpt.get();
-
-                // Creamos la notificación para el PO Líder
-                Notificacion notificacionParaPO = new Notificacion();
-                String mensaje = "El QA " + usuario.getNombre() + " ha validado y aprobado la API: '" + apiReportada.getNombre() + "'.";
-                notificacionParaPO.setMensaje(mensaje);
-                notificacionParaPO.setLeido(false);
-                notificacionParaPO.setFecha(new Timestamp(System.currentTimeMillis()));
-                notificacionParaPO.setUsuario(poLider); // Asignamos al PO Líder como receptor
-
-                notificacionRepository.save(notificacionParaPO);
+        // NOTIFICAR A TODO EL EQUIPO DE LA API
+        Equipo equipoApi = apiReportada.getEquipo();
+        if (equipoApi != null && equipoApi.getUsuarios() != null) {
+            for (Usuario miembro : equipoApi.getUsuarios()) {
+                // No notificar al creador del reporte
+                if (!miembro.getDni().equals(usuario.getDni())) {
+                    Notificacion notif = new Notificacion();
+                    String mensaje = "El QA " + usuario.getNombre() + " ha creado un reporte " + 
+                                   ("Aprobado".equals(estado) ? "de aprobación" : "de fallo") + 
+                                   " para la API: " + apiReportada.getNombre();
+                    notif.setMensaje(mensaje);
+                    notif.setLeido(false);
+                    notif.setFecha(new Timestamp(System.currentTimeMillis()));
+                    notif.setUsuario(miembro);
+                    notificacionRepository.save(notif);
+                }
             }
         }
 

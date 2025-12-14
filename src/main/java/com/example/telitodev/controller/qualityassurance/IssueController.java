@@ -305,28 +305,30 @@ public class IssueController extends BaseController {
             return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
         }
 
-        for (MultipartFile archivo : archivos) {
-            if (archivo.getSize() > MAX_FILE_SIZE) {
-                redirectAttributes.addFlashAttribute("error", "El archivo es demasiado grande");
-                return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
-            }
+        if (archivos != null && archivos.length > 0) {
+            for (MultipartFile archivo : archivos) {
+                if (archivo.getSize() > MAX_FILE_SIZE) {
+                    redirectAttributes.addFlashAttribute("error", "El archivo es demasiado grande");
+                    return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+                }
 
-            String contentType = archivo.getContentType();
-            if (!contentType.equals("image/png") && !contentType.equals("image/jpeg") && !contentType.equals("text/plain")) {
-                redirectAttributes.addFlashAttribute("error", "Solo se permiten archivos de tipo .png, .jpg o .log");
-                return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
-            }
+                String contentType = archivo.getContentType();
+                if (!contentType.equals("image/png") && !contentType.equals("image/jpeg") && !contentType.equals("text/plain")) {
+                    redirectAttributes.addFlashAttribute("error", "Solo se permiten archivos de tipo .png, .jpg o .log");
+                    return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+                }
 
-            try {
-                Adjunto adjunto = new Adjunto();
-                adjunto.setNombre(archivo.getOriginalFilename());
-                adjunto.setComentario(newComentario);
-                adjunto.setArchivo(archivo.getBytes());
-                adjuntoRepository.save(adjunto);
-            } catch (IOException e) {
-                e.printStackTrace();
-                redirectAttributes.addFlashAttribute("error", "Error al guardar el archivo");
-                return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+                try {
+                    Adjunto adjunto = new Adjunto();
+                    adjunto.setNombre(archivo.getOriginalFilename());
+                    adjunto.setComentario(newComentario);
+                    adjunto.setArchivo(archivo.getBytes());
+                    adjuntoRepository.save(adjunto);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    redirectAttributes.addFlashAttribute("error", "Error al guardar el archivo");
+                    return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+                }
             }
         }
 

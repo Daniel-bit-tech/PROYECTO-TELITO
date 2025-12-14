@@ -57,6 +57,66 @@
             margin-top: 20px;
         }
 
+        /* Estilos para AJAX feedback */
+        .ajax-loading {
+            opacity: 0.6;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .ajax-loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--tblr-border-color);
+            border-top-color: var(--tblr-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .comment-card.new-comment {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .alert-ajax {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
         .catalog-header {
             padding: 2rem 0 1rem;
             margin-bottom: 1rem;
@@ -440,9 +500,10 @@
                     </div>
 
                     <div th:if="${issue.estado != 'Corregido'}" class="col-md-auto">
-                        <form th:action="@{/qa/issueCerrar/{idIssue}/{idReporte}(idIssue=${issue.id.idIssue}, idReporte=${issue.reporte.idReporte})}" method="post">
-                            <button type="submit" class="btn btn-danger">Cerrar Issue</button>
-                        </form>
+                        <button type="button" class="btn btn-danger" id="btnCerrarIssue" 
+                                th:attr="data-id-issue=${issue.id.idIssue}, data-id-reporte=${issue.reporte.idReporte}">
+                            <i class="ti ti-check me-1"></i>Cerrar Issue
+                        </button>
                     </div>
                     <!-- Page title actions -->
                 </div>
@@ -493,7 +554,7 @@
                             </div>
                             <div class="feedback-tab" data-tab="roadmap">
                                 <i class="ti ti-message-2 me-1"></i> Foro (Comentarios)
-                                <span class="badge text-white bg-primary ms-1" th:text="${issue.comentarios.size()}">0</span>
+                                <span class="badge text-white bg-primary ms-1" id="comentariosCount" th:text="${issue.comentarios.size()}">0</span>
                             </div>
                             <div class="feedback-tab" data-tab="create-foro">
                                 <i class="ti ti-pencil me-1"></i> Dejar Comentario
@@ -568,7 +629,7 @@
 
                                 <!-- Si hay comentarios, mostrarlos -->
                                 <div th:unless="${#lists.isEmpty(issue.comentarios)}">
-                                    <div class="d-grid gap-4">
+                                    <div class="d-grid gap-4" id="comentariosContainer">
                                         <div th:each="comentario : ${issue.comentarios}" class="comment-card">
                                             <div class="comment-header">
                                                 <div class="comment-avatar" th:text="${#strings.substring(comentario.usuario.nombre, 0, 1)}">U</div>
@@ -603,28 +664,31 @@
                         <div class="feedback-form-container">
                             <h3 class="feedback-form-title">Foro - Deja tu Comentario</h3>
                             <div th:if="${issue.estado == 'Corregido'}" class="alert alert-success mt-3">
-                                Este issue ha sido desperado. No se pueden enviar más comentarios.
+                                Este issue ha sido cerrado. No se pueden enviar más comentarios.
                             </div>
 
                             <div th:unless="${issue.estado == 'Corregido'}">
-                                <!-- Aquí va el formulario para crear comentario -->
-                                <form th:action="@{/qa/crearComentario}" method="POST" enctype="multipart/form-data">
+                                <!-- Formulario AJAX para crear comentario -->
+                                <form id="comentarioForm" enctype="multipart/form-data">
                                     <!-- ID del Issue y Reporte -->
-                                    <input type="hidden" name="idIssue" th:value="${issue.id.idIssue}" />
-                                    <input type="hidden" name="idReporte" th:value="${issue.reporte.idReporte}" />
+                                    <input type="hidden" id="idIssue" name="idIssue" th:value="${issue.id.idIssue}" />
+                                    <input type="hidden" id="idReporte" name="idReporte" th:value="${issue.reporte.idReporte}" />
 
                                     <div class="form-group">
                                         <label for="comentario" class="form-label">Tu Comentario:</label>
-                                        <textarea id="comentario" name="comentario" class="form-control" rows="4" required></textarea>
-                                        <div th:if="${errorComentario}" class="text-danger mt-2" th:text="${errorComentario}"></div>
+                                        <textarea id="comentario" name="comentario" class="form-control" rows="4" required maxlength="400"></textarea>
+                                        <small class="text-muted"><span id="charCount">0</span>/400 caracteres</small>
+                                        <div id="error-comentario" class="text-danger mt-2" style="display:none;"></div>
                                     </div>
                                     <div class="form-group">
                                         <label for="archivo" class="form-label">Adjuntar archivo (opcional):</label>
-                                        <input type="file" id="archivo" name="archivos" class="form-control" accept=".png, .jpg, .jpeg, .log" multiple />
-                                        <small>Máximo 5 archivos</small>
+                                        <input type="file" id="archivo" name="archivos" class="form-control" accept=".png, .jpg, .jpeg, .log, .txt" multiple />
+                                        <small>Máximo 5 archivos (PNG, JPG, LOG, TXT)</small>
                                     </div>
-                                    <div id="error-message" style="color: red; display: none;">Solo se permiten archivos de tipo .png, .jpg, .jpeg o .log</div>
-                                    <button type="submit" onclick="return validateFiles()" class="btn btn-primary mt-3">Enviar Comentario</button>
+                                    <div id="error-message" class="text-danger mt-2" style="display: none;"></div>
+                                    <button type="submit" class="btn btn-primary mt-3" id="btnEnviarComentario">
+                                        <i class="ti ti-send me-1"></i>Enviar Comentario
+                                    </button>
                                 </form>
                             </div>
 
@@ -648,55 +712,198 @@
     <!-- END DEMO SCRIPTS -->
     <!-- BEGIN PAGE SCRIPTS -->
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            var themeConfig = {
-                theme: "light",
-                "theme-base": "gray",
-                "theme-font": "sans-serif",
-                "theme-primary": "blue",
-                "theme-radius": "1",
-            };
-            var url = new URL(window.location);
-            var form = document.getElementById("offcanvasSettings");
-            var resetButton = document.getElementById("reset-changes");
-            var checkItems = function () {
-                for (var key in themeConfig) {
-                    var value = window.localStorage["tabler-" + key] || themeConfig[key];
-                    if (!!value) {
-                        var radios = form.querySelectorAll(`[name="${key}"]`);
-                        if (!!radios) {
-                            radios.forEach((radio) => {
-                                radio.checked = radio.value === value;
-                            });
-                        }
-                    }
+        // ===== CONFIGURACIÓN GLOBAL =====
+        const CSRF_TOKEN = document.querySelector('meta[name="_csrf"]').content;
+        const CSRF_HEADER = document.querySelector('meta[name="_csrf_header"]').content;
+        
+        // ===== UTILIDADES =====
+        function showAlert(message, type = 'success') {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-ajax alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                <strong>${type === 'success' ? '✓' : '✗'}</strong> ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(alertDiv);
+            setTimeout(() => alertDiv.remove(), 5000);
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}`;
+        }
+
+        // ===== CONTADOR DE CARACTERES =====
+        const comentarioTextarea = document.getElementById('comentario');
+        const charCount = document.getElementById('charCount');
+        
+        if (comentarioTextarea && charCount) {
+            comentarioTextarea.addEventListener('input', function() {
+                charCount.textContent = this.value.length;
+                if (this.value.length > 380) {
+                    charCount.style.color = 'var(--tblr-danger)';
+                } else {
+                    charCount.style.color = '';
                 }
-            };
-            form.addEventListener("change", function (event) {
-                var target = event.target,
-                    name = target.name,
-                    value = target.value;
-                for (var key in themeConfig) {
-                    if (name === key) {
-                        document.documentElement.setAttribute("data-bs-" + key, value);
-                        window.localStorage.setItem("tabler-" + key, value);
-                        url.searchParams.set(key, value);
-                    }
-                }
-                window.history.pushState({}, "", url);
             });
-            resetButton.addEventListener("click", function () {
-                for (var key in themeConfig) {
-                    var value = themeConfig[key];
-                    document.documentElement.removeAttribute("data-bs-" + key);
-                    window.localStorage.removeItem("tabler-" + key);
-                    url.searchParams.delete(key);
+        }
+
+        // ===== VALIDACIÓN DE ARCHIVOS =====
+        function validateFiles() {
+            const fileInput = document.getElementById('archivo');
+            const files = fileInput.files;
+            const errorMsg = document.getElementById('error-message');
+            const allowedTypes = ['image/png', 'image/jpeg', 'text/plain'];
+            const maxSize = 5 * 1024 * 1024; // 5MB
+
+            errorMsg.style.display = 'none';
+
+            if (files.length > 5) {
+                errorMsg.textContent = 'Máximo 5 archivos permitidos';
+                errorMsg.style.display = 'block';
+                return false;
+            }
+
+            for (let file of files) {
+                if (!allowedTypes.includes(file.type)) {
+                    errorMsg.textContent = 'Solo se permiten archivos .png, .jpg, .jpeg, .log o .txt';
+                    errorMsg.style.display = 'block';
+                    return false;
                 }
-                checkItems();
-                window.history.pushState({}, "", url);
-            });
-            checkItems();
+                if (file.size > maxSize) {
+                    errorMsg.textContent = `El archivo ${file.name} supera el tamaño máximo de 5MB`;
+                    errorMsg.style.display = 'block';
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // ===== ENVÍO DE COMENTARIO VÍA AJAX =====
+        document.getElementById('comentarioForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const comentario = document.getElementById('comentario').value.trim();
+            const errorDiv = document.getElementById('error-comentario');
+            const btnSubmit = document.getElementById('btnEnviarComentario');
+            
+            // Validaciones
+            errorDiv.style.display = 'none';
+            
+            if (!comentario) {
+                errorDiv.textContent = 'El comentario no puede estar vacío.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            if (comentario.length > 400) {
+                errorDiv.textContent = 'El comentario no puede superar los 400 caracteres.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            if (!validateFiles()) {
+                return;
+            }
+
+            // Preparar FormData
+            const formData = new FormData();
+            formData.append('comentario', comentario);
+            formData.append('idIssue', document.getElementById('idIssue').value);
+            formData.append('idReporte', document.getElementById('idReporte').value);
+            
+            const files = document.getElementById('archivo').files;
+            for (let file of files) {
+                formData.append('archivos', file);
+            }
+
+            // Deshabilitar botón y mostrar loading
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando...';
+
+            try {
+                const response = await fetch('/qa/crearComentario', {
+                    method: 'POST',
+                    headers: {
+                        [CSRF_HEADER]: CSRF_TOKEN
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // Resetear formulario
+                    document.getElementById('comentarioForm').reset();
+                    charCount.textContent = '0';
+                    document.getElementById('error-message').style.display = 'none';
+                    
+                    showAlert('Comentario agregado exitosamente', 'success');
+                    
+                    // Recargar la página después de 1 segundo para mostrar el nuevo comentario
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    const text = await response.text();
+                    showAlert('Error al enviar el comentario', 'danger');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showAlert('Error de conexión. Intenta nuevamente.', 'danger');
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<i class="ti ti-send me-1"></i>Enviar Comentario';
+            }
         });
+
+        // ===== CERRAR ISSUE VÍA AJAX =====
+        const btnCerrarIssue = document.getElementById('btnCerrarIssue');
+        if (btnCerrarIssue) {
+            btnCerrarIssue.addEventListener('click', async function() {
+                if (!confirm('¿Estás seguro de cerrar este issue? Esta acción cambiará el estado del reporte a "Aprobado".')) {
+                    return;
+                }
+
+                const idIssue = this.getAttribute('data-id-issue');
+                const idReporte = this.getAttribute('data-id-reporte');
+
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Cerrando...';
+
+                try {
+                    const formData = new FormData();
+                    const response = await fetch(`/qa/issueCerrar/${idIssue}/${idReporte}`, {
+                        method: 'POST',
+                        headers: {
+                            [CSRF_HEADER]: CSRF_TOKEN
+                        },
+                        body: formData
+                    });
+
+                    if (response.ok) {
+                        showAlert('Issue cerrado correctamente. El reporte ha sido aprobado.', 'success');
+                        
+                        // Actualizar la UI
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        showAlert('Error al cerrar el issue', 'danger');
+                        this.disabled = false;
+                        this.innerHTML = '<i class="ti ti-check me-1"></i>Cerrar Issue';
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    showAlert('Error de conexión. Intenta nuevamente.', 'danger');
+                    this.disabled = false;
+                    this.innerHTML = '<i class="ti ti-check me-1"></i>Cerrar Issue';
+                }
+            });
+        }
     </script>
     <script>
 

@@ -151,25 +151,22 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
     /**
      * Devuelve una lista completa (sin paginar) de las APIs que un QA necesita validar.
-     * Incluye el DNI del PO Líder para usar en el formulario de creación de reportes.
+     * Basada en la estructura de equipos (sin PO Líder).
      */
-    /*
     @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
-            "a.idApi, a.nombre, MIN(p.nombre), a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, MIN(p.usuarioLider.dni)) " +
+            "a.idApi, a.nombre, eq.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, NULL) " +
             "FROM Api a " +
+            "JOIN a.equipo eq " +
+            "JOIN eq.usuarios u " +
             "JOIN a.apiHasEntornos ahe " +
             "JOIN ahe.entorno e " +
-            "JOIN ProyectoHasApi pha ON pha.api = a " +
-            "JOIN pha.proyecto p " +
             "JOIN a.dominio d " +
             "JOIN a.tag t " +
-            "WHERE p.equipo.organizacion.idOrganizacion = (SELECT u.equipo.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
+            "WHERE u.dni = :dni " +
             "AND e.nombre = 'QA' " +
-            "GROUP BY a.idApi, a.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion " +
+            "GROUP BY a.idApi, a.nombre, eq.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion " +
             "ORDER BY a.nombre ASC")
     List<ApiProyectoDTO> findApisToReportForQa(@Param("dni") String dni);
-    
-     */
 
 
     /* ===== CONSULTAS ADICIONALES PARA ADMIN DASHBOARD ===== */
