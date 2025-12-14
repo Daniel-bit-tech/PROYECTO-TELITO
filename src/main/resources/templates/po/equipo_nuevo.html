@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
+    <title>TELITO DEVELOPER PORTAL | Crear Equipo</title>
+
+    <!-- Tabler CSS -->
+    <link href="/tabler/dist/libs/jsvectormap/dist/jsvectormap.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-flags.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-socials.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-payments.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-vendors.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-marketing.css" rel="stylesheet" />
+    <link href="/tabler/dist/css/tabler-themes.css" rel="stylesheet" />
+    <link href="/tabler/preview/css/demo.css" rel="stylesheet" />
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+    <style>
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .page-subtitle {
+            color: var(--tblr-secondary-color);
+            margin-bottom: 1.5rem;
+        }
+        .card-form {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+<!-- Banner impersonación si lo usas -->
+<div th:replace="~{components/simple-impersonation-banner :: simple-impersonation-banner}"></div>
+
+<script src="/tabler/dist/js/tabler-theme.min.js"></script>
+
+<div class="page">
+    <!-- Header PO -->
+    <header th:replace="~{po/header_po :: header}"></header>
+
+    <div class="content">
+        <div class="container py-4">
+
+            <div class="mb-3">
+                <h1 class="page-title">Crear nuevo equipo</h1>
+                <p class="page-subtitle">
+                    Define el nombre y propósito del equipo que trabajar&aacute; con las APIs y proyectos de tu organización.
+                </p>
+            </div>
+
+            <div class="card card-form">
+                <div class="card-body">
+
+                    <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+                    <div th:if="${success}" class="alert alert-success" role="alert" th:text="${success}"></div>
+
+                    <!-- Más adelante este form apuntará al POST real, por ahora lo dejamos preparado -->
+                    <form id="formCrearEquipo" th:action="@{/po/equipo/crear}" method="post">
+
+                    <!-- Nombre del equipo -->
+                        <div class="mb-3">
+                            <label class="form-label">Nombre del equipo</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="nombre"
+                                   th:value="${nombre}"
+                                   th:classappend="${errorNombre} ? 'is-invalid' : ''"
+                                   placeholder="Ej. Equipo de Analítica, Squad Backend, Equipo QA"
+                                   required>
+
+                            <div class="invalid-feedback" th:if="${errorNombre}" th:text="${errorNombre}"></div>
+                        </div>
+
+
+                        <!-- Descripción / propósito -->
+                        <div class="mb-3">
+                            <label class="form-label">Descripción (opcional)</label>
+                            <textarea class="form-control"
+                                      name="descripcion"
+                                      rows="3"
+                                      th:text="${descripcion}"
+                                      placeholder="Breve descripción del objetivo del equipo..."></textarea>
+                        </div>
+
+                        <!-- Organización (por ahora hardcodeado como texto) -->
+                        <div class="mb-3">
+                            <label class="form-label">Organización</label>
+                            <input type="text"
+                                   class="form-control"
+                                   th:value="${organizacion != null ? organizacion.nombre : 'Sin organización'}"
+                                   readonly>
+
+                        </div>
+
+                        <!-- CSRF (cuando conectemos backend de verdad) -->
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a th:href="@{/po/organizacion}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Cancelar
+                            </a>
+                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#confirmCrearEquipo">
+                                <i class="fas fa-users-cog me-2"></i>
+                                Crear equipo
+                            </button>
+
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer th:replace="~{po/footer.html :: footer}"></footer>
+</div>
+
+<div class="modal modal-blur fade" id="confirmCrearEquipo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="modal-title">Confirmar creación</div>
+                <div>¿Estás seguro de crear este equipo?</div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-success" form="formCrearEquipo">Sí, crear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- JS Tabler -->
+<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/tabler/dist/js/tabler.min.js"></script>
+
+</body>
+</html>

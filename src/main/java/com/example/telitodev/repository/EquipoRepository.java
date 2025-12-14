@@ -27,5 +27,7 @@ public interface EquipoRepository extends JpaRepository<Equipo, Integer> {
             @Param("idOrganizacion") Integer idOrganizacion,
             @Param("nombre") String nombre);
 
-    boolean existsByNombreAndOrganizacion_IdOrganizacion(String nombre, Integer idOrganizacion);
+
+    boolean existsByNombreIgnoreCaseAndOrganizacion_IdOrganizacion(String nombre, Integer idOrganizacion);
+
 }

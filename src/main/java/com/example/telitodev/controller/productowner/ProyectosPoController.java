@@ -13,6 +13,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.format.annotation.DateTimeFormat;
+
 
 import java.util.List;
 import java.util.Map;
@@ -88,62 +90,148 @@ public class ProyectosPoController extends BaseController {
     }
 
     @GetMapping("/{id}")
-    public String mostrarDetalleProyecto(@PathVariable Integer id, Model model, Authentication auth, HttpSession session) {
+    public String mostrarDetalleProyecto(@PathVariable Integer id, Model model,
+                                         Authentication auth, HttpSession session) {
 
         Usuario usuario = getCurrentUser(auth, session);
-        Optional<Proyecto> optProyecto = proyectoRepository.findById(id);
-
         addImpersonationAttributes(model, session);
 
-        if (optProyecto.isPresent()) {
-            Proyecto proyecto = optProyecto.get();
-            List<ProyectoHasApi> listaApis = proyHasApiRepository.findByProyecto_IdProyecto(proyecto.getIdProyecto());
-            List<Api> apiList = apiRepository.findAll();
+        Proyecto proyecto = proyectoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no encontrado"));
 
-            ProyectoHasApi nuevaAsociacion = new ProyectoHasApi();
-            Optional<Entorno> optEntornoDefecto = entornoRepository.findById(2);
-
-            if (optEntornoDefecto.isPresent()) {
-                nuevaAsociacion.setEntorno(optEntornoDefecto.get());
+        // ===== Validación: solo puede VER proyectos de su organización (excepto SUPERADMIN) =====
+        if (!usuario.getRol().getNombreRol().equals("SUPERADMIN")) {
+            if (usuario.getOrganizacion() == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
             }
 
-            model.addAttribute("proyecto", proyecto);
-            model.addAttribute("listaApis", listaApis);
-            model.addAttribute("apiList", apiList);
-            model.addAttribute("usuario", usuario);
-            model.addAttribute("currentPortal", "po");
+            if (proyecto.getEquipo() == null || proyecto.getEquipo().getOrganizacion() == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            }
 
-            model.addAttribute("apisDisponibles", apiRepository.findApiNotAssociatedWithProyecto(id));
-            model.addAttribute("entornosDisponibles", entornoRepository.findAll());
+            Integer orgUsuario = usuario.getOrganizacion().getIdOrganizacion();
+            Integer orgProyecto = proyecto.getEquipo().getOrganizacion().getIdOrganizacion();
 
-            model.addAttribute("nuevaAsociacion", nuevaAsociacion);
-
-            return "po/proyecto-detalle";
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no encontrado");
+            if (orgProyecto == null || !orgProyecto.equals(orgUsuario)) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            }
         }
+        // ================================================================================
+
+        // ====== PO ENCARGADO: sale del EQUIPO del proyecto (NO del proyecto) ======
+        Usuario poEncargado = null;
+        if (proyecto.getEquipo() != null && proyecto.getEquipo().getIdEquipo() != null) {
+            Integer idEquipo = proyecto.getEquipo().getIdEquipo();
+            poEncargado = usuarioRepository.findPoEncargadoByEquipo(idEquipo).orElse(null);
+        }
+        model.addAttribute("poEncargado", poEncargado);
+        // ========================================================================
+
+        // ====== Permiso para configurar: solo si el PO logueado es el PO encargado del equipo ======
+        boolean canConfigure = false;
+        if (poEncargado != null && usuario.getDni() != null) {
+            canConfigure = poEncargado.getDni().equals(usuario.getDni());
+        }
+        model.addAttribute("canConfigure", canConfigure);
+
+        // =========================================================================================
+        boolean canManageApis = canManageProyecto(usuario, proyecto);
+        model.addAttribute("canManageApis", canManageApis);
+
+
+        // APIs asociadas / disponibles
+        List<ProyectoHasApi> listaApis = proyHasApiRepository.findByProyecto_IdProyecto(proyecto.getIdProyecto());
+        List<Api> apiList = apiRepository.findAll();
+
+        ProyectoHasApi nuevaAsociacion = new ProyectoHasApi();
+        entornoRepository.findById(2).ifPresent(nuevaAsociacion::setEntorno);
+
+        model.addAttribute("proyecto", proyecto);
+        model.addAttribute("listaApis", listaApis);
+        model.addAttribute("apiList", apiList);
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("currentPortal", "po");
+
+        model.addAttribute("apisDisponibles", apiRepository.findApiNotAssociatedWithProyecto(id));
+        model.addAttribute("entornosDisponibles", entornoRepository.findAll());
+        model.addAttribute("nuevaAsociacion", nuevaAsociacion);
+
+        return "po/proyecto-detalle";
+
+
     }
+
+    @GetMapping("/{id}/config")
+    public String configurarProyecto(@PathVariable Integer id,
+                                     Model model,
+                                     Authentication auth,
+                                     HttpSession session) {
+
+        Usuario usuario = getCurrentUser(auth, session);
+        addImpersonationAttributes(model, session);
+
+        Proyecto proyecto = proyectoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no encontrado"));
+
+        // ===== Regla: solo puede CONFIGURAR si es el PO encargado del equipo del proyecto (o SUPERADMIN) =====
+        boolean esSuperAdmin = usuario.getRol() != null && "SUPERADMIN".equals(usuario.getRol().getNombreRol());
+
+        Usuario poEncargado = null;
+        if (proyecto.getEquipo() != null && proyecto.getEquipo().getIdEquipo() != null) {
+            poEncargado = usuarioRepository.findPoEncargadoByEquipo(proyecto.getEquipo().getIdEquipo())
+                    .orElse(null);
+        }
+
+        boolean canConfigure = esSuperAdmin || (poEncargado != null
+                && usuario.getDni() != null
+                && poEncargado.getDni() != null
+                && poEncargado.getDni().equals(usuario.getDni()));
+
+        if (!canConfigure) {
+            // como ya lo vienes haciendo: ocultar existencia => 404
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        // ================================================================================================
+
+        model.addAttribute("proyecto", proyecto);
+        model.addAttribute("poEncargado", poEncargado);
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("currentPortal", "po");
+
+        return "po/proyecto-config";
+    }
+
+
 
     @PostMapping("/{idProy}/api/{idApi}/cambiar-entorno")
     @ResponseBody
-    public ResponseEntity<?> cambiarEntornoApiProy(@PathVariable Integer idProy, @PathVariable Integer idApi, @RequestParam Integer idEntorno,
+    public ResponseEntity<?> cambiarEntornoApiProy(@PathVariable Integer idProy,
+                                                   @PathVariable Integer idApi,
+                                                   @RequestParam Integer idEntorno,
                                                    Authentication auth, HttpSession session) {
+
         Usuario usuario = getCurrentUser(auth, session);
 
         ProyectoHasApiId idProyHasApi = new ProyectoHasApiId(idProy, idApi);
         ProyectoHasApi proyHasApi = proyHasApiRepository.findById(idProyHasApi)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró el proyecto o la API."));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "No se encontró el proyecto o la API."));
 
-        //(if (!proyHasApi.getProyecto().getUsuarioLider().equals(usuario)
-        //        && !proyHasApi.getProyecto().getEquipo().equals(usuario.getOrganizacion())) {
-        //    throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para editar este proyecto.");
-        //}
+        // ✅ BLOQUEO: solo PO encargado del equipo del proyecto (o SUPERADMIN)
+        Proyecto proyecto = proyHasApi.getProyecto();
+        if (!canManageProyecto(usuario, proyecto)) {
+            // para "ocultar" el recurso (misma lógica que usaste antes)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            // o si prefieres explícito:
+            // throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permiso para cambiar el entorno.");
+        }
 
         Integer currentEntornoId = proyHasApi.getEntorno().getIdEntorno();
         Integer newEntornoId = idEntorno;
 
         if (currentEntornoId.equals(newEntornoId)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La API ya está asociada al entorno " + proyHasApi.getEntorno().getNombre() + ".");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La API ya está asociada al entorno " + proyHasApi.getEntorno().getNombre() + ".");
         }
 
         boolean isTransitionValid = false;
@@ -173,24 +261,28 @@ public class ProyectosPoController extends BaseController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, errorMessage);
         }
 
-        List<CredencialApi> credencialesActivas = credencialApiRepository
-                .findByApi_IdApiAndEstado(idApi, true);
+        // invalidar credenciales activas
+        List<CredencialApi> credencialesActivas =
+                credencialApiRepository.findByApi_IdApiAndEstado(idApi, true);
 
         for (CredencialApi credencial : credencialesActivas) {
             credencial.setEstado(false);
             credencialApiRepository.save(credencial);
         }
 
-        // 6. Guardar el Nuevo Entorno
+        // Guardar nuevo entorno
         Entorno newEntorno = entornoRepository.findById(idEntorno)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Entorno no encontrado"));
 
         proyHasApi.setEntorno(newEntorno);
         proyHasApiRepository.save(proyHasApi);
 
-        return ResponseEntity.ok(Map.of("message", "API "+proyHasApi.getApi().getNombre()+" cambió a entorno "+newEntorno.getNombre()+" con éxito. Claves API obsoletas invalidadas."));
+        return ResponseEntity.ok(Map.of(
+                "message", "API " + proyHasApi.getApi().getNombre()
+                        + " cambió a entorno " + newEntorno.getNombre()
+                        + " con éxito. Claves API obsoletas invalidadas."
+        ));
     }
-
 
     @PostMapping("/{idProy}/addApis")
     public String addApiToProject(@PathVariable("idProy") Integer idProyecto,
@@ -200,38 +292,151 @@ public class ProyectosPoController extends BaseController {
 
         Usuario usuario = getCurrentUser(auth, session);
 
-        Integer entornoInicialId = nuevaAsociacion.getEntorno().getIdEntorno();
+        // 1) Cargar proyecto
+        Proyecto proyecto = proyectoRepository.findById(idProyecto)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no encontrado"));
 
+        // 2) BLOQUEO: solo PO encargado (o SUPERADMIN si tu helper lo permite)
+        if (!canManageProyecto(usuario, proyecto)) {
+            redirectAttributes.addFlashAttribute("error",
+                    "🔒 Solo lectura: no tienes permisos para agregar APIs en este proyecto.");
+            return "redirect:/po/proyectos/" + idProyecto;
+        }
+
+        // 3) Validación de regla: entorno inicial debe ser Desarrollo (id=2)
+        Integer entornoInicialId = nuevaAsociacion.getEntorno().getIdEntorno();
         if (!entornoInicialId.equals(2)) {
             redirectAttributes.addFlashAttribute("error",
-                    "ERROR DE REGLA: La asociación inicial de una API debe comenzar obligatoriamente en el entorno 'Desarrollo'.");
+                    "ERROR DE REGLA: La asociación inicial de una API debe comenzar obligatoriamente en 'Desarrollo'.");
             return "redirect:/po/proyectos/" + idProyecto;
         }
 
         try {
-            Proyecto proyecto = proyectoRepository.findById(idProyecto)
-                    .orElseThrow(() -> new RuntimeException("Proyecto no encontrado"));
-
             Api api = apiRepository.findById(nuevaAsociacion.getApi().getIdApi())
-                    .orElseThrow(() -> new RuntimeException("API no encontrada"));
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "API no encontrada"));
 
             ProyectoHasApiId idClave = new ProyectoHasApiId(proyecto.getIdProyecto(), api.getIdApi());
-
             nuevaAsociacion.setProyectoHasApiId(idClave);
-
             nuevaAsociacion.setProyecto(proyecto);
             nuevaAsociacion.setApi(api);
 
-
             proyHasApiRepository.save(nuevaAsociacion);
 
-            redirectAttributes.addFlashAttribute("success", "API " + api.getNombre() + " asociada a Desarrollo con éxito.");
+            redirectAttributes.addFlashAttribute("success",
+                    "API " + api.getNombre() + " asociada a Desarrollo con éxito.");
 
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al intentar asociar la API: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error",
+                    "Error al intentar asociar la API: " + e.getMessage());
         }
 
         return "redirect:/po/proyectos/" + idProyecto;
+    }
+
+
+    @PostMapping("/{id}/config")
+    public String guardarConfigProyecto(@PathVariable Integer id,
+                                        @RequestParam String nombre,
+                                        @RequestParam(required = false) String descripcion,
+                                        @RequestParam(defaultValue = "false") boolean publico,
+                                        @RequestParam(defaultValue = "false") boolean activo,
+                                        @RequestParam(required = false)
+                                        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) java.time.LocalDate fechaFin,
+                                        RedirectAttributes redirectAttributes,
+                                        Authentication auth,
+                                        HttpSession session) {
+
+        Usuario usuario = getCurrentUser(auth, session);
+
+        Proyecto proyecto = proyectoRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Proyecto no encontrado"));
+
+        boolean esSuperAdmin = usuario.getRol() != null && "SUPERADMIN".equals(usuario.getRol().getNombreRol());
+
+        Usuario poEncargado = null;
+        if (proyecto.getEquipo() != null && proyecto.getEquipo().getIdEquipo() != null) {
+            poEncargado = usuarioRepository.findPoEncargadoByEquipo(proyecto.getEquipo().getIdEquipo())
+                    .orElse(null);
+        }
+
+        boolean canConfigure = esSuperAdmin || (poEncargado != null
+                && usuario.getDni() != null
+                && poEncargado.getDni() != null
+                && poEncargado.getDni().equals(usuario.getDni()));
+
+        if (!canConfigure) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+
+        // Validación simple
+        if (nombre == null || nombre.trim().isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "El nombre del proyecto no puede estar vacío.");
+            return "redirect:/po/proyectos/" + id + "/config";
+        }
+
+        // Regla sugerida: si inactivo y no manda fecha fin, set hoy
+        if (!activo && fechaFin == null) {
+            fechaFin = java.time.LocalDate.now();
+        }
+        // Si activo, limpiar fecha fin (si quieres permitir fecha fin estando activo, comenta esto)
+        if (activo) {
+            fechaFin = null;
+        }
+
+        proyecto.setNombre(nombre.trim());
+        proyecto.setDescripcion(descripcion != null ? descripcion.trim() : "");
+        proyecto.setPublico(publico);
+        proyecto.setActivo(activo);
+        proyecto.setFechaFin(fechaFin);
+
+        proyectoRepository.save(proyecto);
+
+        redirectAttributes.addFlashAttribute("success", "Proyecto actualizado correctamente.");
+        return "redirect:/po/proyectos/" + id + "/config";
+    }
+
+    /** Helper: valida que el usuario pueda ver el proyecto (misma org) y si puede configurar */
+    private boolean puedeConfigurar(Usuario usuario, Proyecto proyecto) {
+        // SUPERADMIN siempre puede
+        if (usuario.getRol() != null && "SUPERADMIN".equals(usuario.getRol().getNombreRol())) {
+            return true;
+        }
+
+        // Debe tener organización
+        if (usuario.getOrganizacion() == null) return false;
+
+        // Proyecto debe tener equipo->organización
+        if (proyecto.getEquipo() == null || proyecto.getEquipo().getOrganizacion() == null) return false;
+
+        // Debe ser misma organización
+        Integer orgUsuario = usuario.getOrganizacion().getIdOrganizacion();
+        Integer orgProyecto = proyecto.getEquipo().getOrganizacion().getIdOrganizacion();
+        if (orgProyecto == null || !orgProyecto.equals(orgUsuario)) return false;
+
+        // Debe ser PO encargado del equipo del proyecto
+        if (proyecto.getEquipo().getIdEquipo() == null) return false;
+
+        Usuario poEncargado = usuarioRepository.findPoEncargadoByEquipo(proyecto.getEquipo().getIdEquipo())
+                .orElse(null);
+
+        return (poEncargado != null
+                && usuario.getDni() != null
+                && poEncargado.getDni() != null
+                && poEncargado.getDni().equals(usuario.getDni()));
+    }
+
+    private boolean canManageProyecto(Usuario usuario, Proyecto proyecto) {
+        if (usuario.getRol() != null && "SUPERADMIN".equals(usuario.getRol().getNombreRol())) return true;
+
+        if (proyecto == null || proyecto.getEquipo() == null || proyecto.getEquipo().getIdEquipo() == null) return false;
+
+        Usuario poEncargado = usuarioRepository
+                .findPoEncargadoByEquipo(proyecto.getEquipo().getIdEquipo())
+                .orElse(null);
+
+        return poEncargado != null
+                && usuario.getDni() != null
+                && usuario.getDni().equals(poEncargado.getDni());
     }
 
 }
