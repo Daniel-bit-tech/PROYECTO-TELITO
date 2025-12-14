@@ -117,23 +117,5 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
     List<Api> findByEquipo_IdEquipo(Integer idEquipo);
 
-    List<Api> findByEquipo_IdEquipoAndIdApiNotIn(Integer idEquipo, List<Integer> ids);
-
-
-
-        @Query("""
-        SELECT a
-        FROM Api a
-        WHERE a.equipo.idEquipo = :idEquipo
-          AND NOT EXISTS (
-              SELECT 1
-              FROM ProyectoHasApi pha
-              WHERE pha.proyecto.idProyecto = :idProyecto
-                AND pha.api.idApi = a.idApi
-          )
-    """)
-        List<Api> findApisDisponiblesParaProyecto(@Param("idProyecto") Integer idProyecto,
-                                                  @Param("idEquipo") Integer idEquipo);
-
 
 }
