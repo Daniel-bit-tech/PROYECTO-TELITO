@@ -115,4 +115,7 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
             "ORDER BY a.nombre")
     List<Api> findApisDisponiblesParaOrganizacion(@Param("idOrganizacion") Integer idOrganizacion);
 
+    List<Api> findByEquipo_IdEquipo(Integer idEquipo);
+
+
 }
