@@ -269,5 +269,51 @@
 
     </div>
 
+
+    <div th:fragment="docs" class="card ms-3">
+        <div class="card-header">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h2 class="card-title">Documentación Adiconal</h2>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div th:if="${#lists.isEmpty(docs)}" class="alert alert-info">
+                No hay documentación registrada.
+            </div>
+
+            <div th:unless="${#lists.isEmpty(docs)}" class="list-group">
+                <div class="list-group-item d-flex justify-content-between align-items-center"
+                     th:each="doc : ${docs}"
+                     th:attr="data-doc-id=${doc.idDocumentacion}">
+
+                    <div>
+<!--                        <strong th:text="${doc.formato +' - '+doc.tipo+'  '}"></strong>-->
+                        <strong th:text="${(doc.formato ?: 'Sin formato')
+                          + ((doc.tipo != null) ? ' - ' : '')
+                          + (doc.tipo ?: '') + '  '}">
+                        </strong>
+                        <span class="text-muted" th:text="${#dates.format(doc.fechaCreacion, 'dd/MM/yyyy')}"></span>
+                        <br>
+                        <span th:text="${doc.descripcion}"></span>
+                        <br>
+                        <small class="text-secondary" th:if="${doc.versionApi != null}"
+                               th:text="'Versión: ' + ${doc.versionApi.version}">
+                        </small>
+                    </div>
+
+                    <button type="button" class="btn btn-sm btn-outline-success btn-download-doc gap-2"
+                            th:attr="data-doc-id=${doc.idDocumentacion}">
+                        <i class="fa fa-download"></i> Descargar
+                    </button>
+                </div>
+            </div>
+
+
+        </div>
+
+    </div>
+
 </body>
 </html>

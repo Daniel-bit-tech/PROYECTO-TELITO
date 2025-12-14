@@ -3,6 +3,7 @@ package com.example.telitodev.controller.general;
 
 import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.ContratoApi;
+import com.example.telitodev.entity.Documentacion;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.repository.ApiRepository;
 import com.example.telitodev.repository.ContratoRepository;
@@ -101,8 +102,6 @@ public class DocumentacionController {
     @GetMapping("/{idApi}/{section}/.html")
     public String getSection(@PathVariable Integer idApi, @PathVariable String section, Model model) throws IOException {
 
-        System.out.println("SECTION: " + section);
-
         Optional<Api> apiX = apiRepository.findById(idApi);
         if (apiX.isPresent()) {
             Api api = apiX.get();
@@ -112,6 +111,11 @@ public class DocumentacionController {
                 case "info":
                     model.addAttribute("api", api);
                     return "general/docs/docSecciones :: info";
+                case "docs":
+                    model.addAttribute("api", api);
+                    model.addAttribute("docs", api.getDocumentaciones().stream().filter(d -> d.getFormato()!=Documentacion.FormatoDoc.MARKDOWN).toList());
+
+                    return "general/docs/docSecciones :: docs";
                 default:
                     model.addAttribute("secName" , section);
 
@@ -146,6 +150,45 @@ public class DocumentacionController {
         }
 
         return ResponseEntity.notFound().build();
+    }
+
+    /**
+     * Endpoint para generar url de descarga de docs adicionales
+     * @param idDoc ID del documento a descargar
+     * @return JSON con bandera de éxito Y url
+     */
+    @GetMapping("/{idDoc}/download")
+    @ResponseBody
+    public ResponseEntity<?> descargarDocumentacion(@PathVariable Integer idDoc,
+                                                    Authentication auth, HttpSession session) {
+
+        Usuario usuario = obtenerUsuarioActual(auth, session);
+
+        Documentacion doc = documentacionRepository.findById(idDoc)
+                .filter(d -> d.getFormato()!=Documentacion.FormatoDoc.MARKDOWN)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Documento no encontrado"));
+
+        // Validar que el usuario tenga acceso a la API
+        if (!doc.getApi().getEquipo().equals(usuario.getEquipo())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("success", false, "message", "No tiene permisos para descargar este documento."));
+        }
+
+        String presignedUrl = null;
+        try {
+            // Validar que tenga key S3
+            if (doc.getUrlDocumento() == null) throw new DocApiService.DocValidationException("Documento nulo");
+
+            presignedUrl = s3DocsApiService.generarUrlDescarga(doc.getUrlDocumento());
+        } catch (DocApiService.DocValidationException e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("success", false, "message", "No se pudo descargar el archivo."));
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "url", presignedUrl
+        ));
     }
 
 

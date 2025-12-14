@@ -9,7 +9,6 @@
 <!--                    th:href="@{/apis/{idApi}/docs (idApi=${idApi})}"-->
                     <li class="nav-item">
                         <a th:classappend="${currentView == 'info' ? 'active' : ''}"
-
                            href="#"
                            class="nav-link seccion-link"
                            th:attr="data-seccion='info'">
@@ -26,13 +25,6 @@
                         </a>
                     </li>
 
-<!--                    <li th:each="seccion : ${nombresSec}" class="nav-item">-->
-<!--                        <a th:class="${currentView == seccion ? 'nav-link active' : 'nav-link'}"-->
-<!--                           th:href="@{/documentacion/{idApi}/{nomSec}(idApi=${idApi}, nomSec=${seccion})}">-->
-<!--                            <i class="fas fa-list me-2"></i>-->
-<!--                            <span th:text="${seccion}">Sección</span>-->
-<!--                        </a>-->
-<!--                    </li>-->
 
                     <li th:each="seccion : ${nombresSec}" class="nav-item">
                         <a th:classappend="${currentView == seccion ? 'active' : ''}"
@@ -44,14 +36,15 @@
                         </a>
                     </li>
 
-                    <!--                <li class="nav-item">-->
-                    <!--                    <a th:class="${currentView == 'docs' ? 'nav-link active' : 'nav-link'}"-->
-                    <!--                    >-->
-                    <!--                                           th:href="@{/apis/{idApi}/docs (idApi=${idApi})}">-->
-                    <!--                        <i class="fas fa-book me-2"></i>-->
-                    <!--                        Documentación Adicional-->
-                    <!--                    </a>-->
-                    <!--                </li>-->
+                    <li class="nav-item">
+                        <a th:classappend="${currentView == 'docs' ? 'active' : ''}"
+                           href="#"
+                           class="nav-link seccion-link"
+                           th:attr="data-seccion='docs'">
+                            <i class="fas fa-book me-2"></i>
+                            Documentación Adicional
+                        </a>
+                    </li>
 
                 </ul>
             </div>
@@ -71,14 +64,19 @@
                 <!--                                    <strong>Formato:</strong>-->
                 <!--                                    <span class="badge bg-blue text-blue-fg">JSON</span>-->
                 <!--                                </div>-->
-                <!--                                <div class="mb-2">-->
-                <!--                                    <strong>Autenticación:</strong>-->
-                <!--                                    <span class="badge bg-orange text-orange-fg" >JWT</span>-->
-                <!--                                </div>-->
-                <div>
+
+                <div class="mb-2">
                     <strong>Estado:</strong>
                     <span class="badge" th:classappend="' bg-'+${api.estadoApi.estado.toLowerCase()}"
                           th:text="${api.estadoApi.estado}">TESTING</span>
+                </div>
+                <div class="mb-2">
+                    <strong>Organización:</strong>
+                    <span class="badge bg-azure text-azure-fg" th:text="${api.equipo.organizacion.nombre}">ORG</span>
+                </div>
+                <div class="mb-2">
+                    <strong>Equipo:</strong>
+                    <span class="badge bg-azure-lt" th:text="${api.equipo.nombre}">EQUIPO</span>
                 </div>
             </div>
         </div>
