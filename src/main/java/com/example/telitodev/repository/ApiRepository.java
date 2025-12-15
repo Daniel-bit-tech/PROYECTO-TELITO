@@ -3,6 +3,7 @@ package com.example.telitodev.repository;
 
 import com.example.telitodev.dto.ApiProyectoDTO;
 import com.example.telitodev.entity.Api;
+import com.example.telitodev.entity.Equipo;
 import com.example.telitodev.entity.Proyecto;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -206,6 +207,28 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
     @Query("SELECT a FROM Api a WHERE a.equipo.organizacion.idOrganizacion = :organizacionId")
     List<Api> findByOrganizacionId(@Param("organizacionId") Integer organizacionId);
+
+
+    List<Api> findByEquipo_IdEquipo(Integer idEquipo);
+
+    @Query("""
+    select a
+    from Api a
+    """)
+    List<Api> findApisToReportForQa();
+
+    List<Api> findByEquipo(Equipo equipo);
+
+    @Query("""
+      select a
+      from Api a
+      where a.idApi not in (
+          select pha.api.idApi
+          from ProyectoHasApi pha
+          where pha.proyecto.equipo.organizacion.idOrganizacion = :idOrg
+      )
+  """)
+    List<Api> findApisDisponiblesParaOrganizacion(@Param("idOrg") Integer idOrg);
 
 
 }

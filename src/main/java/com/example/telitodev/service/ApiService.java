@@ -46,4 +46,15 @@ public class ApiService {
         return apiRepository.findApisDisponiblesParaOrganizacion(idOrganizacion);
     }
 
+    // Nuevo método: Obtener APIs recientes de una organización específica
+    public List<Api> getRecentApisByOrganizacion(Integer idOrganizacion) {
+        // Usa el método que ya tienes en el repositorio
+        List<Api> apisOrganizacion = apiRepository.findByOrganizacionId(idOrganizacion);
+
+        return apisOrganizacion.stream()
+                .sorted(Comparator.comparing(Api::getFechaCreacion).reversed())
+                .limit(5)
+                .collect(Collectors.toList());
+    }
+
 }

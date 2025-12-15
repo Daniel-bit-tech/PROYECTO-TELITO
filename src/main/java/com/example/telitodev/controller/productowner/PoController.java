@@ -78,12 +78,18 @@ public class PoController extends BaseController {
 
     @GetMapping("/home")
     public String showHomeView(Model model, Authentication auth, HttpSession session) {
-        List<Api> recentApis = apiService.getRecentApis();
-        model.addAttribute("recentApis", recentApis);
-
-        // Obtener el usuario correcto considerando impersonación usando BaseController
+        // Obtener el usuario correcto considerando impersonación
         Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
+
+        // Obtener APIs de la organización del usuario
+        List<Api> recentApis;
+        if (usuario.getOrganizacion() != null && usuario.getOrganizacion().getIdOrganizacion() != null) {
+            recentApis = apiService.getRecentApisByOrganizacion(usuario.getOrganizacion().getIdOrganizacion());
+        } else {
+            recentApis = apiService.getRecentApis();
+        }
+        model.addAttribute("recentApis", recentApis);
 
         // Agregar información de impersonación al modelo
         addImpersonationAttributes(model, session);

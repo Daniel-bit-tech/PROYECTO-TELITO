@@ -8,18 +8,17 @@ import com.example.telitodev.repository.EntornoRepository;
 import com.example.telitodev.repository.ProyectoHasApiRepository;
 import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.service.MetricsService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpSession;
-
+import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/po")
@@ -44,78 +43,74 @@ public class KPIsController extends BaseController {
         this.proyectoHasApiRepository = proyectoHasApiRepository;
     }
 
-    /** Vista principal de KPIs (inyecta métricas de cabecera + lista básica) */
+    /** Vista principal de KPIs */
     @GetMapping("/KPIs")
     public String showKPIsView(Model model, Authentication auth, HttpSession session) {
         Usuario usuario = getCurrentUser(auth, session);
+        Integer orgId = usuario.getOrganizacion().getIdOrganizacion();
 
-        Integer idOrganizacion = usuario.getOrganizacion().getIdOrganizacion();
-        // Agregar atributos de impersonación
+        // Banner de impersonación
         addImpersonationAttributes(model, session);
 
         model.addAttribute("usuario", usuario);
 
-        // --- KPIs BÁSICOS ---
-        long totalLlamadas = metricsService.getTotalRequests();
+        // ===== KPIs (POR ORGANIZACIÓN) =====
+        long totalLlamadas = metricsService.getTotalRequestsByOrg(orgId);
         model.addAttribute("totalLlamadas", totalLlamadas);
-        double latenciaPromedio = metricsService.getAverageLatency();
+
+        double latenciaPromedio = metricsService.getAverageLatencyByOrg(orgId);
         model.addAttribute("latenciaPromedio", Math.round(latenciaPromedio));
-        double tasaExito = metricsService.getSuccessRate();
+
+        double tasaExito = metricsService.getSuccessRateByOrg(orgId);
         model.addAttribute("tasaExito", String.format("%.1f", tasaExito));
-        double tasaError = metricsService.getErrorRate();
+
+        double tasaError = metricsService.getErrorRateByOrg(orgId);
         model.addAttribute("tasaError", String.format("%.1f", tasaError));
 
-        // --- KPIs AVANZADOS ---
-        double throughput = metricsService.getCurrentThroughput();
+        // ===== KPIs AVANZADOS (POR ORGANIZACIÓN) =====
+        double throughput = metricsService.getCurrentThroughputByOrg(orgId);
         model.addAttribute("throughput", String.format("%.2f", throughput));
-        double disponibilidad = metricsService.getSystemAvailability();
+
+        double disponibilidad = metricsService.getSystemAvailabilityByOrg(orgId);
         model.addAttribute("disponibilidad", String.format("%.2f", disponibilidad));
-        double costoTotal = metricsService.getTotalCost();
+
+        double costoTotal = metricsService.getTotalCostByOrg(orgId);
         model.addAttribute("costoTotal", String.format("%.2f", costoTotal));
 
-        // --- CAMBIOS PORCENTUALES (Pasar como Double) ---
-        model.addAttribute("totalLlamadasChange", metricsService.getTotalRequestsChange());
-        model.addAttribute("latenciaPromedioChange", metricsService.getAverageLatencyChange());
-        model.addAttribute("tasaExitoChange", metricsService.getSuccessRateChange());
-        model.addAttribute("tasaErrorChange", metricsService.getErrorRateChange());
+        // ===== CAMBIOS (POR ORGANIZACIÓN) =====
+        model.addAttribute("totalLlamadasChange", metricsService.getTotalRequestsChangeByOrg(orgId));
+        model.addAttribute("latenciaPromedioChange", metricsService.getAverageLatencyChangeByOrg(orgId));
+        model.addAttribute("tasaExitoChange", metricsService.getSuccessRateChangeByOrg(orgId));
+        model.addAttribute("tasaErrorChange", metricsService.getErrorRateChangeByOrg(orgId));
         model.addAttribute("throughputChange", metricsService.getThroughputChange());
         model.addAttribute("disponibilidadChange", metricsService.getAvailabilityChange());
         model.addAttribute("costoTotalChange", metricsService.getTotalCostChange());
 
-        // --- DATOS PARA TABLAS Y GRÁFICOS ---
+        // ===== LISTA DE APIs (Organización) =====
         List<Api> apisDeLaOrganizacion = Collections.emptyList();
-        if (proyectoHasApiRepository != null) {
-            try {
-                apisDeLaOrganizacion = proyectoHasApiRepository.findDistinctApisByOrganizacionId(idOrganizacion);
-            } catch (Exception e) {
-                System.err.println("Error al obtener APIs de la organización: " + e.getMessage());
-            }
-        } else {
-            System.err.println("ProyectoHasApiRepository no fue inyectado correctamente.");
+        try {
+            apisDeLaOrganizacion = proyectoHasApiRepository.findDistinctApisByOrganizacionId(orgId);
+        } catch (Exception e) {
+            System.err.println("Error al obtener APIs de la organización: " + e.getMessage());
         }
 
         model.addAttribute("totalApisActivas", apisDeLaOrganizacion.size());
         model.addAttribute("totalApisActivasChange", "+0");
 
-        final List<Api> finalApisDeOrg = apisDeLaOrganizacion;
-        List<MetricsService.TopApiDTO> topApis = metricsService.getTopUsedApis().stream()
-                .filter(apiDto -> finalApisDeOrg.stream().anyMatch(api -> api.getNombre().equals(apiDto.nombre())))
-                .collect(Collectors.toList());
+        // ===== TABLAS (POR ORGANIZACIÓN) =====
+        List<MetricsService.TopApiDTO> topApis = metricsService.getTopUsedApisByOrg(orgId);
         model.addAttribute("topApis", topApis);
 
-        List<MetricsService.CostApiDTO> costosApis = metricsService.getCostMetricsByApi().stream()
-                .filter(costoDto -> finalApisDeOrg.stream().anyMatch(api -> api.getNombre().equals(costoDto.nombre())))
-                .collect(Collectors.toList());
+        List<MetricsService.CostApiDTO> costosApis = metricsService.getCostMetricsByApiByOrg(orgId);
         model.addAttribute("costosApis", costosApis);
 
-        model.addAttribute("usoEntornos", metricsService.getUsageByEnvironment());
+        model.addAttribute("usoEntornos", metricsService.getUsageByEnvironmentByOrg(orgId));
 
-        // --- DATOS PARA FILTROS DINÁMICOS ---
+        // ===== FILTROS (selects) =====
         model.addAttribute("listaApis", apisDeLaOrganizacion);
         model.addAttribute("listaEntornos", entornoRepository.findAll());
 
-
-        // --- DATOS PARA ALERTAS  ---
+        // ===== ALERTAS (demo) =====
         List<AlertaDTO> alertas = List.of(
                 new AlertaDTO("error", "Aumento de errores 5xx en API de Pagos", "Tasa de error subió del 0.5% al 3.2%", "Hace 15 min"),
                 new AlertaDTO("warning", "Aumento de latencia en API de Usuarios", "p95 pasó de 200ms a 450ms", "Hace 2 h"),
@@ -123,7 +118,7 @@ public class KPIsController extends BaseController {
         );
         model.addAttribute("alertasRecientes", alertas);
 
-        // --- DATOS PARA TABLA RENDIMIENTO ---
+        // ===== TABLA RENDIMIENTO (reusa topApis) =====
         model.addAttribute("rendimientoApis", topApis);
 
         return "po/KPIs";
@@ -131,7 +126,7 @@ public class KPIsController extends BaseController {
 
     public record AlertaDTO(String tipo, String titulo, String descripcion, String tiempo) {}
 
-    /** Serie para Chart.js (barras): Latencia promedio por API (filtros opcionales) */
+    /** Barras: Latencia promedio por API (filtros opcionales) - POR ORG */
     @GetMapping("/KPIs/chart")
     @ResponseBody
     public MetricsService.ChartSeriesDTO chartByApi(
@@ -139,32 +134,26 @@ public class KPIsController extends BaseController {
             @RequestParam(required = false) Integer idEntorno,
             @RequestParam(required = false)
             @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
-            java.time.LocalDate startDate,
+            LocalDate startDate,
             @RequestParam(required = false)
             @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
-            java.time.LocalDate endDate
+            LocalDate endDate,
+            Authentication auth,
+            HttpSession session
     ) {
-        var startD = (startDate != null) ? startDate : java.time.LocalDate.now().minusDays(30);
-        var endD   = (endDate   != null) ? endDate   : java.time.LocalDate.now();
+        Usuario usuario = getCurrentUser(auth, session);
+        Integer orgId = usuario.getOrganizacion().getIdOrganizacion();
 
-        var start = java.sql.Timestamp.valueOf(startD.atStartOfDay());
-        var end   = java.sql.Timestamp.valueOf(endD.atTime(23, 59, 59));
+        LocalDate startD = (startDate != null) ? startDate : LocalDate.now().minusDays(30);
+        LocalDate endD   = (endDate   != null) ? endDate   : LocalDate.now();
 
-        System.out.println("=== SOLICITUD GRÁFICO ===");
-        System.out.println("API: " + idApi + ", Entorno: " + idEntorno);
-        System.out.println("Fechas: " + startD + " a " + endD);
+        Timestamp start = Timestamp.valueOf(startD.atStartOfDay());
+        Timestamp end   = Timestamp.valueOf(endD.atTime(23, 59, 59));
 
-        MetricsService.ChartSeriesDTO result = metricsService.getLatencyBarsByApi(idApi, idEntorno, start, end);
-
-        System.out.println("=== RESULTADO GRÁFICO ===");
-        System.out.println("Labels: " + result.labels());
-        System.out.println("Data: " + result.data());
-
-        return metricsService.getLatencyBarsByApi(idApi, idEntorno, start, end);
+        return metricsService.getLatencyBarsByApiByOrg(orgId, idApi, idEntorno, start, end);
     }
 
-
-    /** Serie para Chart.js (donut): Éxito vs Errores (filtros opcionales) */
+    /** Donut: Éxito vs Errores (filtros opcionales) - POR ORG */
     @GetMapping("/KPIs/status-distribution")
     @ResponseBody
     public MetricsService.ChartSeriesLongDTO statusDistribution(
@@ -172,17 +161,23 @@ public class KPIsController extends BaseController {
             @RequestParam(required = false) Integer idEntorno,
             @RequestParam(required = false)
             @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
-            java.time.LocalDate startDate,
+            LocalDate startDate,
             @RequestParam(required = false)
             @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
-            java.time.LocalDate endDate
+            LocalDate endDate,
+            Authentication auth,
+            HttpSession session
     ) {
-        var start = java.sql.Timestamp.valueOf(
-                (startDate != null ? startDate : java.time.LocalDate.now().minusDays(30)).atStartOfDay());
-        var end   = java.sql.Timestamp.valueOf(
-                (endDate   != null ? endDate   : java.time.LocalDate.now()).atTime(23, 59, 59));
+        Usuario usuario = getCurrentUser(auth, session);
+        Integer orgId = usuario.getOrganizacion().getIdOrganizacion();
 
-        return metricsService.getStatusDistribution(idApi, idEntorno, start, end);
+        LocalDate startD = (startDate != null) ? startDate : LocalDate.now().minusDays(30);
+        LocalDate endD   = (endDate   != null) ? endDate   : LocalDate.now();
+
+        Timestamp start = Timestamp.valueOf(startD.atStartOfDay());
+        Timestamp end   = Timestamp.valueOf(endD.atTime(23, 59, 59));
+
+        return metricsService.getStatusDistributionByOrg(orgId, idApi, idEntorno, start, end);
     }
 
     /** Endpoint simple para verificación rápida */
@@ -192,44 +187,52 @@ public class KPIsController extends BaseController {
         return "ok";
     }
 
-    /* ===== NUEVOS ENDPOINTS PARA KPIs AVANZADOS ===== */
-    
-    /** Throughput por hora (últimas 24h) */
+    /* ===== KPIs AVANZADOS (POR ORG) ===== */
+
+    /** Throughput por hora (últimas 24h) - POR ORG */
     @GetMapping("/KPIs/throughput-hour")
     @ResponseBody
-    public MetricsService.ChartSeriesLongDTO getThroughputByHour() {
-        return metricsService.getThroughputByHour();
+    public MetricsService.ChartSeriesLongDTO getThroughputByHour(Authentication auth, HttpSession session) {
+        Usuario usuario = getCurrentUser(auth, session);
+        Integer orgId = usuario.getOrganizacion().getIdOrganizacion();
+        return metricsService.getThroughputByHourByOrg(orgId);
     }
-    
-    /** Tendencia de latencia (últimos 7 días) */
+
+    /** Tendencia de latencia (últimos 7 días) - POR ORG */
     @GetMapping("/KPIs/latency-trend")
     @ResponseBody
-    public MetricsService.ChartSeriesDTO getLatencyTrend() {
-        return metricsService.getLatencyTrend();
+    public MetricsService.ChartSeriesDTO getLatencyTrend(Authentication auth, HttpSession session) {
+        Usuario usuario = getCurrentUser(auth, session);
+        Integer orgId = usuario.getOrganizacion().getIdOrganizacion();
+        return metricsService.getLatencyTrendByOrg(orgId);
     }
-    
-    /** APIs más utilizadas */
+
+    /** APIs más utilizadas - POR ORG */
     @GetMapping("/KPIs/top-apis")
     @ResponseBody
-    public java.util.List<MetricsService.TopApiDTO> getTopApis() {
-        return metricsService.getTopUsedApis();
+    public List<MetricsService.TopApiDTO> getTopApis(Authentication auth, HttpSession session) {
+        Usuario usuario = getCurrentUser(auth, session);
+        Integer orgId = usuario.getOrganizacion().getIdOrganizacion();
+        return metricsService.getTopUsedApisByOrg(orgId);
     }
-    
-    /** Métricas de costo por API */
+
+    /** Métricas de costo por API - POR ORG */
     @GetMapping("/KPIs/cost-metrics")
     @ResponseBody
-    public java.util.List<MetricsService.CostApiDTO> getCostMetrics() {
-        return metricsService.getCostMetricsByApi();
+    public List<MetricsService.CostApiDTO> getCostMetrics(Authentication auth, HttpSession session) {
+        Usuario usuario = getCurrentUser(auth, session);
+        Integer orgId = usuario.getOrganizacion().getIdOrganizacion();
+        return metricsService.getCostMetricsByApiByOrg(orgId);
     }
-    
-    /** Distribución de uso por entorno */
+
+    /** Distribución de uso por entorno - POR ORG */
     @GetMapping("/KPIs/environment-usage")
     @ResponseBody
-    public java.util.List<MetricsService.EnvironmentUsageDTO> getEnvironmentUsage() {
-        return metricsService.getUsageByEnvironment();
+    public List<MetricsService.EnvironmentUsageDTO> getEnvironmentUsage(Authentication auth, HttpSession session) {
+        Usuario usuario = getCurrentUser(auth, session);
+        Integer orgId = usuario.getOrganizacion().getIdOrganizacion();
+        return metricsService.getUsageByEnvironmentByOrg(orgId);
     }
-
-
 
 
 }

@@ -747,6 +747,122 @@
         }
     }
 
+    async function initThroughputChart() {
+        const chartId = 'throughputChart';
+        const canvas = document.getElementById(chartId);
+        if (!canvas || typeof Chart === 'undefined') return;
+
+        // Datos hardcodeados (24h)
+        const labels = [
+            "00:00","01:00","02:00","03:00","04:00","05:00","06:00","07:00",
+            "08:00","09:00","10:00","11:00","12:00","13:00","14:00","15:00",
+            "16:00","17:00","18:00","19:00","20:00","21:00","22:00","23:00"
+        ];
+
+        const data = [
+            45, 48, 42, 40, 39, 44, 60, 90,
+            140, 180, 210, 230, 260, 240, 220, 190,
+            160, 150, 250, 300, 280, 200, 120, 70
+        ];
+
+        if (!labels.length || labels.length !== data.length) {
+            showChartState(chartId, 'no-data');
+            if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
+            return;
+        }
+
+        showChartState(chartId, 'ready');
+
+        if (!window._charts[chartId]) {
+            window._charts[chartId] = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Requests por hora',
+                        data,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#10b981',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { drawBorder: false } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        } else {
+            window._charts[chartId].data.labels = labels;
+            window._charts[chartId].data.datasets[0].data = data;
+            window._charts[chartId].update();
+        }
+    }
+
+    /* Tendencia de latencia (7 días) - HARDCODE */
+    async function initLatencyTrendChart() {
+        const chartId = 'latencyTrendChart';
+        const canvas = document.getElementById(chartId);
+        if (!canvas || typeof Chart === 'undefined') return;
+
+        // Labels hardcodeados (7 días) - puedes poner fechas reales o "Día 1..7"
+        const labels = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+
+        // Latencia promedio demo (ms)
+        const data = [210, 195, 240, 180, 205, 260, 220];
+
+        if (!labels.length || labels.length !== data.length) {
+            showChartState(chartId, 'no-data');
+            if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
+            return;
+        }
+
+        showChartState(chartId, 'ready');
+
+        if (!window._charts[chartId]) {
+            window._charts[chartId] = new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Latencia promedio (ms)',
+                        data,
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#f59e0b',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: false, grid: { drawBorder: false } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        } else {
+            window._charts[chartId].data.labels = labels;
+            window._charts[chartId].data.datasets[0].data = data;
+            window._charts[chartId].update();
+        }
+    }
+
 </script>
 </body>
 </html>

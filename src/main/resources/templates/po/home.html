@@ -416,7 +416,7 @@
                         <a class="btn btn-primary" th:href="@{/proyectos/nuevo}">
                             <i class="fas fa-rocket"></i> Crear nuevo proyecto
                         </a>
-                        <a href="/apis" class="btn btn-outline-light">
+                        <a href="/po/catalogo" class="btn btn-outline-light">
                             <i class="fas fa-search"></i> Explorar APIs
                         </a>
                     </div>
@@ -431,7 +431,21 @@
                 <div class="dashboard-card">
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-code"></i> Mis APIs Recientes</h3>
+                        <div class="card-actions" th:if="${not #lists.isEmpty(recentApis)}">
+                            <a th:href="@{/po/catalogo}" class="btn btn-sm btn-outline-secondary">Ver todas</a>
+                        </div>
                     </div>
+
+                    <!-- Mensaje cuando no hay APIs -->
+                    <div th:if="${#lists.isEmpty(recentApis)}" class="text-center p-5">
+                        <div class="mb-3">
+                            <i class="fas fa-cube fa-3x text-muted"></i>
+                        </div>
+                        <h5 class="text-muted">Esta organización no tiene APIs</h5>
+                        <p class="text-muted small mb-3">No se han registrado APIs para tu organización.</p>
+
+                    </div>
+
                     <ul class="api-list">
                         <li class="api-item" th:each="api : ${recentApis}">
                             <div class="api-icon" style="background-color: rgba(66, 153, 225, 0.1); color: #4299e1;">
@@ -463,6 +477,8 @@
                                     </div>
                     </div>
 
+
+
                     <ul class="notification-list">
                         <li class="notification-item" th:each="noti : ${notificaciones}">
                             <div class="notification-icon"
@@ -479,6 +495,7 @@
                         </li>
                         <!-- Mostrar mensaje si la lista está vacía -->
                         <li th:if="${#lists.isEmpty(notificaciones)}">
+
                             <div class="activity-content">
                                 <div class="activity-title">¡Todo al día!</div>
                                 <div class="activity-description">No tienes notificaciones nuevas.</div>
@@ -492,7 +509,7 @@
                     <div class="card-header">
                         <h3 class="card-title">Actividad Reciente</h3>
                         <div class="card-actions">
-                            <a th:href="@{/po/actividad}" class="btn btn-sm btn-ghost">Ver todas</a>
+                            <a href="#" class="btn btn-sm btn-ghost">Ver todas</a>
                         </div>
                     </div>
                     <div class="list-group list-group-flush">
@@ -513,7 +530,7 @@
                     <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-ticket-alt"></i> Tickets de Soporte</h3>
                         <div class="card-actions">
-                            <a th:href="@{/po/tickets}" class="btn btn-sm btn-outline-secondary">Ver todos</a>
+                            <a href="#" class="btn btn-sm btn-outline-secondary">Ver todos</a>
                         </div>
                     </div>
                     <ul class="activity-list">
