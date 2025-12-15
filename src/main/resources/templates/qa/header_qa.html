@@ -149,6 +149,43 @@
             transform: rotate(15deg);
         }
 
+        .notification-icon {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            position: relative;
+            color: white;
+            text-decoration: none;
+        }
+
+        .notification-icon:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .notification-icon .notification-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border: 2px solid var(--primary-color);
+        }
+
         .notification-dropdown .card {
             border: none;
             border-radius: 10px;
@@ -268,7 +305,17 @@
                     </a>
                 </div>
 
-
+                <!-- Icono de notificaciones -->
+                <div class="nav-item me-3" sec:authorize="isAuthenticated()">
+                    <a th:href="@{/notificaciones}" class="notification-icon" title="Notificaciones" data-bs-toggle="tooltip" data-bs-placement="bottom">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                        </svg>
+                        <!-- Badge para contador de notificaciones (opcional, puedes conectarlo con el backend) -->
+                        <!-- <span class="notification-count" th:if="${notificacionesNoLeidas > 0}" th:text="${notificacionesNoLeidas}">3</span> -->
+                    </a>
+                </div>
 
                 <div class="nav-item dropdown" sec:authorize="isAuthenticated()">
                     <a href="#" class="nav-link d-flex lh-1 p-0 dropdown-toggle" data-bs-toggle="dropdown" aria-label="Abrir menú de usuario">
