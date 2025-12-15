@@ -6,31 +6,35 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "logapi")
 public class LogApi {
-    
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idLogAPI")
     private Integer idLogApi;
-    
+
     @Column(name = "endpoint", nullable = false, length = 200)
     private String endpoint;
-    
+
+    @Column(name = "metodohttp", nullable = false, length = 20)
+    private String metodoHttp;
+
     @Column(name = "estadohttp", nullable = false)
     private Integer estadoHttp;
-    
+
     @Column(name = "tiempoRespuestams", nullable = false)
     private Integer tiempoRespuestaMs;
-    
+
     @Column(name = "fecha", nullable = false)
     private LocalDateTime fecha;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idAPI", nullable = false)
     private Api api;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idUsuario", nullable = false, referencedColumnName = "dni")
     private Usuario usuario;
-    
+
     // Constructores
     public LogApi() {}
     
@@ -44,60 +48,68 @@ public class LogApi {
         this.api = api;
         this.usuario = usuario;
     }
-    
+
     // Getters y Setters
     public Integer getIdLogApi() {
         return idLogApi;
     }
-    
+
     public void setIdLogApi(Integer idLogApi) {
         this.idLogApi = idLogApi;
     }
-    
+
     public String getEndpoint() {
         return endpoint;
     }
-    
+
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
     }
-    
+
+    public String getMetodoHttp() {
+        return metodoHttp;
+    }
+
+    public void setMetodoHttp(String metodoHttp) {
+        this.metodoHttp = metodoHttp;
+    }
+
     public Integer getEstadoHttp() {
         return estadoHttp;
     }
-    
+
     public void setEstadoHttp(Integer estadoHttp) {
         this.estadoHttp = estadoHttp;
     }
-    
+
     public Integer getTiempoRespuestaMs() {
         return tiempoRespuestaMs;
     }
-    
+
     public void setTiempoRespuestaMs(Integer tiempoRespuestaMs) {
         this.tiempoRespuestaMs = tiempoRespuestaMs;
     }
-    
+
     public LocalDateTime getFecha() {
         return fecha;
     }
-    
+
     public void setFecha(LocalDateTime fecha) {
         this.fecha = fecha;
     }
-    
+
     public Api getApi() {
         return api;
     }
-    
+
     public void setApi(Api api) {
         this.api = api;
     }
-    
+
     public Usuario getUsuario() {
         return usuario;
     }
-    
+
     public void setUsuario(Usuario usuario) {
         this.usuario = usuario;
     }

@@ -1,6 +1,7 @@
 package com.example.telitodev.controller.desarrollador;
 
 import com.example.telitodev.dto.SandboxRequestDto;
+import com.example.telitodev.dto.KpiDto;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
 import com.example.telitodev.service.SandboxService;
@@ -14,6 +15,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,14 +26,11 @@ import java.util.stream.Collectors;
 @RestController
 public class ProxyController {
 
-
     @Value("${mock.api.dev.url}")
     private String mockDevUrl;
 
     @Value("${mock.api.prod.url}")
     private String mockProdUrl;
-
-
 
     @Autowired
     private SandboxService sandboxService;
@@ -56,7 +57,9 @@ public class ProxyController {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private DocumentacionRepository documentacionRepository;
+    private LogapiRepository logapiRepository;
+    @Autowired
+    private ContratoRepository contratoRepository;
 
     // dto aqui xd
     public static class ApiHasEntornoUrlDto {
@@ -68,10 +71,14 @@ public class ProxyController {
             this.apiNombre = apiNombre;
         }
 
-        public String getUrlBase() { return urlBase; }
-        public String getApiNombre() { return apiNombre; }
-    }
+        public String getUrlBase() {
+            return urlBase;
+        }
 
+        public String getApiNombre() {
+            return apiNombre;
+        }
+    }
 
     private ResponseEntity<List<Map<String, Object>>> buildApiResponse(List<Api> apis) {
         List<Map<String, Object>> response = apis.stream().map(api -> {
@@ -84,35 +91,46 @@ public class ProxyController {
         return ResponseEntity.ok(response);
     }
 
-
     @PostMapping("/api/sandbox/execute")
-    public ResponseEntity<Map<String, Object>> executeSandboxTest(@RequestBody SandboxRequestDto request, Authentication authentication) {
+    public ResponseEntity<Map<String, Object>> executeSandboxTest(@RequestBody SandboxRequestDto request,
+            Authentication authentication) {
+        long startTime = System.currentTimeMillis();
+        Api apiTarget = null;
+        Usuario usuario = null;
 
         try {
             String userEmail = authentication.getName();
-            Usuario usuario = usuarioRepository.findByCorreo(userEmail);
-            if (usuario == null) throw new RuntimeException("Usuario no autenticado.");
+            usuario = usuarioRepository.findByCorreo(userEmail);
+            if (usuario == null)
+                throw new RuntimeException("Usuario no autenticado.");
             String userDni = usuario.getDni();
             String apiKey = request.getApiKey();
+            if (apiKey == null && request.getHeaders() != null) {
+                // Buscar en headers comunes
+                apiKey = request.getHeaders().get("apiKey");
+                if (apiKey == null)
+                    apiKey = request.getHeaders().get("Authorization");
+            }
 
             String pathTemplate;
             String urlBase;
 
             if (request.getTargetUrl().startsWith("http")) {
-                System.out.println("DEBUG SANDBOX: Ejecutando URL ABSOLUTA. Se ignora la configuración de API/Entorno.");
+                System.out
+                        .println("DEBUG SANDBOX: Ejecutando URL ABSOLUTA. Se ignora la configuración de API/Entorno.");
 
                 urlBase = "";
                 pathTemplate = request.getTargetUrl();
 
             } else {
-                System.out.println("DEBUG SANDBOX: Ejecutando con RUTA RELATIVA. API ID: " + request.getApiId() + ", Entorno ID: " + request.getEnvironmentId());
-
+                System.out.println("DEBUG SANDBOX: Ejecutando con RUTA RELATIVA. API ID: " + request.getApiId()
+                        + ", Entorno ID: " + request.getEnvironmentId());
 
                 if (request.getApiId() == null || request.getApiId() == 0) {
                     throw new RuntimeException("Debe seleccionar una API para rutas relativas.");
                 }
 
-                Api apiTarget = apiRepository.findById(request.getApiId())
+                apiTarget = apiRepository.findById(request.getApiId())
                         .orElseThrow(() -> new RuntimeException("API no encontrada"));
 
                 boolean esApiPublica = (apiTarget.getDominio().getIdDominio() == 11);
@@ -131,32 +149,29 @@ public class ProxyController {
                     }
                 }
 
-
-
                 Map<String, List<String>> pathParamsMap = getPathParamsMap(request.getApiId());
                 pathTemplate = matchEndpoint(request.getTargetUrl(), pathParamsMap);
 
                 String mockEntorno = getMockEnvironment(request.getEnvironmentId());
-                String apiName = apiTarget.getNombre().replaceAll("\\s+","").toLowerCase();
-
+                String apiName = apiTarget.getNombre().replaceAll("\\s+", "").toLowerCase();
 
                 if (mockEntorno != null) {
                     final String MOCK_SERVER_URL = "http://localhost:8083/mock/";
 
                     urlBase = MOCK_SERVER_URL + mockEntorno + "/" + apiName;
-                    System.out.println("DEBUG SANDBOX: SELECCIÓN MOCK. Entorno: " + mockEntorno + ". URL BASE MOCK: " + MOCK_SERVER_URL);
+                    System.out.println("DEBUG SANDBOX: SELECCIÓN MOCK. Entorno: " + mockEntorno + ". URL BASE MOCK: "
+                            + MOCK_SERVER_URL);
 
-
-                    pathTemplate = (request.getTargetUrl().startsWith("/")) ? request.getTargetUrl() : "/" + request.getTargetUrl();
+                    pathTemplate = (request.getTargetUrl().startsWith("/")) ? request.getTargetUrl()
+                            : "/" + request.getTargetUrl();
 
                 } else {
-                    System.out.println("DEBUG SANDBOX: SELECCIÓN REAL. ID Entorno: " + request.getEnvironmentId() + " (no mock)");
-
+                    System.out.println(
+                            "DEBUG SANDBOX: SELECCIÓN REAL. ID Entorno: " + request.getEnvironmentId() + " (no mock)");
 
                     urlBase = getUrlBaseFromDb(request.getApiId());
                 }
             }
-
 
             HttpMethod method = HttpMethod.valueOf(request.getMethod().toUpperCase());
             String urlToCall = urlBase.replaceAll("/+$", "") + (pathTemplate.startsWith("http") ? "" : pathTemplate);
@@ -167,7 +182,8 @@ public class ProxyController {
                 bodyAsString = objectMapper.writeValueAsString(request.getBody());
             }
 
-            ResponseEntity<String> response = callApi(urlBase, pathTemplate, request.getTargetUrl(), method, bodyAsString, apiKey);
+            ResponseEntity<String> response = callApi(urlBase, pathTemplate, request.getTargetUrl(), method,
+                    bodyAsString, apiKey);
 
             Map<String, Object> bodyMap = new HashMap<>();
 
@@ -183,12 +199,26 @@ public class ProxyController {
             }
 
             bodyMap.put("statusCode", response.getStatusCodeValue());
+
+            // Registrar métricas solo para entorno producción (ID 1)
+            if (request.getEnvironmentId() != null && request.getEnvironmentId() == 1 && apiTarget != null) {
+                logMetrics(apiTarget, usuario, request.getTargetUrl(), request.getMethod(),
+                        response.getStatusCode().value(), startTime);
+            }
+
             return ResponseEntity.status(response.getStatusCode()).body(bodyMap);
 
         } catch (Exception e) {
             System.err.println("DEBUG SANDBOX ERROR: Capturado el error: " + e.getMessage());
 
             e.printStackTrace();
+
+            // Registrar métrica de error si es producción
+            if (request.getEnvironmentId() != null && request.getEnvironmentId() == 1 && apiTarget != null
+                    && usuario != null) {
+                logMetrics(apiTarget, usuario, request.getTargetUrl(), request.getMethod(), 500, startTime);
+            }
+
             Map<String, Object> errorMap = new HashMap<>();
             errorMap.put("error", "Error de ejecución");
             errorMap.put("detalle", e.getMessage());
@@ -197,26 +227,20 @@ public class ProxyController {
         }
     }
 
-
-
     private String getMockEnvironment(Integer environmentId) {
-        if (environmentId == null) return null;
+        if (environmentId == null)
+            return null;
 
-        switch (environmentId) {
-
-            case 2: // Desarrollo
-                return "dev";
-            case 3:
-                return "qa";
-            case 1:
-                return "prod";
-            default:
-                return null;
-        }
+        return switch (environmentId) {
+            case 2 -> "dev"; // Desarrollo
+            case 3 -> "qa";
+            case 1 -> "prod";
+            default -> null;
+        };
     }
 
-
-    private ResponseEntity<String> callApi(String urlBase, String pathTemplate, String urlIngresada, HttpMethod method, String body, String apiKey) {
+    private ResponseEntity<String> callApi(String urlBase, String pathTemplate, String urlIngresada, HttpMethod method,
+            String body, String apiKey) {
         Map<String, String> uriVariables = extractPathVariables(urlIngresada, pathTemplate);
 
         String fullUrl;
@@ -255,17 +279,17 @@ public class ProxyController {
     }
 
     private Map<String, List<String>> getPathParamsMap(Integer apiId) throws Exception {
-        Documentacion doc = documentacionRepository.findFirstByApi_IdApi(apiId)
-                .orElseThrow(() -> new RuntimeException("Documentación no encontrada"));
+        Optional<ContratoApi> contrato = contratoRepository.findLatestByApiId(apiId);
+        if (contrato.isEmpty()) throw new RuntimeException("Documentación no encontrada");
 
-        JsonNode root = objectMapper.readTree((String) doc.getContenido());
+        JsonNode root = objectMapper.readTree((String) contrato.get().getContenido());
         JsonNode paths = root.path("paths");
 
         Map<String, List<String>> pathParamsMap = new HashMap<>();
         paths.fieldNames().forEachRemaining(path -> {
             List<String> params = new ArrayList<>();
             Matcher matcher = Pattern.compile("\\{(.*?)\\}").matcher(path);
-            while(matcher.find()) {
+            while (matcher.find()) {
                 params.add(matcher.group(1));
             }
             pathParamsMap.put(path, params);
@@ -284,7 +308,8 @@ public class ProxyController {
     }
 
     private Map<String, String> extractPathVariables(String urlIngresada, String pathTemplate) {
-        if (pathTemplate.startsWith("http")) return Collections.emptyMap();
+        if (pathTemplate.startsWith("http"))
+            return Collections.emptyMap();
 
         List<String> paramNames = Arrays.stream(pathTemplate.split("/"))
                 .filter(s -> s.startsWith("{") && s.endsWith("}"))
@@ -295,7 +320,8 @@ public class ProxyController {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(urlIngresada);
 
-        if (!matcher.matches()) return Collections.emptyMap();
+        if (!matcher.matches())
+            return Collections.emptyMap();
 
         Map<String, String> uriVariables = new HashMap<>();
         for (int i = 0; i < paramNames.size(); i++) {
@@ -304,39 +330,65 @@ public class ProxyController {
         return uriVariables;
     }
 
-
     @GetMapping("/api/sandbox/{apiId}/entorno/{entornoId}/url-base")
-    public ResponseEntity<ApiHasEntornoUrlDto> getApiBaseUrlForEntorno(@PathVariable Integer apiId, @PathVariable Integer entornoId) {
+    public ResponseEntity<ApiHasEntornoUrlDto> getApiBaseUrlForEntorno(@PathVariable Integer apiId,
+            @PathVariable Integer entornoId) {
         Optional<Api> optApi = apiRepository.findById(apiId);
         String apiNombre = optApi.map(Api::getNombre).orElse("API Desconocida");
 
-
-        Optional<ApiHasEntorno> optConfig = apiHasEntornoRepository.findByApi_IdApiAndEntorno_IdEntorno(apiId, entornoId);
+        Optional<ApiHasEntorno> optConfig = apiHasEntornoRepository.findByApi_IdApiAndEntorno_IdEntorno(apiId,
+                entornoId);
 
         if (optConfig.isEmpty()) {
 
             return ResponseEntity.status(404).body(new ApiHasEntornoUrlDto(null, apiNombre));
         }
-        return ResponseEntity.ok(new ApiHasEntornoUrlDto(optConfig.get().getUrlBase(), optConfig.get().getApi().getNombre()));
+        return ResponseEntity
+                .ok(new ApiHasEntornoUrlDto(optConfig.get().getUrlBase(), optConfig.get().getApi().getNombre()));
     }
-//
-//    @GetMapping("/api/sandbox/{apiId}/endpoints")
-//    public ResponseEntity<List<String>> getApiEndpoints(@PathVariable Integer apiId) {
-//        Optional<Documentacion> docOpt = documentacionRepository.findFirstByApi_IdApi(apiId);
-//        if (docOpt.isEmpty()) return ResponseEntity.notFound().build();
-//
-//        try {
-//            JsonNode root = objectMapper.readTree((String) docOpt.get().getContenido());
-//            JsonNode pathsNode = root.path("paths");
-//
-//            List<String> endpoints = new ArrayList<>();
-//            if (!pathsNode.isMissingNode()) {
-//                pathsNode.fieldNames().forEachRemaining(endpoints::add);
-//            }
-//            return ResponseEntity.ok(endpoints);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return ResponseEntity.status(500).build();
-//        }
-//    }
+
+    /**
+     * Registra métricas de una llamada al sandbox en la tabla LogApi
+     */
+    private void logMetrics(Api api, Usuario usuario, String endpoint, String metodoHttp,
+            Integer statusCode, long startTime) {
+        try {
+            long duration = System.currentTimeMillis() - startTime;
+
+            LogApi log = new LogApi();
+            log.setApi(api);
+            log.setUsuario(usuario);
+            log.setEndpoint(endpoint);
+            log.setMetodoHttp(metodoHttp.toUpperCase());
+            log.setEstadoHttp(statusCode);
+            log.setTiempoRespuestaMs((int) duration);
+            log.setFecha(java.time.LocalDateTime.now());
+
+            logapiRepository.save(log);
+
+        } catch (Exception e) {
+            System.err.println("Error al registrar métrica: " + e.getMessage());
+        }
+    }
+    //
+    // @GetMapping("/api/sandbox/{apiId}/endpoints")
+    // public ResponseEntity<List<String>> getApiEndpoints(@PathVariable Integer
+    // apiId) {
+    // Optional<Documentacion> docOpt =
+    // documentacionRepository.findFirstByApi_IdApi(apiId);
+    // if (docOpt.isEmpty()) return ResponseEntity.notFound().build();
+    //
+    // try {
+    // JsonNode root = objectMapper.readTree((String) docOpt.get().getContenido());
+    // JsonNode pathsNode = root.path("paths");
+    //
+    // List<String> endpoints = new ArrayList<>();
+    // if (!pathsNode.isMissingNode()) {
+    // pathsNode.fieldNames().forEachRemaining(endpoints::add);
+    // }
+    // return ResponseEntity.ok(endpoints);
+    // } catch (Exception // // e.printStackTrace();
+    // // return ResponseEntity.status(500).build();
+    // // }
+    // // }
 }

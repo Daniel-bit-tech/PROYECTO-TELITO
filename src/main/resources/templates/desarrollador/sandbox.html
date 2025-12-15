@@ -95,17 +95,14 @@
                                         <div id="auth-apikey" style="display:none;">
                                             <div class="row g-2 mb-2">
                                                 <div class="col-4">
-                                                    <input id="auth-apikey-key" type="text" class="form-control" placeholder="Key">
+                                                    <input id="auth-apikey-key" type="text" class="form-control" placeholder="Key" value="apiKey">
                                                 </div>
                                                 <div class="col-6">
                                                     <input id="auth-apikey-value" type="text" class="form-control" placeholder="Value">
                                                 </div>
                                             </div>
+                                            <small class="form-hint">* Se agregara la key al header</small>
 
-                                            <select id="auth-apikey-addto" class="form-select">
-                                                <option value="header">Add to: Header</option>
-                                                <option value="query">Add to: Query Params</option>
-                                            </select>
                                         </div>
 
                                         <!-- BEARER -->
@@ -115,7 +112,7 @@
                                     </div>
 
                                     <!-- HEADERS TIPO POSTMAN -->
-                                    <label class="form-label fw-bold">Headers (como Postman)</label>
+                                    <label class="form-label fw-bold">Headers</label>
 
                                     <table class="table table-bordered" id="headers-table">
                                         <thead>
@@ -437,7 +434,8 @@
         const requestData = {
             apiId: isAbsoluteUrl ? 0 : parseInt(CURRENT_API_ID),
             method: method,
-            targetUrl: urlFinal,
+            // targetUrl: urlFinal,
+            targetUrl: isAbsoluteUrl ? urlFinal : document.getElementById('targetUrl').value,
             headers: finalHeaders,
             body: body,
             environmentId: environmentId
@@ -515,10 +513,11 @@
         if (type === "apikey") {
             const key = document.getElementById("auth-apikey-key").value;
             const value = document.getElementById("auth-apikey-value").value;
-            const addTo = document.getElementById("auth-apikey-addto").value;
+            // const addTo = document.getElementById("auth-apikey-addto").value;
 
-            if (addTo === "header") headers[key] = value;
-            else if (addTo === "query") url += (url.includes("?") ? "&" : "?") + `${key}=${value}`;
+            // if (addTo === "header") headers[key] = value;
+            headers[key] = value;
+            // else if (addTo === "query") url += (url.includes("?") ? "&" : "?") + `${key}=${value}`;
         }
 
         if (type === "bearer") {
