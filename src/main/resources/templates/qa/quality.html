@@ -500,7 +500,7 @@
 
                             <button class="api-action" style="background-color: #28a745;"
                                     th:onclick="'location.href=\'/apis/' + ${api.idApi} + '/docs\''">
-                                Ver Detalles
+                                Ver Documentación
                             </button>
                         </li>
                         <!-- Mostrar mensaje si la lista está vacía -->
@@ -523,8 +523,7 @@
 
                     <ul class="notification-list">
                         <li class="notification-item" th:each="noti : ${notificaciones}">
-                            <div class="notification-icon"
-                                 th:style="'background-color: rgba(var(--tblr-' + ${noti.leido ? 'success' : 'primary'} + '-rgb), 0.1); color: var(--tblr-' + ${noti.leido ? 'success' : 'primary'} + ');'">
+                            <div class="notification-icon" style="background-color: rgba(255, 179, 102, 0.15); color: #ff8c42;">
                                 <i class="fas" th:classappend="${noti.leido ? 'fa-envelope-open' : 'fa-envelope'}"></i>
                             </div>
 
@@ -581,7 +580,7 @@
 
                     <ul class="activity-list">
                         <li class="activity-item" th:each="issue : ${ultimos3Issues}">
-                            <div class="activity-icon" style="background-color: rgba(var(--tblr-primary-rgb), 0.1); color: var(--tblr-primary);">
+                            <div class="activity-icon" style="background-color: rgba(220, 53, 69, 0.1); color: #dc3545;">
                                 <i class="fas fa-bug"></i>
                             </div>
                             <div class="activity-content">
