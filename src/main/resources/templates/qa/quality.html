@@ -413,7 +413,7 @@
             <div class="welcome-banner">
                 <div class="welcome-content">
                     <h2 class="welcome-title">¡Hola otra vez, <span th:text="${usuario.nombre}">Juan</span>!</h2>
-                    <p class="welcome-text">Tienes <span th:text="${apisPorValidar}">0</span> APIs pendientes para validar</span> y <span th:text="${NnotificacionesSinLeer}"></span> notificaciones sin leer.</p>
+                    <p class="welcome-text">Tienes <span th:text="${apisPorValidar}">0</span> APIs en entorno QA</span> y <span th:text="${NnotificacionesSinLeer}"></span> notificaciones sin leer.</p>
                     <div class="welcome-actions">
                         <a th:href="@{/qa/catalogo}" class="btn btn-primary">
                             <i class="fas fa-rocket"></i> Validar APIs
@@ -476,41 +476,38 @@
             <div class="dashboard-grid">
                 <div class="dashboard-card">
                     <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-code"></i>APIs validadas</h3>
-                        <!--            <div class="card-actions">-->
-                        <!--              <button class="btn btn-sm btn-outline-secondary">Ver todas</button>-->
-                        <!--            </div>-->
+                        <h3 class="card-title"><i class="fas fa-check-circle"></i> APIs Validadas</h3>
                     </div>
 
                     <ul class="api-list">
-                        <li class="api-item" th:each="cred : ${credenciales}">
-                            <div class="api-icon" style="background-color: rgba(66, 153, 225, 0.1); color: #4299e1;">
-                                <i class="fas fa-cube"></i>
+                        <li class="api-item" th:each="api : ${apisValidadas}">
+                            <div class="api-icon" style="background-color: rgba(40, 167, 69, 0.1); color: #28a745;">
+                                <i class="fas fa-check-double"></i>
                             </div>
 
                             <div class="api-info">
-                                <div class="api-name" th:text="${cred.api.nombre}">Nombre API</div>
+                                <div class="api-name" th:text="${api.nombreApi}">Nombre API</div>
 
                                 <div class="api-meta">
-                                    <span th:text="${cred.api.versionesApi.get(0).getVersion()}">v1.X</span>
+                                    <span><i class="fas fa-layer-group"></i> <span th:text="${api.nombreDominio}">Dominio</span></span>
                                     <span>•</span>
                                     <span>
-          Credencial creada:
-          <span th:text="${#temporals.format(cred.fechaCreacion.toLocalDateTime(), 'dd/MM/yyyy')}">01/01/2025</span>
-          </span>
+                                        <i class="fas fa-calendar-check"></i> Validada: 
+                                        <span th:text="${#temporals.format(api.fechaCreacion.toLocalDateTime(), 'dd/MM/yyyy')}">01/01/2025</span>
+                                    </span>
                                 </div>
                             </div>
 
-                            <button class="api-action"
-                                    th:onclick="'location.href=\'/apis/' + ${cred.api.idApi} + '/docs\''">
-                                Ver Documentación
+                            <button class="api-action" style="background-color: #28a745;"
+                                    th:onclick="'location.href=\'/apis/' + ${api.idApi} + '/docs\''">
+                                Ver Detalles
                             </button>
                         </li>
                         <!-- Mostrar mensaje si la lista está vacía -->
-                        <li th:if="${#lists.isEmpty(credenciales)}">
+                        <li th:if="${#lists.isEmpty(apisValidadas)}">
                             <div class="activity-content">
-                                <div class="activity-title">No hay apis validads recientes</div>
-                                <div class="activity-description">Aún no se han validado apis de tu organización.</div>
+                                <div class="activity-title">No hay APIs validadas recientes</div>
+                                <div class="activity-description">Aún no se han validado APIs con reportes aprobados.</div>
                             </div>
                         </li>
                     </ul>

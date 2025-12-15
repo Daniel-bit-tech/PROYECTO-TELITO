@@ -8,6 +8,7 @@ import com.example.telitodev.repository.po.ActividadRecienteRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -197,6 +198,12 @@ public class QaController extends BaseController {
         Integer apisPorValidar = apiRepository.countApisForQaValidation(usuario.getDni());
         model.addAttribute("apisPorValidar", apisPorValidar);
 
+        // Obtener las últimas 5 APIs validadas (con reporte aprobado)
+        List<ApiProyectoDTO> apisValidadas = apiRepository.findTop5ValidatedApisByQa(
+            usuario.getDni(), 
+            PageRequest.of(0, 5)
+        );
+        model.addAttribute("apisValidadas", apisValidadas);
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("NcredActivas", NCredenciales);

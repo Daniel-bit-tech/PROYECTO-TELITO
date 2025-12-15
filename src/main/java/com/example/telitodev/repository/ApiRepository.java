@@ -141,11 +141,11 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
     @Query("SELECT COUNT(DISTINCT a.idApi) " +
             "FROM Api a " +
+            "JOIN a.equipo eq " +
+            "JOIN eq.usuarios u " +
             "JOIN a.apiHasEntornos ahe " +
             "JOIN ahe.entorno e " +
-            "JOIN ProyectoHasApi pha ON pha.api = a " +
-            "JOIN pha.proyecto p " +
-            "WHERE p.equipo.organizacion.idOrganizacion = (SELECT u.equipo.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
+            "WHERE u.dni = :dni " +
             "AND e.nombre = 'QA'")
     Integer countApisForQaValidation(@Param("dni") String dni);
 
@@ -167,6 +167,23 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
             "GROUP BY a.idApi, a.nombre, eq.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion " +
             "ORDER BY a.nombre ASC")
     List<ApiProyectoDTO> findApisToReportForQa(@Param("dni") String dni);
+
+    /**
+     * Obtiene las últimas 5 APIs validadas (con reporte aprobado) para un usuario QA.
+     */
+    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
+            "a.idApi, a.nombre, eq.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, r.fechaCreacion, NULL) " +
+            "FROM Api a " +
+            "JOIN a.equipo eq " +
+            "JOIN eq.usuarios u " +
+            "JOIN Reporte r ON r.api = a " +
+            "JOIN a.dominio d " +
+            "JOIN a.tag t " +
+            "WHERE u.dni = :dni " +
+            "AND r.estado = 'Aprobado' " +
+            "GROUP BY a.idApi, a.nombre, eq.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, r.fechaCreacion " +
+            "ORDER BY r.fechaCreacion DESC")
+    List<ApiProyectoDTO> findTop5ValidatedApisByQa(@Param("dni") String dni, Pageable pageable);
 
 
     /* ===== CONSULTAS ADICIONALES PARA ADMIN DASHBOARD ===== */
