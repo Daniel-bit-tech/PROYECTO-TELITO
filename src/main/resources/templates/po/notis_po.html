@@ -37,6 +37,14 @@
                     <div class="col">
                         <h2 class="page-title">Centro de Notificaciones</h2>
                     </div>
+                    <div class="col-auto ms-auto">
+                        <a th:if="${tieneNotificacionesNoLeidas}" 
+                           th:href="@{/notificaciones/marcarTodasLeidas}" 
+                           class="btn btn-primary">
+                            <i class="fas fa-check-double me-2"></i>
+                            Marcar todas como leídas
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -50,6 +58,7 @@
                             <!-- Mensajes de éxito o error de RedirectAttributes -->
                             <div th:if="${success}" class="list-group-item bg-success-lt text-center text-success" th:text="${success}"></div>
                             <div th:if="${error}" class="list-group-item bg-danger-lt text-center text-danger" th:text="${error}"></div>
+                            <div th:if="${info}" class="list-group-item bg-info-lt text-center text-info" th:text="${info}"></div>
 
                             <!-- Estado Vacío -->
                             <div th:if="${!notificacionPage.hasContent()}" class="list-group-item">
