@@ -98,12 +98,28 @@ public class ProxyController {
             String pathTemplate;
             String urlBase;
 
+
             if (request.getTargetUrl().startsWith("http")) {
-                System.out.println("DEBUG SANDBOX: Ejecutando URL ABSOLUTA. Se ignora la configuración de API/Entorno.");
+                boolean isProd = request.getEnvironmentId() != null
+                        && request.getEnvironmentId().intValue() == 1;
+
+                boolean isMockUrl =
+                        request.getTargetUrl().contains("localhost") ||
+                                request.getTargetUrl().contains("/mock/");
+
+                if (isProd && isMockUrl) {
+                    Map<String, Object> errorMap = new HashMap<>();
+                    errorMap.put("error", "Operación no permitida");
+                    errorMap.put("detalle", "En PRODUCCIÓN no se permite usar URLs de mock.");
+                    errorMap.put("statusCode", 403);
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorMap);
+                }
+
+                // URL ABOSULTA
+                System.out.println("DEBUG SANDBOX: URL ABSOLUTA REAL permitida en PROD");
 
                 urlBase = "";
                 pathTemplate = request.getTargetUrl();
-
             } else {
                 System.out.println("DEBUG SANDBOX: Ejecutando con RUTA RELATIVA. API ID: " + request.getApiId() + ", Entorno ID: " + request.getEnvironmentId());
 
@@ -209,7 +225,7 @@ public class ProxyController {
             case 3:
                 return "qa";
             case 1:
-                return "prod";
+                return null;
             default:
                 return null;
         }
@@ -251,6 +267,9 @@ public class ProxyController {
         ApiHasEntorno entorno = apiHasEntornoRepository
                 .findFirstByApi_IdApiAndEstado(apiId, ApiHasEntorno.EstadoApiEntorno.Activo)
                 .orElseThrow(() -> new RuntimeException("No hay entorno activo para la API ID: " + apiId));
+        if (entorno.getUrlBase() == null || entorno.getUrlBase().isEmpty()) {
+            throw new RuntimeException("La URL Base para este entorno está vacía en la base de datos.");
+        }
         return entorno.getUrlBase();
     }
 

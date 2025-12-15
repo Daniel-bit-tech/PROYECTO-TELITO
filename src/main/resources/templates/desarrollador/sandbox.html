@@ -20,7 +20,7 @@
     <link th:href="@{/tabler/preview/css/demo.css}" rel="stylesheet" />
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .sandbox-container { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: flex-start; }
         @media (max-width: 992px) { .sandbox-container { grid-template-columns: 1fr; } }
@@ -46,7 +46,7 @@
 
 <script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
 <div class="page">
-    <div th:replace="~{desarrollador/header :: header}"></div>
+    <div th:replace="desarrollador/header.html :: header"></div>
     <div class="page-wrapper">
         <div class="page-header d-print-none">
             <div class="container-xl">
@@ -196,7 +196,6 @@
     <div th:replace="~{desarrollador/footer :: footer}"></div>
 </div>
 
-<script src="/tabler/dist/js/tabler.min.js"></script>
 <script>
     let CURRENT_API_ID = null;
     let API_BASE_URL = "";
@@ -330,21 +329,17 @@
         const apiSelect = document.getElementById('api-select');
         const apiName = apiSelect.options[apiSelect.selectedIndex].textContent.toLowerCase().replace(/\s+/g, '');
 
-        if (envId === '2' || envId === '3' || envId === '1') {
-
-            let envName = '';
-            if (envId === '2') envName = 'dev';
-            else if (envId === '3') envName = 'qa';
-            else if (envId === '1') envName = 'prod';
+        if (envId === '2' || envId === '3') {
+            let envName = envId === '2' ? 'dev' : 'qa';
 
             API_BASE_URL = `http://localhost:8083/mock/${envName}/${apiName}`;
-            console.log(`DEBUG JS: Usando URL de MOCK para entorno ${envName}: ${API_BASE_URL}`);
-
+            console.log(`DEBUG JS: MOCK activo (${envName}): ${API_BASE_URL}`);
             updateUrlPreview();
+            return;
+        }
+        if (envId === '1') {
+            console.log("DEBUG JS: PRODUCCIÓN → obteniendo URL REAL desde BD");
 
-        } else {
-
-            console.log(`DEBUG JS: Intentando obtener URL REAL de la BD para ID ${envId}`);
             try {
                 const resp = await fetch(`/api/sandbox/${CURRENT_API_ID}/entorno/${envId}/url-base`);
                 if (resp.ok) {
@@ -353,12 +348,15 @@
                     updateUrlPreview();
                 } else {
                     API_BASE_URL = "";
-                    document.getElementById('url-preview').textContent = "No hay URL configurada para este entorno.";
+                    document.getElementById('url-preview').textContent =
+                        "No hay URL configurada para PRODUCCIÓN.";
                 }
             } catch (e) {
-                console.error("Error al obtener URL de la BD:", e);
+                console.error("Error al obtener URL real:", e);
+                API_BASE_URL = "";
             }
         }
+
     }
 
     function selectEndpointFromList(path) {
@@ -601,8 +599,11 @@
 
 
     setMethod('GET');
+
+
 </script>
-<script th:src="@{/tabler/dist/js/tabler.min.js}"></script>
-<script th:src="@{/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js}"></script>
+<script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620|"></script>
+<script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
+
 </body>
 </html>

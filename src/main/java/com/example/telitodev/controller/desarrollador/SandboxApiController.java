@@ -232,7 +232,12 @@ public class SandboxApiController {
 
         return apiRepository.findById(apiId).map(api -> {
             String apiName = api.getNombre().replaceAll("\\s+","").toLowerCase();
-            String urlBase = baseUrl + "/mock/" + envName + "/" + apiName;
+            String urlBase;
+            if ("1".equals(envId)) {
+                urlBase = baseUrl; // PROD a  REAL
+            } else {
+                urlBase = baseUrl + "/mock/" + envName + "/" + apiName; // DEV y  QA
+            }
             return ResponseEntity.ok(Map.of("urlBase", urlBase));
         }).orElse(ResponseEntity.notFound().build());
 
