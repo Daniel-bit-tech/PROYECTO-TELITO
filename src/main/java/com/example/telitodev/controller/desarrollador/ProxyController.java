@@ -1,7 +1,6 @@
 package com.example.telitodev.controller.desarrollador;
 
 import com.example.telitodev.dto.SandboxRequestDto;
-import com.example.telitodev.dto.KpiDto;
 import com.example.telitodev.entity.*;
 import com.example.telitodev.repository.*;
 import com.example.telitodev.service.SandboxService;
@@ -15,9 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,9 +30,6 @@ public class ProxyController {
 
     @Autowired
     private SandboxService sandboxService;
-
-    @Autowired
-    private ProyectoRepository proyectoRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -202,8 +195,7 @@ public class ProxyController {
 
             // Registrar métricas solo para entorno producción (ID 1)
             if (request.getEnvironmentId() != null && request.getEnvironmentId() == 1 && apiTarget != null) {
-                logMetrics(apiTarget, usuario, request.getTargetUrl(), request.getMethod(),
-                        response.getStatusCode().value(), startTime);
+                logMetrics(apiTarget, usuario, request.getEndpoint(), request.getTargetUrl(), request.getMethod(), response.getStatusCode().value(), startTime);
             }
 
             return ResponseEntity.status(response.getStatusCode()).body(bodyMap);
@@ -216,7 +208,7 @@ public class ProxyController {
             // Registrar métrica de error si es producción
             if (request.getEnvironmentId() != null && request.getEnvironmentId() == 1 && apiTarget != null
                     && usuario != null) {
-                logMetrics(apiTarget, usuario, request.getTargetUrl(), request.getMethod(), 500, startTime);
+                logMetrics(apiTarget, usuario, request.getEndpoint(), request.getTargetUrl(), request.getMethod(), 500, startTime);
             }
 
             Map<String, Object> errorMap = new HashMap<>();
@@ -350,8 +342,7 @@ public class ProxyController {
     /**
      * Registra métricas de una llamada al sandbox en la tabla LogApi
      */
-    private void logMetrics(Api api, Usuario usuario, String endpoint, String metodoHttp,
-            Integer statusCode, long startTime) {
+    private void logMetrics(Api api, Usuario usuario, String endpoint, String urlTarget, String metodoHttp, Integer statusCode, long startTime) {
         try {
             long duration = System.currentTimeMillis() - startTime;
 
@@ -359,6 +350,7 @@ public class ProxyController {
             log.setApi(api);
             log.setUsuario(usuario);
             log.setEndpoint(endpoint);
+//            log.setUrl(urlTarget);
             log.setMetodoHttp(metodoHttp.toUpperCase());
             log.setEstadoHttp(statusCode);
             log.setTiempoRespuestaMs((int) duration);

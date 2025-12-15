@@ -17,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 
+import java.time.LocalDate;
+import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,10 +35,10 @@ public class KPIsController extends BaseController {
     private final ProyectoHasApiRepository proyectoHasApiRepository;
 
     public KPIsController(UsuarioRepository usuarioRepository,
-                          MetricsService metricsService,
-                          ApiRepository apiRepository,
-                          EntornoRepository entornoRepository,
-                          ProyectoHasApiRepository proyectoHasApiRepository) {
+            MetricsService metricsService,
+            ApiRepository apiRepository,
+            EntornoRepository entornoRepository,
+            ProyectoHasApiRepository proyectoHasApiRepository) {
         this.usuarioRepository = usuarioRepository;
         this.metricsService = metricsService;
         this.apiRepository = apiRepository;
@@ -70,8 +72,7 @@ public class KPIsController extends BaseController {
         model.addAttribute("throughput", String.format("%.2f", throughput));
         double disponibilidad = metricsService.getSystemAvailability();
         model.addAttribute("disponibilidad", String.format("%.2f", disponibilidad));
-        double costoTotal = metricsService.getTotalCost();
-        model.addAttribute("costoTotal", String.format("%.2f", costoTotal));
+        // Costo eliminado
 
         // --- CAMBIOS PORCENTUALES (Pasar como Double) ---
         model.addAttribute("totalLlamadasChange", metricsService.getTotalRequestsChange());
@@ -80,19 +81,16 @@ public class KPIsController extends BaseController {
         model.addAttribute("tasaErrorChange", metricsService.getErrorRateChange());
         model.addAttribute("throughputChange", metricsService.getThroughputChange());
         model.addAttribute("disponibilidadChange", metricsService.getAvailabilityChange());
-        model.addAttribute("costoTotalChange", metricsService.getTotalCostChange());
+        // Costo cambio eliminado
 
         // --- DATOS PARA TABLAS Y GRÁFICOS ---
         List<Api> apisDeLaOrganizacion = Collections.emptyList();
-        if (proyectoHasApiRepository != null) {
-            try {
-                apisDeLaOrganizacion = proyectoHasApiRepository.findDistinctApisByOrganizacionId(idOrganizacion);
-            } catch (Exception e) {
-                System.err.println("Error al obtener APIs de la organización: " + e.getMessage());
-            }
-        } else {
-            System.err.println("ProyectoHasApiRepository no fue inyectado correctamente.");
+        try {
+            apisDeLaOrganizacion = apiRepository.findByOrganizacionId(idOrganizacion);
+        } catch (Exception e) {
+            System.err.println("Error al obtener APIs de la organización: " + e.getMessage());
         }
+
 
         model.addAttribute("totalApisActivas", apisDeLaOrganizacion.size());
         model.addAttribute("totalApisActivasChange", "+0");
@@ -103,25 +101,12 @@ public class KPIsController extends BaseController {
                 .collect(Collectors.toList());
         model.addAttribute("topApis", topApis);
 
-        List<MetricsService.CostApiDTO> costosApis = metricsService.getCostMetricsByApi().stream()
-                .filter(costoDto -> finalApisDeOrg.stream().anyMatch(api -> api.getNombre().equals(costoDto.nombre())))
-                .collect(Collectors.toList());
-        model.addAttribute("costosApis", costosApis);
+        // Costos Apis eliminado
 
         model.addAttribute("usoEntornos", metricsService.getUsageByEnvironment());
 
         // --- DATOS PARA FILTROS DINÁMICOS ---
         model.addAttribute("listaApis", apisDeLaOrganizacion);
-        model.addAttribute("listaEntornos", entornoRepository.findAll());
-
-
-        // --- DATOS PARA ALERTAS  ---
-        List<AlertaDTO> alertas = List.of(
-                new AlertaDTO("error", "Aumento de errores 5xx en API de Pagos", "Tasa de error subió del 0.5% al 3.2%", "Hace 15 min"),
-                new AlertaDTO("warning", "Aumento de latencia en API de Usuarios", "p95 pasó de 200ms a 450ms", "Hace 2 h"),
-                new AlertaDTO("info", "Patrón de tráfico inusual", "+40% requests a API de Productos", "Ayer 16:32")
-        );
-        model.addAttribute("alertasRecientes", alertas);
 
         // --- DATOS PARA TABLA RENDIMIENTO ---
         model.addAttribute("rendimientoApis", topApis);
@@ -129,40 +114,34 @@ public class KPIsController extends BaseController {
         return "po/KPIs";
     }
 
-    public record AlertaDTO(String tipo, String titulo, String descripcion, String tiempo) {}
-
-    /** Serie para Chart.js (barras): Latencia promedio por API (filtros opcionales) */
+    /**
+     * Serie para Chart.js (barras): Latencia promedio por API (filtros opcionales)
+     */
     @GetMapping("/KPIs/chart")
     @ResponseBody
     public MetricsService.ChartSeriesDTO chartByApi(
             @RequestParam(required = false) Integer idApi,
             @RequestParam(required = false) Integer idEntorno,
-            @RequestParam(required = false)
-            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
-            java.time.LocalDate startDate,
-            @RequestParam(required = false)
-            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
-            java.time.LocalDate endDate
-    ) {
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate) {
         var startD = (startDate != null) ? startDate : java.time.LocalDate.now().minusDays(30);
-        var endD   = (endDate   != null) ? endDate   : java.time.LocalDate.now();
+        var endD = (endDate != null) ? endDate : java.time.LocalDate.now();
 
-        var start = java.sql.Timestamp.valueOf(startD.atStartOfDay());
-        var end   = java.sql.Timestamp.valueOf(endD.atTime(23, 59, 59));
+        var start = startD.atStartOfDay();
+        var end = endD.atTime(23, 59, 59);
 
         System.out.println("=== SOLICITUD GRÁFICO ===");
         System.out.println("API: " + idApi + ", Entorno: " + idEntorno);
         System.out.println("Fechas: " + startD + " a " + endD);
 
-        MetricsService.ChartSeriesDTO result = metricsService.getLatencyBarsByApi(idApi, idEntorno, start, end);
+        MetricsService.ChartSeriesDTO result = metricsService.getLatencyBarsByApi(idApi, start, end);
 
         System.out.println("=== RESULTADO GRÁFICO ===");
         System.out.println("Labels: " + result.labels());
         System.out.println("Data: " + result.data());
 
-        return metricsService.getLatencyBarsByApi(idApi, idEntorno, start, end);
+        return metricsService.getLatencyBarsByApi(idApi, start, end);
     }
-
 
     /** Serie para Chart.js (donut): Éxito vs Errores (filtros opcionales) */
     @GetMapping("/KPIs/status-distribution")
@@ -170,58 +149,39 @@ public class KPIsController extends BaseController {
     public MetricsService.ChartSeriesLongDTO statusDistribution(
             @RequestParam(required = false) Integer idApi,
             @RequestParam(required = false) Integer idEntorno,
-            @RequestParam(required = false)
-            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
-            java.time.LocalDate startDate,
-            @RequestParam(required = false)
-            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
-            java.time.LocalDate endDate
-    ) {
-        var start = java.sql.Timestamp.valueOf(
-                (startDate != null ? startDate : java.time.LocalDate.now().minusDays(30)).atStartOfDay());
-        var end   = java.sql.Timestamp.valueOf(
-                (endDate   != null ? endDate   : java.time.LocalDate.now()).atTime(23, 59, 59));
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate startDate,
+            @RequestParam(required = false) @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE) java.time.LocalDate endDate) {
+        var start = (startDate != null ? startDate : java.time.LocalDate.now().minusDays(30)).atStartOfDay();
+        var end = (endDate != null ? endDate : java.time.LocalDate.now()).atTime(23, 59, 59);
 
-        return metricsService.getStatusDistribution(idApi, idEntorno, start, end);
-    }
-
-    /** Endpoint simple para verificación rápida */
-    @GetMapping("/KPIs/ping")
-    @ResponseBody
-    public String ping() {
-        return "ok";
+        return metricsService.getStatusDistribution(idApi, start, end);
     }
 
     /* ===== NUEVOS ENDPOINTS PARA KPIs AVANZADOS ===== */
-    
+
     /** Throughput por hora (últimas 24h) */
     @GetMapping("/KPIs/throughput-hour")
     @ResponseBody
     public MetricsService.ChartSeriesLongDTO getThroughputByHour() {
         return metricsService.getThroughputByHour();
     }
-    
+
     /** Tendencia de latencia (últimos 7 días) */
     @GetMapping("/KPIs/latency-trend")
     @ResponseBody
     public MetricsService.ChartSeriesDTO getLatencyTrend() {
         return metricsService.getLatencyTrend();
     }
-    
+
     /** APIs más utilizadas */
     @GetMapping("/KPIs/top-apis")
     @ResponseBody
     public java.util.List<MetricsService.TopApiDTO> getTopApis() {
         return metricsService.getTopUsedApis();
     }
-    
-    /** Métricas de costo por API */
-    @GetMapping("/KPIs/cost-metrics")
-    @ResponseBody
-    public java.util.List<MetricsService.CostApiDTO> getCostMetrics() {
-        return metricsService.getCostMetricsByApi();
-    }
-    
+
+    // Cost endpoint eliminado
+
     /** Distribución de uso por entorno */
     @GetMapping("/KPIs/environment-usage")
     @ResponseBody
@@ -229,7 +189,49 @@ public class KPIsController extends BaseController {
         return metricsService.getUsageByEnvironment();
     }
 
+    /**
+     * Endpoint REST para obtener KPIs de negocio de una API específica
+     * Para Product Owner: métricas de negocio resumidas
+     */
+    @GetMapping("/api/kpis/{idApi}")
+    @ResponseBody
+    public java.util.Map<String, Object> getKpisPorApi(@PathVariable Integer idApi) {
+        java.util.Map<String, Object> kpis = new java.util.HashMap<>();
 
+        try {
+            // Buscar API
+            Api api = apiRepository.findById(idApi).orElse(null);
+            if (api == null) {
+                kpis.put("success", false);
+                kpis.put("error", "API no encontrada");
+                return kpis;
+            }
 
+            kpis.put("apiId", idApi);
+            kpis.put("apiNombre", api.getNombre());
+
+            // Usar MetricsService para obtener métricas filtradas por API
+            // Nota: Estos métodos calculan desde LogApi
+            long totalLlamadas = metricsService.getTotalRequests(idApi);
+            double latenciaPromedio = metricsService.getAverageLatency(idApi);
+            double tasaExito = metricsService.getSuccessRate(idApi);
+            double disponibilidad = metricsService.getSystemAvailability(idApi);
+
+            kpis.put("totalLlamadas", totalLlamadas);
+            kpis.put("latenciaPromedio", Math.round(latenciaPromedio));
+            kpis.put("tasaExito", String.format("%.1f", tasaExito));
+            kpis.put("disponibilidad", String.format("%.2f", disponibilidad));
+
+            // Costos eliminados
+
+            kpis.put("success", true);
+
+        } catch (Exception e) {
+            kpis.put("success", false);
+            kpis.put("error", e.getMessage());
+        }
+
+        return kpis;
+    }
 
 }

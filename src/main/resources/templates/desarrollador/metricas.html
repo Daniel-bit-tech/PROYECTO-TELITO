@@ -1,11 +1,12 @@
 <!doctype html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <meta th:name="_csrf" th:content="${_csrf.token}"/>
-    <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <meta th:name="_csrf" th:content="${_csrf.token}" />
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}" />
     <title>TELITO DEVELOPER PORTAL | Métricas</title>
     <link th:href="|/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620|" rel="stylesheet" />
     <link th:href="|/tabler/dist/css/tabler.css?1757307620|" rel="stylesheet" />
@@ -92,7 +93,7 @@
         .metric-card {
             background-color: var(--tblr-bg-surface);
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
             display: flex;
             flex-direction: column;
@@ -146,7 +147,7 @@
         .chart-container {
             background-color: var(--tblr-bg-surface);
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
         }
 
@@ -177,7 +178,7 @@
         .alerts-container {
             background-color: var(--tblr-bg-surface);
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
         }
 
@@ -346,274 +347,394 @@
 </head>
 
 <body>
-<!-- Banner de impersonación -->
-<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+    <!-- Banner de impersonación -->
+    <div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
 
-<script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
-<div class="page">
+    <script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
+    <div class="page">
 
-    <div th:replace="desarrollador/header.html :: header"></div>
+        <div th:replace="desarrollador/header.html :: header"></div>
 
-    <div class="content">
-        <div class="metrics-container">
-            <div class="metrics-header">
-                <h1 class="metrics-title">Métricas y Monitoreo</h1>
-                <p class="metrics-subtitle">Monitorea el consumo, rendimiento y estado de tus APIs en tiempo real</p>
-            </div>
-
-            <div class="filters-bar">
-                <div class="filter-group">
-                    <select class="filter-select" id="api-select">
-                        <option value="all">Todas las APIs</option>
-                        <option value="api-users">API de Usuarios</option>
-                        <option value="api-payments">API de Pagos</option>
-                        <option value="api-products">API de Productos</option>
-                        <option value="api-orders">API de Pedidos</option>
-                    </select>
-
-                    <select class="filter-select" id="environment-select">
-                        <option value="prod">Producción</option>
-                        <option value="qa">QA</option>
-                        <option value="dev">Desarrollo</option>
-                    </select>
+        <div class="content">
+            <div class="metrics-container">
+                <div class="metrics-header">
+                    <h1 class="metrics-title">Métricas y Monitoreo</h1>
+                    <p class="metrics-subtitle">Monitorea el consumo, rendimiento y estado de tus APIs en tiempo real
+                    </p>
                 </div>
 
-                <div class="date-range">
-                    <input type="date" class="date-input" id="start-date" value="2023-05-01">
-                    <span>a</span>
-                    <input type="date" class="date-input" id="end-date" value="2023-05-31">
-                </div>
-            </div>
-
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <div class="metric-header">
-                        <h3 class="metric-title"><i class="fas fa-bolt"></i> Total de Requests</h3>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <h3 class="metric-title"><i class="fas fa-bolt"></i> Total de Requests (Hoy)</h3>
+                        </div>
+                        <div class="metric-value" th:text="${totalRequests}">0</div>
                     </div>
-                    <div class="metric-value" th:text="${totalRequests}">245,831</div>
-                    <div class="metric-change change-positive">
-                        <i class="fas fa-arrow-up"></i> 12.5% vs período anterior
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <h3 class="metric-title"><i class="fas fa-clock"></i> Latencia Promedio (Hoy)</h3>
+                        </div>
+                        <div class="metric-value" th:text="${avgLatency} + ' ms'">0 ms</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <h3 class="metric-title"><i class="fas fa-check-circle"></i> Tasa de Éxito</h3>
+                        </div>
+                        <div class="metric-value" th:text="${successRate} + '%'">0%</div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <h3 class="metric-title"><i class="fas fa-exclamation-triangle"></i> Tasa de Error</h3>
+                        </div>
+                        <div class="metric-value" th:text="${errorRate} + '%'">0%</div>
                     </div>
                 </div>
 
-                <div class="metric-card">
-                    <div class="metric-header">
-                        <h3 class="metric-title"><i class="fas fa-clock"></i> Latencia Promedio</h3>
+                <div class="filters-bar">
+                    <div class="filter-group">
+                        <span class="text-muted">Filtrando por:</span>
+                        <select class="filter-select" id="api-select">
+                            <option value="all">Todas las APIs (Organización)</option>
+                            <option th:each="api : ${listaApis}" th:value="${api.idApi}" th:text="${api.nombre}">Nombre
+                                API</option>
+                        </select>
                     </div>
-                    <div class="metric-value" th:text="${avgLatency} + ' ms'">142 ms</div>
-                    <div class="metric-change change-negative">
-                        <i class="fas fa-arrow-up"></i> 5.2% vs período anterior
-                    </div>
-                </div>
-
-                <div class="metric-card">
-                    <div class="metric-header">
-                        <h3 class="metric-title"><i class="fas fa-check-circle"></i> Tasa de Éxito</h3>
-                    </div>
-                    <div class="metric-value" th:text="${successRate} + '%'">99.2%</div>
-                    <div class="metric-change change-positive">
-                        <i class="fas fa-arrow-up"></i> 0.8% vs período anterior
+                    <div class="filter-group">
+                        <strong>Organización:</strong>
+                        <span class="badge bg-blue-lt"
+                            th:text="${usuario.organizacion != null ? usuario.organizacion.nombre : (usuario.equipo != null && usuario.equipo.organizacion != null ? usuario.equipo.organizacion.nombre : 'Sin Organización')}">Organización</span>
                     </div>
                 </div>
 
-                <div class="metric-card">
-                    <div class="metric-header">
-                        <h3 class="metric-title"><i class="fas fa-exclamation-triangle"></i> Tasa de Error</h3>
-                    </div>
-                    <div class="metric-value" th:text="${errorRate} + '%'">0.8%</div>
-                    <div class="metric-change change-negative">
-                        <i class="fas fa-arrow-up"></i> 0.2% vs período anterior
-                    </div>
-                </div>
-            </div>
-
-            <div class="charts-grid">
-                <div class="chart-container">
-                    <div class="chart-header">
-                        <h3 class="chart-title">Consumo de API (Requests por hora)</h3>
-                        <div class="chart-actions">
-                            <button class="btn btn-sm btn-outline-secondary">24h</button>
-                            <button class="btn btn-sm btn-outline-primary">7d</button>
-                            <button class="btn btn-sm btn-outline-secondary">30d</button>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Consumo de API (Requests por hora)</h3>
+                        </div>
+                        <div class="chart-canvas">
+                            <canvas id="requestsChart"></canvas>
                         </div>
                     </div>
-                    <div class="chart-canvas">
-                        <canvas id="requestsChart"></canvas>
-                    </div>
-                </div>
 
-                <div class="chart-container">
-                    <div class="chart-header">
-                        <h3 class="chart-title">Distribución de Status Codes</h3>
-                    </div>
-                    <div class="chart-canvas">
-                        <canvas id="statusCodesChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <div class="charts-grid">
-                <div class="chart-container">
-                    <div class="chart-header">
-                        <h3 class="chart-title">Latencia por Endpoint (ms)</h3>
-                    </div>
-                    <div class="chart-canvas">
-                        <canvas id="latencyChart"></canvas>
-                    </div>
-                </div>
-
-                <div class="alerts-container">
-                    <div class="alerts-header">
-                        <h3 class="alerts-title">Alertas Recientes</h3>
-                        <button class="btn btn-sm btn-outline-primary">Ver todas</button>
-                    </div>
-                    <div class="alert-list" th:if="${alerts}">
-                        <div class="alert-item" th:each="alert : ${alerts}">
-                            <div class="alert-icon" th:classappend="${alert.severity == 'ERROR'} ? 'alert-icon-error' : (${alert.severity == 'WARNING'} ? 'alert-icon-warning' : 'alert-icon-info')">
-                                <i class="fas" th:classappend="${alert.severity == 'ERROR'} ? 'fa-exclamation-circle' : (${alert.severity == 'WARNING'} ? 'fa-clock' : 'fa-info-circle')"></i>
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Distribución de Status Codes</h3>
+                        </div>
+                        <div class="chart-canvas" style="position: relative;">
+                            <canvas id="statusCodesChart"></canvas>
+                            <div id="statusCodesNoData"
+                                style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: var(--tblr-secondary-color);">
+                                <i class="fas fa-chart-pie fa-2x mb-2"></i><br>
+                                Sin datos
                             </div>
-                            <div class="alert-content">
-                                <div class="alert-title" th:text="${alert.title}"></div>
-                                <div class="alert-description" th:text="${alert.description}"></div>
-                            </div>
-                            <div class="alert-time" th:text="${alert.timestamp}"></div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="api-list">
-                <div class="chart-header">
-                    <h3 class="chart-title">Rendimiento por API</h3>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Latencia por Endpoint</h3>
+                        </div>
+                        <div class="chart-canvas">
+                            <canvas id="latencyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="alerts-container">
+                        <div class="alerts-header">
+                            <h3 class="alerts-title">Alertas Recientes</h3>
+                        </div>
+                        <div class="alert-list" th:if="${alerts}">
+                            <div class="alert-item" th:each="alert : ${alerts}">
+                                <div class="alert-icon alert-icon-error">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                </div>
+                                <div class="alert-content">
+                                    <div class="alert-title" th:text="${alert.title}"></div>
+                                    <div class="alert-description" th:text="${alert.description}"></div>
+                                </div>
+                                <div class="alert-time" th:text="${alert.timestamp}"></div>
+                            </div>
+                            <div th:if="${#lists.isEmpty(alerts)}">
+                                <p class="text-muted">No hay alertas recientes.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <table class="api-table">
-                    <thead>
-                    <tr>
-                        <th>API</th>
-                        <th>Estado</th>
-                        <th>Requests</th>
-                        <th>Latencia (p95)</th>
-                        <th>Tasa de Error</th>
-                        <th>Tendencia</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="api : ${apiPerformanceList}">
-                        <td th:text="${api.endpoint}"></td>
-                        <td>
-                            <span class="status-indicator" th:classappend="${api.status == 'Activo'} ? 'status-active' : (${api.status == 'Inestable'} ? 'status-warning' : 'status-error')"></span>
-                            <span th:text="${api.status}"></span>
-                        </td>
-                        <td th:text="${api.totalRequests}"></td>
-                        <td th:text="${api.latency}"></td>
-                        <td>
-                            <span class="badge" th:classappend="${api.errorRate < 1} ? 'badge-success' : (${api.errorRate < 5} ? 'badge-warning' : 'badge-danger')" th:text="${api.errorRate} + '%'"></span>
-                        </td>
-                        <td>
-                            <i class="fas" th:classappend="${api.trend == 'up'} ? 'fa-arrow-up text-danger' : (${api.trend == 'down'} ? 'fa-arrow-down text-success' : 'fa-minus text-secondary')"></i>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                <!-- Tabla de Rendimiento por API -->
+                <div class="api-list">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Rendimiento por API</h3>
+                    </div>
+
+                    <table class="api-table">
+                        <thead>
+                            <tr>
+                                <th>API</th>
+                                <th>Requests Totales</th>
+                                <th>Latencia Promedio</th>
+                                <th>Tasa de Error</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="api : ${apiPerformanceList}">
+                                <td th:text="${api.nombre}"></td>
+                                <td th:text="${api.totalRequests}"></td>
+                                <td th:text="${api.avgLatency} + ' ms'"></td>
+                                <td>
+                                    <span class="badge"
+                                        th:classappend="${api.errorRate < 1} ? 'badge-success' : (${api.errorRate < 5} ? 'badge-warning' : 'badge-danger')"
+                                        th:text="${#numbers.formatDecimal(api.errorRate, 1, 1)} + '%'"></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Nueva Sección: Live Log Steam -->
+                <div class="api-list" style="margin-top: 3rem;">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Logs Recientes (Últimos 20)</h3>
+                    </div>
+                    <div class="card">
+                        <div class="table-responsive">
+                            <table class="table card-table table-vcenter text-nowrap datatable">
+                                <thead>
+                                    <tr>
+                                        <th>Timestamp</th>
+                                        <th>Método</th>
+                                        <th>Endpoint</th>
+                                        <th>Status</th>
+                                        <th>Latencia (ms)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="log : ${recentLogs}">
+                                        <td th:text="${log.timestamp}"></td>
+                                        <td>
+                                            <span class="badge"
+                                                th:classappend="${log.method == 'GET'} ? 'bg-blue-lt' : (${log.method == 'POST'} ? 'bg-green-lt' : (${log.method == 'DELETE'} ? 'bg-red-lt' : 'bg-orange-lt'))"
+                                                th:text="${log.method}">
+                                            </span>
+                                        </td>
+                                        <td th:text="${log.endpoint}"></td>
+                                        <td>
+                                            <span class="badge"
+                                                th:classappend="${log.status < 400} ? 'bg-success' : (${log.status < 500} ? 'bg-warning' : 'bg-danger')"
+                                                th:text="${log.status}">
+                                            </span>
+                                        </td>
+                                        <td th:text="${log.latency}"></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
+
+        <div th:replace="~{desarrollador/footer :: footer}"></div>
     </div>
 
-    <div th:replace="~{desarrollador/footer :: footer}"></div>
-</div>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', function () {
+            // =========================================================================
+            // 1. INITIAL DATA FROM THYMELEAF
+            // =========================================================================
+            /*<![CDATA[*/
+            const initialRequestsData = /*[[${requestsPerHour}]]*/ {};
+            const initialStatusData = /*[[${statusCounts}]]*/ {};
+            const initialLatencyData = /*[[${latencyByEndpoint}]]*/[];
+            /*]]>*/
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Datos del backend inyectados por Thymeleaf
-        const requestsPerHourData = [[${requestsPerHour}]];
-        const statusCountsData = [[${statusCounts}]];
-        const latencyByEndpointData = [[${latencyByEndpoint}]];
+            // Chart Instances
+            let requestsChart = null;
+            let statusChart = null;
+            let latencyChart = null;
 
-        // 1. Gráfico de Consumo de API (Requests por hora)
-        if (requestsPerHourData && requestsPerHourData.length > 0) {
-            const requestsCtx = document.getElementById('requestsChart').getContext('2d');
-            new Chart(requestsCtx, {
-                type: 'line',
-                data: {
-                    labels: requestsPerHourData.map(item => item.hora),
-                    datasets: [{
-                        label: 'Requests',
-                        data: requestsPerHourData.map(item => item.count),
-                        borderColor: '#206bc4',
-                        backgroundColor: 'rgba(32, 107, 196, 0.1)',
-                        tension: 0.4,
-                        fill: true
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { drawBorder: false } },
-                        x: { grid: { display: false } }
+            // =========================================================================
+            // 2. CHART INITIALIZATION FUNCTIONS
+            // =========================================================================
+
+            function updateRequestsChart(data) {
+                const ctx = document.getElementById('requestsChart').getContext('2d');
+                if (requestsChart) {
+                    requestsChart.destroy();
+                }
+
+                if (data && data.labels && data.labels.length > 0) {
+                    requestsChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                label: 'Requests',
+                                data: data.data,
+                                borderColor: '#206bc4',
+                                backgroundColor: 'rgba(32, 107, 196, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, grid: { drawBorder: false } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+            }
+
+            function updateStatusChart(data) {
+                const statusNoData = document.getElementById('statusCodesNoData');
+                const statusCanvas = document.getElementById('statusCodesChart');
+                const ctx = statusCanvas.getContext('2d');
+
+                if (statusChart) {
+                    statusChart.destroy();
+                }
+
+                let hasStatusData = false;
+                if (data && data.data && data.data.length > 0) {
+                    const totalStatus = data.data.reduce((a, b) => a + b, 0);
+                    if (totalStatus > 0) hasStatusData = true;
+                }
+
+                if (hasStatusData) {
+                    if (statusNoData) statusNoData.style.display = 'none';
+                    if (statusCanvas) statusCanvas.style.display = 'block';
+
+                    const backgroundColors = data.labels.map(label => {
+                        if (label === 'Exito') return '#2fb344';
+                        if (label === 'Error') return '#e03131';
+                        return '#ff922b';
+                    });
+
+                    statusChart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: data.labels,
+                            datasets: [{
+                                data: data.data,
+                                backgroundColor: backgroundColors
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { position: 'bottom' } }
+                        }
+                    });
+                } else {
+                    if (statusNoData) statusNoData.style.display = 'block';
+                    // Optional: keep canvas visible but empty, or hide usage logic
+                }
+            }
+
+            function updateLatencyChart(data) {
+                const ctx = document.getElementById('latencyChart').getContext('2d');
+                if (latencyChart) {
+                    latencyChart.destroy();
+                }
+
+                if (data && data.length > 0) {
+                    latencyChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: data.map(item => item.nombre),
+                            datasets: [{
+                                label: 'Latencia Promedio (ms)',
+                                data: data.map(item => item.avgLatency),
+                                backgroundColor: '#4299e1'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: { beginAtZero: true, grid: { drawBorder: false } },
+                                x: { grid: { display: false } }
+                            }
+                        }
+                    });
+                }
+            }
+
+            function updateAlertsList(alerts) {
+                const container = document.querySelector('.alert-list');
+                if (!container) return;
+
+                container.innerHTML = '';
+
+                if (alerts && alerts.length > 0) {
+                    alerts.forEach(alert => {
+                        const item = document.createElement('div');
+                        item.className = 'alert-item';
+                        item.innerHTML = `
+                            <div class="alert-icon alert-icon-error">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <div class="alert-content">
+                                <div class="alert-title">${alert.title || 'Alerta'}</div>
+                                <div class="alert-description">${alert.description || ''}</div>
+                            </div>
+                            <div class="alert-time">${alert.timestamp}</div>
+                        `;
+                        container.appendChild(item);
+                    });
+                } else {
+                    container.innerHTML = '<p class="text-muted">No hay alertas recientes.</p>';
+                }
+            }
+
+            // =========================================================================
+            // 3. INIT WITH DEFAULT DATA
+            // =========================================================================
+            updateRequestsChart(initialRequestsData);
+            updateStatusChart(initialStatusData);
+            updateLatencyChart(initialLatencyData);
+
+            // =========================================================================
+            // 4. EVENT LISTENER FOR DYNAMIC FILTERING
+            // =========================================================================
+            const apiSelect = document.getElementById('api-select');
+            if (apiSelect) {
+                apiSelect.addEventListener('change', function () {
+                    const apiId = this.value;
+                    let url = '/dev/api/charts-data';
+                    if (apiId !== 'all') {
+                        url += '?apiId=' + apiId;
                     }
-                }
-            });
-        }
 
-        // 2. Gráfico de Distribución de Status Codes
-        if (statusCountsData && statusCountsData.length > 0) {
-            const statusLabels = statusCountsData.map(item => item.statusCode);
-            const statusData = statusCountsData.map(item => item.count);
-            const backgroundColors = statusLabels.map(label => {
-                if (label.startsWith('2')) return '#2fb344';
-                if (label.startsWith('4')) return '#f76808';
-                if (label.startsWith('5')) return '#e03131';
-                return '#ff922b';
-            });
-            const statusCodesCtx = document.getElementById('statusCodesChart').getContext('2d');
-            new Chart(statusCodesCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: statusLabels,
-                    datasets: [{
-                        data: statusData,
-                        backgroundColor: backgroundColors
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } }
-                }
-            });
-        }
+                    // Show loading state if desired (optional)
 
-        // 3. Gráfico de Latencia por Endpoint
-        if (latencyByEndpointData && latencyByEndpointData.length > 0) {
-            const latencyCtx = document.getElementById('latencyChart').getContext('2d');
-            new Chart(latencyCtx, {
-                type: 'bar',
-                data: {
-                    labels: latencyByEndpointData.map(item => item.endpoint),
-                    datasets: [{
-                        label: 'Latencia Promedio (ms)',
-                        data: latencyByEndpointData.map(item => item.latency),
-                        backgroundColor: '#4299e1'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { drawBorder: false } },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
-    });
-</script>
+                    fetch(url)
+                        .then(response => response.json())
+                        .then(data => {
+                            updateRequestsChart(data.requestsPerHour);
+                            updateStatusChart(data.statusCounts);
+                            updateLatencyChart(data.latencyByEndpoint);
+                            updateAlertsList(data.alerts);
+                        })
+                        .catch(error => console.error('Error fetching chart data:', error));
+                });
+            }
+        });
+    </script>
 
-<script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620|"></script>
-<script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
+    <script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
 </body>
+
 </html>

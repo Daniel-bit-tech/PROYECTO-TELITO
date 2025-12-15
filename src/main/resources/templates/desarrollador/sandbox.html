@@ -197,6 +197,7 @@
 <script>
     let CURRENT_API_ID = null;
     let API_BASE_URL = "";
+    let ENDPOINT = null;
 
     document.addEventListener('DOMContentLoaded', function() {
         loadApiList();
@@ -264,13 +265,14 @@
 
 
                 item.innerHTML = `
-        <span class="endpoint-method method-${method.toLowerCase()}">${method}</span>
-        <span class="text-truncate">${path}</span>
-    `;
+                    <span class="endpoint-method method-${method.toLowerCase()}">${method}</span>
+                    <span class="text-truncate">${path}</span>
+                `;
 
                 item.onclick = () => {
                     setMethod(method);
                     selectEndpointFromList(path);
+                    ENDPOINT = method+ " " + path;
                 };
                 listDiv.appendChild(item);
             });
@@ -436,6 +438,7 @@
             method: method,
             // targetUrl: urlFinal,
             targetUrl: isAbsoluteUrl ? urlFinal : document.getElementById('targetUrl').value,
+            endpoint: ENDPOINT,
             headers: finalHeaders,
             body: body,
             environmentId: environmentId

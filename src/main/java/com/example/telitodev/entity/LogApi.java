@@ -24,7 +24,7 @@ public class LogApi {
     @Column(name = "tiempoRespuestams", nullable = false)
     private Integer tiempoRespuestaMs;
 
-    @Column(name = "fecha", nullable = false)
+    @Column(name = "fecha", nullable = false, columnDefinition = "DATETIME(3)")
     private LocalDateTime fecha;
 
     @ManyToOne(fetch = FetchType.LAZY)
