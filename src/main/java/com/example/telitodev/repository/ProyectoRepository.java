@@ -51,4 +51,28 @@ public interface ProyectoRepository extends JpaRepository<Proyecto, Integer> {
        WHERE o.idOrganizacion = :organizacionId
        """)
     List<Proyecto> findByOrganizacionIdWithApis(@Param("organizacionId") Integer organizacionId);
+
+    @Query("""
+  select p
+  from Proyecto p
+  where p.equipo.organizacion.idOrganizacion = :orgId
+    and (p.publico = true or p.equipo.idEquipo = :equipoId)
+""")
+    List<Proyecto> findVisiblesParaOrgYEquipo(@Param("orgId") Integer orgId,
+                                              @Param("equipoId") Integer equipoId);
+
+    @Query("""
+  select p
+  from Proyecto p
+  where p.equipo.organizacion.idOrganizacion = :orgId
+    and p.activo = true
+    and (p.publico = true or p.equipo.idEquipo = :equipoId)
+""")
+    List<Proyecto> findVisiblesActivosParaOrgYEquipo(@Param("orgId") Integer orgId,
+                                                     @Param("equipoId") Integer equipoId);
+
+    // Para el tab "Ocultos/Privados": SOLO privados del equipo del PO
+    List<Proyecto> findByPublicoFalseAndEquipo_IdEquipo(Integer idEquipo);
+
+
 }

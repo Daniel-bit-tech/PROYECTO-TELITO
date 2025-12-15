@@ -47,41 +47,80 @@ public class ProyectosPoController extends BaseController {
 
     @GetMapping()
     public String mostrarListaProyectos(@RequestParam(value = "filter", required = false) String filtro,
-                                       Model model, Authentication auth, HttpSession session) {
+                                        Model model, Authentication auth, HttpSession session) {
 
         Usuario usuario = getCurrentUser(auth, session);
-        
+
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
 
         List<Proyecto> listaProyectos = null;
-        if (usuario.getRol().getNombreRol().equals("SUPERADMIN")) {
-            if (filtro != null && filtro.equals("activos")) {
+
+        boolean esSuperAdmin = usuario.getRol() != null
+                && "SUPERADMIN".equals(usuario.getRol().getNombreRol());
+
+        if (esSuperAdmin) {
+            // SUPERADMIN ve todo (tu lógica original)
+            if ("activos".equals(filtro)) {
                 listaProyectos = proyectoRepository.findByActivo(true);
-            } else if (filtro != null && filtro.equals("privados")) {
+            } else if ("privados".equals(filtro) || "ocultos".equals(filtro)) {
                 listaProyectos = proyectoRepository.findByPublico(false);
             } else {
                 listaProyectos = proyectoRepository.findAll();
             }
         } else {
+
             // Para usuarios no-SuperAdmin, verificar que tengan organización asignada
             if (usuario.getOrganizacion() == null) {
                 System.err.println("ERROR: Usuario " + usuario.getDni() + " no tiene organización asignada");
                 model.addAttribute("error", "Usuario sin organización asignada. Contacte al administrador.");
-                model.addAttribute("listaProyectos", List.of()); // Lista vacía para evitar errores en el template
+                model.addAttribute("listaProyectos", List.of());
                 model.addAttribute("usuario", usuario);
                 model.addAttribute("currentPortal", "po");
                 return "po/proyectos";
             }
-            
-            // Mostrar proyectos de su organización
+
             Integer organizacionId = usuario.getOrganizacion().getIdOrganizacion();
-            if (filtro != null && filtro.equals("activos")) {
+            Integer idEquipoUsuario = (usuario.getEquipo() != null) ? usuario.getEquipo().getIdEquipo() : null;
+
+            // 1) Traer por organización (como ya lo haces)
+            if ("activos".equals(filtro)) {
                 listaProyectos = proyectoRepository.findByActivoAndEquipo_Organizacion_IdOrganizacion(true, organizacionId);
-            } else if (filtro != null && filtro.equals("privados")) {
+
+                // 2) Filtrar visibilidad:
+                //    - públicos de la org
+                //    - privados SOLO del equipo del usuario
+                listaProyectos = listaProyectos.stream()
+                        .filter(p -> p != null
+                                && (Boolean.TRUE.equals(p.getPublico())
+                                || (idEquipoUsuario != null
+                                && p.getEquipo() != null
+                                && idEquipoUsuario.equals(p.getEquipo().getIdEquipo()))))
+                        .toList();
+
+            } else if ("privados".equals(filtro) || "ocultos".equals(filtro)) {
+                // Solo privados de SU equipo
                 listaProyectos = proyectoRepository.findByPublicoAndEquipo_Organizacion_IdOrganizacion(false, organizacionId);
+
+                listaProyectos = listaProyectos.stream()
+                        .filter(p -> p != null
+                                && Boolean.FALSE.equals(p.getPublico())
+                                && idEquipoUsuario != null
+                                && p.getEquipo() != null
+                                && idEquipoUsuario.equals(p.getEquipo().getIdEquipo()))
+                        .toList();
+
             } else {
+                // Todos visibles: públicos de la org + privados solo del equipo del usuario
                 listaProyectos = proyectoRepository.findByEquipo_Organizacion_IdOrganizacion(organizacionId);
+
+                listaProyectos = listaProyectos.stream()
+                        .filter(p -> p != null
+                                && (Boolean.TRUE.equals(p.getPublico())
+                                || (idEquipoUsuario != null
+                                && p.getEquipo() != null
+                                && idEquipoUsuario.equals(p.getEquipo().getIdEquipo()))))
+                        .toList();
             }
         }
 
@@ -120,6 +159,21 @@ public class ProyectosPoController extends BaseController {
             }
         }
         // ================================================================================
+
+        // ====== BLOQUEO EXTRA: proyectos PRIVADOS solo pueden verse por su mismo EQUIPO (excepto SUPERADMIN) ======
+        if (!"SUPERADMIN".equals(usuario.getRol().getNombreRol())) {
+
+            // Si el proyecto es privado, solo puede verlo el PO si es de su mismo equipo
+            if (Boolean.FALSE.equals(proyecto.getPublico())) {
+
+                Integer idEquipoUsuario = (usuario.getEquipo() != null) ? usuario.getEquipo().getIdEquipo() : null;
+                Integer idEquipoProyecto = (proyecto.getEquipo() != null) ? proyecto.getEquipo().getIdEquipo() : null;
+
+                if (idEquipoUsuario == null || idEquipoProyecto == null || !idEquipoProyecto.equals(idEquipoUsuario)) {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+                }
+            }
+        }
 
         // ====== PO ENCARGADO: sale del EQUIPO del proyecto ======
         Usuario poEncargado = null;
@@ -291,7 +345,9 @@ public class ProyectosPoController extends BaseController {
 
     @PostMapping("/{idProy}/addApis")
     public String addApisToProject(@PathVariable("idProy") Integer idProyecto,
-                                   @RequestParam(value = "apiIds", required = false) List<Integer> apiIds,
+                                   @RequestParam(value = "apiId", required = false) Integer apiId, // NUEVO (combo)
+                                   @RequestParam(value = "apiIds", required = false) List<Integer> apiIds, // (compat si lo usabas)
+                                   @RequestParam(value = "proposito", required = false) String proposito, // NUEVO
                                    RedirectAttributes redirectAttributes,
                                    Authentication auth, HttpSession session) {
 
@@ -307,17 +363,27 @@ public class ProyectosPoController extends BaseController {
             return "redirect:/po/proyectos/" + idProyecto;
         }
 
+        // Normaliza entrada: si viene del combo, lo convertimos en lista de 1
+        if ((apiIds == null || apiIds.isEmpty()) && apiId != null) {
+            apiIds = List.of(apiId);
+        }
+
         if (apiIds == null || apiIds.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Selecciona al menos una API.");
+            redirectAttributes.addFlashAttribute("error", "Selecciona una API.");
             return "redirect:/po/proyectos/" + idProyecto;
         }
 
-        // Entorno inicial = Desarrollo (id=2)
-        Entorno entornoInicial = entornoRepository.findById(2)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Entorno Desarrollo (id=2) no existe"));
+        String propositoFinal = (proposito != null) ? proposito.trim() : "";
+
+        // Default si la API nunca estuvo asociada a ningún proyecto del equipo
+        Entorno entornoDefaultDesarrollo = entornoRepository.findById(2)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Entorno Desarrollo (id=2) no existe"));
 
         int agregadas = 0;
         int omitidas = 0;
+
+        Integer idEquipoProyecto = proyecto.getEquipo().getIdEquipo();
 
         for (Integer idApi : apiIds) {
 
@@ -330,12 +396,26 @@ public class ProyectosPoController extends BaseController {
             Api api = apiRepository.findById(idApi)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "API no encontrada: " + idApi));
 
-            // Tomar la última versión (para que no reviente tu tabla: proyHasApi.version.version)
+            // Seguridad extra: validar que la API sea del mismo equipo del proyecto
+            if (api.getEquipo() == null || api.getEquipo().getIdEquipo() == null ||
+                    !api.getEquipo().getIdEquipo().equals(idEquipoProyecto)) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+            }
+
+            // Tomar la última versión
             VersionApi version = versionApiRepository.findFirstByApi_IdApiOrderByIdVersionDesc(idApi);
             if (version == null) {
                 omitidas++;
-                continue; // o lanza error si lo quieres estricto
+                continue;
             }
+
+            // ====== NUEVO: heredar entorno "correcto" ======
+            // Busca en qué entornos ya aparece esta API en otros proyectos del MISMO equipo
+            List<Integer> entornosExistentes = proyHasApiRepository.findEntornoIdsByApiIdAndEquipo(idApi, idEquipoProyecto);
+
+            Integer entornoIdElegido = resolverEntornoInicial(entornosExistentes); // 1=Prod, 3=QA, 2=Dev
+            Entorno entornoInicial = entornoRepository.findById(entornoIdElegido).orElse(entornoDefaultDesarrollo);
+            // ===============================================
 
             ProyectoHasApi pha = new ProyectoHasApi();
             pha.setProyectoHasApiId(pk);
@@ -344,7 +424,7 @@ public class ProyectosPoController extends BaseController {
             pha.setEntorno(entornoInicial);
             pha.setVersion(version);
 
-            pha.setProposito(""); // si luego agregas input, aquí lo seteas
+            pha.setProposito(propositoFinal);
             pha.setFechaAsociacion(new java.sql.Date(System.currentTimeMillis()));
 
             proyHasApiRepository.save(pha);
@@ -359,6 +439,15 @@ public class ProyectosPoController extends BaseController {
         }
 
         return "redirect:/po/proyectos/" + idProyecto;
+    }
+
+    // helper para resolver el entorno inicial al agregar una API a un proyecto
+    private Integer resolverEntornoInicial(List<Integer> entornosIds) {
+        if (entornosIds == null || entornosIds.isEmpty()) return 2; // Desarrollo
+
+        if (entornosIds.contains(1)) return 1; // Producción
+        if (entornosIds.contains(3)) return 3; // QA
+        return 2; // Desarrollo
     }
 
 

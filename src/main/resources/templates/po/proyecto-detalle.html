@@ -289,24 +289,32 @@
                     </div>
 
                     <div th:if="${!#lists.isEmpty(apisDisponibles)}">
-                        <div class="row g-2">
-                            <div class="col-12" th:each="api : ${apisDisponibles}">
-                                <label class="form-check">
-                                    <input class="form-check-input"
-                                           type="checkbox"
-                                           name="apiIds"
-                                           th:value="${api.idApi}"
-                                           th:disabled="${!canManageApis}">
-                                    <span class="form-check-label">
-                                        <strong th:text="${api.nombre}">API</strong>
-                                        <span class="text-muted ms-2" th:text="${api.descripcion}">Descripción</span>
-                                    </span>
-                                </label>
-                            </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">API seleccionada</label>
+                            <select class="form-select" name="apiId" th:disabled="${!canManageApis}" required>
+                                <option value="" selected disabled>Seleccione...</option>
+                                <option th:each="api : ${apisDisponibles}"
+                                        th:value="${api.idApi}"
+                                        th:text="${api.nombre}">
+                                    API
+                                </option>
+                            </select>
                         </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Motivo / propósito</label>
+                            <textarea class="form-control"
+                                      name="proposito"
+                                      rows="3"
+                                      placeholder="Explica brevemente para qué proyecto necesitas esta API..."
+                                      th:disabled="${!canManageApis}"></textarea>
+                        </div>
+
                     </div>
 
                 </div>
+
 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
