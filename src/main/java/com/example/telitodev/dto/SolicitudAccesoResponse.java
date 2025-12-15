@@ -15,14 +15,14 @@ public class SolicitudAccesoResponse {
     private String desarrollador; // Nombre del desarrollador
     private String email; // Email del desarrollador
     private String fechaFormatted; // Fecha formateada para mostrar
-
+    private String nombreEquipo;
     // Constructores
     public SolicitudAccesoResponse() {}
 
     public SolicitudAccesoResponse(Integer idSolicitudAcceso, String nombreApi, Integer apiId,
                                    String estado, Timestamp fechaSolicitud, Timestamp fechaRespuesta,
                                    String nombreProyecto, String descripcionUso, String desarrollador,
-                                   String email, String fechaFormatted) {
+                                   String email, String fechaFormatted,String nombreEquipo) {
         this.idSolicitudAcceso = idSolicitudAcceso;
         this.nombreApi = nombreApi;
         this.apiId = apiId;
@@ -34,6 +34,7 @@ public class SolicitudAccesoResponse {
         this.desarrollador = desarrollador;
         this.email = email;
         this.fechaFormatted = fechaFormatted;
+        this.nombreEquipo = nombreEquipo;
     }
 
     // Getters y Setters
@@ -123,5 +124,13 @@ public class SolicitudAccesoResponse {
 
     public void setFechaFormatted(String fechaFormatted) {
         this.fechaFormatted = fechaFormatted;
+    }
+
+    public String getNombreEquipo() {
+        return nombreEquipo;
+    }
+
+    public void setNombreEquipo(String nombreEquipo) {
+        this.nombreEquipo = nombreEquipo;
     }
 }
