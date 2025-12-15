@@ -145,16 +145,6 @@ public interface LogapiRepository extends JpaRepository<LogApi, Integer> {
                         "ORDER BY total DESC")
         List<Object[]> getTopUsedApis();
 
-        // 10. Cost Metrics (Dummy calculation: 0.005 per call)
-        @Query("SELECT l.api.nombre, " +
-                        "(COUNT(l) * 0.005), " + // Total Cost
-                        "0.005, " + // Avg Cost
-                        "COUNT(l) " + // Total Requests
-                        "FROM LogApi l " +
-                        "GROUP BY l.api.nombre " +
-                        "ORDER BY COUNT(l) DESC")
-        List<Object[]> getCostMetricsByApi();
-
         // 11. Environment Usage (Asumimos ID 1 = Prod, others based on logic if column
         // existed, else dummy)
         // Since LogApi is mostly Prod, we can just group by 'Produccion' literal or
@@ -205,4 +195,10 @@ public interface LogapiRepository extends JpaRepository<LogApi, Integer> {
                         "GROUP BY metodoHttp, endpoint " +
                         "ORDER BY avg_latency DESC LIMIT 10;", nativeQuery = true)
         List<Map<String, Object>> findAverageLatencyByEndpointFiltered(@Param("apiIds") List<Integer> apiIds);
+
+        @Query(value = "SELECT DATE(fecha) as d, AVG(tiempoRespuestams) as val FROM logapi " +
+                        "WHERE fecha >= NOW() - INTERVAL 7 DAY " +
+                        "AND idapi IN :apiIds " +
+                        "GROUP BY DATE(fecha) ORDER BY d", nativeQuery = true)
+        List<Object[]> getLatencyTrendFiltered(@Param("apiIds") List<Integer> apiIds);
 }

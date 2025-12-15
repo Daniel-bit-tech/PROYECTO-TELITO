@@ -291,10 +291,12 @@ public class MetricsService {
         long exitos = 0;
         long errores = 0;
 
-        if (row != null ) {
+        if (row != null) {
             if (row instanceof Object[] data) {
-                if (data[0] != null) exitos = ((Number) data[0]).longValue();
-                if (data[1] != null) errores = ((Number) data[1]).longValue();
+                if (data[0] != null)
+                    exitos = ((Number) data[0]).longValue();
+                if (data[1] != null)
+                    errores = ((Number) data[1]).longValue();
             }
         }
         return new ChartSeriesLongDTO(List.of("Exito", "Error"), List.of(exitos, errores));
@@ -391,6 +393,32 @@ public class MetricsService {
             }
             return new ChartSeriesDTO(labels, data);
         } catch (Exception e) {
+            return new ChartSeriesDTO(Collections.emptyList(), Collections.emptyList());
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public ChartSeriesDTO getLatencyTrendFiltered(List<Integer> apiIds) {
+        try {
+            List<Object[]> rows;
+            if (apiIds != null && !apiIds.isEmpty()) {
+                rows = logapiRepository.getLatencyTrendFiltered(apiIds);
+            } else {
+                if (apiIds != null) {
+                    return new ChartSeriesDTO(Collections.emptyList(), Collections.emptyList());
+                }
+                rows = logapiRepository.getLatencyTrend();
+            }
+
+            List<String> labels = new ArrayList<>();
+            List<Double> data = new ArrayList<>();
+            for (Object[] row : rows) {
+                labels.add(row[0].toString());
+                data.add(((Number) row[1]).doubleValue());
+            }
+            return new ChartSeriesDTO(labels, data);
+        } catch (Exception e) {
+            e.printStackTrace();
             return new ChartSeriesDTO(Collections.emptyList(), Collections.emptyList());
         }
     }

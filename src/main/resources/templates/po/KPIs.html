@@ -475,53 +475,53 @@
                 </div>
 
                 <!-- Graficas -->
-<!--                <div class="charts-grid">-->
-                    <!-- Barras: Latencia promedio por API -->
-                    <div class="chart-container">
-                        <div class="chart-header">
-                            <h3 class="chart-title">Latencia por API (ms)</h3>
-                        </div>
-                        <div class="chart-canvas">
-                            <div id="latency-loading" class="loading-indicator"><i class="fas fa-spinner fa-spin"></i>
-                                Cargando...</div>
-                            <div id="latency-error" class="chart-error"><i class="fas fa-exclamation-triangle"></i>
-                                Error al cargar datos.</div>
-                            <div id="latency-no-data" class="no-chart-data"><i class="fas fa-chart-bar"></i> No hay
-                                datos de latencia para mostrar.</div>
-                            <canvas id="latencyChart"></canvas>
-                        </div>
+                <!--                <div class="charts-grid">-->
+                <!-- Barras: Latencia promedio por API -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Latencia por API (ms)</h3>
                     </div>
+                    <div class="chart-canvas">
+                        <div id="latency-loading" class="loading-indicator"><i class="fas fa-spinner fa-spin"></i>
+                            Cargando...</div>
+                        <div id="latency-error" class="chart-error"><i class="fas fa-exclamation-triangle"></i>
+                            Error al cargar datos.</div>
+                        <div id="latency-no-data" class="no-chart-data"><i class="fas fa-chart-bar"></i> No hay
+                            datos de latencia para mostrar.</div>
+                        <canvas id="latencyChart"></canvas>
+                    </div>
+                </div>
 
-<!--                    &lt;!&ndash; Alertas (Ahora dinámicas) &ndash;&gt;-->
-<!--                    <div class="alerts-container">-->
-<!--                        <div class="alerts-header">-->
-<!--                            <h3 class="alerts-title">Alertas Recientes</h3>-->
-<!--                            &lt;!&ndash; <button class="btn btn-sm btn-outline-primary" type="button">Ver todas</button> &ndash;&gt;-->
-<!--                        </div>-->
-<!--                        <div class="alert-list">-->
-<!--                            &lt;!&ndash; Iterar sobre alertas reales &ndash;&gt;-->
-<!--                            <th:block th:if="${not #lists.isEmpty(alertasRecientes)}">-->
-<!--                                <div class="alert-item" th:each="alerta : ${alertasRecientes}">-->
-<!--                                    <div class="alert-icon" th:classappend="|alert-icon-${alerta.tipo()}|">-->
-<!--                                        <i-->
-<!--                                            th:classappend="${alerta.tipo() == 'error' ? 'fas fa-exclamation-circle' : (alerta.tipo() == 'warning' ? 'fas fa-clock' : 'fas fa-info-circle')}"></i>-->
-<!--                                    </div>-->
-<!--                                    <div class="alert-content">-->
-<!--                                        <div class="alert-title" th:text="${alerta.titulo()}">Título Alerta</div>-->
-<!--                                        <div class="alert-description" th:text="${alerta.descripcion()}">Descripción-->
-<!--                                        </div>-->
-<!--                                    </div>-->
-<!--                                    <div class="alert-time" th:text="${alerta.tiempo()}">Tiempo</div>-->
-<!--                                </div>-->
-<!--                            </th:block>-->
-<!--                            &lt;!&ndash; Mensaje si no hay alertas &ndash;&gt;-->
-<!--                            <div th:if="${#lists.isEmpty(alertasRecientes)}" class="no-data">-->
-<!--                                <i class="fas fa-bell-slash fa-2x mb-2"></i><br>-->
-<!--                                No hay alertas recientes.-->
-<!--                            </div>-->
-<!--                        </div>-->
-<!--                    </div>-->
-<!--                </div>-->
+                <!--                    &lt;!&ndash; Alertas (Ahora dinámicas) &ndash;&gt;-->
+                <!--                    <div class="alerts-container">-->
+                <!--                        <div class="alerts-header">-->
+                <!--                            <h3 class="alerts-title">Alertas Recientes</h3>-->
+                <!--                            &lt;!&ndash; <button class="btn btn-sm btn-outline-primary" type="button">Ver todas</button> &ndash;&gt;-->
+                <!--                        </div>-->
+                <!--                        <div class="alert-list">-->
+                <!--                            &lt;!&ndash; Iterar sobre alertas reales &ndash;&gt;-->
+                <!--                            <th:block th:if="${not #lists.isEmpty(alertasRecientes)}">-->
+                <!--                                <div class="alert-item" th:each="alerta : ${alertasRecientes}">-->
+                <!--                                    <div class="alert-icon" th:classappend="|alert-icon-${alerta.tipo()}|">-->
+                <!--                                        <i-->
+                <!--                                            th:classappend="${alerta.tipo() == 'error' ? 'fas fa-exclamation-circle' : (alerta.tipo() == 'warning' ? 'fas fa-clock' : 'fas fa-info-circle')}"></i>-->
+                <!--                                    </div>-->
+                <!--                                    <div class="alert-content">-->
+                <!--                                        <div class="alert-title" th:text="${alerta.titulo()}">Título Alerta</div>-->
+                <!--                                        <div class="alert-description" th:text="${alerta.descripcion()}">Descripción-->
+                <!--                                        </div>-->
+                <!--                                    </div>-->
+                <!--                                    <div class="alert-time" th:text="${alerta.tiempo()}">Tiempo</div>-->
+                <!--                                </div>-->
+                <!--                            </th:block>-->
+                <!--                            &lt;!&ndash; Mensaje si no hay alertas &ndash;&gt;-->
+                <!--                            <div th:if="${#lists.isEmpty(alertasRecientes)}" class="no-data">-->
+                <!--                                <i class="fas fa-bell-slash fa-2x mb-2"></i><br>-->
+                <!--                                No hay alertas recientes.-->
+                <!--                            </div>-->
+                <!--                        </div>-->
+                <!--                    </div>-->
+                <!--                </div>-->
 
                 <!-- Gráficos de pastel lado a lado -->
                 <div class="charts-grid" style="margin-top: 1.5rem;">
@@ -621,10 +621,10 @@
                                                 <span
                                                     th:text="${#numbers.formatDecimal(api.errorRate(),1,'POINT',1,'COMMA')}">0.0</span>%
                                                 <!-- Badge condicional -->
-                                                <span th:if="${api.errorRate() > 1.0}"
-                                                    th:classappend="${api.errorRate() > 5.0 ? 'badge bg-red ms-1' : 'badge bg-yellow ms-1'}"
-                                                    th:text="${api.errorRate() > 5.0 ? 'Alto' : 'Medio'}"></span>
-                                                <span th:if="${api.errorRate() <= 1.0}"
+                                                <span th:if="${api.errorRate() > 10.0}"
+                                                    th:classappend="${api.errorRate() > 20.0 ? 'badge bg-red ms-1' : 'badge bg-yellow ms-1'}"
+                                                    th:text="${api.errorRate() > 20.0 ? 'Alto' : 'Medio'}"></span>
+                                                <span th:if="${api.errorRate() <= 10.0}"
                                                     class="badge bg-green ms-1">Bajo</span>
                                             </td>
                                         </tr>
@@ -662,9 +662,9 @@
                                             <td>
                                                 <!-- Lógica de Estado (Ejemplo basado en errorRate) -->
                                                 <span class="status-indicator"
-                                                    th:classappend="${apiPerf.errorRate() > 5.0 ? 'status-error' : (apiPerf.errorRate() > 1.0 ? 'status-warning' : 'status-success')}"></span>
+                                                    th:classappend="${apiPerf.errorRate() > 20.0 ? 'status-error' : (apiPerf.errorRate() > 10.0 ? 'status-warning' : 'status-success')}"></span>
                                                 <span
-                                                    th:text="${apiPerf.errorRate() > 5.0 ? 'Con Problemas' : (apiPerf.errorRate() > 1.0 ? 'Degradado' : 'Estable')}">Estable</span>
+                                                    th:text="${apiPerf.errorRate() > 20.0 ? 'Con Problemas' : (apiPerf.errorRate() > 10.0 ? 'Degradado' : 'Estable')}">Estable</span>
                                             </td>
                                             <td
                                                 th:text="${#numbers.formatDecimal(apiPerf.totalRequests(),0,'POINT',0,'COMMA')}">
@@ -690,367 +690,419 @@
         <div th:replace="~{po/footer.html :: footer}"></div>
     </div> <!-- /page -->
 
-<!-- JS libs -->
-<script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
-<script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
+    <!-- JS libs -->
+    <script src="/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620"></script>
+    <script src="/tabler/dist/js/tabler.min.js?1757307620"></script>
 
-<!-- Script principal (Actualizado para manejar estados vacíos/error en JS) -->
-<script th:inline="javascript">
-    // URLs seguras con Thymeleaf
-    const CHART_URL = /*[[@{/po/KPIs/chart}]]*/ '/po/KPIs/chart';
-    const THROUGHPUT_URL = /*[[@{/po/KPIs/throughput-hour}]]*/ '/po/KPIs/throughput-hour';
-    const LATENCY_TREND_URL = /*[[@{/po/KPIs/latency-trend}]]*/ '/po/KPIs/latency-trend';
-    const ENV_USAGE_URL = /*[[@{/po/KPIs/environment-usage}]]*/ '/po/KPIs/environment-usage';
+    <!-- Script principal (Actualizado para manejar estados vacíos/error en JS) -->
+    <script th:inline="javascript">
+        // URLs seguras con Thymeleaf
+        const CHART_URL = /*[[@{/po/KPIs/chart}]]*/ '/po/KPIs/chart';
+        const THROUGHPUT_URL = /*[[@{/po/KPIs/throughput-hour}]]*/ '/po/KPIs/throughput-hour';
+        const LATENCY_TREND_URL = /*[[@{/po/KPIs/latency-trend}]]*/ '/po/KPIs/latency-trend';
+        const ENV_USAGE_URL = /*[[@{/po/KPIs/environment-usage}]]*/ '/po/KPIs/environment-usage';
+        const STATUS_DIST_URL = /*[[@{/po/KPIs/status-distribution}]]*/ '/po/KPIs/status-distribution';
 
-    // Guardar referencias a los gráficos para actualizarlos/destruirlos
-    window._charts = {};
+        // Guardar referencias a los gráficos para actualizarlos/destruirlos
+        window._charts = {};
 
-    document.addEventListener('DOMContentLoaded', () => {
-        console.log('Inicializando dashboard de KPIs...');
-        initLatencyBarsByApi();
-        initStatusCodesDonutLocal(); // Mantiene lógica local
-        initThroughputChart();
-        initLatencyTrendChart();
-        initEnvironmentChart();
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Inicializando dashboard de KPIs...');
+            initLatencyBarsByApi();
+            initStatusCodesDonutDynamic();
+            initThroughputChart();
+            initLatencyTrendChart();
+            initEnvironmentChart();
 
-        // Recalcular GRÁFICOS DINÁMICOS al cambiar filtros
-        ['api-select', 'environment-select', 'start-date', 'end-date'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.addEventListener('change', () => {
-                // Llama a las funciones que dependen de estos filtros
-                initLatencyBarsByApi();
-                // initStatusCodesDonutRemote(); // Si decides hacerlo dinámico
-                // Podrías llamar a otros si dependen de filtros
+            // Recalcular GRÁFICOS DINÁMICOS al cambiar filtros
+            ['api-select', 'environment-select', 'start-date', 'end-date'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', () => {
+                    // Llama a las funciones que dependen de estos filtros
+                    initLatencyBarsByApi();
+                    initStatusCodesDonutDynamic();
+                    initThroughputChart();
+                    initLatencyTrendChart();
+                });
             });
+
+            // Establecer fechas por defecto (últimos 7 días)
+            setDefaultDates();
         });
 
-        // Establecer fechas por defecto (últimos 7 días)
-        setDefaultDates();
-    });
+        function setDefaultDates() {
+            const endDateInput = document.getElementById('end-date');
+            const startDateInput = document.getElementById('start-date');
+            if (!endDateInput || !startDateInput) return;
 
-    function setDefaultDates() {
-        const endDateInput = document.getElementById('end-date');
-        const startDateInput = document.getElementById('start-date');
-        if (!endDateInput || !startDateInput) return;
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setDate(startDate.getDate() - 7); // Últimos 7 días
 
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - 7); // Últimos 7 días
-
-        endDateInput.value = formatDate(endDate);
-        startDateInput.value = formatDate(startDate);
-    }
-
-    function formatDate(date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    // --- Funciones para mostrar/ocultar estados de carga/error/sin datos ---
-    function showChartState(chartId, state) { // state = 'loading' | 'error' | 'no-data' | 'ready'
-        const canvas = document.getElementById(chartId);
-        const loadingEl = document.getElementById(`${chartId.replace('Chart', '')}-loading`);
-        const errorEl = document.getElementById(`${chartId.replace('Chart', '')}-error`);
-        const noDataEl = document.getElementById(`${chartId.replace('Chart', '')}-no-data`);
-
-        if (!canvas) {
-            console.warn(`Canvas element not found for chart ID: ${chartId}`);
-            return;
+            endDateInput.value = formatDate(endDate);
+            startDateInput.value = formatDate(startDate);
         }
 
-        [loadingEl, errorEl, noDataEl].forEach(el => el?.classList.remove('active'));
-        canvas.style.display = 'none';
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
-        if (state === 'loading' && loadingEl) loadingEl.classList.add('active');
-        else if (state === 'error' && errorEl) errorEl.classList.add('active');
-        else if (state === 'no-data' && noDataEl) noDataEl.classList.add('active');
-        else if (state === 'ready') canvas.style.display = 'block';
-    }
+        // --- Funciones para mostrar/ocultar estados de carga/error/sin datos ---
+        function showChartState(chartId, state) { // state = 'loading' | 'error' | 'no-data' | 'ready'
+            const canvas = document.getElementById(chartId);
+            const loadingEl = document.getElementById(`${chartId.replace('Chart', '')}-loading`);
+            const errorEl = document.getElementById(`${chartId.replace('Chart', '')}-error`);
+            const noDataEl = document.getElementById(`${chartId.replace('Chart', '')}-no-data`);
 
-    /* ---------- Barras: Latencia promedio por API (dinámico) ---------- */
-    async function initLatencyBarsByApi() {
-        const chartId = 'latencyChart';
-        const canvas = document.getElementById(chartId);
-        if (!canvas || typeof Chart === 'undefined') return;
-
-        showChartState(chartId, 'loading');
-
-        const idApiRaw = document.getElementById('api-select')?.value;
-        const idEntornoRaw = document.getElementById('environment-select')?.value;
-        const start = document.getElementById('start-date')?.value;
-        const end = document.getElementById('end-date')?.value;
-
-        const params = new URLSearchParams();
-        if (idApiRaw && /^\d+$/.test(idApiRaw)) params.append('idApi', idApiRaw);
-        if (idEntornoRaw && /^\d+$/.test(idEntornoRaw)) params.append('idEntorno', idEntornoRaw);
-        if (start) params.append('startDate', start);
-        if (end) params.append('endDate', end);
-
-        const url = `${CHART_URL}?${params.toString()}`;
-        let labels = [], data = [];
-        let hasError = false;
-
-        try {
-            const res = await fetch(url, { credentials: 'same-origin' });
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            const json = await res.json();
-
-            if (json.labels && json.data && json.labels.length > 0 && json.labels.length === json.data.length) {
-                labels = json.labels;
-                data = json.data;
-                showChartState(chartId, 'ready');
-            } else {
-                showChartState(chartId, 'no-data');
+            if (!canvas) {
+                console.warn(`Canvas element not found for chart ID: ${chartId}`);
+                return;
             }
-        } catch (e) {
-            console.error('Error fetching latency data:', e);
-            hasError = true;
-            showChartState(chartId, 'error');
+
+            [loadingEl, errorEl, noDataEl].forEach(el => el?.classList.remove('active'));
+            canvas.style.display = 'none';
+
+            if (state === 'loading' && loadingEl) loadingEl.classList.add('active');
+            else if (state === 'error' && errorEl) errorEl.classList.add('active');
+            else if (state === 'no-data' && noDataEl) noDataEl.classList.add('active');
+            else if (state === 'ready') canvas.style.display = 'block';
         }
 
-        if (hasError || labels.length === 0) {
-            if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
-            return;
-        }
+        /* ---------- Barras: Latencia promedio por API (dinámico) ---------- */
+        async function initLatencyBarsByApi() {
+            const chartId = 'latencyChart';
+            const canvas = document.getElementById(chartId);
+            if (!canvas || typeof Chart === 'undefined') return;
 
-        const backgroundColors = ['#4299e1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6', '#fbbf24'];
+            showChartState(chartId, 'loading');
 
-        if (!window._charts[chartId]) {
-            window._charts[chartId] = new Chart(canvas, {
-                type: 'bar',
-                data: {
-                    labels, datasets: [{
-                        label: 'Latencia promedio (ms)', data, borderWidth: 0,
-                        backgroundColor: labels.map((_, i) => backgroundColors[i % backgroundColors.length])
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, grid: { drawBorder: false } }, x: { grid: { display: false } } }
+            const idApiRaw = document.getElementById('api-select')?.value;
+            const idEntornoRaw = document.getElementById('environment-select')?.value;
+            const start = document.getElementById('start-date')?.value;
+            const end = document.getElementById('end-date')?.value;
+
+            const params = new URLSearchParams();
+            if (idApiRaw && /^\d+$/.test(idApiRaw)) params.append('idApi', idApiRaw);
+            if (idEntornoRaw && /^\d+$/.test(idEntornoRaw)) params.append('idEntorno', idEntornoRaw);
+            if (start) params.append('startDate', start);
+            if (end) params.append('endDate', end);
+
+            const url = `${CHART_URL}?${params.toString()}`;
+            let labels = [], data = [];
+            let hasError = false;
+
+            try {
+                const res = await fetch(url, { credentials: 'same-origin' });
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const json = await res.json();
+
+                if (json.labels && json.data && json.labels.length > 0 && json.labels.length === json.data.length) {
+                    labels = json.labels;
+                    data = json.data;
+                    showChartState(chartId, 'ready');
+                } else {
+                    showChartState(chartId, 'no-data');
                 }
-            });
-        } else {
-            window._charts[chartId].data.labels = labels;
-            window._charts[chartId].data.datasets[0].data = data;
-            window._charts[chartId].data.datasets[0].backgroundColor = labels.map((_, i) => backgroundColors[i % backgroundColors.length]);
-            window._charts[chartId].update();
-        }
-    }
-
-    /* ---------- Donut: Éxito vs Error (sin fetch, con KPIs del modelo) ---------- */
-    function initStatusCodesDonutLocal() {
-        const chartId = 'statusCodesChart';
-        const canvas = document.getElementById(chartId);
-        if (!canvas || typeof Chart === 'undefined') return;
-
-        let exitoStr = canvas.dataset.exito ?? '0.0';
-        let errorStr = canvas.dataset.error ?? '0.0';
-        exitoStr = exitoStr.replace(',', '.');
-        errorStr = errorStr.replace(',', '.');
-        let exito = Number(exitoStr);
-        let error = Number(errorStr);
-        if (!Number.isFinite(exito)) exito = 0.0;
-        if (!Number.isFinite(error)) error = 0.0;
-
-        let labels = ['Éxito', 'Error'];
-        let data = [exito, error];
-        let colors = ['#2fb344', '#e03131'];
-
-        if ((exito + error) <= 0.01) {
-            showChartState(chartId, 'no-data');
-            if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
-            return;
-        } else if (exito >= 99.99 && error <= 0.01) {
-            data = [100]; labels = ['Éxito']; colors = ['#2fb344'];
-            showChartState(chartId, 'ready');
-        } else if (error >= 99.99 && exito <= 0.01) {
-            data = [100]; labels = ['Error']; colors = ['#e03131'];
-            showChartState(chartId, 'ready');
-        } else {
-            showChartState(chartId, 'ready');
-        }
-
-        if (!window._charts[chartId]) {
-            window._charts[chartId] = new Chart(canvas, {
-                type: 'doughnut',
-                data: { labels, datasets: [{ data, backgroundColor: colors }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
-        } else {
-            window._charts[chartId].data.labels = labels;
-            window._charts[chartId].data.datasets[0].data = data;
-            window._charts[chartId].data.datasets[0].backgroundColor = colors;
-            window._charts[chartId].update();
-        }
-    }
-
-    /* ---------- NUEVOS GRÁFICOS (con manejo de estados) ---------- */
-
-    /* Throughput por hora */
-    async function initThroughputChart() {
-        const chartId = 'throughputChart';
-        const canvas = document.getElementById(chartId);
-        if (!canvas || typeof Chart === 'undefined') return;
-
-        showChartState(chartId, 'loading');
-        let labels = [], data = [];
-        let hasError = false;
-
-        try {
-            const res = await fetch(THROUGHPUT_URL, { credentials: 'same-origin' });
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            const json = await res.json();
-
-            if (json.labels && json.data && json.labels.length > 0 && json.labels.length === json.data.length) {
-                labels = json.labels;
-                data = json.data;
-                showChartState(chartId, 'ready');
-            } else {
-                showChartState(chartId, 'no-data');
+            } catch (e) {
+                console.error('Error fetching latency data:', e);
+                hasError = true;
+                showChartState(chartId, 'error');
             }
-        } catch (e) {
-            console.error('Error fetching throughput data:', e);
-            hasError = true;
-            showChartState(chartId, 'error');
-        }
 
-        if (hasError || labels.length === 0) {
-            if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
-            return;
-        }
+            if (hasError || labels.length === 0) {
+                if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
+                return;
+            }
 
-        if (!window._charts[chartId]) {
-            window._charts[chartId] = new Chart(canvas, {
-                type: 'line',
-                data: {
-                    labels, datasets: [{
-                        label: 'Requests por hora', data, borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4,
-                        pointBackgroundColor: '#10b981', pointBorderColor: '#ffffff', pointBorderWidth: 2, pointRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: true, grid: { drawBorder: false } }, x: { grid: { display: false } } }
-                }
-            });
-        } else {
-            window._charts[chartId].data.labels = labels;
-            window._charts[chartId].data.datasets[0].data = data;
-            window._charts[chartId].update();
-        }
-    }
+            const backgroundColors = ['#4299e1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6', '#fbbf24'];
 
-    /* Tendencia de latencia */
-    async function initLatencyTrendChart() {
-        const chartId = 'latencyTrendChart';
-        const canvas = document.getElementById(chartId);
-        if (!canvas || typeof Chart === 'undefined') return;
-
-        showChartState(chartId, 'loading');
-        let labels = [], data = [];
-        let hasError = false;
-
-        try {
-            const res = await fetch(LATENCY_TREND_URL, { credentials: 'same-origin' });
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            const json = await res.json();
-
-            if (json.labels && json.data && json.labels.length > 0 && json.labels.length === json.data.length) {
-                labels = json.labels.map(label => {
-                    try { return new Date(label + 'T00:00:00').toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }); }
-                    catch (e) { return label; }
+            if (!window._charts[chartId]) {
+                window._charts[chartId] = new Chart(canvas, {
+                    type: 'bar',
+                    data: {
+                        labels, datasets: [{
+                            label: 'Latencia promedio (ms)', data, borderWidth: 0,
+                            backgroundColor: labels.map((_, i) => backgroundColors[i % backgroundColors.length])
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, grid: { drawBorder: false } }, x: { grid: { display: false } } }
+                    }
                 });
-                data = json.data;
-                showChartState(chartId, 'ready');
             } else {
-                showChartState(chartId, 'no-data');
+                window._charts[chartId].data.labels = labels;
+                window._charts[chartId].data.datasets[0].data = data;
+                window._charts[chartId].data.datasets[0].backgroundColor = labels.map((_, i) => backgroundColors[i % backgroundColors.length]);
+                window._charts[chartId].update();
             }
-        } catch (e) {
-            console.error('Error fetching latency trend data:', e);
-            hasError = true;
-            showChartState(chartId, 'error');
         }
 
-        if (hasError || labels.length === 0) {
-            if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
-            return;
-        }
+        /* ---------- Donut: Éxito vs Error (sin fetch, con KPIs del modelo) ---------- */
+        /* ---------- Donut: Éxito vs Error (Dinámico) ---------- */
+        async function initStatusCodesDonutDynamic() {
+            const chartId = 'statusCodesChart';
+            const canvas = document.getElementById(chartId);
+            if (!canvas || typeof Chart === 'undefined') return;
 
-        if (!window._charts[chartId]) {
-            window._charts[chartId] = new Chart(canvas, {
-                type: 'line',
-                data: {
-                    labels, datasets: [{
-                        label: 'Latencia promedio (ms)', data, borderColor: '#f59e0b',
-                        backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4,
-                        pointBackgroundColor: '#f59e0b', pointBorderColor: '#ffffff', pointBorderWidth: 2, pointRadius: 4
-                    }]
-                },
-                options: {
-                    responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-                    scales: { y: { beginAtZero: false, grid: { drawBorder: false } }, x: { grid: { display: false } } }
+            showChartState(chartId, 'loading');
+
+            const idApiRaw = document.getElementById('api-select')?.value;
+            const idEntornoRaw = document.getElementById('environment-select')?.value;
+            const start = document.getElementById('start-date')?.value;
+            const end = document.getElementById('end-date')?.value;
+
+            const params = new URLSearchParams();
+            if (idApiRaw && /^\d+$/.test(idApiRaw)) params.append('idApi', idApiRaw);
+            if (idEntornoRaw && /^\d+$/.test(idEntornoRaw)) params.append('idEntorno', idEntornoRaw);
+            if (start) params.append('startDate', start);
+            if (end) params.append('endDate', end);
+
+            const url = `${STATUS_DIST_URL}?${params.toString()}`;
+
+            let labels = ['Éxito', 'Error'];
+            let data = [0, 0];
+            let colors = ['#2fb344', '#e03131'];
+            let hasError = false;
+
+            try {
+                const res = await fetch(url, { credentials: 'same-origin' });
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const json = await res.json();
+
+                // Expected ChartSeriesLongDTO: labels=["Exito", "Error"], data=[countSuccess, countError]
+                if (json.labels && json.data && json.labels.length > 0 && json.data.length >= 2) {
+                    const exito = Number(json.data[0]);
+                    const error = Number(json.data[1]);
+                    const total = exito + error;
+
+                    if (total <= 0) {
+                        showChartState(chartId, 'no-data');
+                        if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
+                        return;
+                    }
+
+                    data = [exito, error];
+                    if (exito > 0 && error === 0) {
+                        labels = ['Éxito']; data = [exito]; colors = ['#2fb344'];
+                    } else if (error > 0 && exito === 0) {
+                        labels = ['Error']; data = [error]; colors = ['#e03131'];
+                    }
+
+                    showChartState(chartId, 'ready');
+                } else {
+                    showChartState(chartId, 'no-data');
+                    return;
                 }
-            });
-        } else {
-            window._charts[chartId].data.labels = labels;
-            window._charts[chartId].data.datasets[0].data = data;
-            window._charts[chartId].update();
-        }
-    }
 
-    /* Distribución por entorno */
-    async function initEnvironmentChart() {
-        const chartId = 'environmentChart';
-        const canvas = document.getElementById(chartId);
-        if (!canvas || typeof Chart === 'undefined') return;
-
-        showChartState(chartId, 'loading');
-        let labels = [], data = [];
-        let hasError = false;
-
-        try {
-            const res = await fetch(ENV_USAGE_URL, { credentials: 'same-origin' });
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            const json = await res.json();
-
-            if (Array.isArray(json) && json.length > 0) {
-                labels = json.map(item => item.nombre);
-                data = json.map(item => item.requests);
-                showChartState(chartId, 'ready');
-            } else {
-                showChartState(chartId, 'no-data');
+            } catch (e) {
+                console.error('Error fetching status data:', e);
+                hasError = true;
+                showChartState(chartId, 'error');
             }
-        } catch (e) {
-            console.error('Error fetching environment usage data:', e);
-            hasError = true;
-            showChartState(chartId, 'error');
+
+            if (hasError) {
+                if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
+                return;
+            }
+
+            if (!window._charts[chartId]) {
+                window._charts[chartId] = new Chart(canvas, {
+                    type: 'doughnut',
+                    data: { labels, datasets: [{ data, backgroundColor: colors }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                });
+            } else {
+                window._charts[chartId].data.labels = labels;
+                window._charts[chartId].data.datasets[0].data = data;
+                window._charts[chartId].data.datasets[0].backgroundColor = colors;
+                window._charts[chartId].update();
+            }
         }
 
-        if (hasError || labels.length === 0) {
-            if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
-            return;
+        /* ---------- NUEVOS GRÁFICOS (con manejo de estados) ---------- */
+
+        /* Throughput por hora */
+        async function initThroughputChart() {
+            const chartId = 'throughputChart';
+            const canvas = document.getElementById(chartId);
+            if (!canvas || typeof Chart === 'undefined') return;
+
+            showChartState(chartId, 'loading');
+
+            const idApiRaw = document.getElementById('api-select')?.value;
+            const params = new URLSearchParams();
+            if (idApiRaw && /^\d+$/.test(idApiRaw)) params.append('idApi', idApiRaw);
+
+            const url = `${THROUGHPUT_URL}?${params.toString()}`;
+
+            let labels = [], data = [];
+            let hasError = false;
+
+            try {
+                const res = await fetch(url, { credentials: 'same-origin' });
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const json = await res.json();
+
+                if (json.labels && json.data && json.labels.length > 0 && json.labels.length === json.data.length) {
+                    labels = json.labels;
+                    data = json.data;
+                    showChartState(chartId, 'ready');
+                } else {
+                    showChartState(chartId, 'no-data');
+                }
+            } catch (e) {
+                console.error('Error fetching throughput data:', e);
+                hasError = true;
+                showChartState(chartId, 'error');
+            }
+
+            if (hasError || labels.length === 0) {
+                if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
+                return;
+            }
+
+            if (!window._charts[chartId]) {
+                window._charts[chartId] = new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels, datasets: [{
+                            label: 'Requests por hora', data, borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4,
+                            pointBackgroundColor: '#10b981', pointBorderColor: '#ffffff', pointBorderWidth: 2, pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, grid: { drawBorder: false } }, x: { grid: { display: false } } }
+                    }
+                });
+            } else {
+                window._charts[chartId].data.labels = labels;
+                window._charts[chartId].data.datasets[0].data = data;
+                window._charts[chartId].update();
+            }
         }
 
-        const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+        /* Tendencia de latencia */
+        async function initLatencyTrendChart() {
+            const chartId = 'latencyTrendChart';
+            const canvas = document.getElementById(chartId);
+            if (!canvas || typeof Chart === 'undefined') return;
 
-        if (!window._charts[chartId]) {
-            window._charts[chartId] = new Chart(canvas, {
-                type: 'doughnut',
-                data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length) }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-            });
-        } else {
-            window._charts[chartId].data.labels = labels;
-            window._charts[chartId].data.datasets[0].data = data;
-            window._charts[chartId].data.datasets[0].backgroundColor = colors.slice(0, labels.length);
-            window._charts[chartId].update();
+            showChartState(chartId, 'loading');
+
+            const idApiRaw = document.getElementById('api-select')?.value;
+            const params = new URLSearchParams();
+            if (idApiRaw && /^\d+$/.test(idApiRaw)) params.append('idApi', idApiRaw);
+
+            const url = `${LATENCY_TREND_URL}?${params.toString()}`;
+
+            let labels = [], data = [];
+            let hasError = false;
+
+            try {
+                const res = await fetch(url, { credentials: 'same-origin' });
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const json = await res.json();
+
+                if (json.labels && json.data && json.labels.length > 0 && json.labels.length === json.data.length) {
+                    // map labels only if they look like dates, but json.labels are strings (YYYY-MM-DD or similar) for daily
+                    labels = json.labels.map(label => {
+                        try { return new Date(label + 'T00:00:00').toLocaleDateString('es-ES', { month: 'short', day: 'numeric' }); }
+                        catch (e) { return label; }
+                    });
+                    data = json.data;
+                    showChartState(chartId, 'ready');
+                } else {
+                    showChartState(chartId, 'no-data');
+                }
+            } catch (e) {
+                console.error('Error fetching latency trend data:', e);
+                hasError = true;
+                showChartState(chartId, 'error');
+            }
+
+            if (hasError || labels.length === 0) {
+                if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
+                return;
+            }
+
+            if (!window._charts[chartId]) {
+                window._charts[chartId] = new Chart(canvas, {
+                    type: 'line',
+                    data: {
+                        labels, datasets: [{
+                            label: 'Latencia promedio (ms)', data, borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true, tension: 0.4,
+                            pointBackgroundColor: '#f59e0b', pointBorderColor: '#ffffff', pointBorderWidth: 2, pointRadius: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: false, grid: { drawBorder: false } }, x: { grid: { display: false } } }
+                    }
+                });
+            } else {
+                window._charts[chartId].data.labels = labels;
+                window._charts[chartId].data.datasets[0].data = data;
+                window._charts[chartId].update();
+            }
         }
-    }
 
-</script>
+        /* Distribución por entorno */
+        async function initEnvironmentChart() {
+            const chartId = 'environmentChart';
+            const canvas = document.getElementById(chartId);
+            if (!canvas || typeof Chart === 'undefined') return;
+
+            showChartState(chartId, 'loading');
+            let labels = [], data = [];
+            let hasError = false;
+
+            try {
+                const res = await fetch(ENV_USAGE_URL, { credentials: 'same-origin' });
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const json = await res.json();
+
+                if (Array.isArray(json) && json.length > 0) {
+                    labels = json.map(item => item.nombre);
+                    data = json.map(item => item.requests);
+                    showChartState(chartId, 'ready');
+                } else {
+                    showChartState(chartId, 'no-data');
+                }
+            } catch (e) {
+                console.error('Error fetching environment usage data:', e);
+                hasError = true;
+                showChartState(chartId, 'error');
+            }
+
+            if (hasError || labels.length === 0) {
+                if (window._charts[chartId]) { window._charts[chartId].destroy(); delete window._charts[chartId]; }
+                return;
+            }
+
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+
+            if (!window._charts[chartId]) {
+                window._charts[chartId] = new Chart(canvas, {
+                    type: 'doughnut',
+                    data: { labels, datasets: [{ data, backgroundColor: colors.slice(0, labels.length) }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                });
+            } else {
+                window._charts[chartId].data.labels = labels;
+                window._charts[chartId].data.datasets[0].data = data;
+                window._charts[chartId].data.datasets[0].backgroundColor = colors.slice(0, labels.length);
+                window._charts[chartId].update();
+            }
+        }
+
+    </script>
 </body>
 
 </html>

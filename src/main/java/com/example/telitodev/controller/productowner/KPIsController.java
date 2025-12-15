@@ -91,7 +91,6 @@ public class KPIsController extends BaseController {
             System.err.println("Error al obtener APIs de la organización: " + e.getMessage());
         }
 
-
         model.addAttribute("totalApisActivas", apisDeLaOrganizacion.size());
         model.addAttribute("totalApisActivasChange", "+0");
 
@@ -162,14 +161,20 @@ public class KPIsController extends BaseController {
     /** Throughput por hora (últimas 24h) */
     @GetMapping("/KPIs/throughput-hour")
     @ResponseBody
-    public MetricsService.ChartSeriesLongDTO getThroughputByHour() {
+    public MetricsService.ChartSeriesLongDTO getThroughputByHour(@RequestParam(required = false) Integer idApi) {
+        if (idApi != null) {
+            return metricsService.getThroughputByHourFiltered(java.util.Collections.singletonList(idApi));
+        }
         return metricsService.getThroughputByHour();
     }
 
     /** Tendencia de latencia (últimos 7 días) */
     @GetMapping("/KPIs/latency-trend")
     @ResponseBody
-    public MetricsService.ChartSeriesDTO getLatencyTrend() {
+    public MetricsService.ChartSeriesDTO getLatencyTrend(@RequestParam(required = false) Integer idApi) {
+        if (idApi != null) {
+            return metricsService.getLatencyTrendFiltered(java.util.Collections.singletonList(idApi));
+        }
         return metricsService.getLatencyTrend();
     }
 
