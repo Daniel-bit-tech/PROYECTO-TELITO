@@ -29,14 +29,14 @@ public interface LogapiRepository extends JpaRepository<LogApi, Integer> {
 
         // PARA LA PAGINA DE METRICAS:
 
-        @Query(value = "SELECT AVG(tiempoRespuestaMs) FROM logapi", nativeQuery = true)
-        Optional<Double> findAverageLatency();
+        @Query(value = "SELECT AVG(tiempoRespuestaMs) FROM logapi l WHERE l.idAPI = :idApi", nativeQuery = true)
+        Optional<Double> findAverageLatency(@Param("idApi") Integer idApi);
 
-        @Query(value = "SELECT (SUM(CASE WHEN estadoHttp < 400 THEN 1 ELSE 0 END) * 1.0 / COUNT(*)) * 100 FROM logapi", nativeQuery = true)
-        Optional<Double> calculateSuccessRate();
+        @Query(value = "SELECT (SUM(CASE WHEN estadoHttp < 400 THEN 1 ELSE 0 END) * 1.0 / COUNT(*)) * 100 FROM logapi l WHERE l.idAPI = :idApi", nativeQuery = true)
+        Optional<Double> calculateSuccessRate(@Param("idApi") Integer idApi);
 
-        @Query(value = "SELECT (SUM(CASE WHEN estadoHttp >= 400 THEN 1 ELSE 0 END) * 1.0 / COUNT(*)) * 100 FROM logapi", nativeQuery = true)
-        Optional<Double> calculateErrorRate();
+        @Query(value = "SELECT (SUM(CASE WHEN estadoHttp >= 400 THEN 1 ELSE 0 END) * 1.0 / COUNT(*)) * 100 FROM logapi l WHERE l.idAPI = :idApi", nativeQuery = true)
+        Optional<Double> calculateErrorRate(@Param("idApi") Integer idApi);
 
         @Query(value = "SELECT endpoint, AVG(tiempoRespuestaMs) as avg_latency FROM logapi GROUP BY endpoint ORDER BY avg_latency DESC LIMIT 6", nativeQuery = true)
         List<Map<String, Object>> findAverageLatencyByEndpoint();

@@ -5,10 +5,7 @@ import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.ContratoApi;
 import com.example.telitodev.entity.Documentacion;
 import com.example.telitodev.entity.Usuario;
-import com.example.telitodev.repository.ApiRepository;
-import com.example.telitodev.repository.ContratoRepository;
-import com.example.telitodev.repository.DocumentacionRepository;
-import com.example.telitodev.repository.UsuarioRepository;
+import com.example.telitodev.repository.*;
 import com.example.telitodev.service.DocMDService;
 import com.example.telitodev.service.S3Services.S3DocsApiService;
 import com.example.telitodev.service.creacionApi.DocApiService;
@@ -43,14 +40,18 @@ public class DocumentacionController {
     final ContratoRepository contratoRepository;
     final ApiRepository apiRepository;
     final S3DocsApiService s3DocsApiService;
+    private final ProyectoHasApiRepository proyectoHasApiRepository;
+    private final LogapiRepository logapiRepository;
 
-    public DocumentacionController(DocMDService docMDService, UsuarioRepository usuarioRepository, DocumentacionRepository documentacionRepository, ContratoRepository contratoRepository, ApiRepository apiRepository, S3DocsApiService s3DocsApiService) {
+    public DocumentacionController(DocMDService docMDService, UsuarioRepository usuarioRepository, DocumentacionRepository documentacionRepository, ContratoRepository contratoRepository, ApiRepository apiRepository, S3DocsApiService s3DocsApiService, ProyectoHasApiRepository proyectoHasApiRepository, LogapiRepository logapiRepository) {
         this.docMDService = docMDService;
         this.usuarioRepository = usuarioRepository;
         this.documentacionRepository = documentacionRepository;
         this.contratoRepository = contratoRepository;
         this.apiRepository = apiRepository;
         this.s3DocsApiService = s3DocsApiService;
+        this.proyectoHasApiRepository = proyectoHasApiRepository;
+        this.logapiRepository = logapiRepository;
     }
 
     // Vista de contrato
@@ -110,6 +111,17 @@ public class DocumentacionController {
             switch (section) {
                 case "info":
                     model.addAttribute("api", api);
+                    model.addAttribute("proyApi", proyectoHasApiRepository.findByApi_IdApi(api.getIdApi()));
+
+                    Double avgLat = logapiRepository.findAverageLatency(api.getIdApi()).orElse(null);
+                    model.addAttribute("avgLat", avgLat);
+
+                    Double succRate = logapiRepository.calculateSuccessRate(api.getIdApi()).orElse(null);
+                    model.addAttribute("succRate", succRate);
+
+                    Double errRate = logapiRepository.calculateErrorRate(api.getIdApi()).orElse(null);
+                    model.addAttribute("errRate", errRate);
+
                     return "general/docs/docSecciones :: info";
                 case "docs":
                     model.addAttribute("api", api);

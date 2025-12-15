@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <body>
 
     <div th:fragment="info(api)" class="card ms-3">
@@ -12,68 +13,75 @@
         </div>
         <div class="card-body">
             <!-- Tarjetas de métricas principales -->
-            <!--                                <div class="row mb-4">-->
-            <!--                                    <div class="col-md-3">-->
-            <!--                                        <div class="card card-sm bg-primary text-white">-->
-            <!--                                            <div class="card-body">-->
-            <!--                                                <div class="row align-items-center">-->
-            <!--                                                    <div class="col-auto">-->
-            <!--                                                        <i class="fas fa-plug fa-2x"></i>-->
-            <!--                                                    </div>-->
-            <!--                                                    <div class="col">-->
-            <!--                                                        <div class="font-weight-medium">15 Endpoints</div>-->
-            <!--                                                        <div class="text-white-50">Total disponible</div>-->
-            <!--                                                    </div>-->
-            <!--                                                </div>-->
-            <!--                                            </div>-->
-            <!--                                        </div>-->
-            <!--                                    </div>-->
-            <!--                                    <div class="col-md-3">-->
-            <!--                                        <div class="card card-sm bg-success text-white">-->
-            <!--                                            <div class="card-body">-->
-            <!--                                                <div class="row align-items-center">-->
-            <!--                                                    <div class="col-auto">-->
-            <!--                                                        <i class="fas fa-check-circle fa-2x"></i>-->
-            <!--                                                    </div>-->
-            <!--                                                    <div class="col">-->
-            <!--                                                        <div class="font-weight-medium">12 Activos</div>-->
-            <!--                                                        <div class="text-white-50">En producción</div>-->
-            <!--                                                    </div>-->
-            <!--                                                </div>-->
-            <!--                                            </div>-->
-            <!--                                        </div>-->
-            <!--                                    </div>-->
-            <!--                                    <div class="col-md-3">-->
-            <!--                                        <div class="card card-sm bg-warning text-white">-->
-            <!--                                            <div class="card-body">-->
-            <!--                                                <div class="row align-items-center">-->
-            <!--                                                    <div class="col-auto">-->
-            <!--                                                        <i class="fas fa-tools fa-2x"></i>-->
-            <!--                                                    </div>-->
-            <!--                                                    <div class="col">-->
-            <!--                                                        <div class="font-weight-medium">3 Testing</div>-->
-            <!--                                                        <div class="text-white-50">En desarrollo</div>-->
-            <!--                                                    </div>-->
-            <!--                                                </div>-->
-            <!--                                            </div>-->
-            <!--                                        </div>-->
-            <!--                                    </div>-->
-            <!--                                    <div class="col-md-3">-->
-            <!--                                        <div class="card card-sm bg-info text-white">-->
-            <!--                                            <div class="card-body">-->
-            <!--                                                <div class="row align-items-center">-->
-            <!--                                                    <div class="col-auto">-->
-            <!--                                                        <i class="fas fa-shield-alt fa-2x"></i>-->
-            <!--                                                    </div>-->
-            <!--                                                    <div class="col">-->
-            <!--                                                        <div class="font-weight-medium">100% Seguro</div>-->
-            <!--                                                        <div class="text-white-50">JWT + HTTPS</div>-->
-            <!--                                                    </div>-->
-            <!--                                                </div>-->
-            <!--                                            </div>-->
-            <!--                                        </div>-->
-            <!--                                    </div>-->
-            <!--                                </div>-->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card card-sm bg-primary text-white">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <i class="fas fa-plug fa-2x"></i>
+                                </div>
+                                <div class="col">
+                                    <div class="font-weight-medium" th:text="${endpoints}+' Enpoints'">15 Endpoints
+                                    </div>
+                                    <div class="text-white-50">Funcionales</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-sm bg-success text-white">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <i class="fas fa-check-circle fa-2x"></i>
+                                </div>
+                                <div class="col">
+                                    <div class="font-weight-medium"
+                                        th:text="${#lists.size(proyApi.?[entorno.nombre == 'Producción'])}+' Proyectos'">
+                                        12 Activos</div>
+                                    <div class="text-white-50">En producción</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-sm bg-orange text-white">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <i class="fas fa-tools fa-2x"></i>
+                                </div>
+                                <div class="col">
+                                    <div class="font-weight-medium"
+                                        th:text="${#lists.size(proyApi.?[entorno.nombre == 'Desarrollo'])}+' Proyectos'">
+                                        12 Desarrollo</div>
+                                    <div class="text-white-50">En desarrollo</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-sm bg-warning text-white">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    <i class="fas fa-test fa-2x"></i>
+                                </div>
+                                <div class="col">
+                                    <div class="font-weight-medium"
+                                        th:text="${#lists.size(proyApi.?[entorno.nombre == 'QA'])}+' Proyectos'">12 QA
+                                    </div>
+                                    <div class="text-white-50">En Testing</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             <!-- Panel de información principal -->
             <div class="row">
@@ -95,8 +103,7 @@
                                     <div>
                                         <h4 class="alert-title" th:text="${api.nombre}">API de apis</h4>
                                         <p class="mb-0" th:text="${api.descripcion}">
-                                            Esta API proporciona funcionalidades completas para ...
-                                            ...
+                                            Esta API proporciona
                                         </p>
                                     </div>
                                 </div>
@@ -106,47 +113,41 @@
                             <div class="row mt-3">
                                 <div class="col-md-6">
                                     <div class="d-flex align-items-center mb-3">
-                                        <span class="avatar avatar-sm bg-green text-white me-3"></span>
+                                        <span class="avatar avatar-sm badge-outline text-cyan me-2">1</span>
                                         <div>
-                                            <strong>Operaciones CRUD</strong>
-                                            <div class="text-muted">Create, Read, Update, Delete</div>
+                                            <strong>Métodos HTTP</strong>
+                                            <div class="text-muted">GET, POST, PUT, DELETE</div>
                                         </div>
                                     </div>
                                     <div class="d-flex align-items-center mb-3">
-                                        <span class="avatar avatar-sm bg-blue text-white me-3">⚡</span>
+                                        <span class="avatar avatar-sm badge-outline text-cyan me-2">2</span>
                                         <div>
-                                            <strong>Alta disponibilidad</strong>
-                                            <div class="text-muted">99.9% uptime garantizado</div>
+                                            <strong>Disponibilidad</strong>
+                                            <div class="text-muted" th:text="${succRate != null ? succRate+'%' : 'No medido'}">99.9% uptime</div>
                                         </div>
                                     </div>
                                     <div class="d-flex align-items-center mb-3">
-                                        <span class="avatar avatar-sm bg-purple text-white me-3">🔍</span>
+                                        <span class="avatar avatar-sm badge-outline text-cyan me-2">3</span>
                                         <div>
-                                            <strong>Búsqueda avanzada</strong>
-                                            <div class="text-muted">Filtrado y paginación</div>
+                                            <strong>Error Rate </strong>
+                                            <div class="text-muted" th:text="${errRate != null ? errRate+'%' : 'No medido'}">error Rate</div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="d-flex align-items-center mb-3">
-                                        <span class="avatar avatar-sm bg-orange text-white me-3">🔒</span>
+                                        <span class="avatar avatar-sm badge-outline text-cyan me-2">4</span>
                                         <div>
-                                            <strong>Autenticación JWT</strong>
-                                            <div class="text-muted">Tokens seguros</div>
+                                            <strong>Latencia Promedio</strong>
+                                            <div class="text-muted" th:text="${avgLat != null ? avgLat+' ms' : 'No medido'}">Consultar</div>
                                         </div>
                                     </div>
+
                                     <div class="d-flex align-items-center mb-3">
-                                        <span class="avatar avatar-sm bg-red text-white me-3">📊</span>
+                                        <span class="avatar avatar-sm badge-outline text-cyan me-2">5</span>
                                         <div>
-                                            <strong>Logs de auditoría</strong>
-                                            <div class="text-muted">Traza completa</div>
-                                        </div>
-                                    </div>
-                                    <div class="d-flex align-items-center mb-3">
-                                        <span class="avatar avatar-sm bg-cyan text-white me-3">🌐</span>
-                                        <div>
-                                            <strong>Soporte CORS</strong>
-                                            <div class="text-muted">Cross-origin requests</div>
+                                            <strong>Versiones</strong>
+                                            <div class="text-muted" th:text="${#lists.size(api.versionesApi)} + ' disponibles'">Beneficios</div>
                                         </div>
                                     </div>
                                 </div>
@@ -169,7 +170,10 @@
                                             <strong>Última Version</strong>
                                         </div>
                                         <div class="col-auto">
-                                            <span class="badge bg-blue text-blue-fg" th:if="${not #lists.isEmpty(api.versionesApi)}" th:text="${api.versionesApi[#lists.size(api.versionesApi)-1].version}">Sin versión</span>
+                                            <span class="badge bg-blue text-blue-fg"
+                                                th:if="${not #lists.isEmpty(api.versionesApi)}"
+                                                th:text="${api.versionesApi[#lists.size(api.versionesApi)-1].version}">Sin
+                                                versión</span>
                                         </div>
                                     </div>
                                 </div>
@@ -179,7 +183,9 @@
                                             <strong>Estado</strong>
                                         </div>
                                         <div class="col-auto">
-                                            <span class="badge" th:styleappend="' badge-'+${api.estadoApi.estado.toLowerCase()}" th:text="${api.estadoApi.estado}">TESTING</span>
+                                            <span class="badge"
+                                                th:styleappend="' badge-'+${api.estadoApi.estado.toLowerCase()}"
+                                                th:text="${api.estadoApi.estado}">TESTING</span>
                                         </div>
                                     </div>
                                 </div>
@@ -188,7 +194,8 @@
                                         <div class="col">
                                             <strong>Lanzamiento</strong>
                                         </div>
-                                        <div class="col-auto" th:text="${#dates.format(api.fechaCreacion, 'dd/MM/yyyy')}">
+                                        <div class="col-auto"
+                                            th:text="${#dates.format(api.fechaCreacion, 'dd/MM/yyyy')}">
                                             12/09/2026
                                         </div>
                                     </div>
@@ -284,12 +291,11 @@
             </div>
 
             <div th:unless="${#lists.isEmpty(docs)}" class="list-group">
-                <div class="list-group-item d-flex justify-content-between align-items-center"
-                     th:each="doc : ${docs}"
-                     th:attr="data-doc-id=${doc.idDocumentacion}">
+                <div class="list-group-item d-flex justify-content-between align-items-center" th:each="doc : ${docs}"
+                    th:attr="data-doc-id=${doc.idDocumentacion}">
 
                     <div>
-<!--                        <strong th:text="${doc.formato +' - '+doc.tipo+'  '}"></strong>-->
+                        <!--                        <strong th:text="${doc.formato +' - '+doc.tipo+'  '}"></strong>-->
                         <strong th:text="${(doc.formato ?: 'Sin formato')
                           + ((doc.tipo != null) ? ' - ' : '')
                           + (doc.tipo ?: '') + '  '}">
@@ -299,12 +305,12 @@
                         <span th:text="${doc.descripcion}"></span>
                         <br>
                         <small class="text-secondary" th:if="${doc.versionApi != null}"
-                               th:text="'Versión: ' + ${doc.versionApi.version}">
+                            th:text="'Versión: ' + ${doc.versionApi.version}">
                         </small>
                     </div>
 
                     <button type="button" class="btn btn-sm btn-outline-success btn-download-doc gap-2"
-                            th:attr="data-doc-id=${doc.idDocumentacion}">
+                        th:attr="data-doc-id=${doc.idDocumentacion}">
                         <i class="fa fa-download"></i> Descargar
                     </button>
                 </div>
@@ -316,4 +322,5 @@
     </div>
 
 </body>
+
 </html>
