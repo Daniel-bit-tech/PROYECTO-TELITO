@@ -170,20 +170,27 @@
         }
 
         .notification-icon .notification-count {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: #dc3545;
-            color: white;
-            border-radius: 50%;
-            width: 18px;
-            height: 18px;
-            font-size: 0.65rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            border: 2px solid var(--primary-color);
+            position: absolute !important;
+            top: -8px !important;
+            right: -8px !important;
+            background: #ff1744 !important;
+            color: #ffffff !important;
+            border-radius: 50% !important;
+            width: 22px !important;
+            height: 22px !important;
+            min-width: 22px !important;
+            font-size: 0.6rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-weight: 700 !important;
+            line-height: 1 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: 2.5px solid #ffffff !important;
+            box-shadow: 0 2px 8px rgba(255, 23, 68, 0.5) !important;
+            z-index: 10 !important;
+            text-align: center !important;
         }
 
         .notification-dropdown .card {
@@ -307,13 +314,15 @@
 
                 <!-- Icono de notificaciones -->
                 <div class="nav-item me-3" sec:authorize="isAuthenticated()">
-                    <a th:href="@{/notificaciones}" class="notification-icon" title="Notificaciones" data-bs-toggle="tooltip" data-bs-placement="bottom">
+                    <a th:href="@{/notificaciones}" class="notification-icon" title="Notificaciones" data-bs-toggle="tooltip" data-bs-placement="bottom" style="position: relative;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
                             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                         </svg>
-                        <!-- Badge para contador de notificaciones (opcional, puedes conectarlo con el backend) -->
-                        <!-- <span class="notification-count" th:if="${notificacionesNoLeidas > 0}" th:text="${notificacionesNoLeidas}">3</span> -->
+                        <!-- Badge para contador de notificaciones -->
+                        <span class="notification-count" th:if="${notificacionesNoLeidas != null && notificacionesNoLeidas > 0}" 
+                              th:text="${notificacionesNoLeidas > 9 ? '9+' : notificacionesNoLeidas}"
+                              style="position: absolute !important; top: -8px !important; right: -8px !important; background: #ff1744 !important; color: #ffffff !important; border-radius: 50% !important; width: 22px !important; height: 22px !important; min-width: 22px !important; font-size: 0.6rem !important; display: flex !important; align-items: center !important; justify-content: center !important; font-weight: 700 !important; line-height: 1 !important; padding: 0 !important; margin: 0 !important; border: 2.5px solid #ffffff !important; box-shadow: 0 2px 8px rgba(255, 23, 68, 0.5) !important; z-index: 10 !important; text-align: center !important;"></span>
                     </a>
                 </div>
 
