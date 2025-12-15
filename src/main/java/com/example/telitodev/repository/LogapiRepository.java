@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import com.example.telitodev.entity.LogApi;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -120,7 +121,7 @@ public interface LogapiRepository extends JpaRepository<LogApi, Integer> {
                         "SUM(CASE WHEN l.estadoHttp >= 400 THEN 1 ELSE 0 END) " +
                         "FROM LogApi l WHERE (l.fecha BETWEEN :start AND :end) " +
                         "AND (:apiId IS NULL OR l.api.idApi = :apiId)")
-        Object[] successVsErrors(@Param("apiId") Integer apiId,
+        Object successVsErrors(@Param("apiId") Integer apiId,
                         @Param("start") java.time.LocalDateTime start,
                         @Param("end") java.time.LocalDateTime end);
 
@@ -185,9 +186,9 @@ public interface LogapiRepository extends JpaRepository<LogApi, Integer> {
                         "SUM(CASE WHEN l.estadoHttp >= 400 THEN 1 ELSE 0 END) " +
                         "FROM LogApi l WHERE (l.fecha BETWEEN :start AND :end) " +
                         "AND l.api.idApi IN :apiIds")
-        Object[] successVsErrorsFiltered(@Param("apiIds") List<Integer> apiIds,
-                        @Param("start") java.time.LocalDateTime start,
-                        @Param("end") java.time.LocalDateTime end);
+        Object successVsErrorsFiltered(@Param("apiIds") List<Integer> apiIds,
+                        @Param("start") LocalDateTime start,
+                        @Param("end") LocalDateTime end);
 
         @Query(value = "SELECT HOUR(fecha) as h, COUNT(*) as c FROM logapi " +
                         "WHERE fecha >= NOW() - INTERVAL 24 HOUR " +
@@ -199,8 +200,9 @@ public interface LogapiRepository extends JpaRepository<LogApi, Integer> {
                         + "FROM LogApi l WHERE l.estadoHttp >= 400 AND l.api.idApi IN :apiIds ORDER BY l.fecha DESC")
         List<Map<String, Object>> findRecentAlertsFiltered(@Param("apiIds") List<Integer> apiIds);
 
-        @Query(value = "SELECT endpoint, AVG(tiempoRespuestaMs) as avg_latency FROM logapi " +
-                        "WHERE idapi IN :apiIds " +
-                        "GROUP BY endpoint ORDER BY avg_latency DESC LIMIT 10", nativeQuery = true)
+        @Query(value = "SELECT CONCAT(metodoHttp, ' ', endpoint) AS endpoint, AVG(tiempoRespuestaMs) AS avg_latency " +
+                        "FROM logapi WHERE idapi IN :apiIds " +
+                        "GROUP BY metodoHttp, endpoint " +
+                        "ORDER BY avg_latency DESC LIMIT 10;", nativeQuery = true)
         List<Map<String, Object>> findAverageLatencyByEndpointFiltered(@Param("apiIds") List<Integer> apiIds);
 }

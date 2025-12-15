@@ -256,7 +256,7 @@ public class MetricsService {
             return getStatusDistributionFiltered(List.of(idApi), start, end);
         }
         try {
-            Object[] row = logapiRepository.successVsErrors(idApi, start, end);
+            Object row = logapiRepository.successVsErrors(idApi, start, end);
             return processStatusDistributionRow(row);
         } catch (Exception e) {
             e.printStackTrace();
@@ -269,33 +269,33 @@ public class MetricsService {
             LocalDateTime end) {
         try {
             if (start == null)
-                start = LocalDateTime.now().minusHours(24);
+                start = LocalDateTime.now().minusHours(48);
             if (end == null)
                 end = LocalDateTime.now();
 
-            if (apiIds == null || apiIds.isEmpty()) {
-                if (apiIds != null && apiIds.isEmpty())
-                    return new ChartSeriesLongDTO(List.of("Exito", "Error"), List.of(0L, 0L));
-
-                Object[] row = logapiRepository.successVsErrorsFiltered(apiIds, start, end);
-                return processStatusDistributionRow(row);
+            if (apiIds != null && apiIds.isEmpty()) {
+                return new ChartSeriesLongDTO(List.of("Exito", "Error"), List.of(0L, 0L));
             }
-            return new ChartSeriesLongDTO(List.of("Exito", "Error"), List.of(0L, 0L));
+
+            Object row = logapiRepository.successVsErrorsFiltered(apiIds, start, end);
+            System.out.println(row.toString());
+            return processStatusDistributionRow(row);
+
         } catch (Exception e) {
             e.printStackTrace();
             return new ChartSeriesLongDTO(Collections.emptyList(), Collections.emptyList());
         }
     }
 
-    private ChartSeriesLongDTO processStatusDistributionRow(Object[] row) {
+    private ChartSeriesLongDTO processStatusDistributionRow(Object row) {
         long exitos = 0;
         long errores = 0;
 
-        if (row != null && row.length >= 2) {
-            if (row[0] != null)
-                exitos = ((Number) row[0]).longValue();
-            if (row[1] != null)
-                errores = ((Number) row[1]).longValue();
+        if (row != null ) {
+            if (row instanceof Object[] data) {
+                if (data[0] != null) exitos = ((Number) data[0]).longValue();
+                if (data[1] != null) errores = ((Number) data[1]).longValue();
+            }
         }
         return new ChartSeriesLongDTO(List.of("Exito", "Error"), List.of(exitos, errores));
     }

@@ -180,6 +180,8 @@
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             padding: 1.5rem;
+            max-height: 400px;
+            overflow-y: scroll;
         }
 
         .alerts-header {
@@ -450,11 +452,11 @@
                         </div>
                         <div class="alert-list" th:if="${alerts}">
                             <div class="alert-item" th:each="alert : ${alerts}">
-                                <div class="alert-icon alert-icon-error">
+                                <div class="alert-icon" th:classappend="${alert.severity==500} ? 'alert-icon-error':'alert-icon-warning'">
                                     <i class="fas fa-exclamation-circle"></i>
                                 </div>
                                 <div class="alert-content">
-                                    <div class="alert-title" th:text="${alert.title}"></div>
+                                    <div class="alert-title" th:text="${alert.severity}"></div>
                                     <div class="alert-description" th:text="${alert.description}"></div>
                                 </div>
                                 <div class="alert-time" th:text="${alert.timestamp}"></div>
@@ -497,7 +499,7 @@
                 </div>
 
                 <!-- Nueva Sección: Live Log Steam -->
-                <div class="api-list" style="margin-top: 3rem;">
+                <div class="api-list" style="margin-top: 3rem;max-height: 700px;overflow-y: scroll">
                     <div class="chart-header">
                         <h3 class="chart-title">Logs Recientes (Últimos 20)</h3>
                     </div>
@@ -506,7 +508,7 @@
                             <table class="table card-table table-vcenter text-nowrap datatable">
                                 <thead>
                                     <tr>
-                                        <th>Timestamp</th>
+                                        <th>Hora y Fecha</th>
                                         <th>Método</th>
                                         <th>Endpoint</th>
                                         <th>Status</th>
@@ -687,7 +689,7 @@
                                 <i class="fas fa-exclamation-circle"></i>
                             </div>
                             <div class="alert-content">
-                                <div class="alert-title">${alert.title || 'Alerta'}</div>
+                                <div class="alert-title">${alert.severity || 'Alerta'}</div>
                                 <div class="alert-description">${alert.description || ''}</div>
                             </div>
                             <div class="alert-time">${alert.timestamp}</div>
