@@ -95,6 +95,14 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
                             @Param("idDominios") List<Integer> idDominios,
                             @Param("idTags") List<Integer> idTags);
 
+    // Query simple para chatbot - solo datos básicos sin relaciones
+    @Query(value = "SELECT idAPI, nombre, descripcion FROM api WHERE idEstado != 2", nativeQuery = true)
+    List<Object[]> findBasicApiInfo();
+    
+    // Query nativo para obtener API por ID sin cargar relaciones LAZY
+    @Query(value = "SELECT * FROM api WHERE idAPI = :idApi LIMIT 1", nativeQuery = true)
+    Api findApiByIdNative(@Param("idApi") Integer idApi);
+
 
     /*
     @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +

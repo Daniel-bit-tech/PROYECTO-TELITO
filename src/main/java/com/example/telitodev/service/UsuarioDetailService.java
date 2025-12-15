@@ -55,6 +55,13 @@ public class UsuarioDetailService implements UserDetailsService {
 
         String nombreRol = usuario.getRol().getNombreRol();
         System.out.println("Usuario activo encontrado: " + usuario.getCorreo() + " - Rol: " + nombreRol);
+        
+        // DEBUG: Verificar hash de contraseña
+        String passwordHash = usuario.getContrasena();
+        System.out.println("🔐 DEBUG PASSWORD HASH:");
+        System.out.println("   - Hash length: " + (passwordHash != null ? passwordHash.length() : "null"));
+        System.out.println("   - Hash preview: " + (passwordHash != null ? passwordHash.substring(0, Math.min(20, passwordHash.length())) + "..." : "null"));
+        System.out.println("   - Hash ends with: " + (passwordHash != null && passwordHash.length() > 3 ? passwordHash.substring(passwordHash.length() - 3) : "N/A"));
 
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_" + nombreRol));
@@ -63,7 +70,7 @@ public class UsuarioDetailService implements UserDetailsService {
         }
 
         return User.withUsername(usuario.getCorreo())
-                .password(usuario.getContrasena())
+                .password(passwordHash)
                 .disabled(false) // Ya verificamos que está activo
                 .authorities(authorities)
                 .build();

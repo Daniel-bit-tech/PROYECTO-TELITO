@@ -69,6 +69,7 @@ public class SecurityConfig {
                         .requestMatchers("/css/**", "/js/**", "/img/**", "/webjars/**", "/static/**").permitAll()
                         .requestMatchers("/error", "/acceso-denegado").permitAll()
                         .requestMatchers("/api/reniec/**").permitAll()  // API RENIEC para autocompletar DNI
+                        .requestMatchers("/api/generate-hash", "/api/verify-hash").permitAll()  // 🔐 TEMPORAL: Generar/verificar hashes
 
                         .requestMatchers("/cat","/playground.html").permitAll()
 
@@ -225,7 +226,7 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder(8);
+        return new BCryptPasswordEncoder(10);
     }
 
     /**

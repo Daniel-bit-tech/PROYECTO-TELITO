@@ -44,6 +44,68 @@
             display: block;
         }
 
+        /* Notificación del chatbot */
+        .chat-notification {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            background: white;
+            padding: 12px 20px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 998;
+            max-width: 280px;
+            animation: slideIn 0.4s ease-out;
+        }
+
+        .chat-notification.show {
+            display: flex;
+        }
+
+        .chat-notification .icon {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, var(--tblr-primary) 0%, #0054a6 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .chat-notification .text {
+            font-size: 14px;
+            color: #333;
+            line-height: 1.4;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+            to {
+                opacity: 0;
+                transform: translateX(100px);
+            }
+        }
+
         /* Contenedor del chat flotante */
         .chat-container {
             position: fixed;
@@ -206,6 +268,16 @@
         }
     </style>
 
+    <!-- Notificación del chatbot -->
+    <div class="chat-notification" id="chat-notification">
+        <div class="icon">
+            <i class="fas fa-robot"></i>
+        </div>
+        <div class="text">
+            ¡Hola! Soy tu asistente virtual que te ayudará en cualquier duda que tengas
+        </div>
+    </div>
+
     <!-- Botón flotante del chatbot -->
     <button class="chat-fab" id="chat-fab-global">
         <i class="fas fa-robot"></i>
@@ -220,15 +292,7 @@
         </div>
         <div class="chat-messages" id="chat-messages-global">
             <div class="message message-bot">
-                ¡Hola! Soy el asistente virtual de Telito. ¿En qué puedo ayudarte hoy? Puedo responder preguntas sobre nuestras APIs, documentación o ayudarte a crear un ticket de soporte.
-            </div>
-            <div class="message message-bot">
-                Algunas preguntas frecuentes:<br>
-                • ¿Cómo obtener una API Key?<br>
-                • ¿Dónde encontrar documentación?<br>
-                • ¿Cómo probar endpoints?<br>
-                <br>
-                Escribe tu pregunta o escribe "ticket" para hablar con un agente.
+                ¡Hola! Soy el asistente virtual de Telito. ¿En qué puedo ayudarte?
             </div>
         </div>
         <div class="chat-input">
@@ -244,8 +308,37 @@
         const chatInputGlobal = document.getElementById('chat-input-global');
         const sendMessageBtnGlobal = document.getElementById('send-message-global');
         const chatMessagesGlobal = document.getElementById('chat-messages-global');
+        const chatNotification = document.getElementById('chat-notification');
+
+        // Verificar que el elemento existe
+        if (chatNotification) {
+            console.log('✅ Notificación del chatbot encontrada');
+            
+            // Mostrar notificación después de 2 segundos (siempre que se carga la página)
+            setTimeout(() => {
+                console.log('🔔 Mostrando notificación del chatbot');
+                chatNotification.classList.add('show');
+                
+                // Ocultar después de 5 segundos
+                setTimeout(() => {
+                    console.log('🔕 Ocultando notificación del chatbot');
+                    chatNotification.style.animation = 'slideOut 0.4s ease-out';
+                    setTimeout(() => {
+                        chatNotification.classList.remove('show');
+                        chatNotification.style.animation = '';
+                    }, 400);
+                }, 5000);
+            }, 2000);
+        } else {
+            console.error('❌ No se encontró el elemento chat-notification');
+        }
 
         chatFabGlobal.addEventListener('click', function() {
+            // Ocultar notificación si está visible
+            if (chatNotification.classList.contains('show')) {
+                chatNotification.classList.remove('show');
+            }
+            
             chatContainerGlobal.classList.toggle('show');
             chatFabGlobal.classList.toggle('active');
         });

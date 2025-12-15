@@ -262,7 +262,10 @@
                                       th:text="${ticket.estado ? 'Abierto' : 'Cerrado'}">Estado</span>
                             </li>
                         </ul>
-                        <button class="btn-new-ticket" id="new-ticket-btn">Nuevo Ticket</button>
+                        <button class="btn-new-ticket" id="new-ticket-btn" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modal-nuevo-ticket"
+                                onclick="cargarAPIsParaModal()">Nuevo Ticket</button>
                     </div>
 
                     <div class="support-card">
@@ -303,14 +306,83 @@
         </div>
     </div>
 
+    <!-- Modal para Nuevo Ticket -->
+    <div class="modal modal-blur fade" id="modal-nuevo-ticket" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-ticket-alt me-2 text-primary"></i>
+                        Crear Nuevo Ticket de Soporte
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="form-nuevo-ticket">
+                        <div class="mb-3">
+                            <label class="form-label required">Asunto</label>
+                            <input type="text" class="form-control" id="ticket-asunto" name="asunto" 
+                                   placeholder="Breve descripción del problema" 
+                                   required maxlength="150" />
+                            <small class="form-hint">Máximo 150 caracteres</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label required">API Relacionada</label>
+                            <select class="form-select" name="idApi" id="select-api" required>
+                                <option value="">Cargando APIs...</option>
+                            </select>
+                            <small class="form-hint">Selecciona la API relacionada con tu consulta</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label required">Descripción Detallada</label>
+                            <textarea class="form-control" id="ticket-descripcion" name="descripcion" rows="5" 
+                                      placeholder="Describe el problema en detalle..." required></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Información Adicional (Opcional)</label>
+                            <textarea class="form-control" id="ticket-info-adicional" name="infoAdicional" rows="3" 
+                                      placeholder="Logs, capturas de pantalla, etc."></textarea>
+                        </div>
+                        
+                        <div class="alert alert-info mb-0">
+                            <div class="d-flex">
+                                <div>
+                                    <i class="fas fa-lightbulb fa-2x me-3"></i>
+                                </div>
+                                <div>
+                                    <h4 class="alert-title">Consejos para un ticket efectivo</h4>
+                                    <ul class="mb-0">
+                                        <li>Sé específico sobre el problema que experimentas</li>
+                                        <li>Incluye mensajes de error completos si los hay</li>
+                                        <li>Menciona los pasos para reproducir el problema</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>
+                        Cancelar
+                    </button>
+                    <button type="button" id="btn-enviar-ticket" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-1"></i>
+                        Enviar Ticket
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div th:replace="~{desarrollador/footer :: footer}"></div>
 </div>
 
 <script>
-    document.getElementById('new-ticket-btn').addEventListener('click', function() {
-        window.location.href = '/dev/soporte/nuevo-ticket';
-    });
-
+    // Script para las preguntas frecuentes
     document.querySelectorAll('.faq-question').forEach(question => {
         question.addEventListener('click', function() {
             const answer = this.nextElementSibling;
@@ -331,5 +403,121 @@
 
 <script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620|"></script>
 <script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
+
+<script>
+    // Función para cargar APIs cuando se abre el modal
+    async function cargarAPIsParaModal() {
+        console.log('📡 Cargando APIs para el modal...');
+        
+        try {
+            const response = await fetch('/dev/soporte/chatbot/apis');
+            const data = await response.json();
+            console.log('📊 Respuesta APIs:', data);
+            
+            const selectApi = document.getElementById('select-api');
+            if (selectApi) {
+                selectApi.innerHTML = '<option value="">Selecciona una API...</option>';
+                
+                if (data.success && data.apis && data.apis.length > 0) {
+                    data.apis.forEach(api => {
+                        const option = document.createElement('option');
+                        option.value = api.id;
+                        option.textContent = api.nombre;
+                        selectApi.appendChild(option);
+                    });
+                    console.log('✅ APIs cargadas:', data.apis.length);
+                } else {
+                    selectApi.innerHTML = '<option value="">No hay APIs disponibles</option>';
+                    console.warn('⚠️ No se encontraron APIs');
+                }
+            }
+        } catch (error) {
+            console.error('❌ Error al cargar APIs:', error);
+            const selectApi = document.getElementById('select-api');
+            if (selectApi) {
+                selectApi.innerHTML = '<option value="">Error al cargar APIs</option>';
+            }
+        }
+    }
+    
+    // Función para enviar el ticket por AJAX
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnEnviar = document.getElementById('btn-enviar-ticket');
+        const form = document.getElementById('form-nuevo-ticket');
+        
+        if (btnEnviar && form) {
+            btnEnviar.addEventListener('click', async function(e) {
+                e.preventDefault();
+                
+                // Validar formulario
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+                
+                // Deshabilitar botón y mostrar loading
+                btnEnviar.disabled = true;
+                btnEnviar.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Enviando...';
+                
+                try {
+                    const formData = {
+                        asunto: document.getElementById('ticket-asunto').value,
+                        idApi: parseInt(document.getElementById('select-api').value),
+                        descripcion: document.getElementById('ticket-descripcion').value,
+                        infoAdicional: document.getElementById('ticket-info-adicional').value
+                    };
+                    
+                    console.log('📤 Enviando ticket:', formData);
+                    
+                    // Obtener CSRF token
+                    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+                    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+                    
+                    const response = await fetch('/dev/soporte/chatbot/crear-ticket', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            [csrfHeader]: csrfToken
+                        },
+                        body: JSON.stringify(formData)
+                    });
+                    
+                    console.log('📡 Status:', response.status);
+                    console.log('📡 Status Text:', response.statusText);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+                    }
+                    
+                    const result = await response.json();
+                    console.log('📥 Respuesta:', result);
+                    
+                    if (result.success) {
+                        // Cerrar modal
+                        const modal = document.getElementById('modal-nuevo-ticket');
+                        const closeBtn = modal.querySelector('.btn-close');
+                        if (closeBtn) closeBtn.click();
+                        
+                        // Limpiar formulario
+                        form.reset();
+                        
+                        // Mostrar mensaje de éxito y recargar página
+                        alert('✅ Ticket creado exitosamente!');
+                        window.location.reload();
+                    } else {
+                        alert('❌ Error al crear el ticket: ' + (result.error || 'Error desconocido'));
+                        btnEnviar.disabled = false;
+                        btnEnviar.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Enviar Ticket';
+                    }
+                } catch (error) {
+                    console.error('❌ Error:', error);
+                    alert('❌ Error al enviar el ticket. Por favor, intenta de nuevo.');
+                    btnEnviar.disabled = false;
+                    btnEnviar.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Enviar Ticket';
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>

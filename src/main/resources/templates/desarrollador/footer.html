@@ -67,6 +67,88 @@
         display: block;
     }
 
+    /* Notificación tooltip del chatbot */
+    .chat-notification {
+        position: fixed;
+        bottom: 35px;
+        right: 100px;
+        background: white;
+        padding: 15px 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        max-width: 280px;
+        z-index: 999;
+        animation: slideInRight 0.5s ease-out;
+        display: none;
+    }
+
+    .chat-notification.show {
+        display: block;
+    }
+
+    .chat-notification::after {
+        content: '';
+        position: absolute;
+        right: -10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0;
+        height: 0;
+        border-style: solid;
+        border-width: 10px 0 10px 10px;
+        border-color: transparent transparent transparent white;
+    }
+
+    .chat-notification-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 8px;
+        color: var(--tblr-primary);
+        font-weight: 600;
+    }
+
+    .chat-notification-body {
+        color: #666;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .chat-notification-close {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 0;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: all 0.2s;
+    }
+
+    .chat-notification-close:hover {
+        background: #f0f0f0;
+        color: #333;
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
     /* Contenedor del chat flotante */
     .chat-container-global {
         position: fixed;
@@ -229,6 +311,20 @@
     }
 </style>
 
+<!-- Notificación del chatbot -->
+<div class="chat-notification" id="chat-notification">
+    <button class="chat-notification-close" id="chat-notification-close">
+        <i class="fas fa-times"></i>
+    </button>
+    <div class="chat-notification-header">
+        <i class="fas fa-robot"></i>
+        <span>¡Hola!</span>
+    </div>
+    <div class="chat-notification-body">
+        Soy tu asistente virtual. Puedo ayudarte a resolver dudas sobre nuestras APIs y crear tickets de soporte. ¡Pregúntame!
+    </div>
+</div>
+
 <!-- Botón flotante del chatbot -->
 <button class="chat-fab" id="chat-fab-global">
     <i class="fas fa-robot"></i>
@@ -251,7 +347,7 @@
 </div>
 
 <script>
-    // Control del botón flotante del chatbot con persistencia de conversación
+    // Control del botón flotante del chatbot con persistencia y creación de tickets
     (function() {
         const chatFabGlobal = document.getElementById('chat-fab-global');
         const chatContainerGlobal = document.getElementById('chat-container-global');
@@ -262,13 +358,64 @@
 
         if (!chatFabGlobal || !chatContainerGlobal) return;
 
+        // Estado del flujo de creación de tickets
+        let ticketFlow = {
+            active: false,
+            step: 0,
+            data: {},
+            apis: []
+        };
+
         // Cargar historial de conversación al inicio
         loadChatHistory();
 
+        // Mostrar notificación automáticamente después de 2 segundos
+        const chatNotification = document.getElementById('chat-notification');
+        const chatNotificationClose = document.getElementById('chat-notification-close');
+        const NOTIFICATION_SHOWN_KEY = 'telito_chatbot_notification_shown';
+        
+        // Mostrar notificación solo si no se ha mostrado antes en esta sesión
+        if (!sessionStorage.getItem(NOTIFICATION_SHOWN_KEY)) {
+            setTimeout(() => {
+                chatNotification.classList.add('show');
+                // Ocultar automáticamente después de 5 segundos
+                setTimeout(() => {
+                    chatNotification.classList.remove('show');
+                    sessionStorage.setItem(NOTIFICATION_SHOWN_KEY, 'true');
+                }, 5000);
+            }, 2000);
+        }
+
+        // Cerrar notificación manualmente
+        chatNotificationClose.addEventListener('click', function(e) {
+            e.stopPropagation();
+            chatNotification.classList.remove('show');
+            sessionStorage.setItem(NOTIFICATION_SHOWN_KEY, 'true');
+        });
+
+        // Cerrar notificación y abrir chat al hacer clic en la notificación
+        chatNotification.addEventListener('click', function(e) {
+            if (e.target !== chatNotificationClose && !chatNotificationClose.contains(e.target)) {
+                chatNotification.classList.remove('show');
+                sessionStorage.setItem(NOTIFICATION_SHOWN_KEY, 'true');
+                chatContainerGlobal.classList.add('show');
+                chatFabGlobal.classList.add('active');
+                if (chatMessagesGlobal.children.length === 0) {
+                    initializeWelcomeMessages();
+                }
+            }
+        });
+
         chatFabGlobal.addEventListener('click', function(e) {
             e.stopPropagation();
+            const isOpening = !chatContainerGlobal.classList.contains('show');
             chatContainerGlobal.classList.toggle('show');
             chatFabGlobal.classList.toggle('active');
+            
+            // Si se está abriendo el chat y no hay mensajes, mostrar bienvenida
+            if (isOpening && chatMessagesGlobal.children.length === 0) {
+                initializeWelcomeMessages();
+            }
         });
 
         // Cerrar el chat al hacer clic fuera de él
@@ -304,7 +451,7 @@
                     console.log('📝 Mensajes en historial:', messages.length);
                     chatMessagesGlobal.innerHTML = '';
                     messages.forEach(msg => {
-                        addMessageToDOM(msg.text, msg.sender, false); // false = no guardar en storage
+                        addMessageToDOM(msg.text, msg.sender, false);
                     });
                     console.log('✅ Historial cargado exitosamente');
                 } catch (e) {
@@ -320,8 +467,21 @@
         // Función para inicializar mensajes de bienvenida
         function initializeWelcomeMessages() {
             chatMessagesGlobal.innerHTML = '';
-            addMessageToDOM('¡Hola! Soy el asistente virtual de Telito. ¿En qué puedo ayudarte hoy? Puedo responder preguntas sobre nuestras APIs, documentación o ayudarte a crear un ticket de soporte.', 'bot');
-            addMessageToDOM('Algunas preguntas frecuentes:<br>• ¿Cómo obtener una API Key?<br>• ¿Dónde encontrar documentación?<br>• ¿Cómo probar endpoints?<br><br>Escribe tu pregunta o escribe "ticket" para hablar con un agente.', 'bot');
+            let mensajeBienvenida = '¡Hola! 👋 Soy el asistente virtual de Telito. ¿En qué puedo ayudarte?<br><br>';
+            mensajeBienvenida += '<strong>Puedo ayudarte a:</strong><br>';
+            mensajeBienvenida += '📋 Ver el estado de tus tickets<br>';
+            mensajeBienvenida += '✨ Crear un nuevo ticket de soporte<br>';
+            mensajeBienvenida += '👤 Mostrarte tu información y equipo<br>';
+            mensajeBienvenida += '🏢 Conocer a tu Product Owner<br>';
+            mensajeBienvenida += '🔌 Listar las APIs disponibles<br>';
+            mensajeBienvenida += '❓ Responder preguntas sobre nuestras APIs<br><br>';
+            mensajeBienvenida += '<strong>Comandos útiles:</strong><br>';
+            mensajeBienvenida += '• "crear ticket" - Nuevo ticket<br>';
+            mensajeBienvenida += '• "mis tickets" - Ver tus tickets<br>';
+            mensajeBienvenida += '• "mi organización" - Info del equipo<br>';
+            mensajeBienvenida += '• "ayuda" - Ver todos los comandos<br>';
+            
+            addMessageToDOM(mensajeBienvenida, 'bot');
         }
 
         // Función para guardar el historial en sessionStorage
@@ -338,6 +498,191 @@
             console.log('💾 Historial guardado:', messages.length, 'mensajes');
         }
 
+        // ========== FUNCIONES INTELIGENTES DEL CHATBOT ==========
+        
+        // Función para obtener información del usuario
+        async function obtenerInfoUsuario() {
+            try {
+                const response = await fetch('/dev/soporte/chatbot/info-usuario');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const user = data.usuario;
+                    let mensaje = `👤 <strong>Tu Información:</strong><br><br>`;
+                    mensaje += `<strong>Nombre:</strong> ${user.nombre}<br>`;
+                    mensaje += `<strong>Rol:</strong> ${user.rol}<br>`;
+                    
+                    if (user.organizacion) {
+                        mensaje += `<strong>Organización:</strong> ${user.organizacion.nombre}<br>`;
+                    }
+                    
+                    if (user.equipo) {
+                        mensaje += `<strong>Equipo:</strong> ${user.equipo.nombre}<br>`;
+                    }
+                    
+                    addMessageToDOM(mensaje, 'bot');
+                } else {
+                    addMessageToDOM('❌ No pude obtener tu información. Intenta de nuevo.', 'bot');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToDOM('❌ Error al obtener tu información.', 'bot');
+            }
+        }
+
+        // Función para obtener tickets del usuario
+        async function obtenerMisTickets() {
+            try {
+                const response = await fetch('/dev/soporte/chatbot/mis-tickets');
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.total === 0) {
+                        addMessageToDOM('📋 No tienes tickets creados actualmente. ¿Quieres crear uno? Escribe "<strong>crear ticket</strong>".', 'bot');
+                        return;
+                    }
+                    
+                    let mensaje = `📋 <strong>Tus Tickets (${data.total}):</strong><br><br>`;
+                    
+                    data.tickets.slice(0, 5).forEach(ticket => {
+                        const estadoIcon = ticket.estado === 'Activo' ? '🟢' : '🔴';
+                        mensaje += `${estadoIcon} <strong>${ticket.asunto}</strong><br>`;
+                        mensaje += `&nbsp;&nbsp;&nbsp;Estado: ${ticket.estado} | API: ${ticket.api}<br>`;
+                        mensaje += `&nbsp;&nbsp;&nbsp;Creado: ${ticket.fechaCreacion.substring(0, 10)}<br><br>`;
+                    });
+                    
+                    if (data.total > 5) {
+                        mensaje += `<em>Mostrando los 5 más recientes de ${data.total} tickets...</em>`;
+                    }
+                    
+                    addMessageToDOM(mensaje, 'bot');
+                } else {
+                    addMessageToDOM('❌ No pude obtener tus tickets. Intenta de nuevo.', 'bot');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToDOM('❌ Error al obtener tus tickets.', 'bot');
+            }
+        }
+
+        // Función para obtener información de la organización
+        async function obtenerInfoOrganizacion() {
+            try {
+                const response = await fetch('/dev/soporte/chatbot/mi-organizacion');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const org = data.organizacion;
+                    let mensaje = `🏢 <strong>${org.nombre}</strong><br><br>`;
+                    mensaje += `${org.descripcion}<br><br>`;
+                    mensaje += `<strong>Total de Miembros:</strong> ${org.totalMiembros}<br><br>`;
+                    
+                    if (org.productOwner) {
+                        mensaje += `👨‍💼 <strong>Product Owner:</strong><br>`;
+                        mensaje += `${org.productOwner.nombre}<br>`;
+                        mensaje += `📧 ${org.productOwner.correo}<br><br>`;
+                    }
+                    
+                    mensaje += `<strong>Miembros del Equipo:</strong><br>`;
+                    org.miembros.slice(0, 6).forEach(miembro => {
+                        const roleIcon = miembro.rol === 'PO' ? '👨‍💼' : miembro.rol === 'QA' ? '🧪' : '👨‍💻';
+                        mensaje += `${roleIcon} ${miembro.nombre} - ${miembro.rol}<br>`;
+                    });
+                    
+                    if (org.totalMiembros > 6) {
+                        mensaje += `<em>... y ${org.totalMiembros - 6} miembros más</em>`;
+                    }
+                    
+                    addMessageToDOM(mensaje, 'bot');
+                } else {
+                    addMessageToDOM('❌ No perteneces a ninguna organización o hubo un error.', 'bot');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToDOM('❌ Error al obtener información de la organización.', 'bot');
+            }
+        }
+
+        // Función para obtener solo el Product Owner
+        async function obtenerProductOwner() {
+            try {
+                const response = await fetch('/dev/soporte/chatbot/mi-organizacion');
+                const data = await response.json();
+                
+                if (data.success && data.organizacion.productOwner) {
+                    const po = data.organizacion.productOwner;
+                    let mensaje = `👨‍💼 <strong>Product Owner de ${data.organizacion.nombre}:</strong><br><br>`;
+                    mensaje += `<strong>Nombre:</strong> ${po.nombre}<br>`;
+                    mensaje += `<strong>Correo:</strong> <a href="mailto:${po.correo}">${po.correo}</a><br><br>`;
+                    mensaje += `Puedes contactarlo directamente para consultas sobre el proyecto.`;
+                    
+                    addMessageToDOM(mensaje, 'bot');
+                } else {
+                    addMessageToDOM('❌ No se encontró un Product Owner asignado a tu organización.', 'bot');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToDOM('❌ Error al obtener información del Product Owner.', 'bot');
+            }
+        }
+
+        // Función para obtener APIs disponibles
+        async function obtenerAPIs() {
+            try {
+                const response = await fetch('/dev/soporte/chatbot/apis');
+                const data = await response.json();
+                
+                if (data.success && data.apis.length > 0) {
+                    let mensaje = `🔌 <strong>APIs Disponibles (${data.apis.length}):</strong><br><br>`;
+                    
+                    data.apis.slice(0, 10).forEach(api => {
+                        mensaje += `• <strong>${api.nombre}</strong><br>`;
+                        mensaje += `&nbsp;&nbsp;&nbsp;${api.descripcion}<br><br>`;
+                    });
+                    
+                    if (data.apis.length > 10) {
+                        mensaje += `<em>Mostrando las primeras 10 de ${data.apis.length} APIs...</em>`;
+                    }
+                    
+                    addMessageToDOM(mensaje, 'bot');
+                } else {
+                    addMessageToDOM('❌ No se encontraron APIs disponibles.', 'bot');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessageToDOM('❌ Error al obtener las APIs.', 'bot');
+            }
+        }
+
+        // Función para mostrar ayuda con todos los comandos
+        function mostrarAyuda() {
+            let mensaje = `💡 <strong>Comandos Disponibles:</strong><br><br>`;
+            mensaje += `<strong>📋 Tickets:</strong><br>`;
+            mensaje += `• "crear ticket" - Crear un nuevo ticket<br>`;
+            mensaje += `• "mis tickets" - Ver tus tickets<br><br>`;
+            
+            mensaje += `<strong>👤 Información Personal:</strong><br>`;
+            mensaje += `• "quién soy" - Tu información<br>`;
+            mensaje += `• "mi información" - Tu perfil<br><br>`;
+            
+            mensaje += `<strong>🏢 Organización:</strong><br>`;
+            mensaje += `• "mi organización" - Info del equipo<br>`;
+            mensaje += `• "mi product owner" - Contacto del PO<br>`;
+            mensaje += `• "miembros" - Lista del equipo<br><br>`;
+            
+            mensaje += `<strong>🔌 APIs:</strong><br>`;
+            mensaje += `• "apis disponibles" - Lista de APIs<br><br>`;
+            
+            mensaje += `<strong>❓ Ayuda:</strong><br>`;
+            mensaje += `• "ayuda" - Ver estos comandos<br><br>`;
+            
+            mensaje += `También puedes hacerme cualquier pregunta sobre nuestras APIs y servicios. ¡Estoy aquí para ayudarte! 😊`;
+            
+            addMessageToDOM(mensaje, 'bot');
+        }
+
+        // ========== FIN FUNCIONES INTELIGENTES ==========
+
         async function sendMessageGlobal() {
             const message = chatInputGlobal.value.trim();
 
@@ -346,6 +691,68 @@
             // Añadir mensaje del usuario a la UI y guardar
             addMessageToDOM(message, 'user');
             chatInputGlobal.value = '';
+
+            const messageLower = message.toLowerCase();
+
+            // Verificar si estamos en el flujo de creación de tickets
+            if (ticketFlow.active) {
+                await processTicketFlow(message);
+                return;
+            }
+
+            // ========== COMANDOS INTELIGENTES ==========
+            
+            // Comandos de información personal
+            if (messageLower.includes('quién soy') || messageLower.includes('quien soy') || 
+                messageLower.includes('mi información') || messageLower.includes('mi informacion') || 
+                messageLower.includes('mi perfil')) {
+                await obtenerInfoUsuario();
+                return;
+            }
+            
+            // Comandos de tickets
+            if (messageLower.includes('mis tickets') || messageLower.includes('cuántos tickets') || 
+                messageLower.includes('cuantos tickets') || messageLower.includes('estado de mis tickets')) {
+                await obtenerMisTickets();
+                return;
+            }
+            
+            // Comandos de organización completa
+            if ((messageLower.includes('mi organización') || messageLower.includes('mi organizacion') || 
+                messageLower.includes('mi equipo') || messageLower.includes('miembros')) && 
+                !messageLower.includes('product owner') && !messageLower.includes('po')) {
+                await obtenerInfoOrganizacion();
+                return;
+            }
+            
+            // Comandos de Product Owner
+            if (messageLower.includes('product owner') || messageLower.includes('mi po') || 
+                messageLower.includes('quién es mi po') || messageLower.includes('quien es mi po') ||
+                messageLower.includes('contacto del po')) {
+                await obtenerProductOwner();
+                return;
+            }
+            
+            // Comandos de APIs
+            if (messageLower.includes('apis disponibles') || messageLower.includes('lista de apis') || 
+                messageLower.includes('qué apis') || messageLower.includes('que apis') ||
+                (messageLower.includes('apis') && messageLower.includes('hay'))) {
+                await obtenerAPIs();
+                return;
+            }
+            
+            // Comando de ayuda
+            if (messageLower === 'ayuda' || messageLower.includes('qué puedes hacer') || 
+                messageLower.includes('que puedes hacer') || messageLower === 'comandos') {
+                mostrarAyuda();
+                return;
+            }
+
+            // Verificar si el usuario quiere crear un ticket
+            if (messageLower.includes('crear ticket') || messageLower.includes('nuevo ticket')) {
+                await startTicketFlow();
+                return;
+            }
 
             // Mostrar indicador de escritura
             const typingIndicator = addMessageToDOM('Escribiendo...', 'bot', false);
@@ -373,10 +780,11 @@
                 // Añadir respuesta del bot y guardar
                 addMessageToDOM(data.reply || 'Lo siento, no pude procesar tu mensaje.', 'bot');
                 
-                // Si el usuario mencionó "ticket", preguntar si quiere crear uno
-                if (message.toLowerCase().includes('ticket') || data.reply.toLowerCase().includes('ticket')) {
+                // Sugerir crear ticket si es apropiado
+                if (message.toLowerCase().includes('problema') || message.toLowerCase().includes('error') || 
+                    message.toLowerCase().includes('ayuda') || message.toLowerCase().includes('ticket')) {
                     setTimeout(() => {
-                        addMessageToDOM('¿Quieres que te ayude a crear un ticket ahora? Visita la sección de Soporte cuando estés listo.', 'bot');
+                        addMessageToDOM('Si necesitas ayuda específica, puedo crear un ticket de soporte para ti. Solo escribe "<strong>crear ticket</strong>".', 'bot');
                     }, 1000);
                 }
                 
@@ -384,6 +792,169 @@
                 console.error('Error al comunicarse con el chatbot:', error);
                 typingIndicator.remove();
                 addMessageToDOM('Lo siento, hubo un error al procesar tu mensaje. Por favor, intenta de nuevo.', 'bot');
+            }
+        }
+
+        // Iniciar flujo de creación de ticket
+        async function startTicketFlow() {
+            const loadingMsg = addMessageToDOM('Cargando información necesaria...', 'bot', false);
+            
+            // Cargar lista de APIs
+            try {
+                const response = await fetch('/dev/soporte/chatbot/apis', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(csrfHeaderGlobal && csrfTokenGlobal ? { [csrfHeaderGlobal]: csrfTokenGlobal } : {})
+                    }
+                });
+                
+                loadingMsg.remove();
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📡 Respuesta de APIs:', data);
+                    
+                    if (data.success && data.apis && data.apis.length > 0) {
+                        ticketFlow.apis = data.apis;
+                        ticketFlow.active = true;
+                        ticketFlow.step = 1;
+                        ticketFlow.data = {};
+                        
+                        addMessageToDOM('¡Perfecto! Voy a ayudarte a crear un ticket de soporte. 🎫<br><br><strong>Paso 1 de 3: Asunto del ticket</strong><br><br>¿Cuál es el asunto o título del problema? (Máximo 150 caracteres)', 'bot');
+                    } else {
+                        addMessageToDOM('❌ No se pudieron cargar las APIs disponibles. Por favor, intenta crear el ticket manualmente desde la <a href="/dev/soporte/nuevo-ticket">sección de Soporte</a>.', 'bot');
+                    }
+                } else {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+            } catch (error) {
+                console.error('❌ Error al cargar APIs:', error);
+                loadingMsg.remove();
+                addMessageToDOM('❌ Error al cargar las APIs. Por favor, intenta crear el ticket manualmente desde la <a href="/dev/soporte/nuevo-ticket">sección de Soporte</a>.', 'bot');
+            }
+        }
+
+        // Procesar el flujo de creación de ticket
+        async function processTicketFlow(message) {
+            switch(ticketFlow.step) {
+                case 1: // Asunto
+                    if (message.length > 150) {
+                        addMessageToDOM('El asunto es demasiado largo. Por favor, usa máximo 150 caracteres.', 'bot');
+                        return;
+                    }
+                    ticketFlow.data.asunto = message;
+                    ticketFlow.step = 2;
+                    
+                    // Verificar que haya APIs cargadas
+                    if (!ticketFlow.apis || ticketFlow.apis.length === 0) {
+                        addMessageToDOM('❌ Error: No hay APIs disponibles. Por favor, intenta crear el ticket manualmente.', 'bot');
+                        ticketFlow.active = false;
+                        return;
+                    }
+                    
+                    // Mostrar opciones de API
+                    let apisHTML = '<strong>Paso 2 de 3: API relacionada</strong><br><br>Selecciona el número de la API relacionada con tu ticket:<br><br>';
+                    ticketFlow.apis.forEach((api, index) => {
+                        apisHTML += `<strong>${index + 1}.</strong> ${api.nombre}<br>`;
+                    });
+                    apisHTML += '<br>Escribe el número de la API:';
+                    
+                    console.log('📝 APIs disponibles:', ticketFlow.apis);
+                    addMessageToDOM(apisHTML, 'bot');
+                    break;
+                    
+                case 2: // Selección de API
+                    const apiIndex = parseInt(message) - 1;
+                    if (isNaN(apiIndex) || apiIndex < 0 || apiIndex >= ticketFlow.apis.length) {
+                        addMessageToDOM('Por favor, selecciona un número válido de la lista.', 'bot');
+                        return;
+                    }
+                    const selectedApi = ticketFlow.apis[apiIndex];
+                    console.log('🎯 API seleccionada:', selectedApi);
+                    console.log('🔑 ID de API:', selectedApi.id, 'Tipo:', typeof selectedApi.id);
+                    ticketFlow.data.idApi = selectedApi.id;
+                    ticketFlow.data.apiNombre = selectedApi.nombre;
+                    ticketFlow.step = 3;
+                    
+                    addMessageToDOM(`<strong>Paso 3 de 3: Descripción detallada</strong><br><br>Describe el problema o consulta en detalle. Incluye toda la información relevante:`, 'bot');
+                    break;
+                    
+                case 3: // Descripción
+                    ticketFlow.data.descripcion = message;
+                    
+                    // Mostrar resumen y confirmar
+                    const resumenHTML = `
+                        <strong>📋 Resumen del ticket:</strong><br><br>
+                        <strong>Asunto:</strong> ${ticketFlow.data.asunto}<br>
+                        <strong>API:</strong> ${ticketFlow.data.apiNombre}<br>
+                        <strong>Descripción:</strong> ${ticketFlow.data.descripcion.substring(0, 100)}${ticketFlow.data.descripcion.length > 100 ? '...' : ''}<br><br>
+                        ¿Confirmas la creación del ticket? Escribe "<strong>sí</strong>" para confirmar o "<strong>no</strong>" para cancelar.
+                    `;
+                    ticketFlow.step = 4;
+                    addMessageToDOM(resumenHTML, 'bot');
+                    break;
+                    
+                case 4: // Confirmación
+                    if (message.toLowerCase() === 'sí' || message.toLowerCase() === 'si') {
+                        await createTicket();
+                    } else {
+                        ticketFlow.active = false;
+                        ticketFlow.step = 0;
+                        addMessageToDOM('Creación de ticket cancelada. ¿En qué más puedo ayudarte?', 'bot');
+                    }
+                    break;
+            }
+        }
+
+        // Crear el ticket en la base de datos
+        async function createTicket() {
+            console.log('📤 Datos del ticket a enviar:', ticketFlow.data);
+            console.log('📤 ID API:', ticketFlow.data.idApi, 'Tipo:', typeof ticketFlow.data.idApi);
+            
+            const typingIndicator = addMessageToDOM('Creando tu ticket...', 'bot', false);
+            
+            try {
+                const ticketPayload = {
+                    asunto: ticketFlow.data.asunto,
+                    idApi: ticketFlow.data.idApi,
+                    descripcion: ticketFlow.data.descripcion,
+                    infoAdicional: 'Ticket creado a través del chatbot'
+                };
+                
+                console.log('📨 Payload final:', JSON.stringify(ticketPayload, null, 2));
+                
+                const response = await fetch('/dev/soporte/chatbot/crear-ticket', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(csrfHeaderGlobal && csrfTokenGlobal ? { [csrfHeaderGlobal]: csrfTokenGlobal } : {})
+                    },
+                    body: JSON.stringify(ticketPayload)
+                });
+                
+                typingIndicator.remove();
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success) {
+                        addMessageToDOM(`✅ <strong>¡Ticket creado exitosamente!</strong><br><br>Nuestro equipo de soporte revisará tu consulta pronto. Puedes ver el estado de tus tickets en la sección de Soporte.`, 'bot');
+                    } else {
+                        addMessageToDOM(`❌ Error al crear el ticket: ${data.error}<br><br>Por favor, intenta crear el ticket manualmente desde la sección de Soporte.`, 'bot');
+                    }
+                } else {
+                    throw new Error('Error en la respuesta del servidor');
+                }
+                
+            } catch (error) {
+                console.error('Error al crear ticket:', error);
+                typingIndicator.remove();
+                addMessageToDOM('❌ Hubo un error al crear el ticket. Por favor, intenta crear el ticket manualmente desde la sección de Soporte.', 'bot');
+            } finally {
+                // Reiniciar el flujo
+                ticketFlow.active = false;
+                ticketFlow.step = 0;
+                ticketFlow.data = {};
             }
         }
 
@@ -405,19 +976,25 @@
         }
 
         // Limpiar historial al hacer logout
-        // Detectar cuando el usuario hace logout
         const logoutButtons = document.querySelectorAll('a[href*="logout"], button[onclick*="logout"]');
         logoutButtons.forEach(btn => {
             btn.addEventListener('click', function() {
+                // Limpiar historial del chatbot
                 sessionStorage.removeItem(CHAT_STORAGE_KEY);
+                // Limpiar flag de notificación mostrada
+                sessionStorage.removeItem(NOTIFICATION_SHOWN_KEY);
+                console.log('🔄 Historial del chatbot limpiado en logout');
             });
         });
 
-        // También detectar el formulario de logout si existe
         const logoutForm = document.querySelector('form[action*="logout"]');
         if (logoutForm) {
             logoutForm.addEventListener('submit', function() {
+                // Limpiar historial del chatbot
                 sessionStorage.removeItem(CHAT_STORAGE_KEY);
+                // Limpiar flag de notificación mostrada
+                sessionStorage.removeItem(NOTIFICATION_SHOWN_KEY);
+                console.log('🔄 Historial del chatbot limpiado en logout');
             });
         }
     })();
