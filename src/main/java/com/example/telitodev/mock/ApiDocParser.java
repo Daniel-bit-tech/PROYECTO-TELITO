@@ -16,7 +16,8 @@ public class ApiDocParser {
 
     private final ObjectMapper objectMapper;
 
-    private static final Set<String> HTTP_METHODS = Set.of("GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "TRACE");
+    private static final Set<String> HTTP_METHODS = Set.of("GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS",
+            "TRACE");
 
     public ApiDocParser(ObjectMapper objectMapper) {
         this.objectMapper = objectMapper;
@@ -67,10 +68,21 @@ public class ApiDocParser {
                     }
 
                     JsonNode content = r.getValue().path("content");
+                    // System.out.println(content);
                     if (!content.isMissingNode() && content.has("application/json")) {
-                        JsonNode schemaOrExample = content.get("application/json");
-                        if (schemaOrExample.has("example")) {
-                            responseBody = schemaOrExample.get("example").toString();
+                        JsonNode mediaType = content.get("application/json");
+                        if (mediaType.has("example")) {
+                            System.out.println("Se responde desde example");
+                            responseBody = mediaType.get("example").toString();
+                        } else if (mediaType.has("schema")) {
+                            // Intentar generar dummy data desde el schema
+                            try {
+                                System.out.println("Se genera data dummy desde el schema");
+                                JsonNode schema = mediaType.get("schema");
+                                responseBody = generateDummyFromSchema(schema, root).toString();
+                            } catch (Exception e) {
+                                System.err.println("Error generando dummy data desde schema: " + e.getMessage());
+                            }
                         }
                     }
                 }
@@ -93,5 +105,53 @@ public class ApiDocParser {
             }
         }
         return list;
+    }
+
+    private JsonNode generateDummyFromSchema(JsonNode schema, JsonNode root) {
+        if (schema.has("type")) {
+            String type = schema.get("type").asText();
+            switch (type) {
+                case "string":
+                    if (schema.has("format") && "date-time".equals(schema.get("format").asText())) {
+                        return objectMapper.valueToTree("2025-12-14T10:00:00Z");
+                    }
+                    if (schema.has("enum")) {
+                        return schema.get("enum").get(0);
+                    }
+                    return objectMapper.valueToTree("string_value");
+                case "integer":
+                case "number":
+                    return objectMapper.valueToTree(123);
+                case "boolean":
+                    return objectMapper.valueToTree(true);
+                case "array":
+                    if (schema.has("items")) {
+                        JsonNode item = generateDummyFromSchema(schema.get("items"), root);
+                        return objectMapper.createArrayNode().add(item);
+                    }
+                    return objectMapper.createArrayNode();
+                case "object":
+                    if (schema.has("properties")) {
+                        var objectNode = objectMapper.createObjectNode();
+                        schema.get("properties").fields().forEachRemaining(entry -> {
+                            objectNode.set(entry.getKey(), generateDummyFromSchema(entry.getValue(), root));
+                        });
+                        return objectNode;
+                    }
+                    return objectMapper.createObjectNode();
+            }
+        } else if (schema.has("$ref")) {
+            String ref = schema.get("$ref").asText();
+
+            if (ref.startsWith("#/")) {
+                String jsonPointer = ref.substring(1);
+                JsonNode resolvedSchema = root.at(jsonPointer);
+                if (!resolvedSchema.isMissingNode()) {
+                    return generateDummyFromSchema(resolvedSchema, root);
+                }
+            }
+            return objectMapper.valueToTree("Ref: " + ref); // Fallback si no resuelve
+        }
+        return objectMapper.valueToTree("unknown");
     }
 }
