@@ -27,8 +27,21 @@ public class ReniecService {
 
     @Value("${reniec.api.key}")
     private String apiKey;
+    
+    @Value("${reniec.api.mock.enabled:false}")
+    private boolean mockEnabled;
 
     private final RestTemplate restTemplate;
+    
+    // Datos de prueba para modo MOCK
+    private static final Map<String, String[]> dniConocidos = new HashMap<>();
+    static {
+        // DNI -> {nombres, apellidoPaterno, apellidoMaterno}
+        dniConocidos.put("73415980", new String[]{"CESAR FABRICIO", "TORRES", "MARTINEZ"});
+        dniConocidos.put("12345678", new String[]{"JUAN CARLOS", "PEREZ", "GOMEZ"});
+        dniConocidos.put("87654321", new String[]{"MARIA ELENA", "LOPEZ", "RODRIGUEZ"});
+        dniConocidos.put("11223344", new String[]{"PEDRO LUIS", "SANCHEZ", "DIAZ"});
+    }
 
     public ReniecService() {
         this.restTemplate = new RestTemplate();
@@ -42,6 +55,7 @@ public class ReniecService {
      */
     public ReniecResponseDto consultarDNI(String dni) {
         logger.info("🔍 Consultando DNI en RENIEC: {}", dni);
+        logger.info("� Modo MOCK: {}", mockEnabled ? "ACTIVADO" : "DESACTIVADO");
         logger.info("🔑 API Key configurada: {}", (apiKey != null && !apiKey.isEmpty()) ? "SÍ (***)" : "NO");
         logger.info("🌐 URL Base: {}", reniecApiUrl);
 
@@ -49,6 +63,12 @@ public class ReniecService {
         if (!esValidoDNI(dni)) {
             logger.warn("❌ DNI inválido: {}", dni);
             return crearRespuestaError("DNI inválido. Debe tener 8 dígitos numéricos");
+        }
+        
+        // Si el modo MOCK está habilitado, devolver datos simulados
+        if (mockEnabled) {
+            logger.info("🎭 Retornando datos MOCK para DNI: {}", dni);
+            return generarRespuestaMock(dni);
         }
 
         try {
@@ -154,6 +174,52 @@ public class ReniecService {
             response.setMessage(message);
         }
 
+        return response;
+    }
+
+    /**
+     * Genera una respuesta MOCK para desarrollo/testing
+     * Usa datos conocidos o genera datos genéricos basados en el DNI
+     */
+    private ReniecResponseDto generarRespuestaMock(String dni) {
+        ReniecResponseDto response = new ReniecResponseDto();
+        response.setSuccess(true);
+        response.setMessage("Datos obtenidos (MODO MOCK)");
+        
+        ReniecResponseDto.ReniecData data = new ReniecResponseDto.ReniecData();
+        data.setDni(dni);
+        
+        // Si el DNI está en los conocidos, usar esos datos
+        if (dniConocidos.containsKey(dni)) {
+            String[] datosPersona = dniConocidos.get(dni);
+            data.setNombres(datosPersona[0]);
+            data.setApellidoPaterno(datosPersona[1]);
+            data.setApellidoMaterno(datosPersona[2]);
+            data.setNombreCompleto(datosPersona[0] + " " + datosPersona[1] + " " + datosPersona[2]);
+        } else {
+            // Generar datos genéricos basados en el DNI
+            int hash = Math.abs(dni.hashCode());
+            String[] nombres = {"JUAN", "MARIA", "JOSE", "ANA", "CARLOS", "LUCIA"};
+            String[] apellidosP = {"GARCIA", "RODRIGUEZ", "MARTINEZ", "LOPEZ", "GONZALEZ", "PEREZ"};
+            String[] apellidosM = {"SANCHEZ", "ROMERO", "DIAZ", "TORRES", "RAMIREZ", "FLORES"};
+            
+            String nombre = nombres[hash % nombres.length];
+            String apellidoP = apellidosP[(hash / 10) % apellidosP.length];
+            String apellidoM = apellidosM[(hash / 100) % apellidosM.length];
+            
+            data.setNombres(nombre);
+            data.setApellidoPaterno(apellidoP);
+            data.setApellidoMaterno(apellidoM);
+            data.setNombreCompleto(nombre + " " + apellidoP + " " + apellidoM);
+        }
+        
+        response.setData(data);
+        
+        logger.info("✅ Respuesta MOCK generada: {} {} {}", 
+            data.getNombres(), 
+            data.getApellidoPaterno(), 
+            data.getApellidoMaterno());
+        
         return response;
     }
 

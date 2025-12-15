@@ -1,6 +1,7 @@
 package com.example.telitodev.controller.admin;
 
 import com.example.telitodev.controller.BaseController;
+import com.example.telitodev.entity.Organizacion;
 import com.example.telitodev.entity.Usuario;
 import com.example.telitodev.entity.Rol;
 import com.example.telitodev.entity.TokenConfirmacion;
@@ -68,6 +69,9 @@ public class AdminUsuarioController extends BaseController {
 
     @Autowired
     private TokenConfirmacionRepository tokenConfirmacionRepository;
+    
+    @Autowired
+    private com.example.telitodev.repository.OrganizacionRepository organizacionRepository;
 
     @Autowired
     private EmailService emailService;
@@ -117,6 +121,9 @@ public class AdminUsuarioController extends BaseController {
             // Obtener todos los roles para el filtro
             List<Rol> roles = rolRepository.findAll();
             
+            // Obtener todas las organizaciones para el modal de creación
+            List<com.example.telitodev.entity.Organizacion> organizaciones = organizacionRepository.findAll();
+            
             // Obtener usuarios con filtros aplicados (excluyendo al usuario actual)
             List<Usuario> todosLosUsuarios = obtenerUsuariosFiltrados(search, estado, rol, usuarioActual);
             
@@ -154,6 +161,7 @@ public class AdminUsuarioController extends BaseController {
             // Datos para el modelo
             model.addAttribute("usuarios", usuariosPaginados);
             model.addAttribute("roles", roles != null ? roles : new ArrayList<>());
+            model.addAttribute("organizaciones", organizaciones != null ? organizaciones : new ArrayList<>());
             model.addAttribute("totalUsuarios", totalUsuarios);
             model.addAttribute("usuariosActivos", usuariosActivos);
             model.addAttribute("usuariosInactivos", usuariosInactivos);
@@ -1364,11 +1372,14 @@ public class AdminUsuarioController extends BaseController {
             String correo = ((String) datos.get("correo")).trim().toLowerCase();
             String contrasena = ((String) datos.get("contrasena")).trim();
             Integer idRol = (Integer) datos.get("idRol");
+            Integer idOrganizacion = datos.containsKey("idOrganizacion") ? 
+                                    (Integer) datos.get("idOrganizacion") : null;
 
             System.out.println("DNI: " + dni);
             System.out.println("Nombre: " + nombre + " " + apellidoPaterno);
             System.out.println("Email: " + correo);
             System.out.println("Rol ID: " + idRol);
+            System.out.println("Organización ID: " + idOrganizacion);
 
             // Validaciones básicas
             if (dni.length() != 8) {
@@ -1432,7 +1443,7 @@ public class AdminUsuarioController extends BaseController {
             // Crear token de confirmación
             TokenConfirmacion tokenConfirmacion = new TokenConfirmacion(
                 token, correo, dni, nombre, apellidoPaterno, apellidoMaterno,
-                contrasenaEncriptada, idRol, ipCliente
+                contrasenaEncriptada, idRol, idOrganizacion, ipCliente
             );
 
             // Guardar token
@@ -1715,10 +1726,34 @@ public class AdminUsuarioController extends BaseController {
                 nuevoUsuario.setEstado(true); // Usuario activo
                 nuevoUsuario.setFechaRegistro(Timestamp.valueOf(LocalDateTime.now()));
                 
+                // 🏭 Asignar organización si se especificó
+                if (tokenConfirmacion.getIdOrganizacionTemporal() != null) {
+                    Optional<Organizacion> orgOpt = organizacionRepository.findById(tokenConfirmacion.getIdOrganizacionTemporal());
+                    if (orgOpt.isPresent()) {
+                        nuevoUsuario.setOrganizacion(orgOpt.get());
+                        System.out.println("🏭 Organización asignada: " + orgOpt.get().getNombre());
+                    }
+                }
+                
+                // 📧 Generar correo corporativo si tiene organización
+                if (nuevoUsuario.getOrganizacion() != null) {
+                    String dominioCorreo = nuevoUsuario.getOrganizacion().getDominioCorreo();
+                    if (dominioCorreo != null && !dominioCorreo.isEmpty()) {
+                        String correoCorporativo = generarCorreoCorporativo(
+                            nuevoUsuario.getNombre(),
+                            nuevoUsuario.getApellidoPaterno(),
+                            dominioCorreo
+                        );
+                        nuevoUsuario.setCorreoCorporativo(correoCorporativo);
+                        System.out.println("📧 Correo corporativo generado: " + correoCorporativo);
+                    }
+                }
+                
                 System.out.println("📊 Usuario a crear:");
                 System.out.println("   - DNI: " + nuevoUsuario.getDni());
                 System.out.println("   - Nombre: " + nuevoUsuario.getNombre());
                 System.out.println("   - Email: " + nuevoUsuario.getCorreo());
+                System.out.println("   - Email Corporativo: " + nuevoUsuario.getCorreoCorporativo());
                 System.out.println("   - Alias: " + nuevoUsuario.getAlias());
                 System.out.println("   - Rol: " + nuevoUsuario.getRol().getNombreRol());
                 System.out.println("   - Rol ID: " + nuevoUsuario.getRol().getIdRol());
@@ -1753,6 +1788,21 @@ public class AdminUsuarioController extends BaseController {
                     usuarioGuardado.setContrasena(contrasenaEncriptada);
                     usuarioGuardado.setEstado(true); // Activar cuenta
                     usuarioGuardado.setFechaRegistro(Timestamp.valueOf(LocalDateTime.now())); // Actualizar fecha
+                    
+                    // 📧 Generar/actualizar correo corporativo si tiene organización
+                    if (usuarioGuardado.getOrganizacion() != null) {
+                        String dominioCorreo = usuarioGuardado.getOrganizacion().getDominioCorreo();
+                        if (dominioCorreo != null && !dominioCorreo.isEmpty()) {
+                            String correoCorporativo = generarCorreoCorporativo(
+                                usuarioGuardado.getNombre(),
+                                usuarioGuardado.getApellidoPaterno(),
+                                dominioCorreo
+                            );
+                            usuarioGuardado.setCorreoCorporativo(correoCorporativo);
+                            System.out.println("📧 Correo corporativo actualizado: " + correoCorporativo);
+                        }
+                    }
+                    
                     System.out.println("✅ Contraseña actualizada y cuenta activada");
                     
                     // Guardar cambios del usuario existente
@@ -2156,6 +2206,29 @@ public class AdminUsuarioController extends BaseController {
                 nuevoUsuario.setRol(rolDefault.orElse(null));
             }
             
+            // 🏭 Asignar organización si se especificó
+            if (token.getIdOrganizacionTemporal() != null) {
+                Optional<Organizacion> orgOpt = organizacionRepository.findById(token.getIdOrganizacionTemporal());
+                if (orgOpt.isPresent()) {
+                    nuevoUsuario.setOrganizacion(orgOpt.get());
+                    System.out.println("🏭 Organización asignada: " + orgOpt.get().getNombre());
+                }
+            }
+            
+            // 📧 Generar correo corporativo si tiene organización
+            if (nuevoUsuario.getOrganizacion() != null) {
+                String dominioCorreo = nuevoUsuario.getOrganizacion().getDominioCorreo();
+                if (dominioCorreo != null && !dominioCorreo.isEmpty()) {
+                    String correoCorporativo = generarCorreoCorporativo(
+                        nuevoUsuario.getNombre(),
+                        nuevoUsuario.getApellidoPaterno(),
+                        dominioCorreo
+                    );
+                    nuevoUsuario.setCorreoCorporativo(correoCorporativo);
+                    System.out.println("📧 Correo corporativo generado: " + correoCorporativo);
+                }
+            }
+            
             // Guardar usuario
             Usuario usuarioGuardado = usuarioRepository.save(nuevoUsuario);
             System.out.println("✅ Usuario creado manualmente: " + usuarioGuardado.getDni());
@@ -2427,5 +2500,33 @@ public class AdminUsuarioController extends BaseController {
             System.err.println("❌ Error en eliminación directa: " + e.getMessage());
             throw new RuntimeException("No se pudieron eliminar los registros de auditoría: " + e.getMessage(), e);
         }
+    }
+    
+    /**
+     * Generar correo corporativo basado en nombre, apellido y dominio
+     * Formato: nombre.apellido@dominio.com
+     */
+    private String generarCorreoCorporativo(String nombre, String apellidoPaterno, String dominioCorreo) {
+        // Limpiar y normalizar el nombre (eliminar espacios extras, convertir a minúsculas)
+        String nombreLimpio = nombre.trim().toLowerCase()
+            .replaceAll("\\s+", ".")  // Reemplazar espacios por puntos
+            .replaceAll("[áàäâ]", "a")
+            .replaceAll("[éèëê]", "e")
+            .replaceAll("[íìïî]", "i")
+            .replaceAll("[óòöô]", "o")
+            .replaceAll("[úùüû]", "u")
+            .replaceAll("[ñ]", "n");
+            
+        // Limpiar y normalizar el apellido
+        String apellidoLimpio = apellidoPaterno.trim().toLowerCase()
+            .replaceAll("\\s+", ".")
+            .replaceAll("[áàäâ]", "a")
+            .replaceAll("[éèëê]", "e")
+            .replaceAll("[íìïî]", "i")
+            .replaceAll("[óòöô]", "o")
+            .replaceAll("[úùüû]", "u")
+            .replaceAll("[ñ]", "n");
+        
+        return nombreLimpio + "." + apellidoLimpio + "@" + dominioCorreo;
     }
 }

@@ -182,7 +182,8 @@ public class RegisterController {
                 apellidoPaterno.trim(), 
                 apellidoMaterno != null ? apellidoMaterno.trim() : "", 
                 contrasenaEncriptada, 
-                idRol, 
+                idRol,
+                null, // idOrganizacion - no disponible en registro público
                 ipCliente
             );
             

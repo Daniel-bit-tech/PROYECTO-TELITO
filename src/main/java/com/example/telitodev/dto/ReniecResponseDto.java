@@ -50,21 +50,11 @@ public class ReniecResponseDto {
      * Clase interna que representa los datos de la persona
      */
     public static class ReniecData {
-        @JsonProperty("numero")
         private String dni;
-        
-        @JsonProperty("nombre_completo")
         private String nombreCompleto;
-        
         private String nombres;
-        
-        @JsonProperty("apellido_paterno")
         private String apellidoPaterno;
-        
-        @JsonProperty("apellido_materno")
         private String apellidoMaterno;
-        
-        @JsonProperty("codigo_verificacion")
         private String codigoVerificacion;
 
         public ReniecData() {

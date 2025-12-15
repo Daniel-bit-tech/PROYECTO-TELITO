@@ -30,6 +30,9 @@ public class Usuario {
     @Column(name = "correo", nullable = false, length = 150, unique = true)
     private String correo;
     
+    @Column(name = "correo_corporativo", length = 100)
+    private String correoCorporativo;
+    
     @Column(name = "contrasena", length = 256)
     private String contrasena;
     
@@ -174,6 +177,14 @@ public class Usuario {
     
     public void setCorreo(String correo) {
         this.correo = correo;
+    }
+    
+    public String getCorreoCorporativo() {
+        return correoCorporativo;
+    }
+    
+    public void setCorreoCorporativo(String correoCorporativo) {
+        this.correoCorporativo = correoCorporativo;
     }
     
     public String getContrasena() {
