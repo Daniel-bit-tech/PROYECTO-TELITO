@@ -26,6 +26,9 @@ public interface OrganizacionRepository extends JpaRepository<Organizacion, Inte
 
         // Verificar si existe organización por nombre
         boolean existsByNombre(String nombre);
+        
+        // Verificar si existe organización por dominio de correo
+        boolean existsByDominioCorreo(String dominioCorreo);
 
         // Buscar organizaciones por IDs específicos
         List<Organizacion> findByIdOrganizacionIn(List<Integer> ids);

@@ -117,7 +117,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
         // Candidatos: misma org del equipo y sin equipo asignado
         List<Usuario> findByOrganizacion_IdOrganizacionAndEquipoIsNull(Integer idOrganizacion);
 
-    @Query("""
+        // NUEVO: Contar usuarios activos por organización (para limpieza de organizaciones huérfanas)
+        long countByOrganizacionIdOrganizacionAndEstado(Integer idOrganizacion, Boolean estado);
+
+        @Query("""
            SELECT u
            FROM Usuario u
            WHERE u.equipo.idEquipo = :idEquipo
@@ -129,5 +132,5 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
              )
            ORDER BY u.dni
            """)
-    Optional<Usuario> findPoEncargadoByEquipo(@Param("idEquipo") Integer idEquipo);
+        Optional<Usuario> findPoEncargadoByEquipo(@Param("idEquipo") Integer idEquipo);
 }
