@@ -12,7 +12,9 @@
     import org.springframework.web.bind.annotation.*;
     import org.springframework.web.server.ResponseStatusException;
     import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-    
+
+    import java.sql.Date;
+    import java.time.LocalDate;
     import java.util.*;
     import java.util.stream.Collectors;
     
@@ -329,7 +331,7 @@
             Equipo equipo = new Equipo();
             equipo.setNombre(nombreLimpio);
             equipo.setOrganizacion(organizacion);
-//            equipo.setFechaCreacion(new java.util.Date());
+            equipo.setFechaCreacion(Date.valueOf((LocalDate.now())));
 
             // OJO: tu entity Equipo NO tiene "descripcion".
             // Si en BD existe columna descripcion, agrégala al entity.

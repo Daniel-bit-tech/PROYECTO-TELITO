@@ -246,9 +246,10 @@ public class ProyectosController extends BaseController {
             proyecto.setEquipo(usuario.getEquipo());
         }
 
-        proyectoRepository.save(proyecto);
+        Proyecto guardado = proyectoRepository.save(proyecto);
+        redirectAttributes.addFlashAttribute("msg", "Proyecto creado ✅");
+        return "redirect:/po/proyectos";
 
-        return "redirect:/proyectos/" + proyecto.getIdProyecto();
     }
 
     @PostMapping("{id}/addApis")
