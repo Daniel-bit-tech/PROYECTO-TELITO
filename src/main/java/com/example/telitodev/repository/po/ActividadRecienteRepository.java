@@ -13,4 +13,5 @@ public interface ActividadRecienteRepository extends JpaRepository<ActividadReci
 
     List<ActividadReciente> findTop5ByUsuario_DniOrderByFechaDesc(String dni);
     List<ActividadReciente> findTop5ByUsuarioOrderByFechaDesc(Usuario usuario);
+    List<ActividadReciente> findTop10ByUsuarioOrderByFechaDesc(Usuario usuario);
 }

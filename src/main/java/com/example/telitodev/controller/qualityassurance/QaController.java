@@ -226,7 +226,44 @@ public class QaController extends BaseController {
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
 
+        // Obtener las 10 últimas actividades recientes del usuario
+        List<ActividadReciente> actividadesRecientes = actividadRecienteRepository.findTop10ByUsuarioOrderByFechaDesc(usuario);
+        
+        // Calcular el tiempo transcurrido para cada actividad
+        for (ActividadReciente actividad : actividadesRecientes) {
+            if (actividad.getFecha() != null) {
+                LocalDateTime fechaActividad = actividad.getFecha();
+                LocalDateTime ahora = LocalDateTime.now();
+                Duration duracion = Duration.between(fechaActividad, ahora);
 
+                long segundos = duracion.getSeconds();
+                if (segundos < 60) {
+                    actividad.setTiempoTranscurrido("Hace " + segundos + " segundo" + (segundos != 1 ? "s" : ""));
+                } else if (segundos < 3600) {
+                    long minutos = segundos / 60;
+                    actividad.setTiempoTranscurrido("Hace " + minutos + " minuto" + (minutos != 1 ? "s" : ""));
+                } else if (segundos < 86400) {
+                    long horas = segundos / 3600;
+                    actividad.setTiempoTranscurrido("Hace " + horas + " hora" + (horas != 1 ? "s" : ""));
+                } else if (segundos < 604800) {
+                    long dias = segundos / 86400;
+                    actividad.setTiempoTranscurrido("Hace " + dias + " día" + (dias != 1 ? "s" : ""));
+                } else if (segundos < 2592000) {
+                    long semanas = segundos / 604800;
+                    actividad.setTiempoTranscurrido("Hace " + semanas + " semana" + (semanas != 1 ? "s" : ""));
+                } else if (segundos < 31536000) {
+                    long meses = segundos / 2592000;
+                    actividad.setTiempoTranscurrido("Hace " + meses + " mes" + (meses != 1 ? "es" : ""));
+                } else {
+                    long años = segundos / 31536000;
+                    actividad.setTiempoTranscurrido("Hace " + años + " año" + (años != 1 ? "s" : ""));
+                }
+            } else {
+                actividad.setTiempoTranscurrido("Fecha no disponible");
+            }
+        }
+
+        model.addAttribute("actividadesRecientes", actividadesRecientes);
         model.addAttribute("usuario", usuario);
         return "qa/perfilQa";
     }
