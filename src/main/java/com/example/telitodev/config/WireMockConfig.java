@@ -18,6 +18,7 @@ public class WireMockConfig {
                 WireMockConfiguration.wireMockConfig()
                         .port(MOCK_PORT)
                         .usingFilesUnderClasspath("wiremock")
+//                        .usingFilesUnderDirectory("/home/ec2-user/wiremock")
         );
         System.out.println("Wiremock funciona bien papu , en el puerto: " + MOCK_PORT);
 
