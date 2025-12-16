@@ -20,14 +20,14 @@ import java.util.Optional;
 @Transactional
 public class SolAccesoOrgService {
 
-    private final SolAccesoEquipoRepository solAccesoOrgRepository;
+    private final SolAccesoEquipoRepository solAccesoEquipoRepository;
     private final UsuarioRepository usuarioRepository;
     private final EquipoRepository equipoRepository;
 
-    public SolAccesoOrgService(SolAccesoEquipoRepository solAccesoOrgRepository,
+    public SolAccesoOrgService(SolAccesoEquipoRepository solAccesoEquipoRepository,
                                UsuarioRepository usuarioRepository,
                                EquipoRepository equipoRepository) {
-        this.solAccesoOrgRepository = solAccesoOrgRepository;
+        this.solAccesoEquipoRepository = solAccesoEquipoRepository;
         this.usuarioRepository = usuarioRepository;
         this.equipoRepository = equipoRepository;
     }
@@ -47,7 +47,7 @@ public class SolAccesoOrgService {
         }
 
         // Validar que no existe solicitud pendiente para el mismo DNI
-        if (solAccesoOrgRepository.existsByDniAndEstado(solicitud.getDni(), EstadoSolicitud.PENDIENTE)) {
+        if (solAccesoEquipoRepository.existsByDniAndEstado(solicitud.getDni(), EstadoSolicitud.PENDIENTE)) {
             throw new RuntimeException("Ya existe una solicitud pendiente para este DNI");
         }
 
@@ -60,58 +60,58 @@ public class SolAccesoOrgService {
         solicitud.setUsuarioSolicitante(usuarioSolicitante);
         solicitud.setEquipoDestino(equipoDestino.get());
 
-        return solAccesoOrgRepository.save(solicitud);
+        return solAccesoEquipoRepository.save(solicitud);
     }
 
     // Obtener solicitud por ID
     public Optional<SolAccesoEquipo> obtenerSolicitudPorId(Integer id) {
-        return solAccesoOrgRepository.findById(id);
+        return solAccesoEquipoRepository.findById(id);
     }
 
     // Obtener todas las solicitudes (para admin)
     public List<SolAccesoEquipo> obtenerTodasSolicitudes() {
-        return solAccesoOrgRepository.findAll();
+        return solAccesoEquipoRepository.findAll();
     }
 
     // Obtener solicitudes con paginación (para admin)
     public Page<SolAccesoEquipo> obtenerSolicitudesPaginadas(Pageable pageable) {
-        return solAccesoOrgRepository.findAll(pageable);
+        return solAccesoEquipoRepository.findAll(pageable);
     }
 
     // Obtener solicitudes por estado
     public List<SolAccesoEquipo> obtenerSolicitudesPorEstado(EstadoSolicitud estado) {
-        return solAccesoOrgRepository.findByEstado(estado);
+        return solAccesoEquipoRepository.findByEstado(estado);
     }
 
     // Obtener solicitudes por estado con paginación
     public Page<SolAccesoEquipo> obtenerSolicitudesPorEstado(EstadoSolicitud estado, Pageable pageable) {
-        return solAccesoOrgRepository.findByEstado(estado, pageable);
+        return solAccesoEquipoRepository.findByEstado(estado, pageable);
     }
 
     // Obtener solicitudes pendientes
     public List<SolAccesoEquipo> obtenerSolicitudesPendientes() {
-        return solAccesoOrgRepository.findByEstado(EstadoSolicitud.PENDIENTE);
+        return solAccesoEquipoRepository.findByEstado(EstadoSolicitud.PENDIENTE);
     }
 
     // Obtener solicitudes de un usuario específico
     public List<SolAccesoEquipo> obtenerSolicitudesPorUsuario(String dniUsuario) {
-        return solAccesoOrgRepository.findByUsuarioSolicitanteDni(dniUsuario);
+        return solAccesoEquipoRepository.findByUsuarioSolicitanteDni(dniUsuario);
     }
 
     // Obtener solicitudes pendientes por equipo
     public List<SolAccesoEquipo> obtenerSolicitudesPendientesPorEquipo(Integer idEquipo) {
-        return solAccesoOrgRepository.findPendientesByEquipo(idEquipo);
+        return solAccesoEquipoRepository.findPendientesByEquipo(idEquipo);
     }
 
     // Aprobar solicitud
     public SolAccesoEquipo aprobarSolicitud(Integer idSolicitud, String dniUsuarioRevisor, String comentarios) {
-        Optional<SolAccesoEquipo> solicitudOpt = solAccesoOrgRepository.findById(idSolicitud);
+        Optional<SolAccesoEquipo> solicitudOpt = solAccesoEquipoRepository.findById(idSolicitud);
         if (solicitudOpt.isEmpty()) {
             throw new RuntimeException("Solicitud no encontrada");
         }
 
         SolAccesoEquipo solicitud = solicitudOpt.get();
-        if (!solicitud.isPendiente()) {
+        if (!solicitud.getEstado().equals(EstadoSolicitud.PENDIENTE)) {
             throw new RuntimeException("La solicitud ya fue procesada");
         }
 
@@ -137,18 +137,18 @@ public class SolAccesoOrgService {
         solicitud.setFechaRevision(new Timestamp(System.currentTimeMillis()));
         solicitud.setComentariosRevisor(comentarios);
 
-        return solAccesoOrgRepository.save(solicitud);
+        return solAccesoEquipoRepository.save(solicitud);
     }
 
     // Rechazar solicitud
     public SolAccesoEquipo rechazarSolicitud(Integer idSolicitud, String dniUsuarioRevisor, String comentarios) {
-        Optional<SolAccesoEquipo> solicitudOpt = solAccesoOrgRepository.findById(idSolicitud);
+        Optional<SolAccesoEquipo> solicitudOpt = solAccesoEquipoRepository.findById(idSolicitud);
         if (solicitudOpt.isEmpty()) {
             throw new RuntimeException("Solicitud no encontrada");
         }
 
         SolAccesoEquipo solicitud = solicitudOpt.get();
-        if (!solicitud.isPendiente()) {
+        if (!solicitud.getEstado().equals(EstadoSolicitud.PENDIENTE)) {
             throw new RuntimeException("La solicitud ya fue procesada");
         }
 
@@ -163,17 +163,17 @@ public class SolAccesoOrgService {
         solicitud.setFechaRevision(new Timestamp(System.currentTimeMillis()));
         solicitud.setComentariosRevisor(comentarios);
 
-        return solAccesoOrgRepository.save(solicitud);
+        return solAccesoEquipoRepository.save(solicitud);
     }
 
     // Verificar si existe solicitud pendiente para un DNI
     public boolean existeSolicitudPendienteParaDni(String dni) {
-        return solAccesoOrgRepository.existsByDniAndEstado(dni, EstadoSolicitud.PENDIENTE);
+        return solAccesoEquipoRepository.existsByDniAndEstado(dni, EstadoSolicitud.PENDIENTE);
     }
 
     // Obtener estadísticas de solicitudes
     public long contarSolicitudesPorEstado(EstadoSolicitud estado) {
-        return solAccesoOrgRepository.countByEstado(estado);
+        return solAccesoEquipoRepository.countByEstado(estado);
     }
 
     /**
@@ -202,13 +202,13 @@ public class SolAccesoOrgService {
         }
 
         // ✅ VALIDACIÓN 1: Usuario NO tiene equipo aprobado (usando método EXISTENTE)
-        if (solAccesoOrgRepository.existsByDniAndEstado(dniTarget, EstadoSolicitud.APROBADA)) {
+        if (solAccesoEquipoRepository.existsByDniAndEstado(dniTarget, EstadoSolicitud.APROBADA)) {
             throw new RuntimeException("El usuario " + usuarioTarget.getNombre() + " " + usuarioTarget.getApellidoPaterno() +
                     " ya pertenece a un equipo. No puede ser agregado a otro.");
         }
 
         // ✅ VALIDACIÓN 2: No existe solicitud pendiente para este DNI (usando método EXISTENTE)
-        if (solAccesoOrgRepository.existsByDniAndEstado(dniTarget, EstadoSolicitud.PENDIENTE)) {
+        if (solAccesoEquipoRepository.existsByDniAndEstado(dniTarget, EstadoSolicitud.PENDIENTE)) {
             throw new RuntimeException("Ya existe una solicitud pendiente para el DNI: " + dniTarget);
         }
 
@@ -216,10 +216,10 @@ public class SolAccesoOrgService {
         solicitud.setUsuarioSolicitante(usuarioSolicitante);
         solicitud.setEquipoDestino(equipoDestino.get());
 
-        return solAccesoOrgRepository.save(solicitud);
+        return solAccesoEquipoRepository.save(solicitud);
     }
 
     public boolean existeSolicitudAprobadaParaDni(String dni) {
-        return solAccesoOrgRepository.existsByDniAndEstado(dni, EstadoSolicitud.APROBADA);
+        return solAccesoEquipoRepository.existsByDniAndEstado(dni, EstadoSolicitud.APROBADA);
     }
 }

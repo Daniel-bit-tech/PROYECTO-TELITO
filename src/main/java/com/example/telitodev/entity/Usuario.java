@@ -108,9 +108,9 @@ public class Usuario {
     @JsonIgnore
     private List<AuditLog> auditLogs;
 
-    //@OneToMany(mappedBy = "usuarioLider", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    //@JsonIgnore
-    //private List<Proyecto> proyectosLiderados;
+    @OneToMany(mappedBy = "poLider", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Proyecto> proyectosLiderados;
 
     // relaciones para la tabla SolAccesoOrg
 
@@ -207,9 +207,9 @@ public class Usuario {
         this.alias = alias;
     }
 
-    //public List<Proyecto> getProyectosLiderados() {return proyectosLiderados;}
+    public List<Proyecto> getProyectosLiderados() {return proyectosLiderados;}
 
-    //public void setProyectosLiderados(List<Proyecto> proyectosLiderados) {this.proyectosLiderados = proyectosLiderados;}
+    public void setProyectosLiderados(List<Proyecto> proyectosLiderados) {this.proyectosLiderados = proyectosLiderados;}
 
     public Timestamp getFechaRegistro() {
         return fechaRegistro;

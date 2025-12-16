@@ -80,18 +80,18 @@
 <!--                                                <span class="avatar avatar-2 rounded" style="background-image: url(/static/avatars/004m.jpg)"> </span>-->
                                             </div>
                                             <div class="col">
-                                                <div class="font-weight-medium" th:text="${proyecto.usuarioLider.nombre+' '+proyecto.usuarioLider.apellidoPaterno}">Egan Poetz</div>
+                                                <div class="font-weight-medium" th:text="${proyecto.poLider.nombre+' '+proyecto.poLider.apellidoPaterno}">Egan Poetz</div>
                                                 <div class="text-secondary">PO Líder</div>
                                                 <div class="text-secondary small">
-                                                     <span th:text="${proyecto.usuarioLider.alias}">Alias</span>
+                                                     <span th:text="${proyecto.poLider.alias}">Alias</span>
                                                 </div>
                                                 <div class="text-secondary small">
                                                     <i class="fa fa-at"></i>
-                                                    <a th:href="'mailto:' + ${proyecto.usuarioLider.correo}" th:text="${proyecto.usuarioLider.correo}">po@empresa.com</a>
+                                                    <a th:href="'mailto:' + ${proyecto.poLider.correo}" th:text="${proyecto.poLider.correo}">po@empresa.com</a>
                                                 </div>
                                             </div>
                                             <div class="col-auto">
-                                                <span class="badge" th:classappend="${proyecto.activo} ? ' bg-green text-green-fg' : ' bg-red text-red-fg' " th:text="${proyecto.usuarioLider.estado} ? 'Activo' : 'Inactivo'">Activo</span>
+                                                <span class="badge" th:classappend="${proyecto.activo} ? ' bg-green text-green-fg' : ' bg-red text-red-fg' " th:text="${proyecto.poLider.estado} ? 'Activo' : 'Inactivo'">Activo</span>
                                             </div>
                                         </div>
                                     </div>

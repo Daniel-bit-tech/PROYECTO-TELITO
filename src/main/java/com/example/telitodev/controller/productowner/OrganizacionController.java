@@ -329,7 +329,7 @@
             Equipo equipo = new Equipo();
             equipo.setNombre(nombreLimpio);
             equipo.setOrganizacion(organizacion);
-            equipo.setFechaCreacion(new java.util.Date());
+//            equipo.setFechaCreacion(new java.util.Date());
 
             // OJO: tu entity Equipo NO tiene "descripcion".
             // Si en BD existe columna descripcion, agrégala al entity.
@@ -412,19 +412,19 @@
                     model.addAttribute("usuario", usuario);
 
                     // Obtener solicitudes del usuario
-                    List<SolAccesoOrg> solicitudes = solAccesoOrgService.obtenerSolicitudesPorUsuario(usuario.getDni());
+                    List<SolAccesoEquipo> solicitudes = solAccesoOrgService.obtenerSolicitudesPorUsuario(usuario.getDni());
                     model.addAttribute("solicitudes", solicitudes);
 
                     // Estadísticas
                     long totalSolicitudes = solicitudes.size();
                     long pendientes = solicitudes.stream()
-                            .filter(SolAccesoOrg::isPendiente)
+                            .filter(sol -> sol.getEstado() == SolAccesoEquipo.EstadoSolicitud.PENDIENTE)
                             .count();
                     long aprobadas = solicitudes.stream()
-                            .filter(SolAccesoOrg::isAprobada)
+                            .filter(sol -> sol.getEstado() == SolAccesoEquipo.EstadoSolicitud.APROBADA)
                             .count();
                     long rechazadas = solicitudes.stream()
-                            .filter(SolAccesoOrg::isRechazada)
+                            .filter(sol -> sol.getEstado() == SolAccesoEquipo.EstadoSolicitud.RECHAZADA)
                             .count();
 
                     model.addAttribute("totalSolicitudes", totalSolicitudes);
@@ -456,7 +456,7 @@
                 }
     
                 // Obtener solicitudes pendientes
-                List<SolAccesoOrg> solicitudesPendientes = solAccesoOrgService.obtenerSolicitudesPendientes();
+                List<SolAccesoEquipo> solicitudesPendientes = solAccesoOrgService.obtenerSolicitudesPendientes();
                 model.addAttribute("solicitudesPendientes", solicitudesPendientes);
     
                 // Obtener organizaciones para filtros
@@ -464,9 +464,9 @@
                 model.addAttribute("organizaciones", organizaciones);
     
                 // Estadísticas
-                long totalPendientes = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoOrg.EstadoSolicitud.PENDIENTE);
-                long totalAprobadas = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoOrg.EstadoSolicitud.APROBADA);
-                long totalRechazadas = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoOrg.EstadoSolicitud.RECHAZADA);
+                long totalPendientes = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoEquipo.EstadoSolicitud.PENDIENTE);
+                long totalAprobadas = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoEquipo.EstadoSolicitud.APROBADA);
+                long totalRechazadas = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoEquipo.EstadoSolicitud.RECHAZADA);
     
                 model.addAttribute("totalPendientes", totalPendientes);
                 model.addAttribute("totalAprobadas", totalAprobadas);
@@ -491,7 +491,7 @@
     
             try {
                 Usuario admin = usuarioRepository.findByCorreo(auth.getName());
-                SolAccesoOrg solicitud = solAccesoOrgService.aprobarSolicitud(id, admin.getDni(), comentarios);
+                SolAccesoEquipo solicitud = solAccesoOrgService.aprobarSolicitud(id, admin.getDni(), comentarios);
     
                 redirectAttributes.addFlashAttribute("success",
                         "✅ Solicitud #" + id + " aprobada exitosamente. Se ha notificado al usuario.");
@@ -516,7 +516,7 @@
     
             try {
                 Usuario admin = usuarioRepository.findByCorreo(auth.getName());
-                SolAccesoOrg solicitud = solAccesoOrgService.rechazarSolicitud(id, admin.getDni(), comentarios);
+                SolAccesoEquipo solicitud = solAccesoOrgService.rechazarSolicitud(id, admin.getDni(), comentarios);
     
                 redirectAttributes.addFlashAttribute("success",
                         "❌ Solicitud #" + id + " rechazada. Se ha notificado al usuario.");

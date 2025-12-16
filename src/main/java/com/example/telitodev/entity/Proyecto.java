@@ -20,8 +20,9 @@ public class Proyecto {
     @JoinColumn(name = "idEquipo", nullable = false)
     private Equipo equipo;
 
-    @Column(name = "dni_po_lider", length = 8, nullable = false)
-    private String dniPoLider;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dni_po_lider", nullable = false)
+    private Usuario poLider;
 
     @Size(min = 5, max = 45)
     @NotBlank
@@ -128,10 +129,10 @@ public class Proyecto {
         this.proyectoHasApis = proyectoHasApis;
     }
 
-    public String getDniPoLider() {
-        return dniPoLider;
+    public Usuario getPoLider() {
+        return poLider;
     }
-    public void setDniPoLider(String dniPoLider) {
-        this.dniPoLider = dniPoLider;
+    public void setPoLider(Usuario poLider) {
+        this.poLider = poLider;
     }
 }

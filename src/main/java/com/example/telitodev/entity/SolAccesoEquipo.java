@@ -157,8 +157,9 @@ public class SolAccesoEquipo {
         this.estado = estado;
     }
 
-    public void setRol(Rol rol) {
-
+    public RolSolicitud getRol() {
+        return rol;
+    }
     public void setRol(RolSolicitud rol) {
         this.rol = rol;
     }
@@ -210,31 +211,31 @@ public class SolAccesoEquipo {
     public void setUsuarioRevisor(Usuario usuarioRevisor) {
         this.usuarioRevisor = usuarioRevisor;
     }
-    }
+
 
     // Métodos auxiliares
-    public boolean isPendiente() {
-        return EstadoSolicitud.PENDIENTE.equals(this.estado);
-    }
-
-    public boolean isAprobada() {
-        return EstadoSolicitud.APROBADA.equals(this.estado);
-    }
-
-    public boolean isRechazada() {
-        return EstadoSolicitud.RECHAZADA.equals(this.estado);
-    }
-
-    @Override
-    public String toString() {
-        return "SolAccesoOrg{" +
-                "idSolicitudEquipo=" + idSolicitudEquipo +
-                ", nombre='" + nombre + '\'' +
-                ", apellido='" + apellido + '\'' +
-                ", correo='" + correo + '\'' +
-                ", dni='" + dni + '\'' +
-                ", estado=" + estado +
-                ", fechaSolicitud=" + fechaSolicitud +
-                '}';
-    }
+//    public boolean isPendiente() {
+//        return EstadoSolicitud.PENDIENTE.equals(this.estado);
+//    }
+//
+//    public boolean isAprobada() {
+//        return EstadoSolicitud.APROBADA.equals(this.estado);
+//    }
+//
+//    public boolean isRechazada() {
+//        return EstadoSolicitud.RECHAZADA.equals(this.estado);
+//    }
+//
+//    @Override
+//    public String toString() {
+//        return "SolAccesoOrg{" +
+//                "idSolicitudEquipo=" + idSolicitudEquipo +
+//                ", nombre='" + nombre + '\'' +
+//                ", apellido='" + apellido + '\'' +
+//                ", correo='" + correo + '\'' +
+//                ", dni='" + dni + '\'' +
+//                ", estado=" + estado +
+//                ", fechaSolicitud=" + fechaSolicitud +
+//                '}';
+//    }
 }

@@ -1,6 +1,8 @@
 package com.example.telitodev.entity;
 
 import jakarta.persistence.*;
+import org.springframework.data.annotation.CreatedDate;
+
 import java.sql.Date;
 //import java.util.Date;
 import java.util.List;
@@ -15,10 +17,10 @@ public class Equipo {
     private Integer idEquipo;
 
     @Column(name = "nombre", length = 45, nullable = false)
-    @Column(name = "nombre", nullable = false, length = 45)
     private String nombre;
 
     @Column(name = "fecha_creacion", nullable = false)
+    @CreatedDate
     //@Temporal(TemporalType.DATE)
     private Date fechaCreacion;
 

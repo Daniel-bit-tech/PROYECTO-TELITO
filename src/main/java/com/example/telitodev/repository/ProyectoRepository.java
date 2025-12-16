@@ -59,27 +59,27 @@ public interface ProyectoRepository extends JpaRepository<Proyecto, Integer> {
     List<Proyecto> findByActivo(Boolean activo);
 
     // Proyectos activos de una organización específica
-    @Query("""
-       SELECT DISTINCT p
-       FROM Proyecto p
-       JOIN p.equipo e
-       JOIN e.organizacion o
-       WHERE o.idOrganizacion = :organizacionId
-         AND p.activo = true
-       """)
-    List<Proyecto> findProyectosActivosByOrganizacionId(@Param("organizacionId") Integer organizacionId);
+//    @Query("""
+//       SELECT DISTINCT p
+//       FROM Proyecto p
+//       JOIN p.equipo e
+//       JOIN e.organizacion o
+//       WHERE o.idOrganizacion = :organizacionId
+//         AND p.activo = true
+//       """)
+//    List<Proyecto> findProyectosActivosByOrganizacionId(@Param("organizacionId") Integer organizacionId);
 
     // Proyectos de una organización con sus APIs cargadas
-    @Query("""
-       SELECT DISTINCT p
-       FROM Proyecto p
-       JOIN p.equipo e
-       JOIN e.organizacion o
-       LEFT JOIN FETCH p.proyectoHasApis pha
-       LEFT JOIN FETCH pha.api
-       WHERE o.idOrganizacion = :organizacionId
-       """)
-    List<Proyecto> findByOrganizacionIdWithApis(@Param("organizacionId") Integer organizacionId);
+//    @Query("""
+//       SELECT DISTINCT p
+//       FROM Proyecto p
+//       JOIN p.equipo e
+//       JOIN e.organizacion o
+//       LEFT JOIN FETCH p.proyectoHasApis pha
+//       LEFT JOIN FETCH pha.api
+//       WHERE o.idOrganizacion = :organizacionId
+//       """)
+//    List<Proyecto> findByOrganizacionIdWithApis(@Param("organizacionId") Integer organizacionId);
 
 
 
