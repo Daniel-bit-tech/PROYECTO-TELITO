@@ -1238,22 +1238,20 @@
                 <select class="form-select" id="newUserRol" name="idRol" required>
                   <option value="">Seleccionar rol...</option>
                   <option th:each="rol : ${roles}" 
-                          th:if="${rol.nombreRol == 'PO' || rol.nombreRol == 'Product Owner'}"
+                          th:if="${rol.nombreRol == 'PO' || rol.nombreRol == 'QA' || rol.nombreRol == 'DEV'}"
                           th:value="${rol.idRol}" 
                           th:text="${rol.nombreRol + ' - ' + rol.descripcion}">
                     Product Owner - Descripción
                   </option>
-                  <!-- Otros roles comentados temporalmente -->
-                  <!--
-                  <option th:each="rol : ${roles}" 
-                          th:unless="${rol.nombreRol == 'SUPERADMIN' || rol.nombreRol == 'SADMIN' || rol.nombreRol == 'PO' || rol.nombreRol == 'Product Owner'}"
-                          th:value="${rol.idRol}" 
-                          th:text="${rol.nombreRol + ' - ' + rol.descripcion}">
-                    Rol - Descripción
-                  </option>
-                  -->
+
+<!--                  <option th:each="rol : ${roles}"-->
+<!--                          th:unless="${rol.nombreRol == 'SUPERADMIN' || rol.nombreRol == 'SADMIN' || rol.nombreRol == 'PO' || rol.nombreRol == 'Product Owner'}"-->
+<!--                          th:value="${rol.idRol}"-->
+<!--                          th:text="${rol.nombreRol + ' - ' + rol.descripcion}">-->
+<!--                    Rol - Descripción-->
+<!--                  </option>-->
+
                 </select>
-                <div class="form-text">Por ahora solo se permite rol Product Owner</div>
               </div>
             </div>
             
