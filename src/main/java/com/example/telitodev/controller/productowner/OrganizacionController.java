@@ -329,7 +329,7 @@
             Equipo equipo = new Equipo();
             equipo.setNombre(nombreLimpio);
             equipo.setOrganizacion(organizacion);
-            equipo.setFechaCreacion(new java.util.Date());
+            equipo.setFechaCreacion(java.sql.Date.valueOf(java.time.LocalDate.now()));
 
             // OJO: tu entity Equipo NO tiene "descripcion".
             // Si en BD existe columna descripcion, agrégala al entity.
