@@ -20,7 +20,7 @@ public class Proyecto {
     @JoinColumn(name = "idEquipo")
     private Equipo equipo;
 
-    @Column(name = "dni_po_lider", length = 8, nullable = false)
+    @Column(name = "dni_po_lider", columnDefinition = "CHAR(8)", nullable = false)
     private String dniPoLider;
 
     @Size(min = 5, max = 45)
