@@ -475,16 +475,16 @@
                         </div>
 
                         <!-- Paginación Estandarizada -->
-                        <nav aria-label="Page navigation" class="mt-4" th:if="${reportePage.totalPages > 0}">
+                        <nav aria-label="Page navigation" class="mt-4" th:if="${reportePage.totalPages > 1}">
                             <ul class="pagination justify-content-center">
                                 <li class="page-item" th:classappend="${reportePage.isFirst()} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/qa/reportes(page=${currentPage - 1}, size=${reportePage.getSize()}, estados=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombreApi=${nombreApi})}">Anterior</a>
+                                    <a class="page-link" th:href="@{/qa/reportes(page=${reportePage.number - 1}, size=${reportePage.size}, estados=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombreApi=${nombreApi})}">Anterior</a>
                                 </li>
-                                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'">
-                                    <a class="page-link" th:href="@{/qa/reportes(page=${i}, size=${reportePage.getSize()}, estados=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombreApi=${nombreApi})}" th:text="${i + 1}"></a>
+                                <li class="page-item" th:each="i : ${#numbers.sequence(0, reportePage.totalPages - 1)}" th:classappend="${i == reportePage.number} ? 'active'">
+                                    <a class="page-link" th:href="@{/qa/reportes(page=${i}, size=${reportePage.size}, estados=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombreApi=${nombreApi})}" th:text="${i + 1}"></a>
                                 </li>
                                 <li class="page-item" th:classappend="${reportePage.isLast()} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/qa/reportes(page=${currentPage + 1}, size=${reportePage.getSize()}, estados=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombreApi=${nombreApi})}">Siguiente</a>
+                                    <a class="page-link" th:href="@{/qa/reportes(page=${reportePage.number + 1}, size=${reportePage.size}, estados=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombreApi=${nombreApi})}">Siguiente</a>
                                 </li>
                             </ul>
                         </nav>

@@ -511,6 +511,14 @@
             <!-- END PAGE HEADER -->
             <!-- BEGIN PAGE BODY -->
             <div class="page-body">
+                <!-- Alertas de error -->
+                <div th:if="${errorComentario}" class="container-xl mb-3">
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="ti ti-alert-circle me-2"></i>
+                        <span th:text="${errorComentario}"></span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                </div>
                 <div class="container-xl">
                     <div class="card">
                         <div class="card-header">
@@ -835,21 +843,30 @@
                     body: formData
                 });
 
+                const data = await response.json();
+
                 if (response.ok) {
                     // Resetear formulario
                     document.getElementById('comentarioForm').reset();
                     charCount.textContent = '0';
                     document.getElementById('error-message').style.display = 'none';
                     
-                    showAlert('Comentario agregado exitosamente', 'success');
+                    showAlert(data.success || 'Comentario agregado exitosamente', 'success');
                     
                     // Recargar la página después de 1 segundo para mostrar el nuevo comentario
                     setTimeout(() => {
                         window.location.reload();
                     }, 1000);
                 } else {
-                    const text = await response.text();
-                    showAlert('Error al enviar el comentario', 'danger');
+                    // Manejar errores específicos del backend
+                    const errorMessage = data.error || 'Error al enviar el comentario';
+                    showAlert(errorMessage, 'danger');
+                    
+                    // Si el issue fue cerrado, deshabilitar el formulario
+                    if (response.status === 403) {
+                        document.getElementById('comentarioForm').innerHTML = 
+                            '<div class="alert alert-warning"><i class="ti ti-alert-circle me-2"></i>' + errorMessage + '</div>';
+                    }
                 }
             } catch (error) {
                 console.error('Error:', error);

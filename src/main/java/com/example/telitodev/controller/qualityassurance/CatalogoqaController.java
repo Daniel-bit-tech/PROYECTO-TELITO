@@ -59,6 +59,13 @@ public class CatalogoqaController extends BaseController {
         // Obtener la página de APIs DTO desde el repositorio
         Page<ApiProyectoDTO> apiPage = apiRepository.findApisForQaCatalog(dni, nombre, dominios, tags, pageable);
 
+        // Si la página solicitada está fuera de rango, ajustar a la última página válida
+        if (page >= apiPage.getTotalPages() && apiPage.getTotalPages() > 0) {
+            page = apiPage.getTotalPages() - 1;
+            pageable = PageRequest.of(page, size);
+            apiPage = apiRepository.findApisForQaCatalog(dni, nombre, dominios, tags, pageable);
+        }
+
         // Cargar listas completas para poblar checkboxes de filtros
         List<Dominio> allDominios = dominioRepository.findAll();
         List<Tag> allTags = tagRepository.findAll();
