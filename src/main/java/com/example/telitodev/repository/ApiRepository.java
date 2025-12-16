@@ -235,6 +235,8 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
     @Query("SELECT a FROM Api a WHERE a.equipo.organizacion.idOrganizacion = :organizacionId")
     List<Api> findByOrganizacionId(@Param("organizacionId") Integer organizacionId);
 
+    @Query("SELECT a FROM Api a WHERE a.equipo.idEquipo = :idEquipo")
+    List<Api> findByEquipoId(@Param("idEquipo") Integer idEquipo);
 
     List<Api> findByEquipo_IdEquipo(Integer idEquipo);
 
