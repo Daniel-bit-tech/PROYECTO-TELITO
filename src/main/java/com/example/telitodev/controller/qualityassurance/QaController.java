@@ -71,11 +71,11 @@ public class QaController extends BaseController {
         Usuario usuario = getCurrentUser(auth, session);
         Integer NCredenciales = 0;
         List<CredencialApi> credenciales = new ArrayList<>();
-        
+
         try {
             NCredenciales = credencialApiRepository.countByUsuario_DniAndEstado(usuario.getDni(), true);
             List<CredencialApi> allCredenciales = credencialApiRepository.findByUsuario_Dni(usuario.getDni());
-            
+
             // Filtrar credenciales cuya API todavía existe
             for (CredencialApi cred : allCredenciales) {
                 try {
@@ -93,10 +93,10 @@ public class QaController extends BaseController {
             System.err.println("⚠️ Error al cargar credenciales para usuario " + usuario.getDni() + ": " + e.getMessage());
             // Si hay error cargando credenciales, continuar con listas vacías
         }
-        
+
         List<Notificacion> notis = notificacionRepository.findTop5ByUsuarioDniAndLeidoOrderByFechaDesc(usuario.getDni(), false);
         Integer Nnotis = notificacionRepository.countByUsuario_DniAndLeido(usuario.getDni(),false);
-        
+
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
 
@@ -200,8 +200,8 @@ public class QaController extends BaseController {
 
         // Obtener las últimas 5 APIs validadas (con reporte aprobado)
         List<ApiProyectoDTO> apisValidadas = apiRepository.findTop5ValidatedApisByQa(
-            usuario.getDni(), 
-            PageRequest.of(0, 5)
+                usuario.getDni(),
+                PageRequest.of(0, 5)
         );
         model.addAttribute("apisValidadas", apisValidadas);
 
@@ -222,11 +222,11 @@ public class QaController extends BaseController {
             return getRedirectUrlForRole(userRole);
         }
         Usuario usuario = getCurrentUser(auth, session);
-        
+
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
 
-        
+
         model.addAttribute("usuario", usuario);
         return "qa/perfilQa";
     }
@@ -234,10 +234,10 @@ public class QaController extends BaseController {
     @GetMapping("/apiDetalle")
     public String showRoadmapView(Model model, Authentication auth, HttpSession session) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        
+
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
-        
+
         model.addAttribute("usuario", usuario);
         return "qa/apiDetalle";
     }
@@ -245,10 +245,10 @@ public class QaController extends BaseController {
     @GetMapping("/soporte")
     public String showSoporte(Model model, Authentication auth, HttpSession session) {
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        
+
         // Agregar atributos de impersonación
         addImpersonationAttributes(model, session);
-        
+
         model.addAttribute("usuario", usuario);
         return "qa/soporte";
     }

@@ -7,6 +7,8 @@ import com.example.telitodev.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -20,7 +22,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @PreAuthorize("hasAnyRole('DEV', 'SADMIN')")
@@ -47,14 +51,14 @@ public class IssueDevController extends BaseController{
 
     @GetMapping("/issuesDev")
     public String showIssueDevView(Model model,
-                                Authentication auth,
-                                HttpSession session,
-                                @RequestParam(value = "tags", required = false) List<String> estados,
-                                @RequestParam(value = "fechaInicio", required = false) String fechaInicio,
-                                @RequestParam(value = "fechaFin", required = false) String fechaFin,
-                                @RequestParam(value = "nombre", required = false) String nombre,
-                                @RequestParam(defaultValue = "0") int page,
-                                @RequestParam(defaultValue = "10") int size) { // 6 issues por página
+                                   Authentication auth,
+                                   HttpSession session,
+                                   @RequestParam(value = "tags", required = false) List<String> estados,
+                                   @RequestParam(value = "fechaInicio", required = false) String fechaInicio,
+                                   @RequestParam(value = "fechaFin", required = false) String fechaFin,
+                                   @RequestParam(value = "nombre", required = false) String nombre,
+                                   @RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "10") int size) { // 6 issues por página
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         addImpersonationAttributes(model, session);
@@ -124,11 +128,14 @@ public class IssueDevController extends BaseController{
     }
 
     @PostMapping("/crearComentarioDev")
-    public String guardarComentario(@RequestParam("comentario") String comentario,
-                                    @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
-                                    @RequestParam("idIssue") Integer idIssue,
-                                    @RequestParam("idReporte") Integer idReporte,
-                                    Authentication auth, RedirectAttributes redirectAttributes) {
+    @ResponseBody
+    public ResponseEntity<?> guardarComentario(@RequestParam("comentario") String comentario,
+                                               @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
+                                               @RequestParam("idIssue") Integer idIssue,
+                                               @RequestParam("idReporte") Integer idReporte,
+                                               Authentication auth) {
+
+        Map<String, String> response = new HashMap<>();
 
         // Obtener el usuario
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
@@ -137,8 +144,14 @@ public class IssueDevController extends BaseController{
         IssueId issueId = new IssueId(idIssue, idReporte);
         Issue issue = issueRepository.findById(issueId).orElse(null);
         if (issue == null) {
-            redirectAttributes.addFlashAttribute("error", "Issue no encontrado");
-            return "redirect:/issuesDev";
+            response.put("error", "Issue no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        // Validar que el issue no esté cerrado
+        if ("Corregido".equals(issue.getEstado())) {
+            response.put("error", "No se pueden agregar comentarios. El QA ya ha cerrado este issue.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
 
         // Crear comentario
@@ -156,22 +169,22 @@ public class IssueDevController extends BaseController{
 
         // Validaciones de archivos
         if (archivos != null && archivos.length > 5) {
-            redirectAttributes.addFlashAttribute("error", "Máximo 5 archivos permitidos");
-            return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
+            response.put("error", "Máximo 5 archivos permitidos");
+            return ResponseEntity.badRequest().body(response);
         }
 
         if (archivos != null && archivos.length > 0) {
             for (MultipartFile archivo : archivos) {
                 if (archivo.getSize() > MAX_FILE_SIZE) {
-                    redirectAttributes.addFlashAttribute("error", "El archivo es demasiado grande");
-                    return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
+                    response.put("error", "El archivo es demasiado grande. Máximo 5MB");
+                    return ResponseEntity.badRequest().body(response);
                 }
 
                 // Validar tipo de archivo (solo imágenes y logs)
                 String contentType = archivo.getContentType();
                 if (!contentType.equals("image/png") && !contentType.equals("image/jpeg") && !contentType.equals("text/plain")) {
-                    redirectAttributes.addFlashAttribute("error", "Solo se permiten archivos de tipo .png, .jpg o .log");
-                    return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
+                    response.put("error", "Solo se permiten archivos de tipo .png, .jpg o .log");
+                    return ResponseEntity.badRequest().body(response);
                 }
 
                 try {
@@ -184,8 +197,8 @@ public class IssueDevController extends BaseController{
 
                 } catch (IOException e) {
                     e.printStackTrace();
-                    redirectAttributes.addFlashAttribute("error", "Error al guardar el archivo");
-                    return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
+                    response.put("error", "Error al guardar el archivo");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
                 }
             }
         }
@@ -218,7 +231,7 @@ public class IssueDevController extends BaseController{
             emailService.enviarEmailNotificacion(qaCreador, mensajeNotificacion);
         }
 
-        // Redirigir de nuevo al detalle del Issue
-        return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
+        response.put("success", "Comentario agregado exitosamente");
+        return ResponseEntity.ok(response);
     }
 }
