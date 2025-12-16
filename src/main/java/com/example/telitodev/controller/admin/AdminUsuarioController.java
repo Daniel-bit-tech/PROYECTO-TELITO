@@ -2077,9 +2077,12 @@ public class AdminUsuarioController extends BaseController {
 
     /**
      * Eliminar token específico
+     * Si el token tiene una organización temporal asociada y esa organización no tiene usuarios,
+     * también se elimina la organización (limpieza automática de organizaciones huérfanas)
      */
     @DeleteMapping("/api/eliminar-token/{tokenId}")
     @ResponseBody
+    @Transactional
     public ResponseEntity<?> eliminarToken(@PathVariable Long tokenId) {
         try {
             System.out.println("=== ELIMINANDO TOKEN ID: " + tokenId + " ===");
@@ -2092,19 +2095,56 @@ public class AdminUsuarioController extends BaseController {
             TokenConfirmacion token = tokenOpt.get();
             System.out.println("Eliminando token para: " + token.getEmail());
             
+            // Verificar si el token tiene una organización temporal asociada
+            Integer idOrganizacionTemporal = token.getIdOrganizacionTemporal();
+            String mensajeAdicional = "";
+            
+            if (idOrganizacionTemporal != null) {
+                System.out.println("🔍 Token tiene organización temporal asociada: ID " + idOrganizacionTemporal);
+                
+                Optional<Organizacion> orgOpt = organizacionRepository.findById(idOrganizacionTemporal);
+                
+                if (orgOpt.isPresent()) {
+                    Organizacion organizacion = orgOpt.get();
+                    
+                    // Contar cuántos usuarios activos tiene la organización
+                    long usuariosActivos = usuarioRepository.countByOrganizacionIdOrganizacionAndEstado(
+                        idOrganizacionTemporal, true
+                    );
+                    
+                    System.out.println("📊 Organización '" + organizacion.getNombre() + "' tiene " + usuariosActivos + " usuarios activos");
+                    
+                    if (usuariosActivos == 0) {
+                        // No tiene usuarios activos, eliminar la organización huérfana
+                        System.out.println("🗑️ Eliminando organización huérfana sin usuarios: " + organizacion.getNombre());
+                        organizacionRepository.delete(organizacion);
+                        mensajeAdicional = " y la organización huérfana '" + organizacion.getNombre() + "' fue eliminada automáticamente";
+                        System.out.println("✅ Organización eliminada exitosamente");
+                    } else {
+                        System.out.println("ℹ️ Organización mantiene " + usuariosActivos + " usuarios, no se elimina");
+                        mensajeAdicional = " (la organización '" + organizacion.getNombre() + "' se mantiene porque tiene " + usuariosActivos + " usuario(s) activo(s))";
+                    }
+                } else {
+                    System.out.println("⚠️ Organización temporal ID " + idOrganizacionTemporal + " no encontrada");
+                }
+            }
+            
+            // Eliminar el token
             tokenConfirmacionRepository.deleteById(tokenId);
+            System.out.println("✅ Token eliminado correctamente");
             
             return ResponseEntity.ok(Map.of(
                 "success", true,
-                "mensaje", "Token eliminado correctamente",
-                "emailAfectado", token.getEmail()
+                "mensaje", "Token eliminado correctamente" + mensajeAdicional,
+                "emailAfectado", token.getEmail(),
+                "organizacionEliminada", idOrganizacionTemporal != null && mensajeAdicional.contains("eliminada automáticamente")
             ));
             
         } catch (Exception e) {
-            System.err.println("Error eliminando token: " + e.getMessage());
+            System.err.println("❌ Error eliminando token: " + e.getMessage());
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Error al eliminar token"));
+                .body(Map.of("error", "Error al eliminar token: " + e.getMessage()));
         }
     }
 
@@ -2502,6 +2542,226 @@ public class AdminUsuarioController extends BaseController {
         }
     }
     
+    /**
+     * Crear organización junto con su primer Product Owner
+     */
+    @PostMapping("/crear-organizacion-con-po")
+    @ResponseBody
+    @Transactional
+    public ResponseEntity<?> crearOrganizacionConPo(@RequestBody Map<String, Object> datos, 
+                                                    HttpServletRequest request) {
+        try {
+            System.out.println("=== CREANDO ORGANIZACIÓN CON PRIMER PO ===");
+            System.out.println("Datos recibidos: " + datos);
+
+            // Validar datos de organización
+            if (!datos.containsKey("nombreOrganizacion") || !datos.containsKey("dominioCorreo")) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Faltan datos obligatorios de la organización",
+                    "camposRequeridos", List.of("nombreOrganizacion", "dominioCorreo")
+                ));
+            }
+
+            // Validar datos del PO
+            if (!datos.containsKey("dni") || !datos.containsKey("nombre") || 
+                !datos.containsKey("apellidoPaterno") || !datos.containsKey("correo") || 
+                !datos.containsKey("contrasena")) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Faltan datos obligatorios del Product Owner",
+                    "camposRequeridos", List.of("dni", "nombre", "apellidoPaterno", "correo", "contrasena")
+                ));
+            }
+
+            // Extraer datos de organización
+            String nombreOrg = ((String) datos.get("nombreOrganizacion")).trim();
+            String dominioCorreo = ((String) datos.get("dominioCorreo")).trim().toLowerCase();
+            String descripcionOrg = datos.containsKey("descripcionOrganizacion") ? 
+                                   ((String) datos.get("descripcionOrganizacion")).trim() : "";
+            Boolean publica = datos.containsKey("publica") ? (Boolean) datos.get("publica") : false;
+
+            // Extraer datos del PO
+            String dni = ((String) datos.get("dni")).trim();
+            String nombre = ((String) datos.get("nombre")).trim();
+            String apellidoPaterno = ((String) datos.get("apellidoPaterno")).trim();
+            String apellidoMaterno = datos.containsKey("apellidoMaterno") ? 
+                                   ((String) datos.get("apellidoMaterno")).trim() : "";
+            String correo = ((String) datos.get("correo")).trim().toLowerCase();
+            String contrasena = ((String) datos.get("contrasena")).trim();
+
+            System.out.println("Organización: " + nombreOrg);
+            System.out.println("Dominio: " + dominioCorreo);
+            System.out.println("PO: " + nombre + " " + apellidoPaterno + " (DNI: " + dni + ")");
+
+            // Validaciones de organización
+            if (dominioCorreo.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "El dominio de correo es requerido"));
+            }
+
+            // Verificar que el dominio no esté en uso
+            if (organizacionRepository.existsByDominioCorreo(dominioCorreo)) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Ya existe una organización con ese dominio de correo"
+                ));
+            }
+
+            // Validaciones del PO
+            if (dni.length() != 8) {
+                return ResponseEntity.badRequest().body(Map.of("error", "El DNI debe tener exactamente 8 dígitos"));
+            }
+
+            if (!correo.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+                return ResponseEntity.badRequest().body(Map.of("error", "El formato del email no es válido"));
+            }
+
+            if (contrasena.length() < 8) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "La contraseña debe tener al menos 8 caracteres"
+                ));
+            }
+
+            // Verificar que el DNI no esté en uso
+            if (usuarioRepository.existsById(dni)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Ya existe un usuario con ese DNI"));
+            }
+
+            // Verificar que el correo no esté en uso
+            if (usuarioRepository.findByCorreo(correo) != null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Ya existe un usuario con ese correo"));
+            }
+
+            // Buscar el rol "PO" o "Product Owner"
+            Rol rolPO = rolRepository.findByNombreRolIgnoreCase("PO")
+                .or(() -> rolRepository.findByNombreRolIgnoreCase("Product Owner"))
+                .orElse(null);
+
+            if (rolPO == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "No se encontró el rol 'PO' en el sistema. Contacte al administrador."
+                ));
+            }
+
+            System.out.println("✅ Rol PO encontrado con ID: " + rolPO.getIdRol());
+
+            // 1. CREAR LA ORGANIZACIÓN
+            System.out.println("🏭 Creando organización...");
+            Organizacion nuevaOrg = new Organizacion();
+            nuevaOrg.setNombre(nombreOrg);
+            nuevaOrg.setDominioCorreo(dominioCorreo);
+            nuevaOrg.setDescripcion(descripcionOrg);
+            nuevaOrg.setPublica(publica);
+            nuevaOrg.setFechaCreacion(new java.sql.Date(System.currentTimeMillis()));
+
+            Organizacion orgGuardada = organizacionRepository.save(nuevaOrg);
+            System.out.println("✅ Organización creada con ID: " + orgGuardada.getIdOrganizacion());
+
+            // 2. CREAR TOKEN DE CONFIRMACIÓN PARA EL PO
+            System.out.println("📧 Creando token de confirmación para el PO...");
+            
+            // Verificar si ya existe un token válido
+            LocalDateTime ahora = LocalDateTime.now();
+            if (tokenConfirmacionRepository.existeTokenValidoPorEmail(correo, ahora)) {
+                // Eliminar la organización creada ya que no se pudo crear el token
+                organizacionRepository.delete(orgGuardada);
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Ya existe un token de confirmación válido para este email"
+                ));
+            }
+
+            if (tokenConfirmacionRepository.existeTokenValidoPorDni(dni, ahora)) {
+                organizacionRepository.delete(orgGuardada);
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Ya existe un token de confirmación válido para este DNI"
+                ));
+            }
+
+            // Limitar tokens por IP (anti-spam)
+            String ipCliente = obtenerIpCliente(request);
+            LocalDateTime hace1Hora = LocalDateTime.now().minusHours(1);
+            int tokensRecientes = tokenConfirmacionRepository.contarTokensRecientesPorIp(ipCliente, hace1Hora);
+            if (tokensRecientes >= 5) {
+                organizacionRepository.delete(orgGuardada);
+                return ResponseEntity.badRequest().body(Map.of(
+                    "error", "Se ha excedido el límite de solicitudes por hora"
+                ));
+            }
+
+            // Generar token
+            String token = generarToken6Digitos();
+            String contrasenaEncriptada = passwordEncoder.encode(contrasena);
+
+            // Crear token con la organización asignada
+            TokenConfirmacion tokenConfirmacion = new TokenConfirmacion(
+                token, correo, dni, nombre, apellidoPaterno, apellidoMaterno,
+                contrasenaEncriptada, rolPO.getIdRol(), orgGuardada.getIdOrganizacion(), ipCliente
+            );
+
+            tokenConfirmacionRepository.save(tokenConfirmacion);
+            System.out.println("✅ Token guardado con ID: " + tokenConfirmacion.getId());
+
+            // 3. ENVIAR EMAIL DE CONFIRMACIÓN
+            boolean emailEnviado = emailService.enviarTokenConfirmacion(
+                correo, nombre, token, tokenConfirmacion.getFechaExpiracion()
+            );
+
+            if (!emailEnviado) {
+                System.err.println("⚠️ Email no enviado, pero organización y token fueron creados");
+                System.err.println("📋 INFORMACIÓN PARA ACTIVACIÓN MANUAL:");
+                System.err.println("   Token: " + token);
+                System.err.println("   Email: " + correo);
+                System.err.println("   DNI: " + dni);
+                System.err.println("   Organización ID: " + orgGuardada.getIdOrganizacion());
+                System.err.println("   Token ID: " + tokenConfirmacion.getId());
+                
+                return ResponseEntity.ok(Map.of(
+                    "mensaje", "Organización creada pero el email no pudo ser enviado",
+                    "emailEnviado", false,
+                    "organizacion", Map.of(
+                        "id", orgGuardada.getIdOrganizacion(),
+                        "nombre", orgGuardada.getNombre(),
+                        "dominio", orgGuardada.getDominioCorreo()
+                    ),
+                    "mostrarModalConfirmacion", true,
+                    "debug", Map.of(
+                        "token", token,
+                        "email", correo,
+                        "dni", dni,
+                        "tokenId", tokenConfirmacion.getId(),
+                        "organizacionId", orgGuardada.getIdOrganizacion()
+                    )
+                ));
+            }
+
+            System.out.println("✅ Organización y PO creados exitosamente");
+            
+            // NO registrar auditoría aquí porque el usuario aún no existe en la BD
+            // (se creará cuando confirme su cuenta con el token)
+            // La auditoría se registrará cuando el usuario confirme su cuenta en el método confirmarCuenta()
+
+            return ResponseEntity.ok(Map.of(
+                "mensaje", "Organización y Product Owner creados exitosamente",
+                "emailEnviado", true,
+                "organizacion", Map.of(
+                    "id", orgGuardada.getIdOrganizacion(),
+                    "nombre", orgGuardada.getNombre(),
+                    "dominio", orgGuardada.getDominioCorreo()
+                ),
+                "po", Map.of(
+                    "nombre", nombre + " " + apellidoPaterno,
+                    "email", correo,
+                    "dni", dni
+                ),
+                "mostrarModalConfirmacion", false
+            ));
+
+        } catch (Exception e) {
+            System.err.println("❌ Error creando organización con PO: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "Error interno del servidor: " + e.getMessage()
+            ));
+        }
+    }
+
     /**
      * Generar correo corporativo basado en nombre, apellido y dominio
      * Formato: nombre.apellido@dominio.com

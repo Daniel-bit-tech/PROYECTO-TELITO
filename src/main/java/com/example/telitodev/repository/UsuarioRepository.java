@@ -107,5 +107,7 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
         @Query("SELECT u FROM Usuario u WHERE u.organizacion.idOrganizacion = :idOrganizacion AND u.rol.nombreRol = 'PO'")
         Usuario findPoByOrganizacion(@Param("idOrganizacion") Integer idOrganizacion);
 
+        // NUEVO: Contar usuarios activos por organización (para limpieza de organizaciones huérfanas)
+        long countByOrganizacionIdOrganizacionAndEstado(Integer idOrganizacion, Boolean estado);
 
 }

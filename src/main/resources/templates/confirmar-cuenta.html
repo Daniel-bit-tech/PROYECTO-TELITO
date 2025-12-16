@@ -37,7 +37,12 @@
                         <div class="mb-3">
                             <label for="password" class="form-label">Nueva Contraseña</label>
                             <input type="password" class="form-control" id="password" name="password" minlength="8" required autocomplete="new-password">
-                            <div class="form-text text-light">Debe tener al menos 8 caracteres</div>
+                            <div class="form-text text-light">
+                                <strong>Requisitos de contraseña:</strong><br>
+                                • Mínimo 8 caracteres<br>
+                                • No puede contener "123456", "password" o datos del usuario<br>
+                                • No puede ser igual al DNI o email del usuario
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
@@ -85,6 +90,29 @@
                         
                         if (password.length < 8) {
                             alert('❌ La contraseña debe tener al menos 8 caracteres');
+                            return;
+                        }
+                        
+                        // Validar contraseñas débiles
+                        const weakPasswords = ['123456', '12345678', 'password', 'qwerty', 'abc123'];
+                        const passwordLower = password.toLowerCase();
+                        for (let weak of weakPasswords) {
+                            if (passwordLower.includes(weak)) {
+                                alert('❌ La contraseña no puede contener "' + weak + '"');
+                                return;
+                            }
+                        }
+                        
+                        // Validar que no contenga el email o partes del email
+                        const emailParts = email.split('@')[0].toLowerCase();
+                        if (passwordLower.includes(emailParts) && emailParts.length > 3) {
+                            alert('❌ La contraseña no puede contener tu email');
+                            return;
+                        }
+                        
+                        // Validar que no contenga el token/DNI
+                        if (token && passwordLower.includes(token.toLowerCase())) {
+                            alert('❌ La contraseña no puede contener el DNI');
                             return;
                         }
                         
