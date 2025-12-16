@@ -271,7 +271,15 @@ public class RoadmapController {
         }
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        System.out.println("👤 Roadmap - Usando datos del usuario autenticado: " + usuario.getNombre());
+        if (usuario == null) {
+            // Try corporate email if not found by personal email
+            usuario = usuarioRepository.findByCorreoCorporativo(auth.getName());
+            if (usuario != null) {
+                System.out.println("👤 Roadmap - Usuario autenticado por correo corporativo: " + usuario.getNombre());
+            }
+        } else {
+            System.out.println("👤 Roadmap - Usando datos del usuario autenticado: " + usuario.getNombre());
+        }
         return usuario;
     }
 

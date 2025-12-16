@@ -765,9 +765,6 @@
               <i class="fas fa-users"></i> Lista de Usuarios
             </h3>
             <div class="card-actions">
-              <button class="btn btn-sm btn-success me-2" data-bs-toggle="modal" data-bs-target="#newOrgWithPoModal" data-action="create-org-with-po">
-                <i class="fas fa-building"></i>  Nueva Organización
-              </button>
               <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newUserModal" data-action="create-user">
                 <i class="fas fa-plus"></i> Nuevo Usuario
               </button>
@@ -1190,10 +1187,10 @@
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="newUserOrganizacion" class="form-label fw-bold">
-                  <i class="fas fa-building me-1"></i>Organización <span class="text-danger">*</span>
+                  <i class="fas fa-building me-1"></i>Organización <span class="text-muted">(Opcional)</span>
                 </label>
-                <select class="form-select" id="newUserOrganizacion" name="idOrganizacion" required>
-                  <option value="">Seleccionar organización...</option>
+                <select class="form-select" id="newUserOrganizacion" name="idOrganizacion">
+                  <option value="">Sin organización</option>
                   <option th:each="org : ${organizaciones}" 
                           th:value="${org.idOrganizacion}" 
                           th:text="${org.nombre}"
@@ -1370,225 +1367,6 @@
         </button>
         <button type="button" class="btn btn-primary" id="confirmUserCode">
           <i class="fas fa-check me-1"></i>Confirmar Código
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Modal para crear organización con su primer PO -->
-<div class="modal fade" id="newOrgWithPoModal" tabindex="-1" aria-labelledby="newOrgWithPoModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header" style="background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%); color: white;">
-        <h5 class="modal-title" id="newOrgWithPoModalLabel">
-          <i class="fas fa-building me-2"></i>Crear Nueva Organización con Primer Product Owner
-        </h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body" style="background-color: #1e293b; color: #e2e8f0;">
-        <div class="alert alert-info" style="background-color: #1e40af; border-color: #3b82f6; color: #dbeafe;">
-          <i class="fas fa-info-circle me-2"></i>
-          <strong>Este proceso creará:</strong>
-          <ul class="mb-0 mt-2">
-            <li>Una nueva organización con su dominio corporativo</li>
-            <li>El primer Product Owner (PO) de la organización</li>
-            <li>Se enviará un email de confirmación al PO para activar su cuenta</li>
-          </ul>
-        </div>
-        
-        <form id="newOrgWithPoForm">
-          <!-- SECCIÓN 1: DATOS DE LA ORGANIZACIÓN -->
-          <div class="card mb-3" style="background-color: #0f172a; border-color: #334155;">
-            <div class="card-header" style="background: linear-gradient(135deg, #495057 0%, #6c757d 100%); color: white;">
-              <h6 class="mb-0"><i class="fas fa-building me-2"></i>Datos de la Organización</h6>
-            </div>
-            <div class="card-body" style="background-color: #1e293b;">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label for="orgNombre" class="form-label fw-bold" style="color: #e2e8f0;">
-                      <i class="fas fa-building me-1"></i>Nombre de la Organización <span class="text-danger">*</span>
-                    </label>
-                    <input type="text" class="form-control" id="orgNombre" name="nombreOrganizacion" 
-                           placeholder="Ej: Acme Corporation" required style="background-color: #0f172a; color: #e2e8f0; border-color: #475569;">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label for="orgDominio" class="form-label fw-bold" style="color: #e2e8f0;">
-                      <i class="fas fa-globe me-1"></i>Dominio de Correo <span class="text-danger">*</span>
-                    </label>
-                    <input type="text" class="form-control" id="orgDominio" name="dominioCorreo" 
-                           placeholder="Ej: acme.com" pattern="[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" required style="background-color: #0f172a; color: #e2e8f0; border-color: #475569;">
-                    <div class="form-text" style="color: #94a3b8;">Solo el dominio, sin @. Ej: empresa.com</div>
-                  </div>
-                </div>
-                <div class="col-md-8">
-                  <div class="mb-3">
-                    <label for="orgDescripcion" class="form-label fw-bold" style="color: #e2e8f0;">
-                      <i class="fas fa-align-left me-1"></i>Descripción
-                    </label>
-                    <input type="text" class="form-control" id="orgDescripcion" name="descripcionOrganizacion" 
-                           placeholder="Breve descripción de la organización" maxlength="100" style="background-color: #0f172a; color: #e2e8f0; border-color: #475569;">
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label fw-bold" style="color: #e2e8f0;">
-                      <i class="fas fa-eye me-1"></i>Visibilidad
-                    </label>
-                    <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" id="orgPublica" name="publica">
-                      <label class="form-check-label" for="orgPublica" style="color: #cbd5e1;">
-                        Organización pública
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- SECCIÓN 2: DATOS DEL PRIMER PRODUCT OWNER -->
-          <div class="card" style="background-color: #0f172a; border-color: #334155;">
-            <div class="card-header" style="background: linear-gradient(135deg, #495057 0%, #6c757d 100%); color: white;">
-              <h6 class="mb-0"><i class="fas fa-user-tie me-2"></i>Datos del Primer Product Owner</h6>
-            </div>
-            <div class="card-body" style="background-color: #1e293b;">
-              <div class="row">
-                <!-- DNI con botón de consulta RENIEC -->
-                <div class="col-md-8">
-                  <div class="mb-3">
-                    <label for="poDni" class="form-label fw-bold" style="color: #e2e8f0;">
-                      <i class="fas fa-id-card me-1"></i>DNI <span class="text-danger">*</span>
-                    </label>
-                    <input type="text" class="form-control" id="poDni" name="dni" 
-                           placeholder="Ej: 12345678" maxlength="8" pattern="[0-9]{8}" required style="background-color: #0f172a; color: #e2e8f0; border-color: #475569;">
-                    <div class="form-text" style="color: #94a3b8;">Exactamente 8 dígitos</div>
-                  </div>
-                </div>
-                <div class="col-md-4">
-                  <div class="mb-3">
-                    <label class="form-label fw-bold">&nbsp;</label>
-                    <button type="button" class="btn btn-primary w-100" id="btnConsultarReniecPo">
-                      <i class="fas fa-search me-1"></i>Consultar DNI
-                    </button>
-                  </div>
-                </div>
-                
-                <!-- Nombres (se auto-completan con RENIEC) -->
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label for="poNombre" class="form-label fw-bold" style="color: #e2e8f0;">
-                      <i class="fas fa-user me-1"></i>Nombre <span class="text-danger">*</span>
-                    </label>
-                    <input type="text" class="form-control" id="poNombre" name="nombre" 
-                           placeholder="Se auto-completará con RENIEC" readonly required style="background-color: #0f172a; color: #e2e8f0; border-color: #475569;">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label for="poApellidoPaterno" class="form-label fw-bold" style="color: #e2e8f0;">
-                      <i class="fas fa-user me-1"></i>Apellido Paterno <span class="text-danger">*</span>
-                    </label>
-                    <input type="text" class="form-control" id="poApellidoPaterno" name="apellidoPaterno" 
-                           placeholder="Se auto-completará con RENIEC" readonly required style="background-color: #0f172a; color: #e2e8f0; border-color: #475569;">
-                  </div>
-                </div>
-                
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label for="poApellidoMaterno" class="form-label fw-bold" style="color: #e2e8f0;">
-                      <i class="fas fa-user me-1"></i>Apellido Materno
-                    </label>
-                    <input type="text" class="form-control" id="poApellidoMaterno" name="apellidoMaterno" 
-                           placeholder="Se auto-completará con RENIEC" readonly style="background-color: #0f172a; color: #e2e8f0; border-color: #475569;">
-                  </div>
-                </div>
-                
-                <!-- Correo Personal -->
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label for="poCorreoPersonal" class="form-label fw-bold" style="color: #e2e8f0;">
-                      <i class="fas fa-envelope me-1"></i>Correo Personal <span class="text-danger">*</span>
-                    </label>
-                    <input type="email" class="form-control" id="poCorreoPersonal" name="correoPersonal" 
-                           placeholder="Ej: juan@gmail.com" required style="background-color: #0f172a; color: #e2e8f0; border-color: #475569;">
-                    <div class="form-text" style="color: #94a3b8;">Para recibir el código de confirmación</div>
-                  </div>
-                </div>
-                
-                <!-- Correo Corporativo (Auto-generado) -->
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label for="poCorreoCorporativo" class="form-label fw-bold" style="color: #e2e8f0;">
-                      <i class="fas fa-building me-1"></i>Correo Corporativo <span class="badge bg-info">Auto-generado</span>
-                    </label>
-                    <input type="email" class="form-control" id="poCorreoCorporativo" name="correoCorporativo" 
-                           placeholder="Se generará al consultar RENIEC" readonly
-                           style="background-color: #0f172a; color: #10b981; font-weight: 600; border: 2px solid #10b981;">
-                    <div class="form-text" style="color: #94a3b8;">Email corporativo: nombre.apellido@dominio.com</div>
-                  </div>
-                </div>
-                
-                <!-- Contraseña -->
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label for="poContrasena" class="form-label fw-bold" style="color: #e2e8f0;">
-                      <i class="fas fa-lock me-1"></i>Contraseña Temporal <span class="text-danger">*</span>
-                    </label>
-                    <input type="password" class="form-control" id="poContrasena" name="contrasena" 
-                           placeholder="Mínimo 8 caracteres" minlength="8" required style="background-color: #0f172a; color: #e2e8f0; border-color: #475569;">
-                    <div class="form-text" style="color: #94a3b8;">
-                      <strong>Requisitos de contraseña:</strong><br>
-                      • Mínimo 8 caracteres<br>
-                      • No puede contener "123456", "password" o datos del usuario<br>
-                      • No puede ser igual al DNI o email del usuario<br>
-                      • El usuario podrá cambiarla después de confirmar su cuenta
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label for="poContrasenaConfirm" class="form-label fw-bold" style="color: #e2e8f0;">
-                      <i class="fas fa-lock me-1"></i>Confirmar Contraseña <span class="text-danger">*</span>
-                    </label>
-                    <input type="password" class="form-control" id="poContrasenaConfirm" name="contrasenaConfirm" 
-                           placeholder="Repetir contraseña" minlength="8" required style="background-color: #0f172a; color: #e2e8f0; border-color: #475569;">
-                  </div>
-                </div>
-              </div>
-              
-              <div class="alert alert-success mt-3" style="background-color: #064e3b; border-color: #10b981; color: #d1fae5;">
-                <i class="fas fa-magic me-2"></i>
-                <strong>Se generará automáticamente:</strong>
-                <ul class="mb-0 mt-2">
-                  <li><strong>Correo corporativo:</strong> <span id="previstaCorreoCorp" style="color: #10b981; font-weight: 600;">nombre.apellido@dominio.com</span></li>
-                  <li><strong>Rol:</strong> Product Owner (PO)</li>
-                  <li><strong>Estado:</strong> Pendiente de confirmación por email</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Información importante -->
-          <div class="alert alert-warning mt-3" style="background-color: #451a03; border-color: #f59e0b; color: #fef3c7;">
-            <h6><i class="fas fa-exclamation-triangle me-2"></i>Importante</h6>
-            <small>
-              • El Product Owner recibirá un <strong>código de 6 dígitos</strong> en su email<br>
-              • Solo podrá acceder al sistema después de confirmar su cuenta<br>
-              • La organización se creará inmediatamente, pero el PO debe confirmar para activarse
-            </small>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer" style="background-color: #0f172a; border-top: 1px solid #334155;">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          <i class="fas fa-times me-1"></i>Cancelar
-        </button>
-        <button type="button" class="btn btn-success" id="createOrgWithPo" disabled>
-          <i class="fas fa-paper-plane me-1"></i>Crear Organización y Enviar Email al PO
         </button>
       </div>
     </div>
@@ -2714,13 +2492,17 @@ async function createUserWithConfirmation() {
     const userData = {};
     for (let [key, value] of formData.entries()) {
       if (key === 'idRol' || key === 'idOrganizacion') {
-        userData[key] = parseInt(value);
+        // Solo convertir a número si el valor no está vacío
+        const parsedValue = parseInt(value);
+        userData[key] = (value && !isNaN(parsedValue)) ? parsedValue : null;
       } else {
         userData[key] = value.trim();
       }
     }
     
-    console.log('Creando usuario:', userData);
+    console.log('📋 Datos del usuario a crear:', userData);
+    console.log('🏭 ID Organización:', userData.idOrganizacion);
+    console.log('👤 ID Rol:', userData.idRol);
     
     // Validar contraseñas
     if (userData.contrasena !== userData.confirmarContrasena) {
@@ -2944,36 +2726,6 @@ document.getElementById('newUserModal').addEventListener('hidden.bs.modal', func
   if (overlay) {
     overlay.remove();
   }
-});
-
-// ===============================
-// EVENT LISTENERS PARA NUEVA ORGANIZACIÓN - BACKDROP OPACO
-// ===============================
-
-// Agregar fondo OPACO cuando se abre el modal de organización
-document.getElementById('newOrgWithPoModal').addEventListener('show.bs.modal', function() {
-  console.log('📱 Modal de organización abriendo - Agregando fondo opaco');
-  
-  // Remover overlay previo si existe
-  const existingOverlay = document.getElementById('simple-overlay-org');
-  if (existingOverlay) {
-    existingOverlay.remove();
-  }
-  
-  // Crear overlay opaco simple
-  const overlay = document.createElement('div');
-  overlay.id = 'simple-overlay-org';
-  overlay.style.cssText = `
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 1050;
-    pointer-events: none;
-  `;
-  document.body.appendChild(overlay);
 });
 
 // Event listener para crear usuario
@@ -3701,219 +3453,7 @@ document.getElementById('btnConsultarReniecPo').addEventListener('click', async 
   }
 });
 
-// Función para crear organización con PO
-async function createOrganizacionConPo() {
-  console.log('🏭 Iniciando creación de organización con PO...');
-  
-  const form = document.getElementById('newOrgWithPoForm');
-  const submitButton = document.getElementById('createOrgWithPo');
-  
-  // Validar formulario
-  if (!form.checkValidity()) {
-    alert('❌ Por favor completa todos los campos requeridos');
-    form.reportValidity();
-    return;
-  }
-  
-  // Validar que las contraseñas coincidan
-  const contrasena = document.getElementById('poContrasena').value;
-  const contrasenaConfirm = document.getElementById('poContrasenaConfirm').value;
-  
-  if (contrasena !== contrasenaConfirm) {
-    alert('❌ Las contraseñas no coinciden');
-    return;
-  }
-  
-  // Validar longitud mínima
-  if (contrasena.length < 8) {
-    alert('❌ La contraseña debe tener al menos 8 caracteres');
-    return;
-  }
-  
-  // Validar contraseñas débiles
-  const weakPasswords = ['123456', '12345678', 'password', 'qwerty', 'abc123'];
-  const passwordLower = contrasena.toLowerCase();
-  for (let weak of weakPasswords) {
-    if (passwordLower.includes(weak)) {
-      alert('❌ La contraseña no puede contener "' + weak + '"');
-      return;
-    }
-  }
-  
-  // Validar que no contenga el DNI
-  const dni = document.getElementById('poDni').value;
-  if (dni && passwordLower.includes(dni.toLowerCase())) {
-    alert('❌ La contraseña no puede contener el DNI del usuario');
-    return;
-  }
-  
-  // Validar que no contenga el email
-  const email = document.getElementById('poCorreoPersonal').value;
-  const emailParts = email.split('@')[0].toLowerCase();
-  if (emailParts.length > 3 && passwordLower.includes(emailParts)) {
-    alert('❌ La contraseña no puede contener el email del usuario');
-    return;
-  }
-  
-  // Validar que no contenga el nombre o apellidos
-  const nombre = document.getElementById('poNombre').value.toLowerCase();
-  const apellidoPaterno = document.getElementById('poApellidoPaterno').value.toLowerCase();
-  if (nombre.length > 3 && passwordLower.includes(nombre)) {
-    alert('❌ La contraseña no puede contener el nombre del usuario');
-    return;
-  }
-  if (apellidoPaterno.length > 3 && passwordLower.includes(apellidoPaterno)) {
-    alert('❌ La contraseña no puede contener el apellido del usuario');
-    return;
-  }
-  
-  // Obtener datos del formulario
-  const datos = {
-    // Datos de organización
-    nombreOrganizacion: document.getElementById('orgNombre').value.trim(),
-    dominioCorreo: document.getElementById('orgDominio').value.trim().toLowerCase(),
-    descripcionOrganizacion: document.getElementById('orgDescripcion').value.trim(),
-    publica: document.getElementById('orgPublica').checked,
-    
-    // Datos del PO
-    dni: document.getElementById('poDni').value.trim(),
-    nombre: document.getElementById('poNombre').value.trim(),
-    apellidoPaterno: document.getElementById('poApellidoPaterno').value.trim(),
-    apellidoMaterno: document.getElementById('poApellidoMaterno').value.trim(),
-    correo: document.getElementById('poCorreoPersonal').value.trim().toLowerCase(),
-    contrasena: contrasena
-  };
-  
-  console.log('📋 Datos a enviar:', { ...datos, contrasena: '***' });
-  
-  try {
-    // Deshabilitar botón
-    submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Creando...';
-    
-    // Obtener token CSRF
-    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-    const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-    
-    // Enviar petición
-    const response = await fetch('/admin/gestion-usuarios/crear-organizacion-con-po', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        [csrfHeader]: csrfToken
-      },
-      body: JSON.stringify(datos)
-    });
-    
-    const data = await response.json();
-    console.log('📡 Respuesta del servidor:', data);
-    
-    if (response.ok) {
-      // Éxito
-      console.log('✅ Organización y PO creados exitosamente');
-      
-      let mensaje = `✅ Organización "${data.organizacion.nombre}" creada exitosamente\n\n`;
-      mensaje += `👤 Product Owner: ${data.po.nombre}\n`;
-      mensaje += `📧 Email: ${data.po.email}\n`;
-      mensaje += `📝 DNI: ${data.po.dni}\n\n`;
-      
-      if (data.emailEnviado) {
-        mensaje += `✉️ Se ha enviado un código de confirmación de 6 dígitos al email del PO.\n`;
-        mensaje += `⏰ El PO tiene 1 hora para confirmar su cuenta.`;
-      } else {
-        mensaje += `⚠️ La organización y el usuario fueron creados, pero el email no pudo ser enviado.\n`;
-        mensaje += `📋 Ve al panel "Tokens Pendientes" para activar la cuenta manualmente.`;
-        
-        if (data.debug) {
-          mensaje += `\n\n🔑 Token: ${data.debug.token}`;
-        }
-      }
-      
-      alert(mensaje);
-      
-      // Cerrar modal manualmente (sin usar bootstrap object)
-      const modalElement = document.getElementById('newOrgWithPoModal');
-      const modalBackdrop = document.querySelector('.modal-backdrop');
-      
-      modalElement.classList.remove('show');
-      modalElement.style.display = 'none';
-      modalElement.setAttribute('aria-hidden', 'true');
-      modalElement.removeAttribute('aria-modal');
-      
-      if (modalBackdrop) {
-        modalBackdrop.remove();
-      }
-      
-      document.body.classList.remove('modal-open');
-      document.body.style.removeProperty('padding-right');
-      document.body.style.removeProperty('overflow');
-      
-      // Limpiar formulario
-      form.reset();
-      document.getElementById('previstaCorreoCorp').textContent = 'nombre.apellido@dominio.com';
-      document.getElementById('poCorreoCorporativo').value = '';
-      
-      // Recargar página para ver la nueva organización
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-      
-    } else {
-      // Error
-      const errorMsg = data.error || 'Error desconocido';
-      console.error('❌ Error del servidor:', errorMsg);
-      alert('❌ Error: ' + errorMsg);
-    }
-    
-  } catch (error) {
-    console.error('❌ Error en la petición:', error);
-    alert('❌ Error al crear organización: ' + error.message);
-  } finally {
-    // Restaurar botón
-    submitButton.disabled = false;
-    submitButton.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Crear Organización y Enviar Email al PO';
-  }
-}
-
-// Inicializar validación cuando se abre el modal
-document.getElementById('newOrgWithPoModal').addEventListener('shown.bs.modal', function() {
-  console.log('📱 Modal de organización+PO mostrado');
-  setTimeout(() => {
-    initializeOrgPoValidation();
-  }, 100);
-});
-
-// Limpiar formulario cuando se cierra el modal
-document.getElementById('newOrgWithPoModal').addEventListener('hidden.bs.modal', function() {
-  console.log('📱 Modal de organización cerrado - Removiendo fondo opaco');
-  
-  // Remover overlay
-  const overlay = document.getElementById('simple-overlay-org');
-  if (overlay) {
-    overlay.remove();
-  }
-  
-  document.getElementById('newOrgWithPoForm').reset();
-  document.getElementById('createOrgWithPo').disabled = true;
-  document.getElementById('previstaCorreoCorp').textContent = 'nombre.apellido@dominio.com';
-  document.getElementById('poCorreoCorporativo').value = '';
-  
-  // Restablecer readonly
-  document.getElementById('poNombre').readOnly = true;
-  document.getElementById('poApellidoPaterno').readOnly = true;
-  document.getElementById('poApellidoMaterno').readOnly = true;
-  
-  // Limpiar clases de validación
-  const inputs = document.querySelectorAll('#newOrgWithPoForm .form-control');
-  inputs.forEach(input => {
-    input.classList.remove('is-invalid', 'is-valid');
-  });
-});
-
-// Event listener para el botón de crear
-document.getElementById('createOrgWithPo').addEventListener('click', createOrganizacionConPo);
-
-console.log('✅ Funcionalidad de crear organización con PO cargada');
+console.log('✅ Funcionalidad de gestión de usuarios cargada');
 </script>
 
 </body>

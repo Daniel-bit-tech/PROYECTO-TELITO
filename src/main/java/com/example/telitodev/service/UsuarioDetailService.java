@@ -25,8 +25,37 @@ public class UsuarioDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
 
-        // Buscar usuario por correo sin filtrar por estado
-        Usuario usuario = usuarioRepository.findByCorreo(correo);   
+        System.out.println("🔍 Intentando autenticar con: " + correo);
+        
+        // Buscar usuario por correo personal o correo corporativo
+        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        
+        // Si no se encuentra por correo personal, buscar por correo corporativo
+        if (usuario == null) {
+            System.out.println("❌ No encontrado por correo personal, buscando por correo corporativo...");
+            usuario = usuarioRepository.findByCorreoCorporativo(correo);
+            if (usuario != null) {
+                System.out.println("✅ Usuario encontrado por correo corporativo");
+                System.out.println("   - DNI: " + usuario.getDni());
+                System.out.println("   - Nombre: " + usuario.getNombre());
+                System.out.println("   - Correo personal: " + usuario.getCorreo());
+                System.out.println("   - Correo corporativo: " + usuario.getCorreoCorporativo());
+                System.out.println("   - Tiene contraseña: " + (usuario.getContrasena() != null && !usuario.getContrasena().isEmpty()));
+                
+                // Mostrar hash de contraseña para debugging
+                if (usuario.getContrasena() != null) {
+                    String hash = usuario.getContrasena();
+                    System.out.println("   - Hash contraseña (primeros 60 chars): " + (hash.length() > 60 ? hash.substring(0, 60) + "..." : hash));
+                    System.out.println("   - Longitud del hash: " + hash.length());
+                    System.out.println("   - Comienza con $2a, $2b o $2y: " + (hash.startsWith("$2a") || hash.startsWith("$2b") || hash.startsWith("$2y")));
+                }
+            }
+        } else {
+            System.out.println("✅ Usuario encontrado por correo personal");
+            System.out.println("   - DNI: " + usuario.getDni());
+            System.out.println("   - Nombre: " + usuario.getNombre());
+            System.out.println("   - Tiene contraseña: " + (usuario.getContrasena() != null && !usuario.getContrasena().isEmpty()));
+        }
 
         if (usuario == null) {
             System.err.println("Usuario no encontrado con correo: " + correo);
@@ -54,7 +83,7 @@ public class UsuarioDetailService implements UserDetailsService {
         }
 
         String nombreRol = usuario.getRol().getNombreRol();
-        System.out.println("Usuario activo encontrado: " + usuario.getCorreo() + " - Rol: " + nombreRol);
+        System.out.println("Usuario activo encontrado: " + correo + " - Rol: " + nombreRol);
 
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_" + nombreRol));
@@ -62,7 +91,8 @@ public class UsuarioDetailService implements UserDetailsService {
             authorities.add(new SimpleGrantedAuthority("ROLE_DEVINT"));
         }
 
-        return User.withUsername(usuario.getCorreo())
+        // Usar el correo con el que el usuario intentó iniciar sesión (puede ser personal o corporativo)
+        return User.withUsername(correo)
                 .password(usuario.getContrasena())
                 .disabled(false) // Ya verificamos que está activo
                 .authorities(authorities)
