@@ -437,7 +437,7 @@
                       th:text="${api.dominio.nombre}">Producción</span>
               </div>
               <i class="fas fa-user-circle" style="font-size: 1.5rem; color: #4299e1;"></i>
-                <div th:if="${api.equipo.idEquipo==usuario.equipo.idEquipo}" class="ribbon bg-green"><i class="fas fa-users"></i>Mi Equipo</div>
+                <div th:if="${api.equipo.idEquipo==usuario.equipo.idEquipo}" class="ribbon ribbon-top ribbon-end bg-green"><i class="fas fa-users">Mi equipo</i></div>
             </div>
 
             <p class="api-description" th:text="${api.descripcion}">
