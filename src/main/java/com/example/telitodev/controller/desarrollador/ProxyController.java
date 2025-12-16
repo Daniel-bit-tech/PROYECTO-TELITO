@@ -337,6 +337,30 @@ public class ProxyController {
         }
         return ResponseEntity.ok(new ApiHasEntornoUrlDto(optConfig.get().getUrlBase(), optConfig.get().getApi().getNombre()));
     }
+
+    /**
+     * Registra métricas de una llamada al sandbox en la tabla LogApi
+     */
+    private void logMetrics(Api api, Usuario usuario, String endpoint, String urlTarget, String metodoHttp, Integer statusCode, long startTime) {
+        try {
+            long duration = System.currentTimeMillis() - startTime;
+
+            LogApi log = new LogApi();
+            log.setApi(api);
+            log.setUsuario(usuario);
+            log.setEndpoint(endpoint);
+            //            log.setUrl(urlTarget);
+            log.setMetodoHttp(metodoHttp.toUpperCase());
+            log.setEstadoHttp(statusCode);
+            log.setTiempoRespuestaMs((int) duration);
+            log.setFecha(java.time.LocalDateTime.now());
+
+            logapiRepository.save(log);
+
+        } catch (Exception e) {
+            System.err.println("Error al registrar métrica: " + e.getMessage());
+        }
+    }
 //
 //    @GetMapping("/api/sandbox/{apiId}/endpoints")
 //    public ResponseEntity<List<String>> getApiEndpoints(@PathVariable Integer apiId) {
