@@ -50,8 +50,45 @@
     <div class="page-wrapper">
         <div class="page-header d-print-none">
             <div class="container-xl">
-                <h2 class="page-title">API Sandbox General</h2>
-                <p class="text-muted">Prueba todas las APIs disponibles en un solo lugar.</p>
+
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h2 class="page-title">API Sandbox General</h2>
+                        <p class="text-muted">Prueba todas las APIs disponibles en un solo lugar.</p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                Mis API Keys
+                            </button>
+
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <th:block th:each="cred : ${credenciales}">
+                                    <div class="dropdown-item d-flex justify-content-between align-items-center">
+
+                                        <div>
+                                            <div class="fw-bold" th:text="${cred.apiKey}"></div>
+                                            <div class="text-muted small">
+                                                <span th:text="${cred.api.nombre}"></span>
+                                                ·
+                                                <span th:text="${cred.estado ? 'Activa' : 'Inactiva'}"></span>
+                                            </div>
+                                        </div>
+
+                                        <button class="btn btn-sm btn-outline-info btn-action"
+                                                th:attr="data-key=${cred.apiKey}"
+                                                onclick="copiarApiKey(this)">
+                                            <i class="fa fa-solid fa-copy"></i>
+                                        </button>
+
+                                    </div>
+
+                                    <div class="dropdown-divider"></div>
+                                </th:block>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="page-body">
@@ -97,7 +134,7 @@
                                                 <div class="col-4">
                                                     <input id="auth-apikey-key" type="text" class="form-control" placeholder="Key" value="apiKey">
                                                 </div>
-                                                <div class="col-6">
+                                                <div class="col-8">
                                                     <input id="auth-apikey-value" type="text" class="form-control" placeholder="Value">
                                                 </div>
                                             </div>
@@ -192,6 +229,13 @@
     
     <div th:replace="~{desarrollador/footer :: footer}"></div>
 </div>
+
+<script>
+    function copiarApiKey(btn) {
+        const key = btn.getAttribute("data-key");
+        navigator.clipboard.writeText(key);
+    }
+</script>
 
 <script>
     let CURRENT_API_ID = null;
