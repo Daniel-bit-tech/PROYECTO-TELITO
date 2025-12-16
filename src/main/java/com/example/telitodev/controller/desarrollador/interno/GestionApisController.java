@@ -153,7 +153,7 @@ public class GestionApisController extends BaseController {
                     model.addAttribute("listaEstados", estadoApiRepository.findAll());
                     return "desarrollador/interno/secciones :: general";
                 case "documentacion":
-                    model.addAttribute("docs", documentacionRepository.findByApi_IdApiOrderByFechaCreacionDesc(idApi));
+                    model.addAttribute("docs", documentacionRepository.findByApi_IdApiOrderByFechaCreacionDesc(idApi).stream().filter(d -> d.getFormato()!=Documentacion.FormatoDoc.MARKDOWN).toList());
                     return "desarrollador/interno/secciones :: documentacion";
 //                case "comunidad":
 //                    return "desarrollador/interno/secciones :: comunidad";

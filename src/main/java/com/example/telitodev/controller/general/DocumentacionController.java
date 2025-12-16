@@ -196,7 +196,7 @@ public class DocumentacionController {
 
             presignedUrl = s3DocsApiService.generarUrlDescarga(doc.getUrlDocumento());
         } catch (DocApiService.DocValidationException e) {
-            return ResponseEntity.badRequest()
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("success", false, "message", "No se pudo descargar el archivo."));
         }
 

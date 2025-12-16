@@ -310,7 +310,7 @@
                     </div>
 
                     <button type="button" class="btn btn-sm btn-outline-success btn-download-doc gap-2"
-                        th:attr="data-doc-id=${doc.idDocumentacion}">
+                        th:attr="data-doc-id=${doc.idDocumentacion}" th:attrappend="data-doc-name=${'API '+doc.api+' - '+doc.tipo}">
                         <i class="fa fa-download"></i> Descargar
                     </button>
                 </div>
