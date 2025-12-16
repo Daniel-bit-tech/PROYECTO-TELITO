@@ -418,9 +418,16 @@
           </div>
 
           <div class="profile-info">
-            <p th:text="${usuario.correo}"><i class="fas fa-envelope"></i> juan.perez@ejemplo.com</p>
-            <!--                        <p><i class="fas fa-building"></i> Empresa XYZ</p>-->
-            <!--                        <p><i class="fas fa-map-marker-alt"></i> Lima, Perú</p>-->
+            <p><i class="fas fa-envelope"></i> <span th:text="${usuario.correo}">juan.perez@ejemplo.com</span></p>
+            <p th:if="${usuario.correoCorporativo != null && !usuario.correoCorporativo.isEmpty()}">
+              <i class="fas fa-briefcase"></i> <span th:text="${usuario.correoCorporativo}">correo.corporativo@empresa.com</span>
+            </p>
+            <p th:if="${usuario.organizacion != null}">
+              <i class="fas fa-building"></i> <span th:text="${usuario.organizacion.nombre}">Organización</span>
+            </p>
+            <p th:if="${usuario.equipo != null}">
+              <i class="fas fa-users"></i> <span th:text="${usuario.equipo.nombre}">Equipo</span>
+            </p>
           </div>
 
           <!--                    <div class="profile-stats">-->
@@ -449,95 +456,24 @@
 
         <div class="profile-main">
           <div id="overview" class="profile-tab-content">
-            <h3 class="section-title">Resumen de Actividad</h3>
+            <h3 class="section-title">Actividades Recientes</h3>
 
-            <div class="activity-list">
-              <div class="activity-item">
+            <div class="activity-list" th:if="${actividadesRecientes != null && !actividadesRecientes.isEmpty()}">
+              <div class="activity-item" th:each="actividad : ${actividadesRecientes}">
                 <div class="activity-icon">
-                  <i class="fas fa-code"></i>
+                  <i class="fas fa-history"></i>
                 </div>
                 <div class="activity-content">
-                  <h4 class="activity-title">Nueva integración de API</h4>
-                  <p class="activity-desc">Has integrado la API de Pagos en el proyecto E-commerce Mobile App</p>
-                  <span class="activity-time">Hace 2 horas</span>
-                </div>
-              </div>
-
-              <div class="activity-item">
-                <div class="activity-icon">
-                  <i class="fas fa-comment"></i>
-                </div>
-                <div class="activity-content">
-                  <h4 class="activity-title">Feedback enviado</h4>
-                  <p class="activity-desc">Has enviado comentarios sobre la documentación de la API de Usuarios</p>
-                  <span class="activity-time">Ayer a las 14:32</span>
-                </div>
-              </div>
-
-              <div class="activity-item">
-                <div class="activity-icon">
-                  <i class="fas fa-key"></i>
-                </div>
-                <div class="activity-content">
-                  <h4 class="activity-title">Nueva API Key generada</h4>
-                  <p class="activity-desc">Has generado una nueva clave para la API de Analytics</p>
-                  <span class="activity-time">15 de Agosto, 2023</span>
-                </div>
-              </div>
-
-              <div class="activity-item">
-                <div class="activity-icon">
-                  <i class="fas fa-book"></i>
-                </div>
-                <div class="activity-content">
-                  <h4 class="activity-title">Documentación consultada</h4>
-                  <p class="activity-desc">Has accedido a la documentación de la API de Notificaciones</p>
-                  <span class="activity-time">14 de Agosto, 2023</span>
+                  <h4 class="activity-title" th:text="${actividad.titulo}">Título de actividad</h4>
+                  <p class="activity-desc" th:text="${actividad.descripcion}">Descripción de la actividad</p>
+                  <span class="activity-time" th:text="${actividad.tiempoTranscurrido}">Hace un momento</span>
                 </div>
               </div>
             </div>
-
-            <h3 class="section-title" style="margin-top: 2rem;">APIs Recientes</h3>
-
-            <div class="api-list">
-              <div class="api-item">
-                <div class="api-info">
-                  <div class="api-icon">
-                    <i class="fas fa-credit-card"></i>
-                  </div>
-                  <div class="api-details">
-                    <h4>API de Pagos</h4>
-                    <p>Procesamiento de transacciones y gestión de pagos</p>
-                  </div>
-                </div>
-                <span class="badge badge-success">Activa</span>
-              </div>
-
-              <div class="api-item">
-                <div class="api-info">
-                  <div class="api-icon">
-                    <i class="fas fa-users"></i>
-                  </div>
-                  <div class="api-details">
-                    <h4>API de Usuarios</h4>
-                    <p>Gestión de autenticación y perfiles de usuario</p>
-                  </div>
-                </div>
-                <span class="badge badge-success">Activa</span>
-              </div>
-
-              <div class="api-item">
-                <div class="api-info">
-                  <div class="api-icon">
-                    <i class="fas fa-chart-bar"></i>
-                  </div>
-                  <div class="api-details">
-                    <h4>API de Analytics</h4>
-                    <p>Métricas y análisis de datos en tiempo real</p>
-                  </div>
-                </div>
-                <span class="badge badge-warning">Pendiente de renovación</span>
-              </div>
+            
+            <div th:if="${actividadesRecientes == null || actividadesRecientes.isEmpty()}" style="text-align: center; padding: 2rem; color: var(--tblr-secondary-color);">
+              <i class="fas fa-inbox" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+              <p>No hay actividades recientes para mostrar</p>
             </div>
           </div>
 
@@ -560,6 +496,23 @@
                 <label class="form-label">Correo Electrónico</label>
                 <input type="email" class="form-control" th:value="${usuario.correo}" readonly>
                 <div class="form-text">Este es el correo que utilizas para iniciar sesión</div>
+              </div>
+
+              <div class="form-group" th:if="${usuario.correoCorporativo != null && !usuario.correoCorporativo.isEmpty()}">
+                <label class="form-label">Correo Corporativo</label>
+                <input type="email" class="form-control" th:value="${usuario.correoCorporativo}" readonly>
+                <div class="form-text">Tu correo corporativo</div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group" th:if="${usuario.organizacion != null}">
+                  <label class="form-label">Organización</label>
+                  <input type="text" class="form-control" th:value="${usuario.organizacion.nombre}" readonly>
+                </div>
+                <div class="form-group" th:if="${usuario.equipo != null}">
+                  <label class="form-label">Equipo</label>
+                  <input type="text" class="form-control" th:value="${usuario.equipo.nombre}" readonly>
+                </div>
               </div>
 
               <!--                            <div class="form-group">-->
