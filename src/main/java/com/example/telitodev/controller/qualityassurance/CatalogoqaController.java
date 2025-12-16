@@ -57,7 +57,14 @@ public class CatalogoqaController extends BaseController {
         if (tags != null && tags.isEmpty()) tags = null;
 
         // Obtener la página de APIs DTO desde el repositorio
-        //Page<ApiProyectoDTO> apiPage = apiRepository.findApisForQaCatalog(dni, nombre, dominios, tags, pageable);
+        Page<ApiProyectoDTO> apiPage = apiRepository.findApisForQaCatalog(dni, nombre, dominios, tags, pageable);
+
+        // Si la página solicitada está fuera de rango, ajustar a la última página válida
+        if (page >= apiPage.getTotalPages() && apiPage.getTotalPages() > 0) {
+            page = apiPage.getTotalPages() - 1;
+            pageable = PageRequest.of(page, size);
+            apiPage = apiRepository.findApisForQaCatalog(dni, nombre, dominios, tags, pageable);
+        }
 
         // Si la página solicitada está fuera de rango, ajustar a la última página válida
         if (page >= apiPage.getTotalPages() && apiPage.getTotalPages() > 0) {
@@ -75,7 +82,7 @@ public class CatalogoqaController extends BaseController {
 
         // Pasar datos al modelo
         model.addAttribute("usuario", usuario);
-        //model.addAttribute("apiPage", apiPage); // Enviar el objeto Page completo a la vista
+        model.addAttribute("apiPage", apiPage); // Enviar el objeto Page completo a la vista
         model.addAttribute("dominios", allDominios);
         model.addAttribute("tags", allTags);
 

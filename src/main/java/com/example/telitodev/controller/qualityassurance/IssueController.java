@@ -101,10 +101,10 @@ public class IssueController extends BaseController {
                 if (issue.getReporte() != null && issue.getReporte().getApi() != null) {
                     Api api = issue.getReporte().getApi();
                     apiData.put("nombre", api.getNombre());
-                    apiData.put("dominio", api.getDominio() != null ? 
-                        api.getDominio().getNombre() : "N/A");
-                    apiData.put("tag", api.getTag() != null ? 
-                        api.getTag().getNombre() : "N/A");
+                    apiData.put("dominio", api.getDominio() != null ?
+                            api.getDominio().getNombre() : "N/A");
+                    apiData.put("tag", api.getTag() != null ?
+                            api.getTag().getNombre() : "N/A");
                 } else {
                     apiData.put("nombre", "API no disponible");
                     apiData.put("dominio", "N/A");
@@ -249,8 +249,8 @@ public class IssueController extends BaseController {
                     String rolMiembro = miembro.getRol().getNombreRol();
                     if ("DEV".equals(rolMiembro) || "QA".equals(rolMiembro)) {
                         Notificacion notif = new Notificacion();
-                        notif.setMensaje("Se ha creado un nuevo issue para la API: " + 
-                            newIssue.getReporte().getApi().getNombre());
+                        notif.setMensaje("Se ha creado un nuevo issue para la API: " +
+                                newIssue.getReporte().getApi().getNombre());
                         notif.setLeido(false);
                         notif.setFecha(new Timestamp(System.currentTimeMillis()));
                         notif.setUsuario(miembro);
@@ -272,10 +272,10 @@ public class IssueController extends BaseController {
     @PostMapping("/crearComentario")
     @ResponseBody
     public ResponseEntity<?> guardarComentario(@RequestParam("comentario") String comentario,
-                                    @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
-                                    @RequestParam("idIssue") Integer idIssue,
-                                    @RequestParam("idReporte") Integer idReporte,
-                                    Authentication auth) {
+                                               @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
+                                               @RequestParam("idIssue") Integer idIssue,
+                                               @RequestParam("idReporte") Integer idReporte,
+                                               Authentication auth) {
 
         Map<String, String> response = new HashMap<>();
 
@@ -361,7 +361,7 @@ public class IssueController extends BaseController {
                     if ("DEV".equals(rolMiembro) || "QA".equals(rolMiembro)) {
                         Notificacion notif = new Notificacion();
                         notif.setMensaje("El usuario " + usuario.getNombre() +
-                            " comentó en el issue de la API: " + issue.getReporte().getApi().getNombre());
+                                " comentó en el issue de la API: " + issue.getReporte().getApi().getNombre());
                         notif.setLeido(false);
                         notif.setFecha(new Timestamp(System.currentTimeMillis()));
                         notif.setUsuario(miembro);
@@ -383,7 +383,7 @@ public class IssueController extends BaseController {
 
     @PostMapping("/issueCerrar/{idIssue}/{idReporte}")
     public String cerrarIssue(@PathVariable Integer idIssue, @PathVariable Integer idReporte,
-                          RedirectAttributes redirectAttributes, Authentication auth) {
+                              RedirectAttributes redirectAttributes, Authentication auth) {
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
 
@@ -413,23 +413,23 @@ public class IssueController extends BaseController {
                 // No notificar al que cerró el issue
                 if (!miembro.getDni().equals(usuario.getDni())) {
                     String rolMiembro = miembro.getRol().getNombreRol();
-                    
+
                     // Notificación para QAs y DEVs
                     if ("DEV".equals(rolMiembro) || "QA".equals(rolMiembro)) {
                         Notificacion notif = new Notificacion();
-                        notif.setMensaje("El issue de la API '" + 
-                            issue.getReporte().getApi().getNombre() + "' ha sido corregido");
+                        notif.setMensaje("El issue de la API '" +
+                                issue.getReporte().getApi().getNombre() + "' ha sido corregido");
                         notif.setLeido(false);
                         notif.setFecha(new Timestamp(System.currentTimeMillis()));
                         notif.setUsuario(miembro);
                         notificacionRepository.save(notif);
                     }
-                    
+
                     // Notificación especial para POs
                     if ("PO".equals(rolMiembro)) {
                         Notificacion notifPO = new Notificacion();
-                        notifPO.setMensaje("Su API '" + issue.getReporte().getApi().getNombre() + 
-                            "' ya ha sido arreglada y puede ser usada para su proyecto.");
+                        notifPO.setMensaje("Su API '" + issue.getReporte().getApi().getNombre() +
+                                "' ya ha sido arreglada y puede ser usada para su proyecto.");
                         notifPO.setLeido(false);
                         notifPO.setFecha(new Timestamp(System.currentTimeMillis()));
                         notifPO.setUsuario(miembro);

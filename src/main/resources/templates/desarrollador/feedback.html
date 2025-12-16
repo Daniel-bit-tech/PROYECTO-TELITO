@@ -446,7 +446,7 @@
                                 <h3 class="card-title mt-4">Calificación</h3>
                                 <p class="card-subtitle">
                                     <span th:each="i : ${#numbers.sequence(1, feedback.calificacion)}" class="text-warning"><i class="fas fa-star"></i></span>
-                                    <span th:each="i : ${#numbers.sequence(feedback.calificacion + 1, 5)}" class="text-muted"><i class="far fa-star"></i></span>
+                                    <span th:if="${feedback.calificacion < 5}" th:each="i : ${#numbers.sequence(feedback.calificacion + 1, 5)}" class="text-muted"><i class="far fa-star"></i></span>
                                 </p>
                                 <h3 class="card-title mt-4">Fecha</h3>
                                 <p class="card-subtitle">

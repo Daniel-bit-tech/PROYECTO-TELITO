@@ -51,14 +51,14 @@ public class IssueDevController extends BaseController{
 
     @GetMapping("/issuesDev")
     public String showIssueDevView(Model model,
-                                Authentication auth,
-                                HttpSession session,
-                                @RequestParam(value = "tags", required = false) List<String> estados,
-                                @RequestParam(value = "fechaInicio", required = false) String fechaInicio,
-                                @RequestParam(value = "fechaFin", required = false) String fechaFin,
-                                @RequestParam(value = "nombre", required = false) String nombre,
-                                @RequestParam(defaultValue = "0") int page,
-                                @RequestParam(defaultValue = "10") int size) { // 6 issues por página
+                                   Authentication auth,
+                                   HttpSession session,
+                                   @RequestParam(value = "tags", required = false) List<String> estados,
+                                   @RequestParam(value = "fechaInicio", required = false) String fechaInicio,
+                                   @RequestParam(value = "fechaFin", required = false) String fechaFin,
+                                   @RequestParam(value = "nombre", required = false) String nombre,
+                                   @RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "10") int size) { // 6 issues por página
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
         addImpersonationAttributes(model, session);
@@ -130,10 +130,10 @@ public class IssueDevController extends BaseController{
     @PostMapping("/crearComentarioDev")
     @ResponseBody
     public ResponseEntity<?> guardarComentario(@RequestParam("comentario") String comentario,
-                                    @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
-                                    @RequestParam("idIssue") Integer idIssue,
-                                    @RequestParam("idReporte") Integer idReporte,
-                                    Authentication auth) {
+                                               @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
+                                               @RequestParam("idIssue") Integer idIssue,
+                                               @RequestParam("idReporte") Integer idReporte,
+                                               Authentication auth) {
 
         Map<String, String> response = new HashMap<>();
 

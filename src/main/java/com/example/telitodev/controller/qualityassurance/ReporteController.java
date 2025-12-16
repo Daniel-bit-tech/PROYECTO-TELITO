@@ -171,10 +171,10 @@ public class ReporteController extends BaseController {
     @PostMapping("/guardarReporte")
     @ResponseBody
     public ResponseEntity<?> submitReporte(@RequestParam("apiId") Integer apiId,
-                                @RequestParam("estado") String estado,
-                                @RequestParam("descripcion") String descripcion,
-                                @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
-                                Authentication auth) {
+                                           @RequestParam("estado") String estado,
+                                           @RequestParam("descripcion") String descripcion,
+                                           @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
+                                           Authentication auth) {
 
         Map<String, String> response = new HashMap<>();
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
@@ -233,8 +233,8 @@ public class ReporteController extends BaseController {
                     return ResponseEntity.badRequest().body(response);
                 }
                 String contentType = archivo.getContentType();
-                if (contentType == null || (!contentType.equals("image/png") && 
-                    !contentType.equals("image/jpeg") && !contentType.equals("text/plain"))) {
+                if (contentType == null || (!contentType.equals("image/png") &&
+                        !contentType.equals("image/jpeg") && !contentType.equals("text/plain"))) {
                     response.put("error", "Formato de archivo no permitido. Solo se aceptan: .png, .jpg, .log, .txt.");
                     return ResponseEntity.badRequest().body(response);
                 }
@@ -268,9 +268,9 @@ public class ReporteController extends BaseController {
                 for (Usuario miembro : equipoApi.getUsuarios()) {
                     if (!miembro.getDni().equals(usuario.getDni())) {
                         Notificacion notif = new Notificacion();
-                        String mensaje = "El QA " + usuario.getNombre() + " ha creado un reporte " + 
-                                       ("Aprobado".equals(estado) ? "de aprobación" : "de fallo") + 
-                                       " para la API: " + apiReportada.getNombre();
+                        String mensaje = "El QA " + usuario.getNombre() + " ha creado un reporte " +
+                                ("Aprobado".equals(estado) ? "de aprobación" : "de fallo") +
+                                " para la API: " + apiReportada.getNombre();
                         notif.setMensaje(mensaje);
                         notif.setLeido(false);
                         notif.setFecha(new Timestamp(System.currentTimeMillis()));
