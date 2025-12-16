@@ -40,7 +40,9 @@
     </script>
     
     <style>
-        /* Estilos específicos para mantener compatibilidad con DataTables */
+        @import url("https://rsms.me/inter/inter.css");
+
+        /* Estilos base compatibles con tema oscuro/claro */
         .page {
             min-height: 100vh;
             height: auto !important;
@@ -53,11 +55,10 @@
         }
         
         .page-header {
-            margin-top: 1rem; /* Reducido de 2rem a 1rem */
-            margin-bottom: 1rem; /* Agregado para menos espacio */
+            margin-top: 1rem;
+            margin-bottom: 1rem;
         }
         
-        /* Reducir espaciado general de la página */
         .page-body {
             padding-top: 1rem;
             flex: 1;
@@ -67,32 +68,69 @@
             padding-top: 0;
         }
         
-        /* Estilos para tema oscuro por defecto */
-        [data-bs-theme="dark"] .card {
-            background-color: var(--tblr-dark) !important;
-            border-color: var(--tblr-border-color-dark) !important;
-        }
-        
-        [data-bs-theme="light"] .card {
-            background-color: var(--tblr-bg-surface) !important;
-            border-color: var(--tblr-border-color) !important;
-        }
-        
-        /* Adaptación para ambos temas */
+        /* Estilos para tarjetas adaptables al tema */
         .card {
             background-color: var(--tblr-card-bg, var(--tblr-bg-surface));
             border-color: var(--tblr-border-color);
             transition: background-color 0.3s ease, border-color 0.3s ease;
         }
-        
-        [data-bs-theme="dark"] .table {
-            --bs-table-bg: transparent;
-            color: var(--tblr-body-color-dark);
+
+        body[data-bs-theme="dark"] .card,
+        html[data-bs-theme="dark"] .card,
+        [data-bs-theme="dark"] .card {
+            background-color: #1e293b;
+            border-color: #334155;
         }
         
+        body[data-bs-theme="light"] .card,
+        html[data-bs-theme="light"] .card,
+        [data-bs-theme="light"] .card {
+            background-color: #ffffff;
+            border-color: #e2e8f0;
+        }
+        
+        /* Tablas adaptables */
+        body[data-bs-theme="dark"] .table,
+        html[data-bs-theme="dark"] .table,
+        [data-bs-theme="dark"] .table {
+            --bs-table-bg: transparent;
+            color: #e2e8f0;
+        }
+        
+        body[data-bs-theme="light"] .table,
+        html[data-bs-theme="light"] .table,
         [data-bs-theme="light"] .table {
             --bs-table-bg: transparent;
+            color: #1e293b;
+        }
+
+        /* Títulos de página */
+        .page-title {
             color: var(--tblr-body-color);
+            font-weight: 700;
+        }
+
+        body[data-bs-theme="dark"] .page-title,
+        html[data-bs-theme="dark"] .page-title,
+        [data-bs-theme="dark"] .page-title {
+            color: #e2e8f0;
+        }
+
+        body[data-bs-theme="light"] .page-title,
+        html[data-bs-theme="light"] .page-title,
+        [data-bs-theme="light"] .page-title {
+            color: #1e293b;
+        }
+
+        /* Text muted adaptable */
+        .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        body[data-bs-theme="light"] .text-muted,
+        html[data-bs-theme="light"] .text-muted,
+        [data-bs-theme="light"] .text-muted {
+            color: #6c757d !important;
         }
         
         /* Badge personalizado para estados */
@@ -131,6 +169,11 @@
             padding: 0.25rem 0.5rem;
             font-size: 0.75rem;
         }
+
+        .btn-aprobar:hover {
+            background-color: #218838;
+            border-color: #218838;
+        }
         
         .btn-rechazar {
             background-color: #dc3545;
@@ -139,6 +182,11 @@
             border-radius: 6px;
             padding: 0.25rem 0.5rem;
             font-size: 0.75rem;
+        }
+
+        .btn-rechazar:hover {
+            background-color: #c82333;
+            border-color: #c82333;
         }
         
         /* Tipos de solicitud */
@@ -153,15 +201,22 @@
             background-color: #f3e5f5;
             color: #7b1fa2;
         }
+
+        body[data-bs-theme="dark"] .tipo-organizacion,
+        html[data-bs-theme="dark"] .tipo-organizacion,
+        [data-bs-theme="dark"] .tipo-organizacion {
+            background-color: #4a148c;
+            color: #e1bee7;
+        }
         
-        /* Asegurar que DataTables se vea bien */
+        /* Table responsive */
         .table-responsive {
             border-radius: 8px;
             overflow: hidden;
             box-shadow: none;
         }
         
-        /* Estilos para las pestañas */
+        /* Estilos para las pestañas - Verde como en usuarios */
         .nav-pills .nav-link {
             border-radius: 6px;
             margin-right: 0.5rem;
@@ -171,7 +226,7 @@
         }
         
         .nav-pills .nav-link.active {
-            background-color: #28a745 !important; /* Verde en lugar de azul */
+            background-color: #28a745 !important;
             color: white !important;
             border-color: #28a745 !important;
             font-weight: 600;
@@ -183,13 +238,12 @@
             border-color: rgba(40, 167, 69, 0.3);
         }
         
-        /* Asegurar que el badge en el tab activo sea visible */
         .nav-pills .nav-link.active .badge {
             background-color: rgba(255, 255, 255, 0.2) !important;
             color: white !important;
         }
         
-        /* Estilos adicionales para mejorar la compatibilidad de temas */
+        /* Background adaptable */
         .page-wrapper {
             background-color: var(--tblr-bg-surface);
             transition: background-color 0.3s ease;
@@ -199,30 +253,26 @@
             background-color: transparent;
         }
         
-        .page-title {
-            color: var(--tblr-body-color);
-        }
-        
-        /* Iconos y botones adaptables al tema */
+        /* Botones adaptables */
         .btn {
             transition: all 0.3s ease;
         }
         
-        .fas, .fab, .far {
-            font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Font Awesome 6 Pro" !important;
-        }
-        
-        /* Asegurar contraste en diferentes temas */
-        [data-bs-theme="light"], .theme-light {
+        /* Variables de color según tema */
+        body[data-bs-theme="light"],
+        html[data-bs-theme="light"],
+        [data-bs-theme="light"] {
             --tblr-body-color: #1e293b;
             --tblr-border-color: #e2e8f0;
-            --tblr-bg-surface: #ffffff;
+            --tblr-bg-surface: #f8f9fa;
         }
         
-        [data-bs-theme="dark"], .theme-dark {
+        body[data-bs-theme="dark"],
+        html[data-bs-theme="dark"],
+        [data-bs-theme="dark"] {
             --tblr-body-color: #f1f5f9;
             --tblr-border-color: #334155;
-            --tblr-bg-surface: #1e293b;
+            --tblr-bg-surface: #0f172a;
         }
         
         /* Forzar aplicación de colores base */
@@ -232,10 +282,57 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
         
-        /* Asegurar que el contenido principal respete el tema */
         .page, .page-wrapper, .page-body {
             background-color: var(--tblr-bg-surface);
             color: var(--tblr-body-color);
+        }
+
+        /* Cards de estadísticas con mejor contraste */
+        .card-sm .card-body {
+            padding: 1.25rem;
+        }
+
+        .avatar {
+            width: 3rem;
+            height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 1.25rem;
+        }
+
+        /* Card header adaptable */
+        body[data-bs-theme="dark"] .card-header,
+        html[data-bs-theme="dark"] .card-header,
+        [data-bs-theme="dark"] .card-header {
+            background-color: #1e293b;
+            border-bottom-color: #334155;
+        }
+
+        body[data-bs-theme="light"] .card-header,
+        html[data-bs-theme="light"] .card-header,
+        [data-bs-theme="light"] .card-header {
+            background-color: #f8f9fa;
+            border-bottom-color: #e2e8f0;
+        }
+
+        /* Card title adaptable */
+        .card-title {
+            color: var(--tblr-body-color);
+            font-weight: 600;
+        }
+
+        body[data-bs-theme="dark"] .card-title,
+        html[data-bs-theme="dark"] .card-title,
+        [data-bs-theme="dark"] .card-title {
+            color: #e2e8f0;
+        }
+
+        body[data-bs-theme="light"] .card-title,
+        html[data-bs-theme="light"] .card-title,
+        [data-bs-theme="light"] .card-title {
+            color: #1e293b;
         }
     </style>
 </head>
@@ -462,12 +559,6 @@
                             <p class="empty-subtitle text-muted">Todas las solicitudes han sido procesadas</p>
                         </div>
                     </div>
-                </div>
-                <!-- Navegación de retorno -->
-                <div class="text-center mt-4">
-                    <a href="/admin/dashboard" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left me-2"></i>Volver al Dashboard
-                    </a>
                 </div>
             </div>
         </div>
@@ -767,11 +858,7 @@
 
         // Inicializar tooltips de Tabler
         document.addEventListener('DOMContentLoaded', function() {
-            // Verificar si Font Awesome se cargó correctamente
-            checkFontAwesome();
-            
-            // Sistema de tema simplificado y compatible
-            initPageTheme();
+            console.log('✅ Página de solicitudes cargada');
             
             // Esperar a que Bootstrap se cargue completamente antes de inicializar
             setTimeout(() => {

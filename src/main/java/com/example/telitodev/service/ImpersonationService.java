@@ -241,10 +241,19 @@ public class ImpersonationService {
         
         // Sin impersonación o si falla, usar usuario autenticado normal
         if (usuario == null) {
+            // Try personal email first
             usuario = usuarioRepository.findByCorreo(auth.getName());
-            if (usuario != null) {
-                System.out.println("👤 Usuario autenticado obtenido: " + usuario.getDni() + " - " + usuario.getNombre());
+            if (usuario == null) {
+                // Try corporate email if not found
+                usuario = usuarioRepository.findByCorreoCorporativo(auth.getName());
+                if (usuario != null) {
+                    System.out.println("👤 Usuario autenticado obtenido por correo corporativo: " + usuario.getDni() + " - " + usuario.getNombre());
+                }
             } else {
+                System.out.println("👤 Usuario autenticado obtenido por correo personal: " + usuario.getDni() + " - " + usuario.getNombre());
+            }
+            
+            if (usuario == null) {
                 System.err.println("❌ No se encontró usuario autenticado con correo: " + auth.getName());
             }
         }

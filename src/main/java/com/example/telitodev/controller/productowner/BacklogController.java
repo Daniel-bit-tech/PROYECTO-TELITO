@@ -103,7 +103,15 @@ public class BacklogController {
         
         // Sin impersonación, usar el usuario autenticado normal
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-        System.out.println("👤 Backlog - Usando datos del usuario autenticado: " + usuario.getNombre());
+        if (usuario == null) {
+            // Try corporate email if not found by personal email
+            usuario = usuarioRepository.findByCorreoCorporativo(auth.getName());
+            if (usuario != null) {
+                System.out.println("👤 Backlog - Usuario autenticado por correo corporativo: " + usuario.getNombre());
+            }
+        } else {
+            System.out.println("👤 Backlog - Usando datos del usuario autenticado: " + usuario.getNombre());
+        }
         return usuario;
     }
 

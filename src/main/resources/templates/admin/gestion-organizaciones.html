@@ -1,0 +1,1558 @@
+<!doctype html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <title>TELITO ADMIN | Gestión de Organizaciones</title>
+  <link th:href="|/tabler/dist/libs/jsvectormap/dist/jsvectormap.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-flags.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-socials.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-payments.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-vendors.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-marketing.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/dist/css/tabler-themes.css?1757307620|" rel="stylesheet" />
+  <link th:href="|/tabler/preview/css/demo.css?1757307620|" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url("https://rsms.me/inter/inter.css");
+
+    .dashboard-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 1rem;
+    }
+
+    .dashboard-header {
+      margin-top: 2rem;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+
+    .dashboard-title {
+      font-size: 1.875rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #e2e8f0;
+    }
+
+    body[data-bs-theme="light"] .dashboard-title,
+    html[data-bs-theme="light"] .dashboard-title,
+    [data-bs-theme="light"] .dashboard-title {
+      color: #1e293b;
+    }
+
+    .dashboard-subtitle {
+      color: #94a3b8;
+      margin-bottom: 1.5rem;
+    }
+
+    body[data-bs-theme="light"] .dashboard-subtitle,
+    html[data-bs-theme="light"] .dashboard-subtitle,
+    [data-bs-theme="light"] .dashboard-subtitle {
+      color: #6c757d;
+    }
+
+    /* Organizaciones Cards */
+    .org-card {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid #334155;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    body[data-bs-theme="light"] .org-card,
+    html[data-bs-theme="light"] .org-card,
+    [data-bs-theme="light"] .org-card {
+      background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+      border: 1px solid #e9ecef;
+    }
+
+    .org-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      border-color: #4361ee;
+    }
+
+    body[data-bs-theme="light"] .org-card:hover,
+    html[data-bs-theme="light"] .org-card:hover,
+    [data-bs-theme="light"] .org-card:hover {
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+      .org-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #334155;
+      }
+
+      body[data-bs-theme="light"] .org-header,
+      html[data-bs-theme="light"] .org-header,
+      [data-bs-theme="light"] .org-header {
+        border-bottom-color: #e9ecef;
+      }
+
+      .org-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #e2e8f0;
+      }
+
+      body[data-bs-theme="light"] .org-title,
+      html[data-bs-theme="light"] .org-title,
+      [data-bs-theme="light"] .org-title {
+        color: #1e293b;
+      }
+
+      .org-title i {
+        color: #4361ee;
+      }
+
+      .org-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+
+      .badge-public {
+        background-color: #10b981;
+        color: white;
+      }
+
+      .badge-private {
+        background-color: #6366f1;
+        color: white;
+      }
+
+      .org-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+
+      .stat-card {
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: center;
+        background-color: rgba(0, 0, 0, 0.2);
+      }
+
+      body[data-bs-theme="light"] .stat-card,
+      html[data-bs-theme="light"] .stat-card,
+      [data-bs-theme="light"] .stat-card {
+        background-color: #f8f9fa;
+        border-color: #e9ecef;
+      }
+
+      .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #4361ee;
+      }
+
+      .stat-label {
+        font-size: 0.875rem;
+        color: #94a3b8;
+        margin-top: 0.25rem;
+      }
+
+      body[data-bs-theme="light"] .stat-label,
+      html[data-bs-theme="light"] .stat-label,
+      [data-bs-theme="light"] .stat-label {
+        color: #6c757d;
+      }
+
+      .role-tag {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        margin: 0.25rem;
+        font-weight: 600;
+      }
+
+      .role-po { background-color: #8b5cf6; color: white; }
+      .role-dev { background-color: #3b82f6; color: white; }
+      .role-qa { background-color: #10b981; color: white; }
+      .role-admin { background-color: #ef4444; color: white; }
+
+      .role-distribution-title {
+        color: #94a3b8;
+      }
+
+      body[data-bs-theme="light"] .role-distribution-title,
+      html[data-bs-theme="light"] .role-distribution-title,
+      [data-bs-theme="light"] .role-distribution-title {
+        color: #6c757d;
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .btn-custom {
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .btn-view {
+        background-color: #3b82f6;
+        color: white;
+      }
+
+      .btn-view:hover {
+        background-color: #2563eb;
+      }
+
+      .btn-delete {
+        background-color: #ef4444;
+        color: white;
+      }
+
+      .btn-delete:hover {
+        background-color: #dc2626;
+      }
+
+      .btn-create {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .btn-create:hover {
+        transform: scale(1.05);
+      }
+
+      .modal-content {
+        border: 1px solid #334155;
+      }
+
+      [data-bs-theme="dark"] .modal-content {
+        background-color: #1e293b;
+        color: #e2e8f0;
+      }
+
+      body[data-bs-theme="light"] .modal-content,
+      html[data-bs-theme="light"] .modal-content,
+      [data-bs-theme="light"] .modal-content {
+        background-color: #ffffff;
+        color: #212529;
+      }
+
+      .modal-header {
+        background: linear-gradient(135deg, #4361ee 0%, #3b82f6 100%);
+        color: white;
+        border-bottom: none;
+      }
+
+      [data-bs-theme="dark"] .modal-body {
+        background-color: #0f172a;
+      }
+
+      body[data-bs-theme="light"] .modal-body,
+      html[data-bs-theme="light"] .modal-body,
+      [data-bs-theme="light"] .modal-body {
+        background-color: #f8f9fa;
+      }
+
+      [data-bs-theme="dark"] .form-control {
+        background-color: #1e293b;
+        border-color: #334155;
+        color: #e2e8f0;
+      }
+
+      [data-bs-theme="dark"] .form-control:focus {
+        background-color: #1e293b;
+        border-color: #4361ee;
+        color: #e2e8f0;
+        box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+      }
+
+      [data-bs-theme="dark"] .form-label {
+        color: #e2e8f0;
+      }
+
+      .user-list {
+        max-height: 400px;
+        overflow-y: auto;
+      }
+
+      .user-item {
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.75rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      [data-bs-theme="dark"] .user-item {
+        background-color: #1e293b;
+      }
+
+      body[data-bs-theme="light"] .user-item,
+      html[data-bs-theme="light"] .user-item,
+      [data-bs-theme="light"] .user-item {
+        background-color: #ffffff;
+        border-color: #e9ecef;
+      }
+
+      .user-info {
+        flex: 1;
+      }
+
+      .user-name {
+        font-weight: 600;
+        color: #e2e8f0;
+      }
+
+      body[data-bs-theme="light"] .user-name,
+      html[data-bs-theme="light"] .user-name,
+      [data-bs-theme="light"] .user-name {
+        color: #1e293b;
+      }
+
+      .user-email {
+        font-size: 0.875rem;
+        color: #94a3b8;
+      }
+
+      body[data-bs-theme="light"] .user-email,
+      html[data-bs-theme="light"] .user-email,
+      [data-bs-theme="light"] .user-email {
+        color: #6c757d;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #64748b;
+      }
+
+      body[data-bs-theme="light"] .empty-state,
+      html[data-bs-theme="light"] .empty-state,
+      [data-bs-theme="light"] .empty-state {
+        color: #6c757d;
+      }
+
+      .empty-state h3 {
+        color: #94a3b8;
+      }
+
+      body[data-bs-theme="light"] .empty-state h3,
+      html[data-bs-theme="light"] .empty-state h3,
+      [data-bs-theme="light"] .empty-state h3 {
+        color: #495057;
+      }
+
+      .empty-state i {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+      }
+
+      .search-box {
+        flex: 1;
+        max-width: 400px;
+      }
+
+      .search-box input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        border: 1px solid #334155;
+      }
+
+      [data-bs-theme="dark"] .search-box input {
+        background-color: #1e293b;
+        color: #e2e8f0;
+      }
+
+      body[data-bs-theme="light"] .search-box input,
+      html[data-bs-theme="light"] .search-box input,
+      [data-bs-theme="light"] .search-box input {
+        background-color: #ffffff;
+        color: #212529;
+        border-color: #ced4da;
+      }
+
+      .search-box input:focus {
+        outline: none;
+        border-color: #4361ee;
+      }
+
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #1e293b;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: #4361ee;
+        border-radius: 4px;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 2rem;
+      }
+
+      .spinner {
+        border: 3px solid #334155;
+        border-top: 3px solid #4361ee;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+</head>
+
+<body>
+<!-- Banner de impersonación -->
+<div th:replace="~{components/impersonation-banner :: impersonation-banner}"></div>
+
+<script th:src="|/tabler/dist/js/tabler-theme.min.js?1757307620|"></script>
+<div class="page">
+
+  <div th:replace="admin/header.html :: header"></div>
+
+  <!-- Main -->
+  <div class="content">
+    <div class="dashboard-container">
+
+      <div class="dashboard-header">
+        <h1 class="dashboard-title">
+          <i class="fas fa-building me-2"></i>Gestión de Organizaciones
+        </h1>
+        <p class="dashboard-subtitle">
+          Administra las organizaciones del sistema
+        </p>
+      </div>
+
+          <!-- Acciones del Header -->
+          <div class="header-actions">
+            <div class="search-box">
+              <input type="text" id="searchOrganizaciones" placeholder="🔍 Buscar organizaciones..." autocomplete="off">
+            </div>
+            <button class="btn-create" onclick="abrirModalCrearOrg()">
+              <i class="fas fa-plus"></i>
+              Nueva Organización
+            </button>
+          </div>
+
+          <!-- Lista de Organizaciones -->
+          <div id="organizacionesContainer">
+            <div class="loading" id="loadingOrgs" style="display: none;">
+              <div class="spinner"></div>
+              <p class="mt-3">Cargando organizaciones...</p>
+            </div>
+
+            <div id="organizacionesList">
+              <div class="org-card" th:each="orgStat : ${organizaciones}">
+                <div class="org-header">
+                  <div>
+                    <h3 class="org-title">
+                      <i class="fas fa-building"></i>
+                      <span th:text="${orgStat.organizacion.nombre}">Nombre Org</span>
+                      <span class="org-badge" th:classappend="${orgStat.organizacion.publica ? 'badge-public' : 'badge-private'}"
+                            th:text="${orgStat.organizacion.publica ? 'Pública' : 'Privada'}">
+                        Pública
+                      </span>
+                    </h3>
+                    <p class="text-muted mb-0" th:text="${orgStat.organizacion.descripcion}">Descripción</p>
+                    <small class="text-muted">
+                      <i class="fas fa-envelope me-1"></i>
+                      <span th:text="${orgStat.organizacion.dominioCorreo != null ? orgStat.organizacion.dominioCorreo : 'Sin dominio'}">dominio.com</span>
+                    </small>
+                  </div>
+                  <div class="action-buttons">
+                    <button class="btn-custom btn-view" 
+                            th:attr="data-org-id=${orgStat.organizacion.idOrganizacion}"
+                            onclick="verDetalleOrganizacion(this.getAttribute('data-org-id'))">
+                      <i class="fas fa-eye"></i>
+                      Ver Detalle
+                    </button>
+                    <button class="btn-custom btn-delete" 
+                            th:attr="data-org-id=${orgStat.organizacion.idOrganizacion}, data-org-nombre=${orgStat.organizacion.nombre}"
+                            onclick="eliminarOrganizacion(this.getAttribute('data-org-id'), this.getAttribute('data-org-nombre'))">
+                      <i class="fas fa-trash"></i>
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+
+                <div class="org-stats">
+                  <div class="stat-card">
+                    <div class="stat-number" th:text="${orgStat.totalUsuarios}">0</div>
+                    <div class="stat-label">Total Usuarios</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-number" th:text="${orgStat.usuariosActivos}">0</div>
+                    <div class="stat-label">Activos</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-number" th:text="${#maps.size(orgStat.usuariosPorRol)}">0</div>
+                    <div class="stat-label">Roles Diferentes</div>
+                  </div>
+                </div>
+
+                <div class="mt-3">
+                  <strong class="role-distribution-title">Distribución de Roles:</strong><br>
+                  <div th:if="${#maps.isEmpty(orgStat.usuariosPorRol)}">
+                    <span class="text-muted">Sin usuarios asignados</span>
+                  </div>
+                  <div th:unless="${#maps.isEmpty(orgStat.usuariosPorRol)}">
+                    <span th:each="entry : ${orgStat.usuariosPorRol}" 
+                          class="role-tag"
+                          th:classappend="${entry.key == 'PO' ? 'role-po' : (entry.key == 'DEVELOPER' or entry.key == 'DEV' ? 'role-dev' : (entry.key == 'QA' ? 'role-qa' : 'role-admin'))}"
+                          th:text="${entry.key + ': ' + entry.value}">
+                      ROL: 0
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Empty State -->
+              <div class="empty-state" th:if="${#lists.isEmpty(organizaciones)}">
+                <i class="fas fa-building"></i>
+                <h3>No hay organizaciones registradas</h3>
+                <p>Comienza creando tu primera organización</p>
+                <button class="btn-create mt-3" onclick="abrirModalCrearOrg()">
+                  <i class="fas fa-plus"></i>
+                  Crear Primera Organización
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- Modal: Crear Nueva Organización con Primer Product Owner -->
+  <div class="modal fade" id="modalCrearOrg" tabindex="-1" aria-labelledby="modalCrearOrgLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header" style="background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%); color: white;">
+          <h5 class="modal-title" id="modalCrearOrgLabel">
+            <i class="fas fa-building me-2"></i>Crear Nueva Organización con Primer Product Owner
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info" style="background-color: #1e40af; border-color: #3b82f6; color: #dbeafe;">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Este proceso creará:</strong>
+            <ul class="mb-0 mt-2">
+              <li>Una nueva organización con su dominio corporativo</li>
+              <li>El primer Product Owner (PO) de la organización</li>
+              <li>Se enviará un email de confirmación al PO para activar su cuenta</li>
+            </ul>
+          </div>
+          
+          <form id="formCrearOrg">
+            <!-- SECCIÓN 1: DATOS DE LA ORGANIZACIÓN -->
+            <div class="card mb-3">
+              <div class="card-header" style="background: linear-gradient(135deg, #495057 0%, #6c757d 100%); color: white; margin: 0;">
+                <h6 class="mb-0"><i class="fas fa-building me-2"></i>Datos de la Organización</h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="orgNombre" class="form-label fw-bold">
+                        <i class="fas fa-building me-1"></i>Nombre de la Organización <span class="text-danger">*</span>
+                      </label>
+                      <input type="text" class="form-control" id="orgNombre" name="nombreOrganizacion" 
+                             placeholder="Ej: Acme Corporation" required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="orgDominio" class="form-label fw-bold">
+                        <i class="fas fa-globe me-1"></i>Dominio de Correo <span class="text-danger">*</span>
+                      </label>
+                      <input type="text" class="form-control" id="orgDominio" name="dominioCorreo" 
+                             placeholder="Ej: acme.com" pattern="[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}" required>
+                      <div class="form-text">Solo el dominio, sin @. Ej: empresa.com</div>
+                    </div>
+                  </div>
+                  <div class="col-md-8">
+                    <div class="mb-3">
+                      <label for="orgDescripcion" class="form-label fw-bold">
+                        <i class="fas fa-align-left me-1"></i>Descripción
+                      </label>
+                      <input type="text" class="form-control" id="orgDescripcion" name="descripcionOrganizacion" 
+                             placeholder="Breve descripción de la organización" maxlength="100">
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="mb-3">
+                      <label class="form-label fw-bold">
+                        <i class="fas fa-eye me-1"></i>Visibilidad
+                      </label>
+                      <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="orgPublica" name="publica">
+                        <label class="form-check-label" for="orgPublica">
+                          Organización pública
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- SECCIÓN 2: DATOS DEL PRIMER PRODUCT OWNER -->
+            <div class="card">
+              <div class="card-header" style="background: linear-gradient(135deg, #495057 0%, #6c757d 100%); color: white; margin: 0;">
+                <h6 class="mb-0"><i class="fas fa-user-tie me-2"></i>Datos del Primer Product Owner</h6>
+              </div>
+              <div class="card-body">
+                <div class="row">
+                  <!-- DNI con botón de consulta RENIEC -->
+                  <div class="col-md-8">
+                    <div class="mb-3">
+                      <label for="poDni" class="form-label fw-bold">
+                        <i class="fas fa-id-card me-1"></i>DNI <span class="text-danger">*</span>
+                      </label>
+                      <input type="text" class="form-control" id="poDni" name="dni" 
+                             placeholder="Ej: 12345678" maxlength="8" pattern="[0-9]{8}" required>
+                      <div class="form-text">Exactamente 8 dígitos</div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="mb-3">
+                      <label class="form-label fw-bold">&nbsp;</label>
+                      <button type="button" class="btn btn-primary w-100" id="btnConsultarReniecPo">
+                        <i class="fas fa-search me-1"></i>Consultar DNI
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <!-- Nombres (se auto-completan con RENIEC) -->
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="poNombre" class="form-label fw-bold">
+                        <i class="fas fa-user me-1"></i>Nombre <span class="text-danger">*</span>
+                      </label>
+                      <input type="text" class="form-control" id="poNombre" name="nombre" 
+                             placeholder="Se auto-completará con RENIEC" readonly required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="poApellidoPaterno" class="form-label fw-bold">
+                        <i class="fas fa-user me-1"></i>Apellido Paterno <span class="text-danger">*</span>
+                      </label>
+                      <input type="text" class="form-control" id="poApellidoPaterno" name="apellidoPaterno" 
+                             placeholder="Se auto-completará con RENIEC" readonly required>
+                    </div>
+                  </div>
+                  
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="poApellidoMaterno" class="form-label fw-bold">
+                        <i class="fas fa-user me-1"></i>Apellido Materno
+                      </label>
+                      <input type="text" class="form-control" id="poApellidoMaterno" name="apellidoMaterno" 
+                             placeholder="Se auto-completará con RENIEC" readonly>
+                    </div>
+                  </div>
+                  
+                  <!-- Correo Personal -->
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="poCorreoPersonal" class="form-label fw-bold">
+                        <i class="fas fa-envelope me-1"></i>Correo Personal <span class="text-danger">*</span>
+                      </label>
+                      <input type="email" class="form-control" id="poCorreoPersonal" name="correoPersonal" 
+                             placeholder="Ej: juan@gmail.com" required>
+                      <div class="form-text">Para recibir el código de confirmación</div>
+                    </div>
+                  </div>
+                  
+                  <!-- Correo Corporativo (Auto-generado) -->
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="poCorreoCorporativo" class="form-label fw-bold">
+                        <i class="fas fa-building me-1"></i>Correo Corporativo <span class="badge bg-info">Auto-generado</span>
+                      </label>
+                      <input type="email" class="form-control" id="poCorreoCorporativo" name="correoCorporativo" 
+                             placeholder="Se generará al consultar RENIEC" readonly
+                             style="font-weight: 600; border: 2px solid #10b981;">
+                      <div class="form-text">Email corporativo: nombre.apellido@dominio.com</div>
+                    </div>
+                  </div>
+                  
+                  <!-- Contraseña -->
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="poContrasena" class="form-label fw-bold">
+                        <i class="fas fa-lock me-1"></i>Contraseña Temporal <span class="text-danger">*</span>
+                      </label>
+                      <div class="input-group">
+                        <input type="password" class="form-control" id="poContrasena" name="contrasena" 
+                               placeholder="Mínimo 8 caracteres" minlength="8" required>
+                        <button class="btn btn-outline-secondary" type="button" id="togglePoPassword" 
+                                onclick="togglePasswordVisibility('poContrasena', 'togglePoPassword')">
+                          <i class="fas fa-eye"></i>
+                        </button>
+                      </div>
+                      <div class="form-text">
+                        <strong>Requisitos de contraseña:</strong><br>
+                        • Mínimo 8 caracteres<br>
+                        • No puede contener "123456", "password" o datos del usuario<br>
+                        • No puede ser igual al DNI o email del usuario<br>
+                        • El usuario podrá cambiarla después de confirmar su cuenta
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="poContrasenaConfirm" class="form-label fw-bold">
+                        <i class="fas fa-lock me-1"></i>Confirmar Contraseña <span class="text-danger">*</span>
+                      </label>
+                      <div class="input-group">
+                        <input type="password" class="form-control" id="poContrasenaConfirm" name="contrasenaConfirm" 
+                               placeholder="Repetir contraseña" minlength="8" required>
+                        <button class="btn btn-outline-secondary" type="button" id="togglePoPasswordConfirm" 
+                                onclick="togglePasswordVisibility('poContrasenaConfirm', 'togglePoPasswordConfirm')">
+                          <i class="fas fa-eye"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="alert alert-success mt-3" style="background-color: #064e3b; border-color: #10b981; color: #d1fae5;">
+                  <i class="fas fa-magic me-2"></i>
+                  <strong>Se generará automáticamente:</strong>
+                  <ul class="mb-0 mt-2">
+                    <li><strong>Correo corporativo:</strong> <span id="previstaCorreoCorp" style="color: #10b981; font-weight: 600;">nombre.apellido@dominio.com</span></li>
+                    <li><strong>Rol:</strong> Product Owner (PO)</li>
+                    <li><strong>Estado:</strong> Pendiente de confirmación por email</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Información importante -->
+            <div class="alert alert-warning mt-3" style="background-color: #451a03; border-color: #f59e0b; color: #fef3c7;">
+              <h6><i class="fas fa-exclamation-triangle me-2"></i>Importante</h6>
+              <small>
+                • El Product Owner recibirá un <strong>código de 6 dígitos</strong> en su email<br>
+                • Solo podrá acceder al sistema después de confirmar su cuenta<br>
+                • La organización se creará inmediatamente, pero el PO debe confirmar para activarse
+              </small>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="fas fa-times me-1"></i>Cancelar
+          </button>
+          <button type="button" class="btn btn-success" id="createOrgWithPo" disabled>
+            <i class="fas fa-paper-plane me-1"></i>Crear Organización y Enviar Email al PO
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Detalle de Organización -->
+  <div class="modal fade" id="modalDetalleOrg" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-building me-2"></i>
+            <span id="detalleOrgNombre">Detalle de Organización</span>
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="detalleOrgLoading" class="loading">
+            <div class="spinner"></div>
+            <p class="mt-3">Cargando información...</p>
+          </div>
+
+          <div id="detalleOrgContent" style="display: none;">
+            <div class="row mb-4">
+              <div class="col-md-6">
+                <h6 class="text-muted">INFORMACIÓN GENERAL</h6>
+                <p><strong>Descripción:</strong> <span id="detalleDescripcion"></span></p>
+                <p><strong>Dominio:</strong> <span id="detalleDominio"></span></p>
+                <p><strong>Tipo:</strong> <span id="detalleTipo"></span></p>
+                <p><strong>Fecha Creación:</strong> <span id="detalleFecha"></span></p>
+              </div>
+              <div class="col-md-6">
+                <h6 class="text-muted">ESTADÍSTICAS</h6>
+                <div class="org-stats">
+                  <div class="stat-card">
+                    <div class="stat-number" id="detalleTotal">0</div>
+                    <div class="stat-label">Total Usuarios</div>
+                  </div>
+                  <div class="stat-card">
+                    <div class="stat-number" id="detalleActivos">0</div>
+                    <div class="stat-label">Activos</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <h6 class="text-muted mb-3">USUARIOS DE LA ORGANIZACIÓN</h6>
+            <div class="user-list" id="detalleUsuarios">
+              <!-- Se llenará dinámicamente -->
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Mover Usuario -->
+  <div class="modal fade" id="modalMoverUsuario" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-exchange-alt me-2"></i>
+            Mover Usuario a Otra Organización
+          </h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>Usuario: <strong id="moverUsuarioNombre"></strong></p>
+          <p>Organización Actual: <strong id="moverUsuarioOrgActual"></strong></p>
+          
+          <div class="mb-3">
+            <label for="selectNuevaOrg" class="form-label">Nueva Organización <span class="text-danger">*</span></label>
+            <select class="form-control" id="selectNuevaOrg">
+              <option value="">Seleccionar...</option>
+              <option th:each="orgStat : ${organizaciones}" 
+                      th:value="${orgStat.organizacion.idOrganizacion}"
+                      th:text="${orgStat.organizacion.nombre}">
+                Organización
+              </option>
+            </select>
+          </div>
+
+          <input type="hidden" id="moverUsuarioDni">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="confirmarMoverUsuario()">
+            <i class="fas fa-check me-1"></i>
+            Mover Usuario
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js|"></script>
+  
+  <script>
+    // Variables globales
+    let organizacionActualId = null;
+
+    // Búsqueda de organizaciones
+    document.getElementById('searchOrganizaciones').addEventListener('input', function(e) {
+      const searchTerm = e.target.value.toLowerCase();
+      const orgCards = document.querySelectorAll('.org-card');
+      
+      orgCards.forEach(card => {
+        const nombre = card.querySelector('.org-title span').textContent.toLowerCase();
+        const descripcion = card.querySelector('.text-muted').textContent.toLowerCase();
+        
+        if (nombre.includes(searchTerm) || descripcion.includes(searchTerm)) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+
+    // Backdrop oscuro para modal
+    document.getElementById('modalCrearOrg').addEventListener('show.bs.modal', function() {
+      console.log('📱 Modal abriendo - Agregando fondo opaco');
+      
+      // Remover overlay previo si existe
+      const existingOverlay = document.getElementById('simple-overlay-org');
+      if (existingOverlay) {
+        existingOverlay.remove();
+      }
+      
+      // Crear overlay opaco
+      const overlay = document.createElement('div');
+      overlay.id = 'simple-overlay-org';
+      overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.7);
+        z-index: 1050;
+        pointer-events: none;
+      `;
+      document.body.appendChild(overlay);
+    });
+
+    // Abrir modal de crear organización
+    function abrirModalCrearOrg() {
+      const modalElement = document.getElementById('modalCrearOrg');
+      const form = document.getElementById('formCrearOrg');
+      if (form) form.reset();
+      
+      // Crear backdrop
+      const backdrop = document.createElement('div');
+      backdrop.className = 'modal-backdrop fade show';
+      document.body.appendChild(backdrop);
+      
+      // Abrir modal usando clases y atributos de Bootstrap
+      modalElement.classList.add('show');
+      modalElement.style.display = 'block';
+      modalElement.setAttribute('aria-modal', 'true');
+      modalElement.removeAttribute('aria-hidden');
+      document.body.classList.add('modal-open');
+    }
+
+    // Crear organización con PO
+    async function crearOrganizacion() {
+      console.log('🏭 Iniciando creación de organización con PO...');
+      
+      const form = document.getElementById('formCrearOrg');
+      const submitButton = document.getElementById('createOrgWithPo');
+      
+      // Validar formulario
+      if (!form.checkValidity()) {
+        alert('❌ Por favor completa todos los campos requeridos');
+        form.reportValidity();
+        return;
+      }
+      
+      // Validar que las contraseñas coincidan
+      const contrasena = document.getElementById('poContrasena').value;
+      const contrasenaConfirm = document.getElementById('poContrasenaConfirm').value;
+      
+      if (contrasena !== contrasenaConfirm) {
+        alert('❌ Las contraseñas no coinciden');
+        return;
+      }
+      
+      // Validar longitud mínima
+      if (contrasena.length < 8) {
+        alert('❌ La contraseña debe tener al menos 8 caracteres');
+        return;
+      }
+      
+      // Validar contraseñas débiles
+      const weakPasswords = ['123456', '12345678', 'password', 'qwerty', 'abc123'];
+      const passwordLower = contrasena.toLowerCase();
+      for (let weak of weakPasswords) {
+        if (passwordLower.includes(weak)) {
+          alert('❌ La contraseña no puede contener "' + weak + '"');
+          return;
+        }
+      }
+      
+      // Validar que no contenga el DNI
+      const dni = document.getElementById('poDni').value;
+      if (dni && passwordLower.includes(dni.toLowerCase())) {
+        alert('❌ La contraseña no puede contener el DNI del usuario');
+        return;
+      }
+      
+      // Validar que no contenga el email
+      const email = document.getElementById('poCorreoPersonal').value;
+      const emailParts = email.split('@')[0].toLowerCase();
+      if (emailParts.length > 3 && passwordLower.includes(emailParts)) {
+        alert('❌ La contraseña no puede contener el email del usuario');
+        return;
+      }
+      
+      // Validar que no contenga el nombre o apellidos
+      const nombre = document.getElementById('poNombre').value.toLowerCase();
+      const apellidoPaterno = document.getElementById('poApellidoPaterno').value.toLowerCase();
+      if (nombre.length > 3 && passwordLower.includes(nombre)) {
+        alert('❌ La contraseña no puede contener el nombre del usuario');
+        return;
+      }
+      if (apellidoPaterno.length > 3 && passwordLower.includes(apellidoPaterno)) {
+        alert('❌ La contraseña no puede contener el apellido del usuario');
+        return;
+      }
+      
+      // Obtener datos del formulario
+      const datos = {
+        // Datos de organización
+        nombreOrganizacion: document.getElementById('orgNombre').value.trim(),
+        dominioCorreo: document.getElementById('orgDominio').value.trim().toLowerCase(),
+        descripcionOrganizacion: document.getElementById('orgDescripcion').value.trim(),
+        publica: document.getElementById('orgPublica').checked,
+        
+        // Datos del PO
+        dni: document.getElementById('poDni').value.trim(),
+        nombre: document.getElementById('poNombre').value.trim(),
+        apellidoPaterno: document.getElementById('poApellidoPaterno').value.trim(),
+        apellidoMaterno: document.getElementById('poApellidoMaterno').value.trim(),
+        correo: document.getElementById('poCorreoPersonal').value.trim().toLowerCase(),
+        contrasena: contrasena
+      };
+      
+      console.log('📋 Datos a enviar:', { ...datos, contrasena: '***' });
+      
+      try {
+        // Deshabilitar botón
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Creando...';
+        
+        // Obtener token CSRF
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        
+        // Enviar petición
+        const response = await fetch('/admin/gestion-usuarios/crear-organizacion-con-po', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            [csrfHeader]: csrfToken
+          },
+          body: JSON.stringify(datos)
+        });
+        
+        const data = await response.json();
+        console.log('📡 Respuesta del servidor:', data);
+        
+        if (response.ok) {
+          // Éxito
+          console.log('✅ Organización y PO creados exitosamente');
+          
+          let mensaje = `✅ Organización "${data.organizacion.nombre}" creada exitosamente\n\n`;
+          mensaje += `👤 Product Owner: ${data.po.nombre}\n`;
+          mensaje += `📧 Email: ${data.po.email}\n`;
+          mensaje += `📝 DNI: ${data.po.dni}\n\n`;
+          
+          if (data.emailEnviado) {
+            mensaje += `✉️ Se ha enviado un código de confirmación de 6 dígitos al email del PO.\n`;
+            mensaje += `⏰ El PO tiene 1 hora para confirmar su cuenta.`;
+          } else {
+            mensaje += `⚠️ La organización y el usuario fueron creados, pero el email no pudo ser enviado.\n`;
+            mensaje += `📋 Ve al panel "Tokens Pendientes" para activar la cuenta manualmente.`;
+            
+            if (data.debug) {
+              mensaje += `\n\n🔑 Token: ${data.debug.token}`;
+            }
+          }
+          
+          alert(mensaje);
+          
+          // Cerrar modal y limpiar formulario
+          cerrarModal('modalCrearOrg');
+          form.reset();
+          document.getElementById('previstaCorreoCorp').textContent = 'nombre.apellido@dominio.com';
+          document.getElementById('poCorreoCorporativo').value = '';
+          
+          // Recargar página
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+          
+        } else {
+          // Error
+          const errorMsg = data.error || 'Error desconocido';
+          console.error('❌ Error del servidor:', errorMsg);
+          alert('❌ Error: ' + errorMsg);
+        }
+        
+      } catch (error) {
+        console.error('❌ Error en la petición:', error);
+        alert('❌ Error al crear organización: ' + error.message);
+      } finally {
+        // Restaurar botón
+        submitButton.disabled = false;
+        submitButton.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Crear Organización y Enviar Email al PO';
+      }
+    }
+
+    // Variables globales para validación
+    let orgPoValidationInitialized = false;
+
+    // Función para inicializar validación del formulario
+    function initializeOrgPoValidation() {
+      if (orgPoValidationInitialized) {
+        console.log('⚠️ Validación ya inicializada');
+        return;
+      }
+      
+      console.log('🔧 Inicializando validación de organización+PO');
+      
+      const form = document.getElementById('formCrearOrg');
+      const submitButton = document.getElementById('createOrgWithPo');
+      
+      if (!form || !submitButton) {
+        console.error('❌ No se encontró el formulario o botón');
+        return;
+      }
+      
+      // Inputs requeridos
+      const orgNombre = document.getElementById('orgNombre');
+      const orgDominio = document.getElementById('orgDominio');
+      const poDni = document.getElementById('poDni');
+      const poNombre = document.getElementById('poNombre');
+      const poApellidoPaterno = document.getElementById('poApellidoPaterno');
+      const poCorreoPersonal = document.getElementById('poCorreoPersonal');
+      const poContrasena = document.getElementById('poContrasena');
+      const poContrasenaConfirm = document.getElementById('poContrasenaConfirm');
+      
+      // Función de validación
+      function validateForm() {
+        const orgNombreValid = orgNombre.value.trim().length >= 3;
+        const orgDominioValid = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(orgDominio.value.trim());
+        
+        const poDniValid = /^[0-9]{8}$/.test(poDni.value.trim());
+        const poNombreValid = poNombre.value.trim().length >= 2;
+        const poApellidoValid = poApellidoPaterno.value.trim().length >= 2;
+        const poCorreoValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(poCorreoPersonal.value.trim());
+        const poContrasenaValid = poContrasena.value.length >= 8;
+        const poContrasenasMatch = poContrasena.value === poContrasenaConfirm.value;
+        
+        const formValid = orgNombreValid && orgDominioValid && 
+                         poDniValid && poNombreValid && poApellidoValid && 
+                         poCorreoValid && poContrasenaValid && poContrasenasMatch;
+        
+        submitButton.disabled = !formValid;
+        
+        // Actualizar preview del correo corporativo
+        if (orgDominioValid && poNombreValid && poApellidoValid) {
+          const nombreLimpio = poNombre.value.trim().toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, '.');
+          const apellidoLimpio = poApellidoPaterno.value.trim().toLowerCase()
+            .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, '.');
+          const preview = `${nombreLimpio}.${apellidoLimpio}@${orgDominio.value.trim()}`;
+          document.getElementById('previstaCorreoCorp').textContent = preview;
+        }
+        
+        return formValid;
+      }
+      
+      // Event listeners para todos los campos
+      [orgNombre, orgDominio, poDni, poNombre, poApellidoPaterno, poCorreoPersonal, poContrasena, poContrasenaConfirm].forEach(input => {
+        if (input) {
+          input.addEventListener('input', validateForm);
+          input.addEventListener('blur', validateForm);
+        }
+      });
+      
+      orgPoValidationInitialized = true;
+      console.log('✅ Validación inicializada');
+    }
+
+    // Event listener para consultar RENIEC
+    document.getElementById('btnConsultarReniecPo').addEventListener('click', async function() {
+      const dniInput = document.getElementById('poDni');
+      const dni = dniInput.value.trim();
+      const btn = this;
+      
+      // Validar DNI
+      if (!/^[0-9]{8}$/.test(dni)) {
+        alert('❌ El DNI debe tener exactamente 8 dígitos numéricos');
+        return;
+      }
+      
+      try {
+        // Deshabilitar botón
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Consultando...';
+        
+        // Obtener token CSRF
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        
+        // Consultar API RENIEC
+        const response = await fetch(`/api/reniec/consultar/${dni}`, {
+          method: 'GET',
+          headers: {
+            [csrfHeader]: csrfToken
+          }
+        });
+        
+        const data = await response.json();
+        console.log('📡 Respuesta RENIEC:', data);
+        
+        if (response.ok && data.success) {
+          // Auto-completar campos
+          document.getElementById('poNombre').value = data.data.nombres;
+          document.getElementById('poApellidoPaterno').value = data.data.apellidoPaterno;
+          document.getElementById('poApellidoMaterno').value = data.data.apellidoMaterno || '';
+          
+          // Habilitar campos para edición
+          document.getElementById('poNombre').readOnly = false;
+          document.getElementById('poApellidoPaterno').readOnly = false;
+          document.getElementById('poApellidoMaterno').readOnly = false;
+          
+          // Generar correo corporativo
+          const orgDominio = document.getElementById('orgDominio').value.trim();
+          if (orgDominio) {
+            const nombreLimpio = data.data.nombres.toLowerCase()
+              .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+              .replace(/\s+/g, '.');
+            const apellidoLimpio = data.data.apellidoPaterno.toLowerCase()
+              .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+              .replace(/\s+/g, '.');
+            const correoCorporativo = `${nombreLimpio}.${apellidoLimpio}@${orgDominio}`;
+            document.getElementById('poCorreoCorporativo').value = correoCorporativo;
+            document.getElementById('previstaCorreoCorp').textContent = correoCorporativo;
+            console.log('📧 Correo corporativo generado:', correoCorporativo);
+          }
+          
+          alert('✅ Datos obtenidos correctamente de RENIEC');
+        } else {
+          alert('❌ ' + (data.mensaje || data.message || 'No se pudo obtener información del DNI'));
+        }
+      } catch (error) {
+        console.error('❌ Error consultando RENIEC:', error);
+        alert('❌ Error al consultar: ' + error.message);
+      } finally {
+        // Restaurar botón
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-search me-1"></i>Consultar DNI';
+      }
+    });
+
+    // Inicializar cuando se abre el modal
+    document.getElementById('modalCrearOrg').addEventListener('shown.bs.modal', function() {
+      console.log('📱 Modal mostrado');
+      setTimeout(() => {
+        initializeOrgPoValidation();
+      }, 100);
+    });
+
+    // Limpiar cuando se cierra el modal
+    document.getElementById('modalCrearOrg').addEventListener('hidden.bs.modal', function() {
+      console.log('📱 Modal cerrado');
+      
+      document.getElementById('formCrearOrg').reset();
+      document.getElementById('createOrgWithPo').disabled = true;
+      document.getElementById('previstaCorreoCorp').textContent = 'nombre.apellido@dominio.com';
+      document.getElementById('poCorreoCorporativo').value = '';
+      
+      // Restablecer readonly
+      document.getElementById('poNombre').readOnly = true;
+      document.getElementById('poApellidoPaterno').readOnly = true;
+      document.getElementById('poApellidoMaterno').readOnly = true;
+      
+      // Limpiar validación
+      const inputs = document.querySelectorAll('#formCrearOrg .form-control');
+      inputs.forEach(input => {
+        input.classList.remove('is-invalid', 'is-valid');
+      });
+      
+      // Remover overlay
+      const overlay = document.getElementById('simple-overlay-org');
+      if (overlay) {
+        overlay.remove();
+      }
+    });
+
+    // Event listener para el botón de crear
+    document.getElementById('createOrgWithPo').addEventListener('click', crearOrganizacion);
+
+    // Ver detalle de organización
+    async function verDetalleOrganizacion(orgId) {
+      organizacionActualId = orgId;
+      const modalElement = document.getElementById('modalDetalleOrg');
+      
+      // Crear backdrop
+      const backdrop = document.createElement('div');
+      backdrop.className = 'modal-backdrop fade show';
+      document.body.appendChild(backdrop);
+      
+      // Abrir modal
+      modalElement.classList.add('show');
+      modalElement.style.display = 'block';
+      modalElement.setAttribute('aria-modal', 'true');
+      modalElement.removeAttribute('aria-hidden');
+      document.body.classList.add('modal-open');
+
+      document.getElementById('detalleOrgLoading').style.display = 'block';
+      document.getElementById('detalleOrgContent').style.display = 'none';
+
+      try {
+        const response = await fetch(`/admin/organizaciones/api/${orgId}`);
+        const data = await response.json();
+
+        if (data.organizacion) {
+          document.getElementById('detalleOrgNombre').textContent = data.organizacion.nombre;
+          document.getElementById('detalleDescripcion').textContent = data.organizacion.descripcion || 'Sin descripción';
+          document.getElementById('detalleDominio').textContent = data.organizacion.dominioCorreo || 'Sin dominio';
+          document.getElementById('detalleTipo').innerHTML = data.organizacion.publica 
+            ? '<span class="badge badge-public">Pública</span>' 
+            : '<span class="badge badge-private">Privada</span>';
+          document.getElementById('detalleFecha').textContent = data.organizacion.fechaCreacion;
+          
+          const activos = data.usuarios.filter(u => u.estado).length;
+          document.getElementById('detalleTotal').textContent = data.usuarios.length;
+          document.getElementById('detalleActivos').textContent = activos;
+
+          // Listar usuarios
+          const usuariosHtml = data.usuarios.map(usuario => `
+            <div class="user-item">
+              <div class="user-info">
+                <div class="user-name">
+                  ${usuario.nombre}
+                  ${usuario.estado ? '<span class="badge bg-success ms-2">Activo</span>' : '<span class="badge bg-secondary ms-2">Inactivo</span>'}
+                </div>
+                <div class="user-email">${usuario.correo}</div>
+                <span class="role-tag ${getRoleClass(usuario.rol)}">${usuario.rol}</span>
+              </div>
+              <button class="btn-custom btn-view btn-sm" onclick="abrirModalMoverUsuario('${usuario.dni}', '${usuario.nombre}', '${data.organizacion.nombre}')">
+                <i class="fas fa-exchange-alt"></i> Mover
+              </button>
+            </div>
+          `).join('');
+
+          document.getElementById('detalleUsuarios').innerHTML = usuariosHtml || '<p class="text-muted text-center">No hay usuarios en esta organización</p>';
+
+          document.getElementById('detalleOrgLoading').style.display = 'none';
+          document.getElementById('detalleOrgContent').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al cargar detalle: ' + error.message);
+        modal.hide();
+      }
+    }
+
+    // Helper para clases de roles
+    function getRoleClass(rol) {
+      if (rol === 'PO') return 'role-po';
+      if (rol === 'DEVELOPER' || rol === 'DEV') return 'role-dev';
+      if (rol === 'QA') return 'role-qa';
+      return 'role-admin';
+    }
+
+    // Abrir modal para mover usuario
+    function abrirModalMoverUsuario(dni, nombre, orgActual) {
+      document.getElementById('moverUsuarioDni').value = dni;
+      document.getElementById('moverUsuarioNombre').textContent = nombre;
+      document.getElementById('moverUsuarioOrgActual').textContent = orgActual;
+      document.getElementById('selectNuevaOrg').value = '';
+
+      // Crear backdrop
+      const backdrop = document.createElement('div');
+      backdrop.className = 'modal-backdrop fade show';
+      document.body.appendChild(backdrop);
+
+      const modalElement = document.getElementById('modalMoverUsuario');
+      modalElement.classList.add('show');
+      modalElement.style.display = 'block';
+      modalElement.setAttribute('aria-modal', 'true');
+      modalElement.removeAttribute('aria-hidden');
+      document.body.classList.add('modal-open');
+    }
+
+    // Confirmar mover usuario
+    async function confirmarMoverUsuario() {
+      const dni = document.getElementById('moverUsuarioDni').value;
+      const nuevaOrgId = document.getElementById('selectNuevaOrg').value;
+
+      if (!nuevaOrgId) {
+        alert('❌ Selecciona una organización de destino');
+        return;
+      }
+
+      try {
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        
+        const response = await fetch('/admin/organizaciones/api/mover-usuario', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            [csrfHeader]: csrfToken
+          },
+          body: JSON.stringify({
+            dni: dni,
+            nuevaOrganizacionId: parseInt(nuevaOrgId)
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('✅ ' + data.message);
+          cerrarModal('modalMoverUsuario');
+          
+          // Recargar detalle de organización actual
+          if (organizacionActualId) {
+            verDetalleOrganizacion(organizacionActualId);
+          }
+        } else {
+          alert('❌ ' + data.error);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al mover usuario: ' + error.message);
+      }
+    }
+
+    // Eliminar organización
+    async function eliminarOrganizacion(orgId, orgNombre) {
+      if (!confirm(`⚠️ ¿Estás seguro de eliminar la organización "${orgNombre}"?\n\nEsta acción NO SE PUEDE DESHACER y solo funcionará si la organización no tiene usuarios asignados.`)) {
+        return;
+      }
+
+      try {
+        const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+        
+        const response = await fetch(`/admin/organizaciones/api/${orgId}`, {
+          method: 'DELETE',
+          headers: {
+            [csrfHeader]: csrfToken
+          }
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          alert('✅ ' + data.message);
+          window.location.reload();
+        } else {
+          alert('❌ ' + data.error);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('❌ Error al eliminar organización: ' + error.message);
+      }
+    }
+
+    // Función auxiliar para cerrar modales
+    function cerrarModal(modalId) {
+      const modalElement = document.getElementById(modalId);
+      if (!modalElement) return;
+      
+      // Cerrar modal
+      modalElement.classList.remove('show');
+      modalElement.style.display = 'none';
+      modalElement.setAttribute('aria-hidden', 'true');
+      modalElement.removeAttribute('aria-modal');
+      
+      // Verificar si hay otros modales abiertos
+      const otherModalsOpen = document.querySelectorAll('.modal.show').length > 0;
+      
+      if (!otherModalsOpen) {
+        // Si no hay otros modales abiertos, remover TODOS los backdrops y restaurar body
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => backdrop.remove());
+        
+        document.body.classList.remove('modal-open');
+        document.body.style.removeProperty('overflow');
+        document.body.style.removeProperty('padding-right');
+      } else {
+        // Si hay otros modales abiertos, solo eliminar UN backdrop
+        const backdrop = document.querySelector('.modal-backdrop:last-child');
+        if (backdrop) {
+          backdrop.remove();
+        }
+      }
+    }
+
+    // Función para mostrar/ocultar contraseñas
+    function togglePasswordVisibility(inputId, buttonId) {
+      const input = document.getElementById(inputId);
+      const button = document.getElementById(buttonId);
+      const icon = button.querySelector('i');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    }
+
+    // Agregar event listeners a todos los botones de cerrar
+    document.addEventListener('DOMContentLoaded', function() {
+      // Manejar todos los botones con data-bs-dismiss
+      document.querySelectorAll('[data-bs-dismiss="modal"]').forEach(button => {
+        button.addEventListener('click', function() {
+          const modal = this.closest('.modal');
+          if (modal) {
+            cerrarModal(modal.id);
+          }
+        });
+      });
+    });
+  </script>
+
+  <!-- Tabler Core -->
+  <script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js|"></script>
+  <script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
+</body>
+</html>

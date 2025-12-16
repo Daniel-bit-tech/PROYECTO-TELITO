@@ -18,6 +18,7 @@ import java.util.Optional;
 @Service
 public class UsuarioDetailService implements UserDetailsService {
 
+
     @Autowired
     private UsuarioRepository usuarioRepository;
 
@@ -25,19 +26,22 @@ public class UsuarioDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String correo) throws UsernameNotFoundException {
 
         // Buscar usuario por correo sin filtrar por estado
-        Usuario usuario = usuarioRepository.findByCorreo(correo);
+        Usuario usuario = usuarioRepository.findByCorreo(correo);   
 
         if (usuario == null) {
-            System.err.println("Usuario no encontrado con correo: " + correo);
-            throw new UsernameNotFoundException("Credenciales inválidas");
-        }
+            System.out.println("❌ No encontrado por correo personal, buscando por correo corporativo...");
+            usuario = usuarioRepository.findByCorreoCorporativo(correo);
+            if (usuario == null) {
+                System.err.println("Usuario no encontrado con correo: " + correo);
+                throw new UsernameNotFoundException("Credenciales inválidas");
+            }        }
 
         // Verificar si es usuario interno (debe tener contraseña)
         if (usuario.isUsuarioInterno() && !usuario.hasPassword()) {
             System.err.println("Usuario interno sin contraseña: " + correo);
             throw new UsernameNotFoundException("Credenciales inválidas");
         }
-
+        
         // Verificar si el usuario está desactivado
         if (!usuario.getEstado()) {
             System.err.println("🚫 USUARIO DESACTIVADO DETECTADO:");
@@ -53,18 +57,7 @@ public class UsuarioDetailService implements UserDetailsService {
         }
 
         String nombreRol = usuario.getRol().getNombreRol();
-        System.out.println("Usuario activo encontrado: " + usuario.getCorreo() + " - Rol: " + nombreRol);
-
-        // DEBUG: Verificar hash de contraseña
-        String passwordHash = usuario.getContrasena();
-        System.out.println("🔐 DEBUG PASSWORD HASH:");
-        System.out.println("   - Hash length: " + (passwordHash != null ? passwordHash.length() : "null"));
-        System.out.println("   - Hash preview: "
-                + (passwordHash != null ? passwordHash.substring(0, Math.min(20, passwordHash.length())) + "..."
-                        : "null"));
-        System.out.println("   - Hash ends with: "
-                + (passwordHash != null && passwordHash.length() > 3 ? passwordHash.substring(passwordHash.length() - 3)
-                        : "N/A"));
+        System.out.println("Usuario activo encontrado: " + correo + " - Rol: " + nombreRol);
 
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_" + nombreRol));
@@ -73,7 +66,7 @@ public class UsuarioDetailService implements UserDetailsService {
         }
 
         return User.withUsername(usuario.getCorreo())
-                .password(passwordHash)
+                .password(usuario.getContrasena())
                 .disabled(false) // Ya verificamos que está activo
                 .authorities(authorities)
                 .build();

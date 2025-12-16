@@ -1375,11 +1375,15 @@ public class AdminUsuarioController extends BaseController {
             Integer idOrganizacion = datos.containsKey("idOrganizacion") ? 
                                     (Integer) datos.get("idOrganizacion") : null;
 
-            System.out.println("DNI: " + dni);
-            System.out.println("Nombre: " + nombre + " " + apellidoPaterno);
-            System.out.println("Email: " + correo);
-            System.out.println("Rol ID: " + idRol);
-            System.out.println("Organización ID: " + idOrganizacion);
+            System.out.println("📋 === DATOS RECIBIDOS PARA CREAR USUARIO ===");
+            System.out.println("   DNI: " + dni);
+            System.out.println("   Nombre: " + nombre + " " + apellidoPaterno);
+            System.out.println("   Email: " + correo);
+            System.out.println("   Rol ID: " + idRol);
+            System.out.println("   🏭 Organización ID: " + idOrganizacion);
+            System.out.println("   ¿Tiene organización?: " + (idOrganizacion != null));
+            System.out.println("   datos.containsKey('idOrganizacion'): " + datos.containsKey("idOrganizacion"));
+            System.out.println("   Valor raw de idOrganizacion: " + datos.get("idOrganizacion"));
 
             // Validaciones básicas
             if (dni.length() != 8) {
@@ -1441,6 +1445,13 @@ public class AdminUsuarioController extends BaseController {
             String contrasenaEncriptada = passwordEncoder.encode(contrasena);
 
             // Crear token de confirmación
+            System.out.println("🔐 === CREANDO TOKEN DE CONFIRMACIÓN ===");
+            System.out.println("   Token: " + token);
+            System.out.println("   Email: " + correo);
+            System.out.println("   DNI: " + dni);
+            System.out.println("   Rol ID temporal: " + idRol);
+            System.out.println("   🏭 Organización ID temporal: " + idOrganizacion);
+            
             TokenConfirmacion tokenConfirmacion = new TokenConfirmacion(
                 token, correo, dni, nombre, apellidoPaterno, apellidoMaterno,
                 contrasenaEncriptada, idRol, idOrganizacion, ipCliente
@@ -1449,6 +1460,9 @@ public class AdminUsuarioController extends BaseController {
             // Guardar token
             tokenConfirmacionRepository.save(tokenConfirmacion);
             System.out.println("✅ Token guardado en BD con ID: " + tokenConfirmacion.getId());
+            System.out.println("🔍 Verificando token guardado:");
+            System.out.println("   ID Rol Temporal en token: " + tokenConfirmacion.getIdRolTemporal());
+            System.out.println("   🏭 ID Organización Temporal en token: " + tokenConfirmacion.getIdOrganizacionTemporal());
 
             // Enviar email
             boolean emailEnviado = emailService.enviarTokenConfirmacion(
@@ -1632,6 +1646,9 @@ public class AdminUsuarioController extends BaseController {
             System.out.println("   - Fecha creación: " + tokenConfirmacion.getFechaCreacion());
             System.out.println("   - Fecha expiración: " + tokenConfirmacion.getFechaExpiracion());
             System.out.println("   - Usado: " + tokenConfirmacion.getUsado());
+            System.out.println("   - 🏭 ID Organización Temporal: " + tokenConfirmacion.getIdOrganizacionTemporal());
+            System.out.println("   - 👤 ID Rol Temporal: " + tokenConfirmacion.getIdRolTemporal());
+            System.out.println("   - ¿Tiene organización?: " + (tokenConfirmacion.getIdOrganizacionTemporal() != null));
 
             // Verificar si el token es válido
             try {
@@ -1727,17 +1744,25 @@ public class AdminUsuarioController extends BaseController {
                 nuevoUsuario.setFechaRegistro(Timestamp.valueOf(LocalDateTime.now()));
                 
                 // 🏭 Asignar organización si se especificó
+                System.out.println("🔍 Verificando ID Organización Temporal del token: " + tokenConfirmacion.getIdOrganizacionTemporal());
                 if (tokenConfirmacion.getIdOrganizacionTemporal() != null) {
+                    System.out.println("🔍 Buscando organización con ID: " + tokenConfirmacion.getIdOrganizacionTemporal());
                     Optional<Organizacion> orgOpt = organizacionRepository.findById(tokenConfirmacion.getIdOrganizacionTemporal());
                     if (orgOpt.isPresent()) {
                         nuevoUsuario.setOrganizacion(orgOpt.get());
                         System.out.println("🏭 Organización asignada: " + orgOpt.get().getNombre());
+                        System.out.println("🌐 Dominio de correo: " + orgOpt.get().getDominioCorreo());
+                    } else {
+                        System.err.println("❌ No se encontró organización con ID: " + tokenConfirmacion.getIdOrganizacionTemporal());
                     }
+                } else {
+                    System.err.println("⚠️ Token NO tiene ID de organización temporal - el usuario NO tendrá organización asignada");
                 }
                 
                 // 📧 Generar correo corporativo si tiene organización
                 if (nuevoUsuario.getOrganizacion() != null) {
                     String dominioCorreo = nuevoUsuario.getOrganizacion().getDominioCorreo();
+                    System.out.println("🔍 Dominio de correo de la organización: " + dominioCorreo);
                     if (dominioCorreo != null && !dominioCorreo.isEmpty()) {
                         String correoCorporativo = generarCorreoCorporativo(
                             nuevoUsuario.getNombre(),
@@ -1746,7 +1771,11 @@ public class AdminUsuarioController extends BaseController {
                         );
                         nuevoUsuario.setCorreoCorporativo(correoCorporativo);
                         System.out.println("📧 Correo corporativo generado: " + correoCorporativo);
+                    } else {
+                        System.err.println("❌ La organización NO tiene dominio de correo configurado");
                     }
+                } else {
+                    System.err.println("⚠️ Usuario NO tiene organización asignada - NO se generará correo corporativo");
                 }
                 
                 System.out.println("📊 Usuario a crear:");
@@ -1789,6 +1818,37 @@ public class AdminUsuarioController extends BaseController {
                     usuarioGuardado.setEstado(true); // Activar cuenta
                     usuarioGuardado.setFechaRegistro(Timestamp.valueOf(LocalDateTime.now())); // Actualizar fecha
                     
+                    // 🏭 Actualizar organización del token si no tiene organización asignada
+                    if (usuarioGuardado.getOrganizacion() == null && tokenConfirmacion.getIdOrganizacionTemporal() != null) {
+                        System.out.println("🏭 Usuario existente sin organización - asignando desde token...");
+                        Optional<Organizacion> orgOpt = organizacionRepository.findById(tokenConfirmacion.getIdOrganizacionTemporal());
+                        if (orgOpt.isPresent()) {
+                            usuarioGuardado.setOrganizacion(orgOpt.get());
+                            System.out.println("✅ Organización asignada al usuario existente: " + orgOpt.get().getNombre());
+                        } else {
+                            System.err.println("❌ No se encontró organización con ID: " + tokenConfirmacion.getIdOrganizacionTemporal());
+                        }
+                    }
+                    
+                    // 🔄 Actualizar rol del token si es diferente
+                    if (tokenConfirmacion.getIdRolTemporal() != null) {
+                        Optional<Rol> rolTokenOpt = rolRepository.findById(tokenConfirmacion.getIdRolTemporal());
+                        if (rolTokenOpt.isPresent() && !usuarioGuardado.getRol().getIdRol().equals(tokenConfirmacion.getIdRolTemporal())) {
+                            System.out.println("🔄 Actualizando rol del usuario existente: " + rolTokenOpt.get().getNombreRol());
+                            usuarioGuardado.setRol(rolTokenOpt.get());
+                        }
+                    }
+                    
+                    // 📝 Actualizar alias si no tiene o tiene formato incorrecto
+                    String aliasActual = usuarioGuardado.getAlias();
+                    if (aliasActual == null || aliasActual.isEmpty() || aliasActual.contains(" ")) {
+                        String nuevoAlias = usuarioGuardado.getNombre().toLowerCase() + 
+                                          "." + usuarioGuardado.getApellidoPaterno().toLowerCase();
+                        nuevoAlias = nuevoAlias.replaceAll("\\s+", ".");
+                        usuarioGuardado.setAlias(nuevoAlias);
+                        System.out.println("📝 Alias actualizado: " + nuevoAlias);
+                    }
+                    
                     // 📧 Generar/actualizar correo corporativo si tiene organización
                     if (usuarioGuardado.getOrganizacion() != null) {
                         String dominioCorreo = usuarioGuardado.getOrganizacion().getDominioCorreo();
@@ -1803,11 +1863,23 @@ public class AdminUsuarioController extends BaseController {
                         }
                     }
                     
-                    System.out.println("✅ Contraseña actualizada y cuenta activada");
+                    System.out.println("✅ Usuario existente actualizado completamente");
+                    
+                    System.out.println("📊 Estado ANTES del save:");
+                    System.out.println("   - Organización: " + (usuarioGuardado.getOrganizacion() != null ? usuarioGuardado.getOrganizacion().getNombre() + " (ID: " + usuarioGuardado.getOrganizacion().getIdOrganizacion() + ")" : "NULL"));
+                    System.out.println("   - Rol: " + (usuarioGuardado.getRol() != null ? usuarioGuardado.getRol().getNombreRol() + " (ID: " + usuarioGuardado.getRol().getIdRol() + ")" : "NULL"));
+                    System.out.println("   - Correo corporativo: " + usuarioGuardado.getCorreoCorporativo());
+                    System.out.println("   - Alias: " + usuarioGuardado.getAlias());
                     
                     // Guardar cambios del usuario existente
                     usuarioGuardado = usuarioRepository.save(usuarioGuardado);
-                    System.out.println("✅ Usuario existente actualizado: " + usuarioGuardado.getDni());
+                    
+                    System.out.println("✅ Usuario existente guardado en BD");
+                    System.out.println("📊 Estado DESPUÉS del save:");
+                    System.out.println("   - Organización: " + (usuarioGuardado.getOrganizacion() != null ? usuarioGuardado.getOrganizacion().getNombre() + " (ID: " + usuarioGuardado.getOrganizacion().getIdOrganizacion() + ")" : "NULL"));
+                    System.out.println("   - Rol: " + (usuarioGuardado.getRol() != null ? usuarioGuardado.getRol().getNombreRol() + " (ID: " + usuarioGuardado.getRol().getIdRol() + ")" : "NULL"));
+                    System.out.println("   - Correo corporativo: " + usuarioGuardado.getCorreoCorporativo());
+                    System.out.println("   - Alias: " + usuarioGuardado.getAlias());
                     
                 } else {
                     // Verificar que no exista por email
@@ -1822,8 +1894,20 @@ public class AdminUsuarioController extends BaseController {
                     
                     // 🏗️ Crear nuevo usuario
                     System.out.println("🆕 Creando nuevo usuario (no existe en base de datos)...");
+                    System.out.println("📊 Estado ANTES del save:");
+                    System.out.println("   - Organización: " + (nuevoUsuario.getOrganizacion() != null ? nuevoUsuario.getOrganizacion().getNombre() + " (ID: " + nuevoUsuario.getOrganizacion().getIdOrganizacion() + ")" : "NULL"));
+                    System.out.println("   - Rol: " + (nuevoUsuario.getRol() != null ? nuevoUsuario.getRol().getNombreRol() + " (ID: " + nuevoUsuario.getRol().getIdRol() + ")" : "NULL"));
+                    System.out.println("   - Correo corporativo: " + nuevoUsuario.getCorreoCorporativo());
+                    System.out.println("   - Alias: " + nuevoUsuario.getAlias());
+                    
                     usuarioGuardado = usuarioRepository.save(nuevoUsuario);
+                    
                     System.out.println("✅ Nuevo usuario creado: " + usuarioGuardado.getDni());
+                    System.out.println("📊 Estado DESPUÉS del save:");
+                    System.out.println("   - Organización: " + (usuarioGuardado.getOrganizacion() != null ? usuarioGuardado.getOrganizacion().getNombre() + " (ID: " + usuarioGuardado.getOrganizacion().getIdOrganizacion() + ")" : "NULL"));
+                    System.out.println("   - Rol: " + (usuarioGuardado.getRol() != null ? usuarioGuardado.getRol().getNombreRol() + " (ID: " + usuarioGuardado.getRol().getIdRol() + ")" : "NULL"));
+                    System.out.println("   - Correo corporativo: " + usuarioGuardado.getCorreoCorporativo());
+                    System.out.println("   - Alias: " + usuarioGuardado.getAlias());
                 }
 
                 // Marcar token como usado
@@ -2232,9 +2316,15 @@ public class AdminUsuarioController extends BaseController {
             nuevoUsuario.setApellidoPaterno(token.getApellidoPaternoTemporal());
             nuevoUsuario.setApellidoMaterno(token.getApellidoMaternoTemporal());
             nuevoUsuario.setCorreo(token.getEmail());
-            nuevoUsuario.setContrasena(passwordEncoder.encode(token.getContrasenaTemporal()));
+            // ⚠️ FIX: No volver a encriptar - la contraseña temporal YA está encriptada en el token
+            nuevoUsuario.setContrasena(token.getContrasenaTemporal());
             nuevoUsuario.setEstado(true);
             nuevoUsuario.setFechaRegistro(Timestamp.valueOf(LocalDateTime.now()));
+            
+            // Generar alias básico
+            String alias = token.getNombreTemporal().toLowerCase() + "." + token.getApellidoPaternoTemporal().toLowerCase();
+            nuevoUsuario.setAlias(alias.replaceAll("\\s+", "."));
+            System.out.println("🏷️ Alias generado: " + alias);
             
             // Asignar rol
             Optional<Rol> rolOpt = rolRepository.findById(token.getIdRolTemporal());
@@ -2248,16 +2338,23 @@ public class AdminUsuarioController extends BaseController {
             
             // 🏭 Asignar organización si se especificó
             if (token.getIdOrganizacionTemporal() != null) {
+                System.out.println("🔍 ID Organización temporal: " + token.getIdOrganizacionTemporal());
                 Optional<Organizacion> orgOpt = organizacionRepository.findById(token.getIdOrganizacionTemporal());
                 if (orgOpt.isPresent()) {
                     nuevoUsuario.setOrganizacion(orgOpt.get());
                     System.out.println("🏭 Organización asignada: " + orgOpt.get().getNombre());
+                    System.out.println("🌐 Dominio de correo: " + orgOpt.get().getDominioCorreo());
+                } else {
+                    System.err.println("❌ No se encontró organización con ID: " + token.getIdOrganizacionTemporal());
                 }
+            } else {
+                System.out.println("⚠️ Token no tiene ID de organización temporal");
             }
             
             // 📧 Generar correo corporativo si tiene organización
             if (nuevoUsuario.getOrganizacion() != null) {
                 String dominioCorreo = nuevoUsuario.getOrganizacion().getDominioCorreo();
+                System.out.println("🔍 Verificando dominio de correo: " + dominioCorreo);
                 if (dominioCorreo != null && !dominioCorreo.isEmpty()) {
                     String correoCorporativo = generarCorreoCorporativo(
                         nuevoUsuario.getNombre(),
@@ -2266,7 +2363,11 @@ public class AdminUsuarioController extends BaseController {
                     );
                     nuevoUsuario.setCorreoCorporativo(correoCorporativo);
                     System.out.println("📧 Correo corporativo generado: " + correoCorporativo);
+                } else {
+                    System.err.println("❌ La organización no tiene dominio de correo configurado");
                 }
+            } else {
+                System.out.println("⚠️ Usuario no tiene organización asignada, no se genera correo corporativo");
             }
             
             // Guardar usuario
@@ -2690,6 +2791,12 @@ public class AdminUsuarioController extends BaseController {
             String contrasenaEncriptada = passwordEncoder.encode(contrasena);
 
             // Crear token con la organización asignada
+            System.out.println("🔍 Creando token con:");
+            System.out.println("   - Email: " + correo);
+            System.out.println("   - DNI: " + dni);
+            System.out.println("   - Rol ID: " + rolPO.getIdRol());
+            System.out.println("   - Organización ID: " + orgGuardada.getIdOrganizacion());
+            
             TokenConfirmacion tokenConfirmacion = new TokenConfirmacion(
                 token, correo, dni, nombre, apellidoPaterno, apellidoMaterno,
                 contrasenaEncriptada, rolPO.getIdRol(), orgGuardada.getIdOrganizacion(), ipCliente
@@ -2697,6 +2804,7 @@ public class AdminUsuarioController extends BaseController {
 
             tokenConfirmacionRepository.save(tokenConfirmacion);
             System.out.println("✅ Token guardado con ID: " + tokenConfirmacion.getId());
+            System.out.println("📋 Token tiene Organización ID: " + tokenConfirmacion.getIdOrganizacionTemporal());
 
             // 3. ENVIAR EMAIL DE CONFIRMACIÓN
             boolean emailEnviado = emailService.enviarTokenConfirmacion(

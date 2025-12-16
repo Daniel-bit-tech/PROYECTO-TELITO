@@ -64,8 +64,16 @@ public class UsuarioActivoFilter extends OncePerRequestFilter {
                         return;
                     }
                 } else {
-                    // Usuario tradicional - buscar por email
+                    // Usuario tradicional - buscar por email personal O corporativo
                     usuario = usuarioRepository.findByCorreo(correoUsuario);
+                    if (usuario == null) {
+                        // Intentar buscar por correo corporativo
+                        System.out.println("🔍 FILTER: No encontrado por correo personal, buscando por correo corporativo...");
+                        usuario = usuarioRepository.findByCorreoCorporativo(correoUsuario);
+                        if (usuario != null) {
+                            System.out.println("✅ FILTER: Usuario encontrado por correo corporativo");
+                        }
+                    }
                 }
                 
                 if (usuario == null || !usuario.getEstado()) {
