@@ -283,8 +283,8 @@ public class ReporteController extends BaseController {
                 // No notificar al creador del reporte
                 if (!miembro.getDni().equals(usuario.getDni())) {
                     Notificacion notif = new Notificacion();
-                    String mensaje = "El QA " + usuario.getNombre() + " ha creado un reporte " + 
-                                   ("Aprobado".equals(estado) ? "de aprobación" : "de fallo") + 
+                    String mensaje = "El QA " + usuario.getNombre() + " ha creado un reporte " +
+                                   ("Aprobado".equals(estado) ? "de aprobación" : "de fallo") +
                                    " para la API: " + apiReportada.getNombre();
                     notif.setMensaje(mensaje);
                     notif.setLeido(false);

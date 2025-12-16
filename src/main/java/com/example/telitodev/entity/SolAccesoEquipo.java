@@ -7,6 +7,17 @@ import java.sql.Timestamp;
 @Table(name = "sol_acceso_equipo")
 public class SolAccesoEquipo {
 
+    public enum EstadoSolicitud {
+        PENDIENTE,
+        APROBADA,
+        RECHAZADA
+    }
+
+    public enum RolSolicitud {
+        INTERNO,
+        EXTERNO
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "idSolicitudEquipo")
@@ -30,18 +41,13 @@ public class SolAccesoEquipo {
     @Column(name = "motivo_integracion", nullable = false, columnDefinition = "TEXT")
     private String motivoIntegracion;
 
-    // TODO: Column doesn't exist in database table sol_acceso_equipo
-    // @Column(name = "responsabilidades", nullable = false, columnDefinition = "TEXT")
-    // private String responsabilidades;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false)
+    private EstadoSolicitud estado = EstadoSolicitud.PENDIENTE;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false, length = 20)
-    private EstadoSolicitud estado;
-
-    public enum Rol {INTERNO, EXTERNO}
-    @Enumerated(EnumType.STRING)
-    @Column(name = "rol", nullable = false, length = 20)
-    private Rol rol;
+    @Column(name = "rol", nullable = false)
+    private RolSolicitud rol;
 
     @Column(name = "fecha_solicitud", nullable = false)
     private Timestamp fechaSolicitud;
@@ -66,22 +72,24 @@ public class SolAccesoEquipo {
     private Usuario usuarioRevisor;
 
     // Constructores
-    public SolAccesoEquipo() {
-        this.estado = EstadoSolicitud.PENDIENTE;
-        this.fechaSolicitud = new Timestamp(System.currentTimeMillis());
-    }
+
+    public SolAccesoEquipo() {}
 
     public SolAccesoEquipo(String nombre, String apellido, String correo, String dni,
-                        String motivoIntegracion, Usuario usuarioSolicitante, Equipo equipoDestino) {
-        this();
+                           String motivoIntegracion, RolSolicitud rol,
+                           Equipo equipoDestino, Usuario usuarioSolicitante) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.correo = correo;
         this.dni = dni;
         this.motivoIntegracion = motivoIntegracion;
         // this.responsabilidades = responsabilidades;
+        this.rol = rol;
+        this.equipoDestino = equipoDestino;
         this.usuarioSolicitante = usuarioSolicitante;
         this.equipoDestino = equipoDestino;
+        this.fechaSolicitud = new Timestamp(System.currentTimeMillis());
+        this.estado = EstadoSolicitud.PENDIENTE;
     }
 
     // Getters y Setters
@@ -141,15 +149,6 @@ public class SolAccesoEquipo {
         this.motivoIntegracion = motivoIntegracion;
     }
 
-    // TODO: Column doesn't exist in database
-    // public String getResponsabilidades() {
-    //     return responsabilidades;
-    // }
-
-    // public void setResponsabilidades(String responsabilidades) {
-    //     this.responsabilidades = responsabilidades;
-    // }
-
     public EstadoSolicitud getEstado() {
         return estado;
     }
@@ -158,10 +157,9 @@ public class SolAccesoEquipo {
         this.estado = estado;
     }
 
-    public Rol getRol() {
-        return rol;
-    }
     public void setRol(Rol rol) {
+
+    public void setRol(RolSolicitud rol) {
         this.rol = rol;
     }
 
@@ -212,12 +210,6 @@ public class SolAccesoEquipo {
     public void setUsuarioRevisor(Usuario usuarioRevisor) {
         this.usuarioRevisor = usuarioRevisor;
     }
-
-    // Enum para el estado
-    public enum EstadoSolicitud {
-        PENDIENTE,
-        APROBADA,
-        RECHAZADA
     }
 
     // Métodos auxiliares

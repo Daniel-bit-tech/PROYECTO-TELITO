@@ -16,8 +16,12 @@ import java.util.Optional;
 public interface RoadmapRepository extends JpaRepository<Roadmap, Integer> {
 
     // Encontrar roadmap por API ID
+    Optional<Roadmap> findFirstByApiIdApiOrderByFechaModificacionDesc(Integer apiId);
+
+    // Encontrar roadmap por API ID (sin ordenar)
     Optional<Roadmap> findByApiIdApi(Integer apiId);
 
+    // Encontrar roadmaps por una lista de APIs
     List<Roadmap> findByApiIn(List<Api> apis);
 
     // Encontrar todos los roadmaps ordenados por fecha de modificación descendente

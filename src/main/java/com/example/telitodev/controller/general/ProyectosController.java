@@ -81,11 +81,14 @@ public class ProyectosController extends BaseController {
             // Mostrar proyectos de su organización
             Integer organizacionId = usuario.getOrganizacion().getIdOrganizacion();
             if (filtro != null && filtro.equals("activos")) {
-                listaProyectos = proyectoRepository.findByActivoAndEquipoOrganizacionId(true, organizacionId);
+//                listaProyectos = proyectoRepository.findByActivoAndEquipoOrganizacionId(true, organizacionId);
+                listaProyectos = proyectoRepository.findByActivoAndEquipo_Organizacion_IdOrganizacion(true, organizacionId);
             } else if (filtro != null && filtro.equals("ocultos")) {
-                listaProyectos = proyectoRepository.findByPublicoAndEquipoOrganizacionId(false, organizacionId);
+//                listaProyectos = proyectoRepository.findByPublicoAndEquipoOrganizacionId(false, organizacionId);
+                listaProyectos = proyectoRepository.findByPublicoAndEquipo_Organizacion_IdOrganizacion(false, organizacionId);
             } else {
-                listaProyectos = proyectoRepository.findByEquipoOrganizacionId(organizacionId);
+//                listaProyectos = proyectoRepository.findByEquipoOrganizacionId(organizacionId);
+                listaProyectos = proyectoRepository.findByEquipo_Organizacion_IdOrganizacion(organizacionId);
             }
         }
 

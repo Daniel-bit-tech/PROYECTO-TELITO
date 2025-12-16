@@ -2,6 +2,7 @@ package com.example.telitodev.entity;
 
 import jakarta.persistence.*;
 import java.sql.Date;
+//import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -14,9 +15,11 @@ public class Equipo {
     private Integer idEquipo;
 
     @Column(name = "nombre", length = 45, nullable = false)
+    @Column(name = "nombre", nullable = false, length = 45)
     private String nombre;
 
     @Column(name = "fecha_creacion", nullable = false)
+    //@Temporal(TemporalType.DATE)
     private Date fechaCreacion;
 
     @Lob
@@ -36,6 +39,17 @@ public class Equipo {
 
     @OneToMany(mappedBy = "equipo", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<Api> apis;
+
+
+    // Constructores, getters y setters
+    public Equipo() {}
+
+    public Equipo(String nombre, Date fechaCreacion, Organizacion organizacion) {
+        this.nombre = nombre;
+        this.fechaCreacion = fechaCreacion;
+        this.organizacion = organizacion;
+    }
+
 
     //Getters y Setters
     public Integer getIdEquipo() {
@@ -59,11 +73,25 @@ public class Equipo {
         this.fechaCreacion = fechaCreacion;
     }
 
+    public byte[] getLogo() {
+        return logo;
+    }
+    public void setLogo(byte[] logo) {
+        this.logo = logo;
+    }
+
     public Organizacion getOrganizacion() {
         return organizacion;
     }
     public void setOrganizacion(Organizacion organizacion) {
         this.organizacion = organizacion;
+    }
+
+    public List<Api> getApis() {
+        return apis;
+    }
+    public void setApis(List<Api> apis) {
+        this.apis = apis;
     }
 
     public List<Usuario> getUsuarios() {

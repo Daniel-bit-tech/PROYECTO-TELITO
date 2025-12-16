@@ -1,383 +1,565 @@
-package com.example.telitodev.controller.productowner;
+    package com.example.telitodev.controller.productowner;
+    
+    import com.example.telitodev.controller.BaseController;
+    import com.example.telitodev.entity.*;
+    import com.example.telitodev.repository.*;
+    import com.example.telitodev.service.*;
+    import jakarta.servlet.http.HttpSession;
+    import org.springframework.http.HttpStatus;
+    import org.springframework.security.core.Authentication;
+    import org.springframework.stereotype.Controller;
+    import org.springframework.ui.Model;
+    import org.springframework.web.bind.annotation.*;
+    import org.springframework.web.server.ResponseStatusException;
+    import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+    
+    import java.util.*;
+    import java.util.stream.Collectors;
+    
+    @Controller
+    @RequestMapping("/po")
+    public class OrganizacionController extends BaseController {
+    
+        private final UsuarioRepository usuarioRepository;
+        private final OrganizacionRepository organizacionRepository;
+        private final ProyectoRepository proyectoRepository;
+        private final SolAccesoOrgService solAccesoOrgService;
+        private final OrganizacionService organizacionService;
+        private final ApiRepository apiRepository;;
+        private final EquipoRepository equipoRepository;
 
-import com.example.telitodev.controller.BaseController;
-import com.example.telitodev.entity.*;
-import com.example.telitodev.repository.*;
-import com.example.telitodev.service.*;
-import jakarta.servlet.http.HttpSession;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+        // AGREGAR los nuevos servicios al constructor
+        public OrganizacionController(UsuarioRepository usuarioRepository,
+                                      OrganizacionRepository organizacionRepository,
+                                      ProyectoRepository proyectoRepository,
+                                      SolAccesoOrgService solAccesoOrgService,
+                                      OrganizacionService organizacionService,
+                                      ApiRepository apiRepository,EquipoRepository equipoRepository) {
 
-import java.util.*;
-import java.util.stream.Collectors;
+            this.usuarioRepository = usuarioRepository;
+            this.organizacionRepository = organizacionRepository;
+            this.proyectoRepository = proyectoRepository;
+            this.solAccesoOrgService = solAccesoOrgService;
+            this.organizacionService = organizacionService;
+            this.apiRepository = apiRepository;
+            this.equipoRepository = equipoRepository;
+        }
 
-@Controller
-@RequestMapping("/po")
-public class OrganizacionController extends BaseController {
+        @GetMapping("/organizacion")
+        public String showOrganizacion(Model model, Authentication auth, HttpSession session) {
+            try {
+                // 1. Usuario logueado (soporta impersonación por BaseController)
+                Usuario usuario = getCurrentUser(auth, session);
+                model.addAttribute("usuario", usuario);
+                addImpersonationAttributes(model, session);
 
-    private final UsuarioRepository usuarioRepository;
-    private final OrganizacionRepository organizacionRepository;
-    private final ProyectoRepository proyectoRepository;
-    private final SolAccesoOrgService solAccesoOrgService;
-    private final OrganizacionService organizacionService;
-    private final ApiRepository apiRepository;
+                // 2. Equipo del usuario (nuevo foco de la vista)
+                Equipo equipo = usuario.getEquipo();
+                model.addAttribute("equipo", equipo);
 
-    public OrganizacionController(UsuarioRepository usuarioRepository,
-                                  OrganizacionRepository organizacionRepository,
-                                  ProyectoRepository proyectoRepository,
-                                  SolAccesoOrgService solAccesoOrgService,
-                                  OrganizacionService organizacionService,
-                                  ApiRepository apiRepository) {
-        this.usuarioRepository = usuarioRepository;
-        this.organizacionRepository = organizacionRepository;
-        this.proyectoRepository = proyectoRepository;
-        this.solAccesoOrgService = solAccesoOrgService;
-        this.organizacionService = organizacionService;
-        this.apiRepository = apiRepository;
-    }
+                // 3. Organización (derivada del equipo o, en su defecto, del usuario)
+                Organizacion organizacion = null;
+                if (equipo != null) {
+                    organizacion = equipo.getOrganizacion();
+                } else {
+                    // fallback por si el usuario tiene org pero aún no equipo
+                    organizacion = usuario.getOrganizacion();
+                }
+                model.addAttribute("organizacion", organizacion);
 
-    @GetMapping("/organizacion")
-    public String showOrganizacion(Model model, Authentication auth, HttpSession session) {
-        try {
-            // 1. Obtener usuario logueado
-            Usuario usuario = getCurrentUser(auth, session);
-            model.addAttribute("usuario", usuario);
-            // Agregar atributos de impersonación
-            addImpersonationAttributes(model, session);
+                // 4. Miembros del equipo
+                List<Usuario> miembros = Collections.emptyList();
+                if (equipo != null && equipo.getUsuarios() != null) {
+                    miembros = equipo.getUsuarios();
+                }
+                model.addAttribute("miembros", miembros);
 
-            // 2. Obtener organización del usuario
-            Organizacion organizacion = organizacionRepository.findByUsuarioDni(usuario.getDni());
+                // 5. APIs del equipo
+                List<Api> apis = Collections.emptyList();
+                if (equipo != null && equipo.getApis() != null) {
+                    apis = equipo.getApis();
+                }
+                model.addAttribute("apis", apis);
 
-            if (organizacion == null) {
-                // Si no tiene organización, mostrar página vacía
+                // 6. Proyectos activos del equipo
+                List<Proyecto> proyectosActivos = Collections.emptyList();
+                if (equipo != null && equipo.getProyectos() != null) {
+                    proyectosActivos = equipo.getProyectos()
+                            .stream()
+                            .filter(p -> Boolean.TRUE.equals(p.getActivo()))
+                            .collect(Collectors.toList());
+                }
+                model.addAttribute("proyectosActivos", proyectosActivos);
+
+                // 7. Renderizar la misma vista (que ahora ya cambiamos a “MI Equipo”)
+                return "po/organizacion";
+
+            } catch (Exception e) {
+                // En caso de error, mostrar la página pero al menos con el usuario cargado
+                Usuario usuario = getCurrentUser(auth, session);
+                model.addAttribute("usuario", usuario);
+                addImpersonationAttributes(model, session);
                 return "po/organizacion";
             }
-
-            model.addAttribute("organizacion", organizacion);
-
-            // 3. Obtener miembros de la organización (con roles cargados)
-            List<Usuario> miembros = usuarioRepository.findByOrganizacionIdWithRol(organizacion.getIdOrganizacion());
-            model.addAttribute("miembros", miembros);
-
-            // 4. Obtener proyectos activos de la organización
-            List<Proyecto> proyectosActivos = proyectoRepository.findProyectosActivosByOrganizacionId(organizacion.getIdOrganizacion());
-            model.addAttribute("proyectosActivos", proyectosActivos);
-
-            // 5. Obtener APIs únicas de la organización
-            List<Api> apisUnicas = apiRepository.findByOrganizacionId(organizacion.getIdOrganizacion());
-            model.addAttribute("apis", apisUnicas);
-
-            return "po/organizacion";
-
-        } catch (Exception e) {
-            // En caso de error, igual mostrar la página pero sin datos adicionales
-            Usuario usuario = getCurrentUser(auth, session);
-            model.addAttribute("usuario", usuario);
-            addImpersonationAttributes(model, session);
-            return "po/organizacion";
         }
-    }
 
-    @GetMapping("/historialSolicitudes")
-    public String mostrarHistorialSolicitudes(Model model, Authentication auth, HttpSession session) {
-        try {
-            // 1. Obtener usuario logueado (considerando impersonación)
-            Usuario usuario = getCurrentUser(auth, session);
-            model.addAttribute("usuario", usuario);
-
-            // Agregar atributos de impersonación
-            addImpersonationAttributes(model, session);
-            
-            // 2. Obtener organización del usuario
-            Organizacion organizacion = organizacionRepository.findByUsuarioDni(usuario.getDni());
-            model.addAttribute("organizacion", organizacion);
-
-            // 3. OBTENER SOLICITUDES REALES DEL PO
-            List<SolAccesoEquipo> solicitudes = solAccesoOrgService.obtenerSolicitudesPorUsuario(usuario.getDni());
-            model.addAttribute("solicitudes", solicitudes);
-
-            // 4. Calcular estadísticas reales
-            long totalSolicitudes = solicitudes.size();
-            long solicitudesPendientes = solicitudes.stream()
-                    .filter(SolAccesoEquipo::isPendiente)
-                    .count();
-            long solicitudesAprobadas = solicitudes.stream()
-                    .filter(SolAccesoEquipo::isAprobada)
-                    .count();
-            long solicitudesRechazadas = solicitudes.stream()
-                    .filter(SolAccesoEquipo::isRechazada)
-                    .count();
-
-            model.addAttribute("totalSolicitudes", totalSolicitudes);
-            model.addAttribute("solicitudesPendientes", solicitudesPendientes);
-            model.addAttribute("solicitudesAprobadas", solicitudesAprobadas);
-            model.addAttribute("solicitudesRechazadas", solicitudesRechazadas);
-
-            return "po/historialSolicitudes";
-
-        } catch (Exception e) {
-            // En caso de error, mostrar la página básica
-            Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-            model.addAttribute("usuario", usuario);
-
-            // Valores por defecto
-            model.addAttribute("solicitudes", Collections.emptyList());
-            model.addAttribute("totalSolicitudes", 0);
-            model.addAttribute("solicitudesPendientes", 0);
-            model.addAttribute("solicitudesAprobadas", 0);
-            model.addAttribute("solicitudesRechazadas", 0);
-
-            return "po/historialSolicitudes";
-        }
-    }
-
-    @GetMapping("/solicitudAcceso")
-    public String showSolicitudAcceso(Model model, Authentication auth, HttpSession session) {
-        try {
-            Usuario usuario = getCurrentUser(auth, session);
-            model.addAttribute("usuario", usuario);
-            addImpersonationAttributes(model, session);
-
-            List<Organizacion> organizaciones = organizacionService.obtenerTodasOrganizacionesOrdenadas();
-            model.addAttribute("organizaciones", organizaciones != null ? organizaciones : new ArrayList<>());
-
-            List<SolAccesoEquipo> solicitudesUsuario = solAccesoOrgService.obtenerSolicitudesPorUsuario(usuario.getDni());
-
-            long totalSolicitudes = solicitudesUsuario != null ? solicitudesUsuario.size() : 0;
-            long solicitudesPendientes = solicitudesUsuario != null ? solicitudesUsuario.stream()
-                    .filter(SolAccesoEquipo::isPendiente)
-                    .count() : 0;
-            long solicitudesAprobadas = solicitudesUsuario != null ? solicitudesUsuario.stream()
-                    .filter(SolAccesoEquipo::isAprobada)
-                    .count() : 0;
-
-            model.addAttribute("totalSolicitudes", totalSolicitudes);
-            model.addAttribute("solicitudesPendientes", solicitudesPendientes);
-            model.addAttribute("solicitudesAprobadas", solicitudesAprobadas);
-
-            boolean esAdmin = usuario.getRol() != null &&
-                              (usuario.getRol().getIdRol() == 1 || usuario.getRol().getIdRol() == 2);
-            model.addAttribute("esAdmin", esAdmin);
-
-            if (esAdmin) {
-                long totalPendientesGlobal = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoEquipo.EstadoSolicitud.PENDIENTE);
-                model.addAttribute("totalPendientesGlobal", totalPendientesGlobal);
-            }
-
-            SolAccesoEquipo solicitud = new SolAccesoEquipo();
-            model.addAttribute("solicitud", solicitud);
-
-            return "po/solicitudAcceso";
-
-        } catch (Exception e) {
+        @GetMapping("/solicitudAcceso")
+        public String mostrarSolicitudAcceso(Model model,
+                                             Authentication auth,
+                                             HttpSession session) {
             try {
-                Usuario usuario = usuarioRepository.findByCorreo(auth != null ? auth.getName() : "");
-                if (usuario != null) {
-                    model.addAttribute("usuario", usuario);
+                // 1. Usuario logueado (soporta impersonación)
+                Usuario usuario = getCurrentUser(auth, session);
+                model.addAttribute("usuario", usuario);
+                addImpersonationAttributes(model, session);
+
+                // 2. Equipo del usuario
+                Equipo equipo = usuario.getEquipo();
+                model.addAttribute("equipo", equipo);
+
+                // 3. Organización (del equipo o, de fallback, del usuario)
+                Organizacion organizacion = null;
+                if (equipo != null) {
+                    organizacion = equipo.getOrganizacion();
+                } else {
+                    organizacion = usuario.getOrganizacion();
                 }
-            } catch (Exception ex) {
-                // Ignorar
+                model.addAttribute("organizacion", organizacion);
+
+                // 4. Miembros del equipo
+                List<Usuario> miembros = Collections.emptyList();
+                if (equipo != null && equipo.getUsuarios() != null) {
+                    miembros = equipo.getUsuarios();
+                }
+                model.addAttribute("miembros", miembros);
+
+                // 4.1 Estadísticas para las tarjetas
+                long totalMiembros = miembros.size();
+                long totalDevs = miembros.stream()
+                        .filter(u -> u.getRol() != null &&
+                                "DEV".equalsIgnoreCase(u.getRol().getNombreRol()))
+                        .count();
+                long totalQas = miembros.stream()
+                        .filter(u -> u.getRol() != null &&
+                                "QA".equalsIgnoreCase(u.getRol().getNombreRol()))
+                        .count();
+
+                model.addAttribute("totalMiembros", totalMiembros);
+                model.addAttribute("totalDevs", totalDevs);
+                model.addAttribute("totalQas", totalQas);
+
+                // 5. Usuarios disponibles (misma organización, sin equipo, rol DEV o QA)
+                List<Usuario> usuariosDisponibles = Collections.emptyList();
+                if (organizacion != null) {
+                    List<String> rolesPermitidos = Arrays.asList("DEV", "QA");
+                    usuariosDisponibles =
+                            usuarioRepository.findByOrganizacion_IdOrganizacionAndEquipoIsNullAndRol_NombreRolIn(
+                                    organizacion.getIdOrganizacion(),
+                                    rolesPermitidos
+                            );
+                }
+                model.addAttribute("usuariosDisponibles", usuariosDisponibles);
+
+                // 6. Renderizar la vista correcta
+                return "po/solicitudAcceso";
+
+            } catch (Exception e) {
+                // En caso de error, al menos cargamos el usuario y mostramos el mensaje de "sin equipo"
+                Usuario usuario = getCurrentUser(auth, session);
+                model.addAttribute("usuario", usuario);
+                addImpersonationAttributes(model, session);
+                model.addAttribute("equipo", null);
+                model.addAttribute("miembros", Collections.emptyList());
+                model.addAttribute("usuariosDisponibles", Collections.emptyList());
+                return "po/solicitudAcceso";
             }
-
-            model.addAttribute("organizaciones", new ArrayList<>());
-            model.addAttribute("solicitud", new SolAccesoEquipo());
-            model.addAttribute("totalSolicitudes", 0L);
-            model.addAttribute("solicitudesPendientes", 0L);
-            model.addAttribute("solicitudesAprobadas", 0L);
-            model.addAttribute("esAdmin", false);
-            model.addAttribute("error", "Error al cargar el formulario. Por favor, intenta nuevamente.");
-
-            return "po/solicitudAcceso";
         }
-    }
 
-    @PostMapping("/solicitudAcceso")
-    public String procesarSolicitudAcceso(
-            @ModelAttribute("solicitud") SolAccesoEquipo solicitud,
-            @RequestParam Integer idOrganizacionDestino,
-            Authentication auth,
-            RedirectAttributes redirectAttributes) {
 
-        try {
-            Usuario usuarioSolicitante = usuarioRepository.findByCorreo(auth.getName());
-            Optional<Usuario> usuarioTargetOpt = usuarioRepository.findOptionalByDni(solicitud.getDni());
 
-            if (usuarioTargetOpt.isPresent()) {
-                Usuario usuarioTarget = usuarioTargetOpt.get();
+        @PostMapping("/equipo/agregarMiembro")
+        public String agregarMiembroAlEquipo(@RequestParam("dniUsuario") String dniUsuario,
+                                             Authentication auth,
+                                             HttpSession session,
+                                             RedirectAttributes redirectAttributes) {
 
-                if (solAccesoOrgService.existeSolicitudPendienteParaDni(solicitud.getDni())) {
-                    redirectAttributes.addFlashAttribute("error",
-                            "Ya existe una solicitud pendiente para el DNI: " + solicitud.getDni());
-                    return "redirect:/po/solicitudAcceso";
-                }
+            // 1. Usuario actual (PO)
+            Usuario po = getCurrentUser(auth, session);
+            Equipo equipo = po.getEquipo();
 
-                if (solAccesoOrgService.existeSolicitudAprobadaParaDni(solicitud.getDni()))  {
-                    redirectAttributes.addFlashAttribute("error",
-                            "El usuario " + usuarioTarget.getNombre() + " " + usuarioTarget.getApellidoPaterno() +
-                                    " ya pertenece a un equipo. No puede ser agregado a otro.");
-                    return "redirect:/po/solicitudAcceso";
-                }
-
-                Equipo equipoDestino = new Equipo();
-                equipoDestino.setIdEquipo(idOrganizacionDestino);
-                solicitud.setEquipoDestino(equipoDestino);
-
-                SolAccesoEquipo solicitudGuardada = solAccesoOrgService.crearSolicitudParaUsuarioExistente(
-                        solicitud, usuarioSolicitante.getDni()
-                );
-
-                redirectAttributes.addFlashAttribute("success",
-                        "✅ Solicitud enviada exitosamente para " + usuarioTarget.getNombre() +
-                                " " + usuarioTarget.getApellidoPaterno() + ". ID: " + solicitudGuardada.getIdSolicitudEquipo());
-            } else {
+            if (equipo == null) {
                 redirectAttributes.addFlashAttribute("error",
-                        "El usuario con DNI " + solicitud.getDni() + " no está registrado en el sistema. " +
-                                "Debe registrarse primero antes de solicitar acceso a un equipo.");
-                return "redirect:/po/solicitudAcceso";
-            }
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error",
-                    "❌ Error al enviar solicitud: " + e.getMessage());
-        }
-
-        return "redirect:/po/solicitudAcceso";
-    }
-
-    @GetMapping("/misSolicitudes")
-    public String mostrarMisSolicitudes(Model model, Authentication auth) {
-        try {
-            Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-            model.addAttribute("usuario", usuario);
-
-            List<SolAccesoEquipo> solicitudes = solAccesoOrgService.obtenerSolicitudesPorUsuario(usuario.getDni());
-            model.addAttribute("solicitudes", solicitudes);
-
-            long totalSolicitudes = solicitudes.size();
-            long pendientes = solicitudes.stream()
-                    .filter(SolAccesoEquipo::isPendiente)
-                    .count();
-            long aprobadas = solicitudes.stream()
-                    .filter(SolAccesoEquipo::isAprobada)
-                    .count();
-            long rechazadas = solicitudes.stream()
-                    .filter(SolAccesoEquipo::isRechazada)
-                    .count();
-
-            model.addAttribute("totalSolicitudes", totalSolicitudes);
-            model.addAttribute("solicitudesPendientes", pendientes);
-            model.addAttribute("solicitudesAprobadas", aprobadas);
-            model.addAttribute("solicitudesRechazadas", rechazadas);
-
-        } catch (Exception e) {
-            model.addAttribute("error", "Error al cargar solicitudes: " + e.getMessage());
-        }
-
-        return "po/misSolicitudes";
-    }
-
-    @GetMapping("/gestionSolicitudes")
-    public String mostrarGestionSolicitudes(Model model, Authentication auth) {
-        try {
-            Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
-            model.addAttribute("usuario", usuario);
-
-            boolean esAdmin = usuario.getRol().getIdRol() == 1 || usuario.getRol().getIdRol() == 2;
-            if (!esAdmin) {
-                model.addAttribute("error", "No tienes permisos para acceder a esta página");
+                        "No tienes un equipo asignado. Contacta al administrador.");
+                // Puedes enviarlo a Mi Equipo o donde prefieras
                 return "redirect:/po/organizacion";
             }
 
-            List<SolAccesoEquipo> solicitudesPendientes = solAccesoOrgService.obtenerSolicitudesPendientes();
-            model.addAttribute("solicitudesPendientes", solicitudesPendientes);
+            // 2. Buscar usuario a agregar
+            Optional<Usuario> optUsuario = usuarioRepository.findOptionalByDni(dniUsuario);
+            if (optUsuario.isEmpty()) {
+                redirectAttributes.addFlashAttribute("error",
+                        "No se encontró el usuario seleccionado.");
+                // 👇 Volvemos a la vista de solicitud de acceso
+                return "redirect:/po/solicitudAcceso";
+            }
 
-            List<Organizacion> organizaciones = organizacionService.obtenerTodasOrganizacionesOrdenadas();
-            model.addAttribute("organizaciones", organizaciones);
+            Usuario usuarioAgregar = optUsuario.get();
 
-            long totalPendientes = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoEquipo.EstadoSolicitud.PENDIENTE);
-            long totalAprobadas = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoEquipo.EstadoSolicitud.APROBADA);
-            long totalRechazadas = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoEquipo.EstadoSolicitud.RECHAZADA);
+            // 3. Validaciones de regla de negocio
 
-            model.addAttribute("totalPendientes", totalPendientes);
-            model.addAttribute("totalAprobadas", totalAprobadas);
-            model.addAttribute("totalRechazadas", totalRechazadas);
+            // 3.1 Ya tiene equipo
+            if (usuarioAgregar.getEquipo() != null) {
+                redirectAttributes.addFlashAttribute("error",
+                        "El usuario seleccionado ya pertenece a un equipo.");
+                return "redirect:/po/solicitudAcceso";
+            }
 
-        } catch (Exception e) {
-            model.addAttribute("error", "Error al cargar solicitudes: " + e.getMessage());
-        }
+            // 3.2 Debe pertenecer a la misma organización
+            if (usuarioAgregar.getOrganizacion() == null ||
+                    !usuarioAgregar.getOrganizacion().getIdOrganizacion()
+                            .equals(equipo.getOrganizacion().getIdOrganizacion())) {
 
-        return "po/gestionSolicitudes";
-    }
+                redirectAttributes.addFlashAttribute("error",
+                        "El usuario no pertenece a tu organización y no puede ser agregado.");
+                return "redirect:/po/solicitudAcceso";
+            }
 
-    @PostMapping("/aprobarSolicitud/{id}")
-    public String aprobarSolicitud(
-            @PathVariable Integer id,
-            @RequestParam(required = false) String comentarios,
-            Authentication auth,
-            RedirectAttributes redirectAttributes) {
+            // 3.3 Solo se permite DEV o QA
+            String nombreRol = (usuarioAgregar.getRol() != null)
+                    ? usuarioAgregar.getRol().getNombreRol()
+                    : null;
 
-        try {
-            Usuario admin = usuarioRepository.findByCorreo(auth.getName());
-            SolAccesoEquipo solicitud = solAccesoOrgService.aprobarSolicitud(id, admin.getDni(), comentarios);
+            if (nombreRol == null ||
+                    (!"DEV".equalsIgnoreCase(nombreRol) && !"QA".equalsIgnoreCase(nombreRol))) {
 
-            redirectAttributes.addFlashAttribute("success",
-                    "✅ Solicitud #" + id + " aprobada exitosamente. Se ha notificado al usuario.");
+                redirectAttributes.addFlashAttribute("error",
+                        "Solo se pueden agregar usuarios con rol DEV o QA.");
+                return "redirect:/po/solicitudAcceso";
+            }
 
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error",
-                    "❌ Error al aprobar solicitud: " + e.getMessage());
-        }
-
-        return "redirect:/po/gestionSolicitudes";
-    }
-
-    @PostMapping("/rechazarSolicitud/{id}")
-    public String rechazarSolicitud(
-            @PathVariable Integer id,
-            @RequestParam(required = false) String comentarios,
-            Authentication auth,
-            RedirectAttributes redirectAttributes) {
-
-        try {
-            Usuario admin = usuarioRepository.findByCorreo(auth.getName());
-            SolAccesoEquipo solicitud = solAccesoOrgService.rechazarSolicitud(id, admin.getDni(), comentarios);
+            // 4. Asignar al equipo y guardar
+            usuarioAgregar.setEquipo(equipo);
+            usuarioRepository.save(usuarioAgregar);
 
             redirectAttributes.addFlashAttribute("success",
-                    "❌ Solicitud #" + id + " rechazada. Se ha notificado al usuario.");
+                    "Miembro agregado correctamente al equipo.");
 
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error",
-                    "❌ Error al rechazar solicitud: " + e.getMessage());
+            // 👉 Después de agregar, puedes:
+            //  a) Volver a Mi Equipo:
+            // return "redirect:/po/organizacion";
+
+            //  b) O seguir en la pantalla de solicitud de acceso:
+            return "redirect:/po/solicitudAcceso";
         }
 
-        return "redirect:/po/gestionSolicitudes";
-    }
+        // Dentro de OrganizacionController
 
-    @GetMapping("/verificarUsuario")
-    @ResponseBody
-    public Map<String, Object> verificarUsuario(@RequestParam String dni) {
-        Map<String, Object> response = new HashMap<>();
+        @GetMapping("/equipo/nuevo")
+        public String mostrarFormularioCrearEquipo(Model model,
+                                                   Authentication auth,
+                                                   HttpSession session,
+                                                   RedirectAttributes ra) {
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findOptionalByDni(dni);
+            Usuario usuario = getCurrentUser(auth, session);
+            model.addAttribute("usuario", usuario);
+            addImpersonationAttributes(model, session);
 
-        if (usuarioOpt.isPresent()) {
-            Usuario usuario = usuarioOpt.get();
+            Organizacion organizacion = usuario.getOrganizacion();
+            model.addAttribute("organizacion", organizacion);
 
-            response.put("existe", true);
-            response.put("nombreCompleto", usuario.getNombre() + " " + usuario.getApellidoPaterno());
-            response.put("correo", usuario.getCorreo());
+            // Reglas de negocio
+            if (organizacion == null) {
+                ra.addFlashAttribute("error", "No perteneces a ninguna organización.");
+                return "redirect:/po/organizacion";
+            }
+            if (usuario.getEquipo() != null) {
+                ra.addFlashAttribute("info", "Ya estás asignado a un equipo.");
+                return "redirect:/po/organizacion";
+            }
 
-            boolean tieneOrganizacion = solAccesoOrgService.existeSolicitudAprobadaParaDni(dni);
-            response.put("tieneOrganizacion", tieneOrganizacion);
-
-        } else {
-            response.put("existe", false);
-            response.put("mensaje", "Usuario no registrado en el sistema");
+            model.addAttribute("equipo", new Equipo()); // para th:object
+            return "po/equipo_nuevo";
         }
 
-        return response;
+        @PostMapping("/equipo/crear")
+        public String crearEquipo(@RequestParam("nombre") String nombre,
+                                  @RequestParam(value = "descripcion", required = false) String descripcion,
+                                  Authentication auth,
+                                  HttpSession session,
+                                  RedirectAttributes redirectAttributes) {
+
+            Usuario usuario = getCurrentUser(auth, session);
+
+            // PO debe tener organización
+            Organizacion organizacion = usuario.getOrganizacion();
+            if (organizacion == null) {
+                redirectAttributes.addFlashAttribute("error", "No tienes organización asignada.");
+                return "redirect:/po/organizacion";
+            }
+
+            // Si ya tiene equipo, no permitir crear otro
+            if (usuario.getEquipo() != null) {
+                redirectAttributes.addFlashAttribute("error", "Ya tienes un equipo asignado.");
+                return "redirect:/po/organizacion";
+            }
+
+            String nombreLimpio = (nombre != null) ? nombre.trim() : "";
+
+            if (nombreLimpio.isEmpty()) {
+                redirectAttributes.addFlashAttribute("errorNombre", "El nombre del equipo es obligatorio.");
+                redirectAttributes.addFlashAttribute("nombre", nombre);
+                redirectAttributes.addFlashAttribute("descripcion", descripcion);
+                return "redirect:/po/equipo/nuevo";
+            }
+
+            // ✅ VALIDACIÓN: nombre repetido en la misma organización
+            boolean existe = equipoRepository.existsByNombreIgnoreCaseAndOrganizacion_IdOrganizacion(
+                    nombreLimpio, organizacion.getIdOrganizacion()
+            );
+
+            if (existe) {
+                redirectAttributes.addFlashAttribute("errorNombre", "Ya existe un equipo con ese nombre en tu organización.");
+                // para repoblar el form
+                redirectAttributes.addFlashAttribute("nombre", nombreLimpio);
+                redirectAttributes.addFlashAttribute("descripcion", descripcion);
+                return "redirect:/po/equipo/nuevo";
+            }
+
+            // Crear y guardar
+            Equipo equipo = new Equipo();
+            equipo.setNombre(nombreLimpio);
+            equipo.setOrganizacion(organizacion);
+            equipo.setFechaCreacion(new java.util.Date());
+
+            // OJO: tu entity Equipo NO tiene "descripcion".
+            // Si en BD existe columna descripcion, agrégala al entity.
+            // Si no existe, ignora esta variable.
+
+            equipoRepository.save(equipo);
+
+            // Asignar equipo al PO
+            usuario.setEquipo(equipo);
+            usuarioRepository.save(usuario);
+
+            redirectAttributes.addFlashAttribute("success", "Equipo creado correctamente ✅");
+            return "redirect:/po/organizacion";
+        }
+
+
+
+
+        /*
+        @PostMapping("/{idEquipo}/miembros/agregar")
+        public String agregarMiembro(@PathVariable Integer idEquipo,
+                                     @RequestParam("dniUsuario") String dniUsuario,
+                                     RedirectAttributes redirectAttrs) {
+
+            Equipo equipo = equipoRepository.findById(idEquipo)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+            Usuario usuario = usuarioRepository.findById(dniUsuario)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+
+            // ------- Validaciones del Caso B -------
+            if (usuario.getEquipo() != null) {
+                redirectAttrs.addFlashAttribute("error",
+                        "El usuario ya pertenece a un equipo.");
+                return "redirect:/equipos/" + idEquipo + "/detalle";
+            }
+
+            if (usuario.getOrganizacion() == null ||
+                    !usuario.getOrganizacion().getIdOrganizacion()
+                            .equals(equipo.getOrganizacion().getIdOrganizacion())) {
+                redirectAttrs.addFlashAttribute("error",
+                        "El usuario no pertenece a la misma organización del equipo.");
+                return "redirect:/equipos/" + idEquipo + "/detalle";
+            }
+
+            // Solo DEV o QA
+            usuario.setEquipo(equipo);
+            usuarioRepository.save(usuario);      // UPDATE usu ario SET idEquipo = ?
+
+            redirectAttrs.addFlashAttribute("success",
+                    "Miembro agregado al equipo correctamente.");
+            return "redirect:/equipos/" + idEquipo + "/detalle";
+        }
+            */
+    // MÉTODO ORIGINAL - CON SOPORTE DE IMPERSONACIÓN
+
+    
+        // ==============================================
+        // MÉTODOS NUEVOS PARA SOLICITUDES DE ACCESO
+        // ==============================================
+    
+        /**
+         * POST: Procesar el formulario de solicitud de acceso
+         */
+        /**
+         * POST: Procesar el formulario de solicitud de acceso (VERSIÓN CORREGIDA)
+         */
+        /**
+         * POST: Procesar el formulario de solicitud de acceso (VERSIÓN CORREGIDA - 3 CASOS)
+         */
+
+    
+        /**
+         * GET: Mostrar historial de solicitudes del usuario
+         */
+            @GetMapping("/misSolicitudes")
+            public String mostrarMisSolicitudes(Model model, Authentication auth) {
+                try {
+                    Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+                    model.addAttribute("usuario", usuario);
+
+                    // Obtener solicitudes del usuario
+                    List<SolAccesoOrg> solicitudes = solAccesoOrgService.obtenerSolicitudesPorUsuario(usuario.getDni());
+                    model.addAttribute("solicitudes", solicitudes);
+
+                    // Estadísticas
+                    long totalSolicitudes = solicitudes.size();
+                    long pendientes = solicitudes.stream()
+                            .filter(SolAccesoOrg::isPendiente)
+                            .count();
+                    long aprobadas = solicitudes.stream()
+                            .filter(SolAccesoOrg::isAprobada)
+                            .count();
+                    long rechazadas = solicitudes.stream()
+                            .filter(SolAccesoOrg::isRechazada)
+                            .count();
+
+                    model.addAttribute("totalSolicitudes", totalSolicitudes);
+                    model.addAttribute("solicitudesPendientes", pendientes);
+                    model.addAttribute("solicitudesAprobadas", aprobadas);
+                    model.addAttribute("solicitudesRechazadas", rechazadas);
+
+                } catch (Exception e) {
+                    model.addAttribute("error", "Error al cargar solicitudes: " + e.getMessage());
+                }
+
+                return "po/misSolicitudes";
+            }
+    
+        /**
+         * GET: Vista para administradores - Ver todas las solicitudes pendientes
+         */
+        @GetMapping("/gestionSolicitudes")
+        public String mostrarGestionSolicitudes(Model model, Authentication auth) {
+            try {
+                Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+                model.addAttribute("usuario", usuario);
+    
+                // Verificar si el usuario es administrador
+                boolean esAdmin = usuario.getRol().getIdRol() == 1 || usuario.getRol().getIdRol() == 2;
+                if (!esAdmin) {
+                    model.addAttribute("error", "No tienes permisos para acceder a esta página");
+                    return "redirect:/po/organizacion";
+                }
+    
+                // Obtener solicitudes pendientes
+                List<SolAccesoOrg> solicitudesPendientes = solAccesoOrgService.obtenerSolicitudesPendientes();
+                model.addAttribute("solicitudesPendientes", solicitudesPendientes);
+    
+                // Obtener organizaciones para filtros
+                List<Organizacion> organizaciones = organizacionService.obtenerTodasOrganizacionesOrdenadas();
+                model.addAttribute("organizaciones", organizaciones);
+    
+                // Estadísticas
+                long totalPendientes = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoOrg.EstadoSolicitud.PENDIENTE);
+                long totalAprobadas = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoOrg.EstadoSolicitud.APROBADA);
+                long totalRechazadas = solAccesoOrgService.contarSolicitudesPorEstado(SolAccesoOrg.EstadoSolicitud.RECHAZADA);
+    
+                model.addAttribute("totalPendientes", totalPendientes);
+                model.addAttribute("totalAprobadas", totalAprobadas);
+                model.addAttribute("totalRechazadas", totalRechazadas);
+    
+            } catch (Exception e) {
+                model.addAttribute("error", "Error al cargar solicitudes: " + e.getMessage());
+            }
+    
+            return "po/gestionSolicitudes";
+        }
+    
+        /**
+         * POST: Aprobar una solicitud (para administradores)
+         */
+        @PostMapping("/aprobarSolicitud/{id}")
+        public String aprobarSolicitud(
+                @PathVariable Integer id,
+                @RequestParam(required = false) String comentarios,
+                Authentication auth,
+                RedirectAttributes redirectAttributes) {
+    
+            try {
+                Usuario admin = usuarioRepository.findByCorreo(auth.getName());
+                SolAccesoOrg solicitud = solAccesoOrgService.aprobarSolicitud(id, admin.getDni(), comentarios);
+    
+                redirectAttributes.addFlashAttribute("success",
+                        "✅ Solicitud #" + id + " aprobada exitosamente. Se ha notificado al usuario.");
+    
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("error",
+                        "❌ Error al aprobar solicitud: " + e.getMessage());
+            }
+    
+            return "redirect:/po/gestionSolicitudes";
+        }
+    
+        /**
+         * POST: Rechazar una solicitud (para administradores)
+         */
+        @PostMapping("/rechazarSolicitud/{id}")
+        public String rechazarSolicitud(
+                @PathVariable Integer id,
+                @RequestParam(required = false) String comentarios,
+                Authentication auth,
+                RedirectAttributes redirectAttributes) {
+    
+            try {
+                Usuario admin = usuarioRepository.findByCorreo(auth.getName());
+                SolAccesoOrg solicitud = solAccesoOrgService.rechazarSolicitud(id, admin.getDni(), comentarios);
+    
+                redirectAttributes.addFlashAttribute("success",
+                        "❌ Solicitud #" + id + " rechazada. Se ha notificado al usuario.");
+    
+            } catch (Exception e) {
+                redirectAttributes.addFlashAttribute("error",
+                        "❌ Error al rechazar solicitud: " + e.getMessage());
+            }
+    
+            return "redirect:/po/gestionSolicitudes";
+        }
+    
+        @GetMapping("/verificarUsuario")
+        @ResponseBody
+        public Map<String, Object> verificarUsuario(@RequestParam String dni) {
+            Map<String, Object> response = new HashMap<>();
+    
+            System.out.println("=== VERIFICANDO USUARIO CON DNI: " + dni + " ===");
+    
+            // Buscar usuario por DNI
+            Optional<Usuario> usuarioOpt = usuarioRepository.findOptionalByDni(dni);
+    
+            if (usuarioOpt.isPresent()) {
+                Usuario usuario = usuarioOpt.get();
+                System.out.println("✅ USUARIO ENCONTRADO: " + usuario.getNombre() + " " + usuario.getApellidoPaterno());
+    
+                response.put("existe", true);
+                response.put("nombreCompleto", usuario.getNombre() + " " + usuario.getApellidoPaterno());
+                response.put("correo", usuario.getCorreo());
+    
+                // Verificar si ya tiene organización aprobada
+                boolean tieneOrganizacion = solAccesoOrgService.existeSolicitudAprobadaParaDni(dni);
+                response.put("tieneOrganizacion", tieneOrganizacion);
+    
+                System.out.println("¿Tiene organización? " + tieneOrganizacion);
+    
+            } else {
+                System.out.println("❌ USUARIO NO ENCONTRADO para DNI: " + dni);
+                response.put("existe", false);
+                response.put("mensaje", "Usuario no registrado en el sistema");
+            }
+    
+            return response;
+        }
+    
     }
-}

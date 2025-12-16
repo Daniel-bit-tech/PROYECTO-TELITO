@@ -13,7 +13,7 @@ public class Roadmap {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "api_id", referencedColumnName = "idAPI", nullable = false)
+    @JoinColumn(name = "api_id", referencedColumnName = "idAPI", nullable = false, unique = true)
     private Api api;
 
     @Column(name = "estado", nullable = false, length = 50)

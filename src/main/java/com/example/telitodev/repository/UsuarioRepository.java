@@ -107,5 +107,27 @@ public interface UsuarioRepository extends JpaRepository<Usuario, String> {
         @Query("SELECT u FROM Usuario u WHERE u.organizacion.idOrganizacion = :idOrganizacion AND u.rol.nombreRol = 'PO'")
         Usuario findPoByOrganizacion(@Param("idOrganizacion") Integer idOrganizacion);
 
+        List<Usuario> findByOrganizacion_IdOrganizacionAndEquipoIsNullAndRol_NombreRolIn(
+                Integer idOrganizacion,
+                List<String> roles);
 
+        // Miembros actuales del equipo
+        List<Usuario> findByEquipo_IdEquipo(Integer idEquipo);
+
+        // Candidatos: misma org del equipo y sin equipo asignado
+        List<Usuario> findByOrganizacion_IdOrganizacionAndEquipoIsNull(Integer idOrganizacion);
+
+    @Query("""
+           SELECT u
+           FROM Usuario u
+           WHERE u.equipo.idEquipo = :idEquipo
+             AND (
+                   UPPER(u.rol.nombreRol) = 'PO'
+                OR UPPER(u.rol.nombreRol) = 'PRODUCTOWNER'
+                OR UPPER(u.rol.nombreRol) = 'PRODUCT_OWNER'
+                OR UPPER(u.rol.nombreRol) LIKE '%PRODUCT%OWNER%'
+             )
+           ORDER BY u.dni
+           """)
+    Optional<Usuario> findPoEncargadoByEquipo(@Param("idEquipo") Integer idEquipo);
 }

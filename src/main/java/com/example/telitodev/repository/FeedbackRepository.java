@@ -23,16 +23,16 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
     List<Feedback> findByApiEquipoUsuarioDni(@Param("dni") String dni);
     // NUEVO: Método que soporta paginación
     Page<Feedback> findByUsuario(Usuario usuario, Pageable pageable);
-    
+
     // Método con JOIN FETCH para evitar lazy loading exceptions
     @Query("SELECT f FROM Feedback f LEFT JOIN FETCH f.api WHERE f.usuario = :usuario")
     List<Feedback> findByUsuarioWithApi(@Param("usuario") Usuario usuario);
-    
+
     // Método con paginación y JOIN FETCH
     @Query(value = "SELECT f FROM Feedback f LEFT JOIN FETCH f.api WHERE f.usuario = :usuario",
            countQuery = "SELECT COUNT(f) FROM Feedback f WHERE f.usuario = :usuario")
     Page<Feedback> findByUsuarioWithApi(@Param("usuario") Usuario usuario, Pageable pageable);
-    
+
     List<Feedback> findByApiIn(List<Api> apis);
 
     @Modifying

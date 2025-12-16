@@ -14,4 +14,7 @@ public interface VersionApiRepository extends JpaRepository<VersionApi, Integer>
     Boolean existsByVersionAndApi_IdApi(String version, Integer idApi);
 
     VersionApi findByIdVersionAndApi_IdApi(Integer idVersion, Integer idApi);
+
+    VersionApi findFirstByApi_IdApiOrderByIdVersionDesc(Integer idApi);
+
 }

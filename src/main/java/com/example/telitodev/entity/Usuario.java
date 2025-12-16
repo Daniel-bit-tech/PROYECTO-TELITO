@@ -32,7 +32,7 @@ public class Usuario {
     
     @Column(name = "correo_corporativo", length = 100)
     private String correoCorporativo;
-    
+
     @Column(name = "contrasena", length = 256)
     private String contrasena;
     
@@ -108,6 +108,10 @@ public class Usuario {
     @JsonIgnore
     private List<AuditLog> auditLogs;
 
+    //@OneToMany(mappedBy = "usuarioLider", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    //@JsonIgnore
+    //private List<Proyecto> proyectosLiderados;
+
     // relaciones para la tabla SolAccesoOrg
 
     @OneToMany(mappedBy = "usuarioSolicitante", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -116,7 +120,7 @@ public class Usuario {
     @OneToMany(mappedBy = "usuarioRevisor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<SolAccesoEquipo> solicitudesAccesoEquipoRevisadas;
 
-    // COMENTADO: Api ahora usa Equipo, no Usuario
+
     // @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     // @JsonIgnore
     // private List<Api> misApis;
@@ -182,11 +186,11 @@ public class Usuario {
     public String getCorreoCorporativo() {
         return correoCorporativo;
     }
-    
+
     public void setCorreoCorporativo(String correoCorporativo) {
         this.correoCorporativo = correoCorporativo;
     }
-    
+
     public String getContrasena() {
         return contrasena;
     }
@@ -202,6 +206,10 @@ public class Usuario {
     public void setAlias(String alias) {
         this.alias = alias;
     }
+
+    //public List<Proyecto> getProyectosLiderados() {return proyectosLiderados;}
+
+    //public void setProyectosLiderados(List<Proyecto> proyectosLiderados) {this.proyectosLiderados = proyectosLiderados;}
 
     public Timestamp getFechaRegistro() {
         return fechaRegistro;
@@ -322,14 +330,9 @@ public class Usuario {
         this.auditLogs = auditLogs;
     }
 
-    // COMENTADO: Api ahora usa Equipo, no Usuario
-    // public List<Api> getMisApis() {
-    //     return misApis;
-    // }
-    //
-    // public void setMisApis(List<Api> misApis) {
-    //     this.misApis = misApis;
-    // }
+    //public List<Api> getMisApis() {return misApis;}
+
+    //public void setMisApis(List<Api> misApis) {this.misApis = misApis;}
 
     // Getters y Setters para OAuth2
     public TipoAcceso getTipoAcceso() {

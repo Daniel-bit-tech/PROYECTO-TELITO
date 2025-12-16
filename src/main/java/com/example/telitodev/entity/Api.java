@@ -46,9 +46,6 @@ public class Api {
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference("api-entorno")
     private List<ApiHasEntorno> apiHasEntornos;
-    
-//    @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    private List<ContratoApi> contratosApi;
 
     @OneToMany(mappedBy = "api", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference
@@ -277,5 +274,16 @@ public class Api {
     }
     public void setDocAltoNivel(doc_alto_nivel docAltoNivel) {
         this.docAltoNivel = docAltoNivel;
+    }
+
+
+    // En la entidad Api, agrega este método helper
+    @Transient
+    public Usuario getUsuarioPropietario() {
+        if (equipo != null && equipo.getUsuarios() != null && !equipo.getUsuarios().isEmpty()) {
+            // Retorna el primer usuario del equipo (o lógica específica)
+            return equipo.getUsuarios().get(0);
+        }
+        return null;
     }
 }

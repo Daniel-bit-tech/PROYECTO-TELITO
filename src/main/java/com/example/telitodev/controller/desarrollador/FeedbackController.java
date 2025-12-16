@@ -8,6 +8,7 @@ import com.example.telitodev.repository.FeedbackRepository;
 import com.example.telitodev.repository.NotificacionRepository;
 import com.example.telitodev.repository.UsuarioRepository;
 import com.example.telitodev.service.ApiService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,22 +44,37 @@ public class FeedbackController {
     }
 
     @GetMapping("/feedback")
-    public String showFeedbackForm(Model model, Authentication auth) {
-        List<Api> apis = apiService.getAllApis();
-        model.addAttribute("apis", apis);
+    public String showFeedbackForm(Model model, Authentication auth, HttpSession session) {
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
+        //Usuario usuario = getCurrentUser(auth, session);
         model.addAttribute("usuario", usuario);
 
-        List<Feedback> misFeedback = feedbackRepository.findByUsuario_Dni(usuario.getDni());
-        model.addAttribute("misFeedback", misFeedback);
+        // 2️⃣ Traer solo las APIs del equipo / organización del desarrollador
+        List<Api> apis;
 
-        // Traer feedbacks que fueron hechos a las APIs del equipo de este usuario
-        List<Feedback> apisFeedback = feedbackRepository.findByApiEquipoUsuarioDni(usuario.getDni());
-        model.addAttribute("apisFeedback", apisFeedback);
+        if (usuario.getEquipo() != null) {
+            System.out.println("📌 Dev con equipo: " + usuario.getEquipo().getNombre());
+            apis = apiService.getApisByEquipo(usuario.getEquipo());
 
+        } else if (usuario.getOrganizacion() != null) {
+            System.out.println("🏢 Dev sin equipo pero con organización: "
+                    + usuario.getOrganizacion().getNombre());
+            apis = apiService.getApisByOrganizacion(
+                    usuario.getOrganizacion().getIdOrganizacion()
+            );
+
+        } else {
+            System.out.println("⚠️ Dev sin equipo ni organización, no se mostrarán APIs");
+            apis = Collections.emptyList();
+        }
+
+        model.addAttribute("apis", apis);
+
+        // (si luego quieres mostrar feedbacks, aquí añades los model.addAttribute comentados)
         return "desarrollador/feedback";
     }
+
 
     @PostMapping("/feedback/guardar")
     public String saveFeedback(@RequestParam("apiId") int apiId,

@@ -33,6 +33,19 @@ public interface IssueRepository extends JpaRepository<Issue, IssueId> {
             Pageable pageable
     );
 
+//    @Query("""
+//    SELECT DISTINCT i
+//    FROM Issue i
+//    JOIN i.reporte r
+//    JOIN r.api a
+//    JOIN a.equipo e
+//    JOIN e.usuarios u
+//    WHERE (:estados IS NULL OR i.estado IN :estados)
+//      AND (:inicio IS NULL OR i.fechaCreacion >= :inicio)
+//      AND (:fin IS NULL OR i.fechaCreacion <= :fin)
+//      AND (:nombre IS NULL OR LOWER(i.descripcion) LIKE LOWER(CONCAT('%', :nombre, '%')))
+//      AND u.dni = :dniUsuario
+//""")
     @Query("""
         SELECT i FROM Issue i
         WHERE (:estados IS NULL OR i.estado IN :estados)

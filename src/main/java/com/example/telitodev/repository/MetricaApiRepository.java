@@ -2,6 +2,7 @@ package com.example.telitodev.repository;
 
 import com.example.telitodev.entity.Api;
 import com.example.telitodev.entity.MetricaApi;
+import com.example.telitodev.entity.ProyectoHasApi;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.Query;
@@ -88,10 +89,6 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
     );
 
     /* ===== CONSULTAS ADICIONALES PARA KPIs AVANZADOS ===== */
-    
-    /**
-     * Obtiene throughput por hora en las últimas 24 horas
-     */
     @Query(value = """
         SELECT 
             HOUR(m.fecha) as hora,
@@ -102,10 +99,7 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
         ORDER BY hora
     """, nativeQuery = true)
     List<Object[]> getThroughputByHour();
-    
-    /**
-     * Obtiene throughput por día en los últimos 30 días
-     */
+
     @Query(value = """
         SELECT 
             DATE(m.fecha) as fecha,
@@ -116,10 +110,7 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
         ORDER BY fecha
     """, nativeQuery = true)
     List<Object[]> getThroughputByDay();
-    
-    /**
-     * Obtiene las 5 APIs más utilizadas
-     */
+
     @Query(value = """
         SELECT 
             a.nombre,
@@ -137,10 +128,7 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
         LIMIT 5
     """, nativeQuery = true)
     List<Object[]> getTopUsedApis();
-    
-    /**
-     * Obtiene métricas de costo por API
-     */
+
     @Query(value = """
         SELECT 
             a.nombre,
@@ -154,10 +142,7 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
         ORDER BY totalCost DESC
     """, nativeQuery = true)
     List<Object[]> getCostMetricsByApi();
-    
-    /**
-     * Calcula la disponibilidad promedio (uptime) del sistema
-     */
+
     @Query(value = """
         SELECT 
             CASE 
@@ -168,10 +153,7 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
         WHERE m.fecha >= DATE_SUB(NOW(), INTERVAL 24 HOUR)
     """, nativeQuery = true)
     Double getSystemAvailability();
-    
-    /**
-     * Obtiene tendencia de latencia por día (últimos 7 días)
-     */
+
     @Query(value = """
         SELECT 
             DATE(m.fecha) as fecha,
@@ -182,10 +164,7 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
         ORDER BY fecha
     """, nativeQuery = true)
     List<Object[]> getLatencyTrend();
-    
-    /**
-     * Obtiene el throughput actual (requests por minuto en la última hora)
-     */
+
     @Query(value = """
         SELECT 
             COALESCE(SUM(m.llamadas), 0) / 60.0 as requestsPerMinute
@@ -193,10 +172,7 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
         WHERE m.fecha >= DATE_SUB(NOW(), INTERVAL 1 HOUR)
     """, nativeQuery = true)
     Double getCurrentThroughput();
-    
-    /**
-     * Obtiene distribución de uso por entorno
-     */
+
     @Query(value = """
         SELECT 
             e.nombre,
@@ -209,12 +185,10 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
     """, nativeQuery = true)
     List<Object[]> getUsageByEnvironment();
 
-
     List<MetricaApi> findByApiIn(List<Api> apis);
 
     //=============================================================================================
     // --- NUEVOS MÉTODOS PARA CÁLCULOS POR RANGO ---
-
 
     @Query("""
         SELECT COALESCE(AVG(m.latenciaPromedio), 0.0)
@@ -273,11 +247,11 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
           AND (:idApi IS NULL OR m.api.idApi = :idApi)
           AND (:idEntorno IS NULL OR m.entorno.idEntorno = :idEntorno)
     """)
-    BigDecimal sumCostoBetween( // Usar BigDecimal para costos
-                                @Param("start") Timestamp start,
-                                @Param("end") Timestamp end,
-                                @Param("idApi") Integer idApi,
-                                @Param("idEntorno") Integer idEntorno
+    BigDecimal sumCostoBetween(
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end,
+            @Param("idApi") Integer idApi,
+            @Param("idEntorno") Integer idEntorno
     );
 
     @Query(value = """
@@ -296,5 +270,236 @@ public interface MetricaApiRepository extends JpaRepository<MetricaApi, Integer>
             @Param("idEntorno") Integer idEntorno
     );
 
-}
+    //=============================================================================================
+    // ✅ NUEVO: TODO FILTRADO POR ORGANIZACIÓN (NO ROMPE LO EXISTENTE)
 
+    // Subquery base: APIs pertenecientes a la organización via ProyectoHasApi -> Proyecto -> Equipo -> Organizacion
+    // NOTA: esto hace match con tu modelo Organización -> Equipo -> Proyecto -> ProyectoHasApi -> Api
+
+    @Query("""
+      SELECT COALESCE(SUM(m.llamadas),0)
+      FROM MetricaApi m
+      WHERE m.fecha BETWEEN :start AND :end
+        AND (:idApi IS NULL OR m.api.idApi = :idApi)
+        AND (:idEntorno IS NULL OR m.entorno.idEntorno = :idEntorno)
+        AND m.api.idApi IN (
+          SELECT DISTINCT pha.api.idApi
+          FROM ProyectoHasApi pha
+          WHERE pha.proyecto.equipo.organizacion.idOrganizacion = :orgId
+        )
+    """)
+    Long sumLlamadasBetweenByOrg(
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end,
+            @Param("orgId") Integer orgId,
+            @Param("idApi") Integer idApi,
+            @Param("idEntorno") Integer idEntorno
+    );
+
+    @Query("""
+      SELECT COALESCE(SUM(m.errores),0)
+      FROM MetricaApi m
+      WHERE m.fecha BETWEEN :start AND :end
+        AND (:idApi IS NULL OR m.api.idApi = :idApi)
+        AND (:idEntorno IS NULL OR m.entorno.idEntorno = :idEntorno)
+        AND m.api.idApi IN (
+          SELECT DISTINCT pha.api.idApi
+          FROM ProyectoHasApi pha
+          WHERE pha.proyecto.equipo.organizacion.idOrganizacion = :orgId
+        )
+    """)
+    Long sumErroresBetweenByOrg(
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end,
+            @Param("orgId") Integer orgId,
+            @Param("idApi") Integer idApi,
+            @Param("idEntorno") Integer idEntorno
+    );
+
+    @Query("""
+      SELECT COALESCE(AVG(m.latenciaPromedio),0)
+      FROM MetricaApi m
+      WHERE m.fecha BETWEEN :start AND :end
+        AND (:idApi IS NULL OR m.api.idApi = :idApi)
+        AND (:idEntorno IS NULL OR m.entorno.idEntorno = :idEntorno)
+        AND m.api.idApi IN (
+          SELECT DISTINCT pha.api.idApi
+          FROM ProyectoHasApi pha
+          WHERE pha.proyecto.equipo.organizacion.idOrganizacion = :orgId
+        )
+    """)
+    Double avgLatenciaBetweenByOrg(
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end,
+            @Param("orgId") Integer orgId,
+            @Param("idApi") Integer idApi,
+            @Param("idEntorno") Integer idEntorno
+    );
+
+    @Query("""
+      SELECT m.api.nombre, ROUND(AVG(m.latenciaPromedio))
+      FROM MetricaApi m
+      WHERE m.fecha BETWEEN :start AND :end
+        AND (:idApi IS NULL OR m.api.idApi = :idApi)
+        AND (:idEntorno IS NULL OR m.entorno.idEntorno = :idEntorno)
+        AND m.api.idApi IN (
+          SELECT DISTINCT pha.api.idApi
+          FROM ProyectoHasApi pha
+          WHERE pha.proyecto.equipo.organizacion.idOrganizacion = :orgId
+        )
+      GROUP BY m.api.nombre
+      ORDER BY 2 DESC
+    """)
+    List<Object[]> avgLatencyByApiByOrg(
+            @Param("orgId") Integer orgId,
+            @Param("idApi") Integer idApi,
+            @Param("idEntorno") Integer idEntorno,
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end
+    );
+
+    @Query("""
+      SELECT 
+        COALESCE(SUM(m.llamadas - m.errores), 0) AS exitos,
+        COALESCE(SUM(m.errores), 0)             AS errores
+      FROM MetricaApi m
+      WHERE m.fecha BETWEEN :start AND :end
+        AND (:idApi IS NULL OR m.api.idApi = :idApi)
+        AND (:idEntorno IS NULL OR m.entorno.idEntorno = :idEntorno)
+        AND m.api.idApi IN (
+          SELECT DISTINCT pha.api.idApi
+          FROM ProyectoHasApi pha
+          WHERE pha.proyecto.equipo.organizacion.idOrganizacion = :orgId
+        )
+    """)
+    Object[] successVsErrorsByOrg(
+            @Param("orgId") Integer orgId,
+            @Param("idApi") Integer idApi,
+            @Param("idEntorno") Integer idEntorno,
+            @Param("start") Timestamp start,
+            @Param("end") Timestamp end
+    );
+
+    // --- TOP APIs por org (JPQL, sin depender de tablas) ---
+    @Query("""
+      SELECT m.api.nombre,
+             COALESCE(SUM(m.llamadas),0),
+             COALESCE(AVG(m.latenciaPromedio),0),
+             CASE WHEN COALESCE(SUM(m.llamadas),0) = 0 THEN 0.0
+                  ELSE (COALESCE(SUM(m.errores),0) * 100.0 / COALESCE(SUM(m.llamadas),0))
+             END
+      FROM MetricaApi m
+      WHERE m.api.idApi IN (
+        SELECT DISTINCT pha.api.idApi
+        FROM ProyectoHasApi pha
+        WHERE pha.proyecto.equipo.organizacion.idOrganizacion = :orgId
+      )
+      GROUP BY m.api.nombre
+      HAVING COALESCE(SUM(m.llamadas),0) > 0
+      ORDER BY COALESCE(SUM(m.llamadas),0) DESC
+    """)
+    List<Object[]> getTopUsedApisByOrg(@Param("orgId") Integer orgId);
+
+    // --- Costos por API por org ---
+    @Query("""
+      SELECT m.api.nombre,
+             COALESCE(SUM(m.costo),0),
+             COALESCE(AVG(m.costo),0),
+             COALESCE(SUM(m.llamadas),0)
+      FROM MetricaApi m
+      WHERE m.costo IS NOT NULL
+        AND m.api.idApi IN (
+          SELECT DISTINCT pha.api.idApi
+          FROM ProyectoHasApi pha
+          WHERE pha.proyecto.equipo.organizacion.idOrganizacion = :orgId
+        )
+      GROUP BY m.api.nombre
+      ORDER BY COALESCE(SUM(m.costo),0) DESC
+    """)
+    List<Object[]> getCostMetricsByApiByOrg(@Param("orgId") Integer orgId);
+
+    // --- Uso por entorno por org (sin percentage; el % lo calculas en service) ---
+    @Query("""
+      SELECT m.entorno.nombre, COALESCE(SUM(m.llamadas),0)
+      FROM MetricaApi m
+      WHERE m.api.idApi IN (
+        SELECT DISTINCT pha.api.idApi
+        FROM ProyectoHasApi pha
+        WHERE pha.proyecto.equipo.organizacion.idOrganizacion = :orgId
+      )
+      GROUP BY m.entorno.nombre
+      ORDER BY COALESCE(SUM(m.llamadas),0) DESC
+    """)
+    List<Object[]> getUsageByEnvironmentByOrgRaw(@Param("orgId") Integer orgId);
+
+    // --- Throughput por hora por org (últimas 24h) ---
+    @Query("""
+      SELECT FUNCTION('HOUR', m.fecha), COALESCE(SUM(m.llamadas),0)
+      FROM MetricaApi m
+      WHERE m.fecha >= :since
+        AND m.api.idApi IN (
+          SELECT DISTINCT pha.api.idApi
+          FROM ProyectoHasApi pha
+          WHERE pha.proyecto.equipo.organizacion.idOrganizacion = :orgId
+        )
+      GROUP BY FUNCTION('HOUR', m.fecha)
+      ORDER BY FUNCTION('HOUR', m.fecha)
+    """)
+    List<Object[]> getThroughputByHourByOrg(
+            @Param("orgId") Integer orgId,
+            @Param("since") Timestamp since
+    );
+
+    // --- Tendencia latencia (7 días) por org ---
+    @Query("""
+      SELECT FUNCTION('DATE', m.fecha), COALESCE(AVG(m.latenciaPromedio),0)
+      FROM MetricaApi m
+      WHERE m.fecha >= :since
+        AND m.api.idApi IN (
+          SELECT DISTINCT pha.api.idApi
+          FROM ProyectoHasApi pha
+          WHERE pha.proyecto.equipo.organizacion.idOrganizacion = :orgId
+        )
+      GROUP BY FUNCTION('DATE', m.fecha)
+      ORDER BY FUNCTION('DATE', m.fecha)
+    """)
+    List<Object[]> getLatencyTrendByOrg(
+            @Param("orgId") Integer orgId,
+            @Param("since") Timestamp since
+    );
+
+    // --- Throughput actual (última hora) por org ---
+    @Query("""
+      SELECT (COALESCE(SUM(m.llamadas),0) / 60.0)
+      FROM MetricaApi m
+      WHERE m.fecha >= :since
+        AND m.api.idApi IN (
+          SELECT DISTINCT pha.api.idApi
+          FROM ProyectoHasApi pha
+          WHERE pha.proyecto.equipo.organizacion.idOrganizacion = :orgId
+        )
+    """)
+    Double getCurrentThroughputByOrg(
+            @Param("orgId") Integer orgId,
+            @Param("since") Timestamp since
+    );
+
+    // --- Disponibilidad (24h) por org ---
+    @Query("""
+      SELECT CASE
+               WHEN COALESCE(SUM(m.llamadas),0) = 0 THEN 100.0
+               ELSE (COALESCE(SUM(CASE WHEN m.errores = 0 THEN m.llamadas ELSE 0 END),0) * 100.0 / COALESCE(SUM(m.llamadas),0))
+             END
+      FROM MetricaApi m
+      WHERE m.fecha >= :since
+        AND m.api.idApi IN (
+          SELECT DISTINCT pha.api.idApi
+          FROM ProyectoHasApi pha
+          WHERE pha.proyecto.equipo.organizacion.idOrganizacion = :orgId
+        )
+    """)
+    Double getSystemAvailabilityByOrg(
+            @Param("orgId") Integer orgId,
+            @Param("since") Timestamp since
+    );
+}

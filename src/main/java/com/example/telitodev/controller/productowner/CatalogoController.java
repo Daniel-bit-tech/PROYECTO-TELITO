@@ -48,6 +48,7 @@ public class CatalogoController {
         String tags = selTags == null ? null : selTags.toString();
         System.out.println("Doms: "+dominios + " \nTags: " + tags);
 
+        //trae todas las apis y lo filtra por nombre dominio y tags
         List<Api> apis = apiRepository.findByFilters(nombre, selDominios, selTags);
         for (Api api : apis) {
             System.out.println("api " + api.getNombre());
