@@ -104,6 +104,47 @@
                                     </div>
                                     <small id="qa-token-expiry-text" class="text-muted"></small>
                                 </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Auth Manual</label>
+                                    <select id="auth-type" class="form-select mb-2">
+                                        <option value="none" selected>None / Auto (QA Token)</option>
+                                        <option value="apikey">API Key</option>
+                                        <option value="bearer">Bearer Token</option>
+                                    </select>
+
+                                    <div id="auth-apikey" style="display:none;">
+                                        <div class="row g-2 mb-2">
+                                            <div class="col-4">
+                                                <input id="auth-apikey-key" type="text" class="form-control" placeholder="Key" value="apiKey">
+                                            </div>
+                                            <div class="col-6">
+                                                <input id="auth-apikey-value" type="text" class="form-control" placeholder="Value">
+                                            </div>
+                                        </div>
+                                        <small class="form-hint">* Se agregara la key al header</small>
+                                    </div>
+
+                                    <div id="auth-bearer" style="display:none;">
+                                        <input id="auth-bearer-token" type="text" class="form-control" placeholder="Token...">
+                                    </div>
+                                </div>
+                                <label class="form-label fw-bold">Headers</label>
+
+                                <table class="table table-bordered" id="headers-table">
+                                    <thead>
+                                    <tr>
+                                        <th style="width:40%">Key</th>
+                                        <th style="width:50%">Value</th>
+                                        <th style="width:10%"></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+
+                                <button id="add-header-row" type="button" class="btn btn-secondary w-100 mb-3">
+                                    + Add Header
+                                </button>
+
                             </div>
                         </div>
 
@@ -214,8 +255,61 @@
         loadToken();
         loadApiList();
         setMethod('GET');
-    });
 
+        document.getElementById("auth-type").addEventListener("change", function () {
+            document.getElementById("auth-apikey").style.display = "none";
+            document.getElementById("auth-bearer").style.display = "none";
+
+            if (this.value === "apikey") document.getElementById("auth-apikey").style.display = "block";
+            if (this.value === "bearer") document.getElementById("auth-bearer").style.display = "block";
+        });
+
+        document.getElementById("add-header-row").addEventListener("click", function () {
+            const tbody = document.querySelector("#headers-table tbody");
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+            <td><input class="form-control header-key" placeholder="Content-Type"></td>
+            <td><input class="form-control header-value" placeholder="application/json"></td>
+            <td><button class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">X</button></td>
+        `;
+            tbody.appendChild(tr);
+        });
+    });
+    function getHeadersFromTable() {
+        const headers = {};
+        const rows = document.querySelectorAll("#headers-table tbody tr");
+        rows.forEach(row => {
+            const key = row.querySelector(".header-key").value.trim();
+            const value = row.querySelector(".header-value").value.trim();
+            if (key) headers[key] = value;
+        });
+        return headers;
+    }
+    function applyAuth(headers, url) {
+        const type = document.getElementById("auth-type").value;
+
+        if (type === "apikey") {
+            // Toma los valores de los inputs de la FOTO
+            let key = document.getElementById("auth-apikey-key").value.trim();
+            const value = document.getElementById("auth-apikey-value").value.trim();
+
+            if (!key) key = "apiKey"; // Valor por defecto si lo borras
+            if (key && value) headers[key] = value;
+        }
+
+        if (type === "bearer") {
+            const token = document.getElementById("auth-bearer-token").value.trim();
+            if (token) headers["Authorization"] = "Bearer " + token;
+        }
+
+        // Lógica QA: Inyectar token de sesión si aplica
+        if (QA_SESSION_TOKEN && !headers["Authorization"]) {
+            headers["Authorization"] = "Bearer " + QA_SESSION_TOKEN;
+        }
+
+        return url;
+    }
 
 
     function saveToken(token, durationSeconds) {
@@ -400,23 +494,41 @@
         const method = document.getElementById('method-btn').textContent.trim();
         const target = document.getElementById('targetUrl').value;
         let body = document.getElementById('request-body').value;
+        const authType = document.getElementById("auth-type").value;
 
         let finalUrl = target;
-        let headers = {};
         let envIdToSend = "2";
+
+
+        let finalHeaders = getHeadersFromTable();
+        finalUrl = applyAuth(finalHeaders, finalUrl);
+
+
+        let rootApiKey = null;
+
+        if (authType === 'apikey') {
+            rootApiKey = document.getElementById("auth-apikey-value").value.trim();
+        } else {
+
+            Object.keys(finalHeaders).forEach(key => {
+                if (key.toLowerCase() === 'apikey' || key.toLowerCase() === 'x-api-key') {
+                    rootApiKey = finalHeaders[key];
+                }
+            });
+        }
+
 
         if (CURRENT_API_ID) {
             if (!QA_SESSION_TOKEN) {
                 alert("Error: Estás en modo QA pero no tienes token.");
                 return;
             }
-            headers["Authorization"] = "Bearer " + QA_SESSION_TOKEN;
             envIdToSend = "3";
 
             if (!target.startsWith("http")) {
                 const cleanBase = API_BASE_URL.replace(/\/$/, "");
                 const cleanPath = target.startsWith("/") ? target : "/" + target;
-                finalUrl = cleanBase + cleanPath;
+                finalUrl = target;
             }
         } else {
             if (!target.startsWith("http")) {
@@ -436,17 +548,22 @@
 
         try {
             const start = performance.now();
+
+            // Construimos el payload
+            const payload = {
+                apiId: CURRENT_API_ID ? parseInt(CURRENT_API_ID) : 0,
+                method: method,
+                targetUrl: finalUrl,
+                headers: finalHeaders,
+                body: body,
+                environmentId: envIdToSend,
+                apiKey: rootApiKey
+            };
+
             const resp = await fetch('/api/sandbox/execute', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', [csrfHeader]: csrfToken },
-                body: JSON.stringify({
-                    apiId: CURRENT_API_ID ? parseInt(CURRENT_API_ID) : 0,
-                    method: method,
-                    targetUrl: finalUrl,
-                    headers: headers,
-                    body: body,
-                    environmentId: envIdToSend
-                })
+                body: JSON.stringify(payload)
             });
             const end = performance.now();
 
@@ -460,7 +577,12 @@
 
             document.getElementById('response-time').textContent = Math.round(end-start) + " ms";
             const status = resJson.statusCode || resp.status;
-            document.getElementById('response-status').textContent = "STATUS: " + status;
+            const statusBadge = document.getElementById('response-status');
+            statusBadge.textContent = "STATUS: " + status;
+
+            if (status < 300) statusBadge.className = "badge bg-success";
+            else statusBadge.className = "badge bg-danger";
+
             document.getElementById('response-body-pre').textContent =
                 (typeof resJson === 'object') ? JSON.stringify(resJson.data || resJson, null, 2) : resJson;
 
@@ -486,9 +608,14 @@
         if(p.startsWith('http')) prev.textContent = "URL: " + p;
         else prev.textContent = "URL: " + API_BASE_URL + (p.startsWith('/')?p:'/'+p);
     }
-</script>
+    document.getElementById("auth-type").addEventListener("change", function () {
+        document.getElementById("auth-bearer").style.display =
+            this.value === "bearer" ? "block" : "none";
+    });
 
-<script th:src="@{/tabler/dist/js/tabler.min.js}"></script>
-<script th:src="@{/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js}"></script>
+
+</script>
+<script th:src="|/tabler/dist/libs/bootstrap/dist/js/bootstrap.bundle.min.js?1757307620|"></script>
+<script th:src="|/tabler/dist/js/tabler.min.js?1757307620|"></script>
 </body>
 </html>
