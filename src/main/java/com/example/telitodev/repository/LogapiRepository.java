@@ -27,6 +27,10 @@ public interface LogapiRepository extends JpaRepository<LogApi, Integer> {
         @Query(value = "SELECT COUNT(*) FROM logapi WHERE estadohttp >= 400 AND fecha >= NOW() - INTERVAL 24 HOUR", nativeQuery = true)
         long countErrorsLast24Hours();
 
+
+        @Query(value = "SELECT COUNT(DISTINCT l.endpoint) FROM logapi l WHERE l.idAPI = :idApi", nativeQuery = true)
+        Optional<Integer> findEndpointsByApi(@Param("idApi") Integer idApi);
+
         // PARA LA PAGINA DE METRICAS:
 
         @Query(value = "SELECT AVG(tiempoRespuestaMs) FROM logapi l WHERE l.idAPI = :idApi", nativeQuery = true)

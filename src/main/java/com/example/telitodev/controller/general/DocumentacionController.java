@@ -113,6 +113,9 @@ public class DocumentacionController {
                     model.addAttribute("api", api);
                     model.addAttribute("proyApi", proyectoHasApiRepository.findByApi_IdApi(api.getIdApi()));
 
+                    Integer endpoints = logapiRepository.findEndpointsByApi(api.getIdApi()).orElse(0);
+                    model.addAttribute("endpoints",endpoints);
+
                     Double avgLat = logapiRepository.findAverageLatency(api.getIdApi()).orElse(null);
                     model.addAttribute("avgLat", avgLat);
 
