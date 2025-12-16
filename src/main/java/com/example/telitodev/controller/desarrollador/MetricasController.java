@@ -52,18 +52,20 @@ public class MetricasController extends BaseController {
 
         // Obtener IDs de APIs de la organización del usuario
         Integer orgId = null;
-        if (usuario.getOrganizacion() != null) {
+        if (usuario.getEquipo() != null) {
+            orgId = usuario.getEquipo().getIdEquipo();
+            model.addAttribute("listaApis", apiRepository.findByEquipoId(orgId));
+        } else if (usuario.getOrganizacion() != null) {
             orgId = usuario.getOrganizacion().getIdOrganizacion();
             model.addAttribute("listaApis", apiRepository.findByOrganizacionId(orgId));
-        } else if (usuario.getEquipo() != null && usuario.getEquipo().getOrganizacion() != null) {
-            orgId = usuario.getEquipo().getOrganizacion().getIdOrganizacion();
+
         }
 
         List<Integer> apiIds = null;
         if (orgId != null) {
-            List<com.example.telitodev.entity.Api> userApis = apiRepository.findByOrganizacionId(orgId);
+            List<Api> userApis = apiRepository.findByOrganizacionId(orgId);
             if (userApis != null && !userApis.isEmpty()) {
-                apiIds = userApis.stream().map(com.example.telitodev.entity.Api::getIdApi).toList();
+                apiIds = userApis.stream().map(Api::getIdApi).toList();
             } else {
                 apiIds = List.of(); // Empty list ensures we filter to nothing if org has no APIs
             }
