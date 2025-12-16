@@ -471,19 +471,19 @@
                         </div>
 
                         <!-- NUEVO: Bloque de paginación estandarizado -->
-                        <nav aria-label="Page navigation" class="mt-4" th:if="${issuePage.totalPages > 0}">
+                        <nav aria-label="Page navigation" class="mt-4" th:if="${issuePage.totalPages > 1}">
                             <ul class="pagination justify-content-center">
                                 <!-- Botón 'Anterior' -->
                                 <li class="page-item" th:classappend="${issuePage.isFirst()} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/qa/issues(page=${currentPage - 1}, size=${issuePage.getSize()}, tags=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombre=${nombre})}">Anterior</a>
+                                    <a class="page-link" th:href="@{/qa/issues(page=${issuePage.number - 1}, size=${issuePage.size}, tags=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombre=${nombre})}">Anterior</a>
                                 </li>
                                 <!-- Números de Página -->
-                                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" th:classappend="${i == currentPage} ? 'active'">
-                                    <a class="page-link" th:href="@{/qa/issues(page=${i}, size=${issuePage.getSize()}, tags=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombre=${nombre})}" th:text="${i + 1}">1</a>
+                                <li class="page-item" th:each="i : ${#numbers.sequence(0, issuePage.totalPages - 1)}" th:classappend="${i == issuePage.number} ? 'active'">
+                                    <a class="page-link" th:href="@{/qa/issues(page=${i}, size=${issuePage.size}, tags=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombre=${nombre})}" th:text="${i + 1}">1</a>
                                 </li>
                                 <!-- Botón 'Siguiente' -->
                                 <li class="page-item" th:classappend="${issuePage.isLast()} ? 'disabled'">
-                                    <a class="page-link" th:href="@{/qa/issues(page=${currentPage + 1}, size=${issuePage.getSize()}, tags=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombre=${nombre})}">Siguiente</a>
+                                    <a class="page-link" th:href="@{/qa/issues(page=${issuePage.number + 1}, size=${issuePage.size}, tags=${selectedEstados}, fechaInicio=${fechaInicio}, fechaFin=${fechaFin}, nombre=${nombre})}">Siguiente</a>
                                 </li>
                             </ul>
                         </nav>

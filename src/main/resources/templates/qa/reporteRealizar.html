@@ -13,6 +13,81 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     @import url("https://rsms.me/inter/inter.css");
+    
+    /* Estilos para alertas AJAX */
+    .alert-ajax {
+      position: fixed;
+      top: 80px;
+      right: 20px;
+      z-index: 9999;
+      min-width: 350px;
+      animation: slideInRight 0.3s ease-out;
+    }
+    
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    /* Preview de archivos */
+    .file-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    
+    .file-item {
+      display: flex;
+      align-items: center;
+      padding: 10px 14px;
+      background-color: var(--tblr-primary-lt, rgba(32, 107, 196, 0.1));
+      border: 1px solid var(--tblr-primary, #206bc4);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      color: var(--tblr-body-color, #1e293b);
+      font-weight: 500;
+    }
+    
+    .file-item i {
+      margin-right: 10px;
+      color: var(--tblr-primary, #206bc4);
+      font-size: 1.2rem;
+    }
+    
+    .file-item .file-size {
+      margin-left: 10px;
+      color: var(--tblr-muted, #64748b);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    
+    .file-item .remove-file {
+      margin-left: 10px;
+      cursor: pointer;
+      color: #dc3545;
+    }
+    
+    .char-counter {
+      float: right;
+      font-size: 0.875rem;
+      color: #6c757d;
+    }
+    
+    .char-counter.warning {
+      color: #ffc107;
+    }
+    
+    .char-counter.danger {
+      color: #dc3545;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -37,7 +112,7 @@
             <h3 class="card-title">Genera un reporte después de validar una API</h3>
           </div>
           <div class="card-body">
-            <form method="POST" th:action="@{/qa/guardarReporte}" enctype="multipart/form-data">
+            <form id="reporteForm" method="POST" enctype="multipart/form-data">
 
               <!-- Combobox de APIs -->
               <div class="mb-3">
@@ -49,42 +124,51 @@
                           th:text="${apiDto.nombreApi} + ' (Equipo: ' + ${apiDto.nombreProyecto} + ')'">
                   </option>
                 </select>
+                <div id="error-api" class="text-danger mt-1" style="display: none;"></div>
               </div>
 
               <!-- Selector de Estado -->
               <div class="mb-3">
                 <label class="form-label">Estado del reporte</label>
-                <select class="form-select" name="estado" required>
+                <select class="form-select" name="estado" id="estadoSelect" required>
                   <option value="">Selecciona el estado del reporte</option>
                   <option th:each="estado : ${estadosReporte}"
                           th:value="${estado}"
                           th:text="${estado}">
                   </option>
                 </select>
-                <!-- NUEVO: Contenedor para mostrar el error de estado -->
-                <div th:if="${errorEstado}" class="text-danger mt-1" th:text="${errorEstado}"></div>
+                <small class="text-muted" id="estadoHelp" style="display: none;">
+                  <i class="ti ti-alert-circle me-1"></i>
+                  Cuando el estado es "Fallido", debes adjuntar al menos una evidencia.
+                </small>
+                <div id="error-estado" class="text-danger mt-1" style="display: none;"></div>
               </div>
 
-              <!-- Campo de Descripción -->
+              <!-- Campo de Descripción con contador -->
               <div class="mb-3">
-                <label class="form-label">Descripción</label>
-                <textarea name="descripcion" placeholder="Ingresa una descripcion" rows="6" class="form-control" required maxlength="200"></textarea>
-                <div th:if="${errorDescripcion}" class="text-danger mt-1" th:text="${errorDescripcion}"></div>
+                <label class="form-label">
+                  Descripción
+                  <span class="char-counter" id="charCounter">0/200</span>
+                </label>
+                <textarea name="descripcion" id="descripcionTextarea" 
+                          placeholder="Describe los detalles del reporte" 
+                          rows="6" class="form-control" required maxlength="200"></textarea>
+                <div id="error-descripcion" class="text-danger mt-1" style="display: none;"></div>
               </div>
 
-              <!-- Campo para adjuntar archivos -->
+              <!-- Campo para adjuntar archivos con preview -->
               <div class="mb-3">
-                <label for="archivo" class="form-label">Adjuntar archivo (opcional):</label>
-                <input type="file" id="archivo" name="archivos" class="form-control" accept=".png, .jpg, .jpeg, .log, .txt" multiple />
-                <small>Máximo 5 archivos</small>
-                <!-- NUEVO: Contenedor para mostrar el error de archivos -->
-                <div th:if="${errorArchivos}" class="text-danger mt-1" th:text="${errorArchivos}"></div>
-                <div id="error-message" style="color: red; display: none;">Solo se permiten archivos de tipo .png, .jpg, .jpeg, .log o .txt</div>
+                <label for="archivo" class="form-label">Adjuntar evidencias (opcional):</label>
+                <input type="file" id="archivo" name="archivos" class="form-control" 
+                       accept=".png, .jpg, .jpeg, .log, .txt" multiple />
+                <small class="text-muted">Máximo 5 archivos (PNG, JPG, LOG, TXT) de hasta 5MB cada uno</small>
+                <div id="error-archivos" class="text-danger mt-1" style="display: none;"></div>
+                <div id="filePreview" class="file-preview"></div>
               </div>
 
               <div class="mt-4">
-                <button type="submit" onclick="return validateFiles()" class="btn btn-primary w-100">
-                  Generar reporte
+                <button type="submit" id="btnSubmitReporte" class="btn btn-primary w-100">
+                  <i class="ti ti-file-text me-2"></i>Generar reporte
                 </button>
               </div>
             </form>
@@ -97,21 +181,240 @@
 </div>
 <script src="/tabler/dist/js/tabler.min.js" defer></script>
 <script>
-  function validateFiles() {
-    const fileInput = document.getElementById("archivo");
-    const files = fileInput.files;
-    const allowedExtensions = ["png", "jpeg", "jpg", "log", "txt"];
-    document.getElementById("error-message").style.display = "none";
-
-    for (let i = 0; i < files.length; i++) {
-      const fileName = files[i].name;
-      const fileExtension = fileName.split('.').pop().toLowerCase();
-      if (!allowedExtensions.includes(fileExtension)) {
-        document.getElementById("error-message").style.display = "block";
-        return false;
+  // ===== CONFIGURACIÓN CSRF =====
+  const CSRF_TOKEN = document.querySelector('meta[name="_csrf"]').content;
+  const CSRF_HEADER = document.querySelector('meta[name="_csrf_header"]').content;
+  
+  // ===== UTILIDADES =====
+  function showAlert(message, type = 'success') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-ajax alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+      <strong>${type === 'success' ? '✓' : '✗'}</strong> ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alertDiv);
+    setTimeout(() => alertDiv.remove(), 5000);
+  }
+  
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+  }
+  
+  // ===== CONTADOR DE CARACTERES =====
+  const descripcionTextarea = document.getElementById('descripcionTextarea');
+  const charCounter = document.getElementById('charCounter');
+  
+  if (descripcionTextarea && charCounter) {
+    descripcionTextarea.addEventListener('input', function() {
+      const length = this.value.length;
+      charCounter.textContent = length + '/200';
+      
+      // Cambiar color según proximidad al límite
+      charCounter.classList.remove('warning', 'danger');
+      if (length >= 200) {
+        charCounter.classList.add('danger');
+      } else if (length >= 180) {
+        charCounter.classList.add('warning');
       }
-    }
-    return true;
+    });
+  }
+  
+  // ===== AYUDA CONTEXTUAL PARA ESTADO =====
+  const estadoSelect = document.getElementById('estadoSelect');
+  const estadoHelp = document.getElementById('estadoHelp');
+  
+  if (estadoSelect && estadoHelp) {
+    estadoSelect.addEventListener('change', function() {
+      if (this.value === 'Fallido') {
+        estadoHelp.style.display = 'block';
+      } else {
+        estadoHelp.style.display = 'none';
+      }
+    });
+  }
+  
+  // ===== PREVIEW Y VALIDACIÓN DE ARCHIVOS =====
+  const archivoInput = document.getElementById('archivo');
+  const filePreview = document.getElementById('filePreview');
+  let selectedFiles = [];
+  
+  if (archivoInput && filePreview) {
+    archivoInput.addEventListener('change', function(e) {
+      const errorDiv = document.getElementById('error-archivos');
+      errorDiv.style.display = 'none';
+      filePreview.innerHTML = '';
+      selectedFiles = [];
+      
+      const files = Array.from(e.target.files);
+      const allowedTypes = ['image/png', 'image/jpeg', 'text/plain'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      
+      // Validar cantidad
+      if (files.length > 5) {
+        errorDiv.textContent = 'Máximo 5 archivos permitidos';
+        errorDiv.style.display = 'block';
+        archivoInput.value = '';
+        return;
+      }
+      
+      // Validar cada archivo
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        
+        // Validar tipo
+        if (!allowedTypes.includes(file.type)) {
+          errorDiv.textContent = 'Solo se permiten archivos .png, .jpg, .jpeg, .log o .txt';
+          errorDiv.style.display = 'block';
+          archivoInput.value = '';
+          filePreview.innerHTML = '';
+          return;
+        }
+        
+        // Validar tamaño
+        if (file.size > maxSize) {
+          errorDiv.textContent = `El archivo "${file.name}" supera el tamaño máximo de 5MB`;
+          errorDiv.style.display = 'block';
+          archivoInput.value = '';
+          filePreview.innerHTML = '';
+          return;
+        }
+        
+        selectedFiles.push(file);
+        
+        // Crear preview
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        
+        const icon = file.type.startsWith('image/') ? 'ti-photo' : 'ti-file-text';
+        fileItem.innerHTML = `
+          <i class="ti ${icon}"></i>
+          <span>${file.name}</span>
+          <span class="file-size">(${formatFileSize(file.size)})</span>
+        `;
+        
+        filePreview.appendChild(fileItem);
+      }
+    });
+  }
+  
+  // ===== ENVÍO DEL FORMULARIO VÍA AJAX =====
+  const reporteForm = document.getElementById('reporteForm');
+  const btnSubmit = document.getElementById('btnSubmitReporte');
+  
+  if (reporteForm) {
+    reporteForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      // Limpiar errores previos
+      document.querySelectorAll('[id^="error-"]').forEach(el => el.style.display = 'none');
+      
+      const apiId = document.getElementById('apiSelect').value;
+      const estado = document.getElementById('estadoSelect').value;
+      const descripcion = document.getElementById('descripcionTextarea').value.trim();
+      const archivos = document.getElementById('archivo').files;
+      
+      // Validación del lado del cliente
+      let hasErrors = false;
+      
+      if (!apiId) {
+        document.getElementById('error-api').textContent = 'Debe seleccionar una API';
+        document.getElementById('error-api').style.display = 'block';
+        hasErrors = true;
+      }
+      
+      if (!estado) {
+        document.getElementById('error-estado').textContent = 'Debe seleccionar un estado';
+        document.getElementById('error-estado').style.display = 'block';
+        hasErrors = true;
+      }
+      
+      if (!descripcion) {
+        document.getElementById('error-descripcion').textContent = 'La descripción no puede estar vacía';
+        document.getElementById('error-descripcion').style.display = 'block';
+        hasErrors = true;
+      }
+      
+      // Validación especial: Fallido requiere evidencias
+      if (estado === 'Fallido' && archivos.length === 0) {
+        document.getElementById('error-archivos').textContent = 
+          'Cuando el estado es "Fallido", debe adjuntar al menos una evidencia del error';
+        document.getElementById('error-archivos').style.display = 'block';
+        hasErrors = true;
+      }
+      
+      if (hasErrors) return;
+      
+      // Preparar FormData
+      const formData = new FormData();
+      formData.append('apiId', apiId);
+      formData.append('estado', estado);
+      formData.append('descripcion', descripcion);
+      
+      for (let file of archivos) {
+        formData.append('archivos', file);
+      }
+      
+      // Deshabilitar botón y mostrar loading
+      btnSubmit.disabled = true;
+      btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creando reporte...';
+      
+      try {
+        const response = await fetch('/qa/guardarReporte', {
+          method: 'POST',
+          headers: {
+            [CSRF_HEADER]: CSRF_TOKEN
+          },
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+          showAlert(data.success || 'Reporte creado exitosamente', 'success');
+          
+          // Limpiar formulario
+          reporteForm.reset();
+          charCounter.textContent = '0/200';
+          filePreview.innerHTML = '';
+          estadoHelp.style.display = 'none';
+          
+          // Redirigir después de 1.5 segundos
+          setTimeout(() => {
+            window.location.href = '/qa/reportes';
+          }, 1500);
+        } else {
+          // Mostrar error del backend
+          const errorMessage = data.error || 'Error al crear el reporte';
+          showAlert(errorMessage, 'danger');
+          
+          // Mostrar error en el campo correspondiente si es específico
+          if (errorMessage.includes('descripción')) {
+            document.getElementById('error-descripcion').textContent = errorMessage;
+            document.getElementById('error-descripcion').style.display = 'block';
+          } else if (errorMessage.includes('estado')) {
+            document.getElementById('error-estado').textContent = errorMessage;
+            document.getElementById('error-estado').style.display = 'block';
+          } else if (errorMessage.includes('archivo') || errorMessage.includes('evidencia')) {
+            document.getElementById('error-archivos').textContent = errorMessage;
+            document.getElementById('error-archivos').style.display = 'block';
+          } else if (errorMessage.includes('API')) {
+            document.getElementById('error-api').textContent = errorMessage;
+            document.getElementById('error-api').style.display = 'block';
+          }
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showAlert('Error de conexión. Por favor, inténtalo nuevamente.', 'danger');
+      } finally {
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = '<i class="ti ti-file-text me-2"></i>Generar reporte';
+      }
+    });
   }
 </script>
 </body>

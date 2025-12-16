@@ -7,6 +7,8 @@ import com.example.telitodev.repository.po.ActividadRecienteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -20,7 +22,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/qa")
@@ -60,6 +64,12 @@ public class IssueController extends BaseController {
         addImpersonationAttributes(model, session);
         model.addAttribute("usuario", usuario);
 
+        // Limpiar parámetros vacíos: convertir cadenas vacías y listas vacías en null
+        if (estados != null && estados.isEmpty()) estados = null;
+        if (nombre != null && nombre.trim().isEmpty()) nombre = null;
+        if (fechaInicio != null && fechaInicio.trim().isEmpty()) fechaInicio = null;
+        if (fechaFin != null && fechaFin.trim().isEmpty()) fechaFin = null;
+
         Timestamp inicio = null;
         Timestamp fin = null;
         try {
@@ -70,17 +80,15 @@ public class IssueController extends BaseController {
             e.printStackTrace();
         }
 
+        // Validar y ajustar el número de página antes de crear el Pageable
         Pageable pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
         Page<Issue> issuePage = issueRepository.findByFiltersForTeam(estados, inicio, fin, nombre, usuario.getDni(), pageable);
 
-        // Si la página solicitada está fuera de rango, redirigir a la última página válida.
+        // Si la página solicitada está fuera de rango, ajustar a la última página válida
         if (page >= issuePage.getTotalPages() && issuePage.getTotalPages() > 0) {
-            int lastPage = issuePage.getTotalPages() - 1;
-            pageable = PageRequest.of(lastPage, size, Sort.by("fechaCreacion").descending());
-            issuePage = issueRepository.findByFiltersForTeam(
-            estados, inicio, fin, nombre, usuario.getDni(), pageable
-        );
-            page = lastPage;
+            page = issuePage.getTotalPages() - 1;
+            pageable = PageRequest.of(page, size, Sort.by("fechaCreacion").descending());
+            issuePage = issueRepository.findByFiltersForTeam(estados, inicio, fin, nombre, usuario.getDni(), pageable);
         }
 
         // Pre-inicializar las relaciones de API para evitar EntityNotFoundException en la vista
@@ -114,7 +122,7 @@ public class IssueController extends BaseController {
 
         // Pasamos el objeto Page completo a la vista para mayor consistencia
         model.addAttribute("issuePage", issuePage);
-        model.addAttribute("currentPage", page);
+        model.addAttribute("currentPage", issuePage.getNumber());
         model.addAttribute("totalPages", issuePage.getTotalPages());
 
         // Devolvemos los parámetros de filtro a la vista para mantener su estado
@@ -262,21 +270,23 @@ public class IssueController extends BaseController {
     }
 
     @PostMapping("/crearComentario")
-    public String guardarComentario(@RequestParam("comentario") String comentario,
+    @ResponseBody
+    public ResponseEntity<?> guardarComentario(@RequestParam("comentario") String comentario,
                                     @RequestParam(value = "archivos", required = false) MultipartFile[] archivos,
                                     @RequestParam("idIssue") Integer idIssue,
                                     @RequestParam("idReporte") Integer idReporte,
-                                    Authentication auth, RedirectAttributes redirectAttributes) {
+                                    Authentication auth) {
+
+        Map<String, String> response = new HashMap<>();
 
         if (comentario == null || comentario.trim().isEmpty()) {
-            redirectAttributes.addFlashAttribute("errorComentario", "El comentario no puede estar vacío.");
-            return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+            response.put("error", "El comentario no puede estar vacío.");
+            return ResponseEntity.badRequest().body(response);
         }
 
         if (comentario.length() > 400) {
-            redirectAttributes.addFlashAttribute("errorComentario", "El comentario no puede superar los 400 caracteres.");
-            redirectAttributes.addFlashAttribute("submittedComentario", comentario);
-            return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+            response.put("error", "El comentario no puede superar los 400 caracteres.");
+            return ResponseEntity.badRequest().body(response);
         }
 
         Usuario usuario = usuarioRepository.findByCorreo(auth.getName());
@@ -284,8 +294,14 @@ public class IssueController extends BaseController {
         IssueId issueId = new IssueId(idIssue, idReporte);
         Issue issue = issueRepository.findById(issueId).orElse(null);
         if (issue == null) {
-            redirectAttributes.addFlashAttribute("error", "Issue no encontrado");
-            return "redirect:/qa/issues";
+            response.put("error", "Issue no encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        // Validar que el issue no esté cerrado
+        if ("Corregido".equals(issue.getEstado())) {
+            response.put("error", "No se pueden agregar comentarios. El QA ya ha cerrado este issue.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
         }
 
         Comentario newComentario = new Comentario();
@@ -301,21 +317,21 @@ public class IssueController extends BaseController {
         }
 
         if (archivos != null && archivos.length > 5) {
-            redirectAttributes.addFlashAttribute("error", "Máximo 5 archivos permitidos");
-            return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+            response.put("error", "Máximo 5 archivos permitidos");
+            return ResponseEntity.badRequest().body(response);
         }
 
         if (archivos != null && archivos.length > 0) {
             for (MultipartFile archivo : archivos) {
                 if (archivo.getSize() > MAX_FILE_SIZE) {
-                    redirectAttributes.addFlashAttribute("error", "El archivo es demasiado grande");
-                    return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+                    response.put("error", "El archivo es demasiado grande. Máximo 5MB");
+                    return ResponseEntity.badRequest().body(response);
                 }
 
                 String contentType = archivo.getContentType();
                 if (!contentType.equals("image/png") && !contentType.equals("image/jpeg") && !contentType.equals("text/plain")) {
-                    redirectAttributes.addFlashAttribute("error", "Solo se permiten archivos de tipo .png, .jpg o .log");
-                    return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+                    response.put("error", "Solo se permiten archivos .png, .jpg, .jpeg, .log o .txt");
+                    return ResponseEntity.badRequest().body(response);
                 }
 
                 try {
@@ -326,8 +342,8 @@ public class IssueController extends BaseController {
                     adjuntoRepository.save(adjunto);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    redirectAttributes.addFlashAttribute("error", "Error al guardar el archivo");
-                    return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+                    response.put("error", "Error al guardar el archivo");
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
                 }
             }
         }
@@ -361,7 +377,8 @@ public class IssueController extends BaseController {
         actividad.setUsuario(usuario);
         actividadRecienteRepository.save(actividad);
 
-        return "redirect:/qa/issueDetalle/" + idIssue + "/" + idReporte;
+        response.put("success", "Comentario agregado exitosamente");
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/issueCerrar/{idIssue}/{idReporte}")
