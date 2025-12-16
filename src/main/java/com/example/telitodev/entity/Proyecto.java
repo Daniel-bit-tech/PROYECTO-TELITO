@@ -23,6 +23,8 @@ public class Proyecto {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "dni_po_lider", nullable = false)
     private Usuario poLider;
+    @Column(name = "dni_po_lider", columnDefinition = "CHAR(8)", nullable = false)
+    private String dniPoLider;
 
     @Size(min = 5, max = 45)
     @NotBlank
@@ -134,5 +136,11 @@ public class Proyecto {
     }
     public void setPoLider(Usuario poLider) {
         this.poLider = poLider;
+    }
+    public String getDniPoLider() {
+        return dniPoLider;
+    }
+    public void setDniPoLider(String dniPoLider) {
+        this.dniPoLider = dniPoLider;
     }
 }

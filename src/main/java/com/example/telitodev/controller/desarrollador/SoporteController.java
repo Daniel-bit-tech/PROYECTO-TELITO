@@ -387,7 +387,7 @@ public class SoporteController extends BaseController {
             Integer orgId = usuario.getOrganizacion().getIdOrganizacion();
             logger.info("🏢 ID Organización: " + orgId);
             
-            List<Usuario> miembros = usuarioRepository.findByOrganizacionIdWithRol(orgId);
+            List<Usuario> miembros = usuarioRepository  .findByOrganizacionIdWithRol(orgId);
             logger.info("✅ Miembros encontrados: " + miembros.size());
             
             Map<String, Object> orgInfo = new HashMap<>();
