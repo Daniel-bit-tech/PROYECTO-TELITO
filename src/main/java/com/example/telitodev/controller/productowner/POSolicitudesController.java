@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.example.telitodev.dto.SolicitudAccesoDecisionRequest;
 
 @Controller
 @RequestMapping("/po")
@@ -26,47 +28,54 @@ public class POSolicitudesController extends BaseController {
     @Autowired
     private UsuarioService usuarioService;
 
-    /**
-     * Vista principal de solicitudes pendientes para PO
-     */
+
     @GetMapping("/solicitudes")
     public String mostrarSolicitudesPendientes(Model model, Authentication authentication, HttpSession session) {
         try {
-            // Obtener el usuario autenticado considerando impersonación
+
             Usuario usuario = getCurrentUser(authentication, session);
-            
+
             if (usuario == null) {
                 return "redirect:/login";
             }
 
-            // Validar que el usuario tenga rol PO o SUPERADMIN (para impersonación)
-            if (!usuario.getRol().getNombreRol().equals("PO") && !usuario.getRol().getNombreRol().equals("SUPERADMIN")) {
-                return "redirect:/po/home?error=access_denied";
+
+            boolean esPO = usuario.getRol().getNombreRol().equals("PO");
+            boolean esSuperAdmin = usuario.getRol().getNombreRol().equals("SUPERADMIN");
+
+            if (!esPO && !esSuperAdmin) {
+
+                return "redirect:/home?error=no_permiso";
             }
 
-            // Agregar atributos de impersonación
-            addImpersonationAttributes(model, session);
 
+            if (usuario.getEquipo() == null) {
+                model.addAttribute("error", "Error crítico: Tu usuario PO no tiene un equipo asignado.");
+                return "po/bandejaSolicitud";
+            }
+
+            addImpersonationAttributes(model, session);
             model.addAttribute("usuario", usuario);
 
-            // Obtener solicitudes pendientes para esta organización
-            List<SolicitudAccesoResponse> solicitudesPendientes = 
-                onboardingService.obtenerSolicitudesPendientesPorOrganizacion(usuario.getOrganizacion().getIdOrganizacion());
+
+            Integer idEquipoPO = usuario.getEquipo().getIdEquipo();
+
+            List<SolicitudAccesoResponse> solicitudesPendientes =
+                    onboardingService.obtenerSolicitudesPendientesPorEquipo(idEquipoPO);
 
             model.addAttribute("solicitudesPendientes", solicitudesPendientes);
             model.addAttribute("totalSolicitudes", solicitudesPendientes.size());
 
             return "po/bandejaSolicitud";
-            
+
         } catch (Exception e) {
+            e.printStackTrace();
             model.addAttribute("error", "Error al cargar las solicitudes: " + e.getMessage());
             return "po/bandejaSolicitud";
         }
     }
 
-    /**
-     * Procesar decisión sobre una solicitud (aprobar/rechazar)
-     */
+
     @PostMapping("/solicitudes/{idSolicitud}/decision")
     @ResponseBody
     public ResponseEntity<?> procesarDecision(
@@ -93,9 +102,7 @@ public class POSolicitudesController extends BaseController {
         }
     }
 
-    /**
-     * API REST para obtener solicitudes pendientes (para actualizaciones dinámicas)
-     */
+
     @GetMapping("/api/solicitudes-pendientes-all")
     @ResponseBody
     public ResponseEntity<List<SolicitudAccesoResponse>> obtenerSolicitudesPendientes(Authentication authentication, HttpSession session) {
@@ -113,6 +120,63 @@ public class POSolicitudesController extends BaseController {
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+
+
+    @PostMapping("/solicitudes/aprobar")
+    public String aprobarSolicitud(@RequestParam("idSolicitud") Integer idSolicitud,
+                                   Authentication authentication,
+                                   HttpSession session,
+                                   RedirectAttributes redirectAttributes) {
+        try {
+            Usuario usuario = getCurrentUser(authentication, session);
+
+            if (usuario == null || !"PO".equals(usuario.getRol().getNombreRol())) {
+                return "redirect:/login";
+            }
+
+
+            SolicitudAccesoDecisionRequest decision = new SolicitudAccesoDecisionRequest();
+            decision.setAccion("APROBAR");
+
+
+            onboardingService.procesarSolicitud(idSolicitud, decision);
+
+
+            redirectAttributes.addFlashAttribute("mensaje", "Solicitud aprobada");
+
+            return "redirect:/po/solicitudes";
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al aprobar: " + e.getMessage());
+            return "redirect:/po/solicitudes";
+        }
+    }
+
+    @PostMapping("/solicitudes/rechazar")
+    public String rechazarSolicitud(@RequestParam("idSolicitud") Integer idSolicitud,
+                                    Authentication authentication,
+                                    HttpSession session,
+                                    RedirectAttributes redirectAttributes) {
+        try {
+            Usuario usuario = getCurrentUser(authentication, session);
+            if (usuario == null) return "redirect:/login";
+
+            SolicitudAccesoDecisionRequest decision = new SolicitudAccesoDecisionRequest();
+            decision.setAccion("RECHAZAR");
+            decision.setMotivoRechazo("Rechazado por el Product Owner");
+
+            onboardingService.procesarSolicitud(idSolicitud, decision);
+
+            redirectAttributes.addFlashAttribute("mensaje", "Solicitud rechazada");
+
+            return "redirect:/po/solicitudes";
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al rechazar: " + e.getMessage());
+            return "redirect:/po/solicitudes";
         }
     }
 }

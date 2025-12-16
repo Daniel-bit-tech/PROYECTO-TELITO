@@ -54,6 +54,9 @@ public class ProxyController {
     @Autowired
     private ContratoRepository contratoRepository;
 
+    @Autowired
+    private DocumentacionRepository documentacionRepository;
+
     // dto aqui xd
     public static class ApiHasEntornoUrlDto {
         private String urlBase;
@@ -64,14 +67,10 @@ public class ProxyController {
             this.apiNombre = apiNombre;
         }
 
-        public String getUrlBase() {
-            return urlBase;
-        }
-
-        public String getApiNombre() {
-            return apiNombre;
-        }
+        public String getUrlBase() { return urlBase; }
+        public String getApiNombre() { return apiNombre; }
     }
+
 
     private ResponseEntity<List<Map<String, Object>>> buildApiResponse(List<Api> apis) {
         List<Map<String, Object>> response = apis.stream().map(api -> {
@@ -109,15 +108,14 @@ public class ProxyController {
             String urlBase;
 
             if (request.getTargetUrl().startsWith("http")) {
-                System.out
-                        .println("DEBUG SANDBOX: Ejecutando URL ABSOLUTA. Se ignora la configuración de API/Entorno.");
+                System.out.println("DEBUG SANDBOX: Ejecutando URL ABSOLUTA. Se ignora la configuración de API/Entorno.");
 
                 urlBase = "";
                 pathTemplate = request.getTargetUrl();
 
             } else {
-                System.out.println("DEBUG SANDBOX: Ejecutando con RUTA RELATIVA. API ID: " + request.getApiId()
-                        + ", Entorno ID: " + request.getEnvironmentId());
+                System.out.println("DEBUG SANDBOX: Ejecutando con RUTA RELATIVA. API ID: " + request.getApiId() + ", Entorno ID: " + request.getEnvironmentId());
+
 
                 if (request.getApiId() == null || request.getApiId() == 0) {
                     throw new RuntimeException("Debe seleccionar una API para rutas relativas.");
@@ -146,25 +144,25 @@ public class ProxyController {
                 pathTemplate = matchEndpoint(request.getTargetUrl(), pathParamsMap);
 
                 String mockEntorno = getMockEnvironment(request.getEnvironmentId());
-                String apiName = apiTarget.getNombre().replaceAll("\\s+", "").toLowerCase();
+                String apiName = apiTarget.getNombre().replaceAll("\\s+","").toLowerCase();
 
                 if (mockEntorno != null) {
                     final String MOCK_SERVER_URL = "http://localhost:8083/mock/";
 
                     urlBase = MOCK_SERVER_URL + mockEntorno + "/" + apiName;
-                    System.out.println("DEBUG SANDBOX: SELECCIÓN MOCK. Entorno: " + mockEntorno + ". URL BASE MOCK: "
-                            + MOCK_SERVER_URL);
+                    System.out.println("DEBUG SANDBOX: SELECCIÓN MOCK. Entorno: " + mockEntorno + ". URL BASE MOCK: " + MOCK_SERVER_URL);
 
-                    pathTemplate = (request.getTargetUrl().startsWith("/")) ? request.getTargetUrl()
-                            : "/" + request.getTargetUrl();
+
+                    pathTemplate = (request.getTargetUrl().startsWith("/")) ? request.getTargetUrl() : "/" + request.getTargetUrl();
 
                 } else {
-                    System.out.println(
-                            "DEBUG SANDBOX: SELECCIÓN REAL. ID Entorno: " + request.getEnvironmentId() + " (no mock)");
+                    System.out.println("DEBUG SANDBOX: SELECCIÓN REAL. ID Entorno: " + request.getEnvironmentId() + " (no mock)");
+
 
                     urlBase = getUrlBaseFromDb(request.getApiId());
                 }
             }
+
 
             HttpMethod method = HttpMethod.valueOf(request.getMethod().toUpperCase());
             String urlToCall = urlBase.replaceAll("/+$", "") + (pathTemplate.startsWith("http") ? "" : pathTemplate);
@@ -175,8 +173,7 @@ public class ProxyController {
                 bodyAsString = objectMapper.writeValueAsString(request.getBody());
             }
 
-            ResponseEntity<String> response = callApi(urlBase, pathTemplate, request.getTargetUrl(), method,
-                    bodyAsString, apiKey);
+            ResponseEntity<String> response = callApi(urlBase, pathTemplate, request.getTargetUrl(), method, bodyAsString, apiKey);
 
             Map<String, Object> bodyMap = new HashMap<>();
 
@@ -219,6 +216,8 @@ public class ProxyController {
         }
     }
 
+
+
     private String getMockEnvironment(Integer environmentId) {
         if (environmentId == null)
             return null;
@@ -231,8 +230,8 @@ public class ProxyController {
         };
     }
 
-    private ResponseEntity<String> callApi(String urlBase, String pathTemplate, String urlIngresada, HttpMethod method,
-            String body, String apiKey) {
+
+    private ResponseEntity<String> callApi(String urlBase, String pathTemplate, String urlIngresada, HttpMethod method, String body, String apiKey) {
         Map<String, String> uriVariables = extractPathVariables(urlIngresada, pathTemplate);
 
         String fullUrl;
@@ -267,6 +266,9 @@ public class ProxyController {
         ApiHasEntorno entorno = apiHasEntornoRepository
                 .findFirstByApi_IdApiAndEstado(apiId, ApiHasEntorno.EstadoApiEntorno.Activo)
                 .orElseThrow(() -> new RuntimeException("No hay entorno activo para la API ID: " + apiId));
+        if (entorno.getUrlBase() == null || entorno.getUrlBase().isEmpty()) {
+            throw new RuntimeException("La URL Base para este entorno está vacía en la base de datos.");
+        }
         return entorno.getUrlBase();
     }
 
@@ -300,8 +302,7 @@ public class ProxyController {
     }
 
     private Map<String, String> extractPathVariables(String urlIngresada, String pathTemplate) {
-        if (pathTemplate.startsWith("http"))
-            return Collections.emptyMap();
+        if (pathTemplate.startsWith("http")) return Collections.emptyMap();
 
         List<String> paramNames = Arrays.stream(pathTemplate.split("/"))
                 .filter(s -> s.startsWith("{") && s.endsWith("}"))
@@ -312,8 +313,7 @@ public class ProxyController {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(urlIngresada);
 
-        if (!matcher.matches())
-            return Collections.emptyMap();
+        if (!matcher.matches()) return Collections.emptyMap();
 
         Map<String, String> uriVariables = new HashMap<>();
         for (int i = 0; i < paramNames.size(); i++) {
@@ -322,65 +322,39 @@ public class ProxyController {
         return uriVariables;
     }
 
+
     @GetMapping("/api/sandbox/{apiId}/entorno/{entornoId}/url-base")
-    public ResponseEntity<ApiHasEntornoUrlDto> getApiBaseUrlForEntorno(@PathVariable Integer apiId,
-            @PathVariable Integer entornoId) {
+    public ResponseEntity<ApiHasEntornoUrlDto> getApiBaseUrlForEntorno(@PathVariable Integer apiId, @PathVariable Integer entornoId) {
         Optional<Api> optApi = apiRepository.findById(apiId);
         String apiNombre = optApi.map(Api::getNombre).orElse("API Desconocida");
 
-        Optional<ApiHasEntorno> optConfig = apiHasEntornoRepository.findByApi_IdApiAndEntorno_IdEntorno(apiId,
-                entornoId);
+
+        Optional<ApiHasEntorno> optConfig = apiHasEntornoRepository.findByApi_IdApiAndEntorno_IdEntorno(apiId, entornoId);
 
         if (optConfig.isEmpty()) {
 
             return ResponseEntity.status(404).body(new ApiHasEntornoUrlDto(null, apiNombre));
         }
-        return ResponseEntity
-                .ok(new ApiHasEntornoUrlDto(optConfig.get().getUrlBase(), optConfig.get().getApi().getNombre()));
+        return ResponseEntity.ok(new ApiHasEntornoUrlDto(optConfig.get().getUrlBase(), optConfig.get().getApi().getNombre()));
     }
-
-    /**
-     * Registra métricas de una llamada al sandbox en la tabla LogApi
-     */
-    private void logMetrics(Api api, Usuario usuario, String endpoint, String urlTarget, String metodoHttp, Integer statusCode, long startTime) {
-        try {
-            long duration = System.currentTimeMillis() - startTime;
-
-            LogApi log = new LogApi();
-            log.setApi(api);
-            log.setUsuario(usuario);
-            log.setEndpoint(endpoint);
-//            log.setUrl(urlTarget);
-            log.setMetodoHttp(metodoHttp.toUpperCase());
-            log.setEstadoHttp(statusCode);
-            log.setTiempoRespuestaMs((int) duration);
-            log.setFecha(java.time.LocalDateTime.now());
-
-            logapiRepository.save(log);
-
-        } catch (Exception e) {
-            System.err.println("Error al registrar métrica: " + e.getMessage());
-        }
-    }
-    //
-    // @GetMapping("/api/sandbox/{apiId}/endpoints")
-    // public ResponseEntity<List<String>> getApiEndpoints(@PathVariable Integer
-    // apiId) {
-    // Optional<Documentacion> docOpt =
-    // documentacionRepository.findFirstByApi_IdApi(apiId);
-    // if (docOpt.isEmpty()) return ResponseEntity.notFound().build();
-    //
-    // try {
-    // JsonNode root = objectMapper.readTree((String) docOpt.get().getContenido());
-    // JsonNode pathsNode = root.path("paths");
-    //
-    // List<String> endpoints = new ArrayList<>();
-    // if (!pathsNode.isMissingNode()) {
-    // pathsNode.fieldNames().forEachRemaining(endpoints::add);
-    // }
-    // return ResponseEntity.ok(endpoints);
-    // } catch (Exception // // e.printStackTrace();
-    // // return ResponseEntity.status(500).build();
-    // // }
-    // // }
+//
+//    @GetMapping("/api/sandbox/{apiId}/endpoints")
+//    public ResponseEntity<List<String>> getApiEndpoints(@PathVariable Integer apiId) {
+//        Optional<Documentacion> docOpt = documentacionRepository.findFirstByApi_IdApi(apiId);
+//        if (docOpt.isEmpty()) return ResponseEntity.notFound().build();
+//
+//        try {
+//            JsonNode root = objectMapper.readTree((String) docOpt.get().getContenido());
+//            JsonNode pathsNode = root.path("paths");
+//
+//            List<String> endpoints = new ArrayList<>();
+//            if (!pathsNode.isMissingNode()) {
+//                pathsNode.fieldNames().forEachRemaining(endpoints::add);
+//            }
+//            return ResponseEntity.ok(endpoints);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(500).build();
+//        }
+//    }
 }

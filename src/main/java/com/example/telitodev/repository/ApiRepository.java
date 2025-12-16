@@ -24,6 +24,15 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
     Optional<Api> findActiveApiById(@Param("idApi") Integer idApi);
 
 
+
+    @Query("SELECT DISTINCT a FROM Api a " +
+            "LEFT JOIN SolicitudAcceso s ON s.api = a AND s.usuario.dni = :dni " +
+            "WHERE (a.equipo.idEquipo = :idEquipo) " +
+            "OR (s.usuario.dni = :dni AND s.estado = true)")
+    List<Api> findApisPermitidasParaSandbox(@Param("idEquipo") Integer idEquipo,
+                                            @Param("dni") String dni);
+
+
     @Query(value = "SELECT DISTINCT a.* FROM api a " +
             "JOIN proyecto_has_api pha ON a.idAPI = pha.idAPI " +
             "JOIN proyecto p ON pha.idProyecto = p.idProyecto " +
@@ -154,10 +163,9 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
             "AND e.nombre = 'QA'")
     Integer countApisForQaValidation(@Param("dni") String dni);
 
-    /**
-     * Devuelve una lista completa (sin paginar) de las APIs que un QA necesita validar.
-     * Incluye el DNI del PO Líder para usar en el formulario de creación de reportes.
-     */
+    // Devuelve una lista completa (sin paginar) de las APIs que un QA necesita validar.
+    // Incluye el DNI del PO Líder para usar en el formulario de creación de reportes.
+
 //    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
 //            "a.idApi, a.nombre, MIN(p.nombre), a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, MIN(p.usuarioLider.dni)) " +
 //            "FROM Api a " +
@@ -175,27 +183,22 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
 
     /* ===== CONSULTAS ADICIONALES PARA ADMIN DASHBOARD ===== */
-    /**
-     * Cuenta APIs por entorno
-     */
+    // Cuenta APIs por entorno
     @Query(value = "SELECT COUNT(DISTINCT a.idAPI) FROM api a JOIN apihasentorno ahe ON a.idAPI = ahe.idAPI WHERE ahe.idEntorno = :idEntorno", nativeQuery = true)
     long countByEntorno(@Param("idEntorno") Integer idEntorno);
 
-    /**
-     * Obtiene distribución de APIs por dominio
-     */
+    //  Obtiene distribución de APIs por dominio
+
     @Query("SELECT d.nombre, COUNT(a) FROM Api a JOIN a.dominio d GROUP BY d.nombre ORDER BY COUNT(a) DESC")
     List<Object[]> getApiDistributionByDomain();
 
-    /**
-     * Obtiene distribución de APIs por tag
-     */
+    // Obtiene distribución de APIs por tag
+
     @Query("SELECT t.nombre, COUNT(a) FROM Api a JOIN a.tag t GROUP BY t.nombre ORDER BY COUNT(a) DESC")
     List<Object[]> getApiDistributionByTag();
 
-    /**
-     * Obtiene APIs creadas en los últimos días
-     */
+    // Obtiene APIs creadas en los últimos días
+
     @Query(value = "SELECT COUNT(*) FROM api WHERE fechaCreacion >= DATE_SUB(NOW(), INTERVAL :days DAY)", nativeQuery = true)
     long countApisCreatedInLastDays(@Param("days") int days);
 
