@@ -503,13 +503,11 @@ public class QaController extends BaseController {
         return schemas;
     }
 
-    /**
-     * Generar entornos de QA
-     */
+    // meotdo provisional de prueba
     private List<EnvironmentQADTO> generateQAEnvironments() {
         List<EnvironmentQADTO> entornos = new ArrayList<>();
         entornos.add(new EnvironmentQADTO("QA - Testing", "https://qa-api.telito.com/v1", "calidad"));
-        entornos.add(new EnvironmentQADTO("Staging - Preproducción", "https://staging-api.telito.com/v1", "preproduccion"));
+        entornos.add(new EnvironmentQADTO("Staging - Preproducción", "https://staging-api.telito.com/v1", "produccion"));
         entornos.add(new EnvironmentQADTO("Preprod - Validación", "https://preprod-api.telito.com/v1", "validacion"));
         return entornos;
     }
