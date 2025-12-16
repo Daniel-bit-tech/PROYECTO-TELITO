@@ -107,7 +107,7 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
     // Query simple para chatbot - solo datos básicos sin relaciones
     @Query(value = "SELECT idAPI, nombre, descripcion FROM api WHERE idEstado != 2", nativeQuery = true)
     List<Object[]> findBasicApiInfo();
-    
+
     // Query nativo para obtener API por ID sin cargar relaciones LAZY
     @Query(value = "SELECT * FROM api WHERE idAPI = :idApi LIMIT 1", nativeQuery = true)
     Api findApiByIdNative(@Param("idApi") Integer idApi);
@@ -132,21 +132,22 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
      */
 
+
     @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
-            "a.idApi, a.nombre, MIN(p.nombre), a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, MIN(p.dniPoLider)) " +
-            "FROM ProyectoHasApi pha " +
-            "JOIN pha.api a " +
-            "JOIN pha.proyecto p " +
+            "a.idApi, a.nombre, eq.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, NULL) " +
+            "FROM Api a " +
+            "JOIN a.equipo eq " +
+            "JOIN eq.usuarios u " +
             "JOIN a.apiHasEntornos ahe " +
             "JOIN ahe.entorno e " +
             "JOIN a.dominio d " +
             "JOIN a.tag t " +
-            "WHERE p.equipo.organizacion.idOrganizacion = (SELECT u.equipo.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
+            "WHERE u.dni = :dni " +
             "AND e.nombre = 'QA' " +
             "AND (:nombre IS NULL OR LOWER(a.nombre) LIKE LOWER(CONCAT('%', :nombre, '%'))) " +
             "AND (:dominios IS NULL OR d.nombre IN :dominios) " +
             "AND (:tags IS NULL OR t.nombre IN :tags) " +
-            "GROUP BY a.idApi, a.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion")
+            "GROUP BY a.idApi, a.nombre, eq.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion")
     Page<ApiProyectoDTO> findApisForQaCatalog(@Param("dni") String dni,
                                               @Param("nombre") String nombre,
                                               @Param("dominios") List<String> dominios,
@@ -155,31 +156,49 @@ public interface ApiRepository extends JpaRepository<Api, Integer> {
 
     @Query("SELECT COUNT(DISTINCT a.idApi) " +
             "FROM Api a " +
+            "JOIN a.equipo eq " +
+            "JOIN eq.usuarios u " +
             "JOIN a.apiHasEntornos ahe " +
             "JOIN ahe.entorno e " +
-            "JOIN ProyectoHasApi pha ON pha.api = a " +
-            "JOIN pha.proyecto p " +
-            "WHERE p.equipo.organizacion.idOrganizacion = (SELECT u.equipo.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
+            "WHERE u.dni = :dni " +
             "AND e.nombre = 'QA'")
     Integer countApisForQaValidation(@Param("dni") String dni);
 
-    // Devuelve una lista completa (sin paginar) de las APIs que un QA necesita validar.
-    // Incluye el DNI del PO Líder para usar en el formulario de creación de reportes.
+    /**
+     * Devuelve una lista completa (sin paginar) de las APIs que un QA necesita validar.
+     * Basada en la estructura de equipos (sin PO Líder).
+     */
+    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
+            "a.idApi, a.nombre, eq.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, NULL) " +
+            "FROM Api a " +
+            "JOIN a.equipo eq " +
+            "JOIN eq.usuarios u " +
+            "JOIN a.apiHasEntornos ahe " +
+            "JOIN ahe.entorno e " +
+            "JOIN a.dominio d " +
+            "JOIN a.tag t " +
+            "WHERE u.dni = :dni " +
+            "AND e.nombre = 'QA' " +
+            "GROUP BY a.idApi, a.nombre, eq.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion " +
+            "ORDER BY a.nombre ASC")
+    List<ApiProyectoDTO> findApisToReportForQa(@Param("dni") String dni);
 
-//    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
-//            "a.idApi, a.nombre, MIN(p.nombre), a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion, MIN(p.usuarioLider.dni)) " +
-//            "FROM Api a " +
-//            "JOIN a.apiHasEntornos ahe " +
-//            "JOIN ahe.entorno e " +
-//            "JOIN ProyectoHasApi pha ON pha.api = a " +
-//            "JOIN pha.proyecto p " +
-//            "JOIN a.dominio d " +
-//            "JOIN a.tag t " +
-//            "WHERE p.equipo.organizacion.idOrganizacion = (SELECT u.equipo.organizacion.idOrganizacion FROM Usuario u WHERE u.dni = :dni) " +
-//            "AND e.nombre = 'QA' " +
-//            "GROUP BY a.idApi, a.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, a.fechaCreacion " +
-//            "ORDER BY a.nombre ASC")
-//    List<ApiProyectoDTO> findApisToReportForQa(@Param("dni") String dni);
+    /**
+     * Obtiene las últimas 5 APIs validadas (con reporte aprobado) para un usuario QA.
+     */
+    @Query("SELECT new com.example.telitodev.dto.ApiProyectoDTO(" +
+            "a.idApi, a.nombre, eq.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, r.fechaCreacion, NULL) " +
+            "FROM Api a " +
+            "JOIN a.equipo eq " +
+            "JOIN eq.usuarios u " +
+            "JOIN Reporte r ON r.api = a " +
+            "JOIN a.dominio d " +
+            "JOIN a.tag t " +
+            "WHERE u.dni = :dni " +
+            "AND r.estado = 'Aprobado' " +
+            "GROUP BY a.idApi, a.nombre, eq.nombre, a.descripcion, a.endpointUrl, d.nombre, t.nombre, r.fechaCreacion " +
+            "ORDER BY r.fechaCreacion DESC")
+    List<ApiProyectoDTO> findTop5ValidatedApisByQa(@Param("dni") String dni, Pageable pageable);
 
 
     /* ===== CONSULTAS ADICIONALES PARA ADMIN DASHBOARD ===== */

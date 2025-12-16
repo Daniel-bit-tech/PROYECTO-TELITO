@@ -15,6 +15,7 @@ import java.util.List;
 @Repository
 public interface FeedbackRepository extends JpaRepository<Feedback, Integer> {
     List<Feedback> findByUsuario_Dni(String dni);
+    Integer countByUsuario(Usuario usuario);
     List<Feedback> findByUsuario(Usuario usuario);
     // TODO: API now belongs to Equipo, not Usuario directly
     // List<Feedback> findByApi_Usuario_Dni(String dniUsuario);

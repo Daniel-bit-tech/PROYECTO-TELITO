@@ -44,4 +44,11 @@ public interface ReporteRepository extends JpaRepository<Reporte, Integer> {
             Pageable pageable
     );
 
+    Integer countByApi_Equipo_IdEquipo(Integer idEquipo);
+
+    @Query("SELECT COUNT(r) FROM Reporte r " +
+           "WHERE r.api.equipo IS NOT NULL " +
+           "AND r.api.equipo.idEquipo = :idEquipo")
+    Integer countReportesByEquipo(@Param("idEquipo") Integer idEquipo);
+
 }

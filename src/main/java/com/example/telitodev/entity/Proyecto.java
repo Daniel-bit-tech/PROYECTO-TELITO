@@ -17,7 +17,7 @@ public class Proyecto {
     private Integer idProyecto;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idEquipo")
+    @JoinColumn(name = "idEquipo", nullable = false)
     private Equipo equipo;
 
     @Column(name = "dni_po_lider", length = 8, nullable = false)

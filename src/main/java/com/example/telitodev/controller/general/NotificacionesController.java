@@ -48,6 +48,10 @@ public class NotificacionesController extends BaseController {
 
         model.addAttribute("notificacionPage", notificacionPage);
 
+        // Verificar si hay notificaciones no leídas
+        long notificacionesNoLeidas = notificacionRepository.findByUsuarioDniAndLeidoFalse(usuario.getDni()).size();
+        model.addAttribute("tieneNotificacionesNoLeidas", notificacionesNoLeidas > 0);
+
         // --- INICIO: Lógica de Vista por Rol ---
 
         String userRole = usuario.getRol().getNombreRol();
@@ -91,6 +95,28 @@ public class NotificacionesController extends BaseController {
         }
 
         return "redirect:/notificaciones"; // Redirige a la URL genérica
+    }
+
+    @GetMapping("/notificaciones/marcarTodasLeidas")
+    public String marcarTodasLeidas(Authentication auth, HttpSession session, RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = getCurrentUser(auth, session);
+        
+        // Obtener todas las notificaciones no leídas del usuario
+        var notificacionesNoLeidas = notificacionRepository.findByUsuarioDniAndLeidoFalse(usuario.getDni());
+        
+        if (!notificacionesNoLeidas.isEmpty()) {
+            // Marcar todas como leídas
+            notificacionesNoLeidas.forEach(notificacion -> notificacion.setLeido(true));
+            notificacionRepository.saveAll(notificacionesNoLeidas);
+            
+            redirectAttributes.addFlashAttribute("success", 
+                "Se marcaron " + notificacionesNoLeidas.size() + " notificaciones como leídas.");
+        } else {
+            redirectAttributes.addFlashAttribute("info", "No hay notificaciones pendientes por leer.");
+        }
+
+        return "redirect:/notificaciones";
     }
 }
 

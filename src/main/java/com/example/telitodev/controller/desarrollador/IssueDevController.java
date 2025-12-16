@@ -148,11 +148,6 @@ public class IssueDevController extends BaseController{
         newComentario.setIssue(issue);
         newComentario.setUsuario(usuario);
 
-
-        System.out.println("------------------");
-        System.out.println(archivos.length);
-        System.out.println("------------------");
-
         if (archivos != null && archivos.length > 0) {
             archivos = Arrays.stream(archivos)
                     .filter(file -> !file.isEmpty()) // Filtramos los archivos vacíos
@@ -165,31 +160,33 @@ public class IssueDevController extends BaseController{
             return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
         }
 
-        for (MultipartFile archivo : archivos) {
-            if (archivo.getSize() > MAX_FILE_SIZE) {
-                redirectAttributes.addFlashAttribute("error", "El archivo es demasiado grande");
-                return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
-            }
+        if (archivos != null && archivos.length > 0) {
+            for (MultipartFile archivo : archivos) {
+                if (archivo.getSize() > MAX_FILE_SIZE) {
+                    redirectAttributes.addFlashAttribute("error", "El archivo es demasiado grande");
+                    return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
+                }
 
-            // Validar tipo de archivo (solo imágenes y logs)
-            String contentType = archivo.getContentType();
-            if (!contentType.equals("image/png") && !contentType.equals("image/jpeg") && !contentType.equals("text/plain")) {
-                redirectAttributes.addFlashAttribute("error", "Solo se permiten archivos de tipo .png, .jpg o .log");
-                return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
-            }
+                // Validar tipo de archivo (solo imágenes y logs)
+                String contentType = archivo.getContentType();
+                if (!contentType.equals("image/png") && !contentType.equals("image/jpeg") && !contentType.equals("text/plain")) {
+                    redirectAttributes.addFlashAttribute("error", "Solo se permiten archivos de tipo .png, .jpg o .log");
+                    return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
+                }
 
-            try {
-                // Guardar archivo adjunto
-                Adjunto adjunto = new Adjunto();
-                adjunto.setNombre(archivo.getOriginalFilename());
-                adjunto.setComentario(newComentario);
-                adjunto.setArchivo(archivo.getBytes());
-                adjuntoRepository.save(adjunto);
+                try {
+                    // Guardar archivo adjunto
+                    Adjunto adjunto = new Adjunto();
+                    adjunto.setNombre(archivo.getOriginalFilename());
+                    adjunto.setComentario(newComentario);
+                    adjunto.setArchivo(archivo.getBytes());
+                    adjuntoRepository.save(adjunto);
 
-            } catch (IOException e) {
-                e.printStackTrace();
-                redirectAttributes.addFlashAttribute("error", "Error al guardar el archivo");
-                return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    redirectAttributes.addFlashAttribute("error", "Error al guardar el archivo");
+                    return "redirect:/issueDetalleDev/" + idIssue + "/" + idReporte;
+                }
             }
         }
 

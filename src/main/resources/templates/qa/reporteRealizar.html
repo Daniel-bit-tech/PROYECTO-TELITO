@@ -39,21 +39,17 @@
           <div class="card-body">
             <form method="POST" th:action="@{/qa/guardarReporte}" enctype="multipart/form-data">
 
-              <!-- Combobox de APIs ajustado -->
+              <!-- Combobox de APIs -->
               <div class="mb-3">
                 <label class="form-label" for="apiSelect">API a reportar</label>
                 <select class="form-select" name="apiId" id="apiSelect" required>
                   <option value="" selected disabled>-- Seleccione una API --</option>
-                  <option th:each="apiDto : ${apis}"
+                  <option th:each="apiDto : ${apisParaValidar}"
                           th:value="${apiDto.idApi}"
-                          th:data-polider="${apiDto.poLiderDni}"
-                          th:text="${apiDto.nombreApi} + ' (Proyecto: ' + ${apiDto.nombreProyecto} + ')'">
+                          th:text="${apiDto.nombreApi} + ' (Equipo: ' + ${apiDto.nombreProyecto} + ')'">
                   </option>
                 </select>
               </div>
-
-              <!-- CAMBIO: Campo oculto para enviar el DNI del PO Líder (sin la parte visible) -->
-              <input type="hidden" name="poLiderDni" id="poLiderDniInput" />
 
               <!-- Selector de Estado -->
               <div class="mb-3">
@@ -101,20 +97,6 @@
 </div>
 <script src="/tabler/dist/js/tabler.min.js" defer></script>
 <script>
-  // CAMBIO: Script simplificado para guardar el DNI en el campo oculto
-  document.getElementById('apiSelect').addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    const poLiderDni = selectedOption.getAttribute('data-polider');
-    const poLiderDniInput = document.getElementById('poLiderDniInput');
-
-    if (poLiderDni && poLiderDni !== 'null') {
-      poLiderDniInput.value = poLiderDni; // Asigna el DNI al valor del campo oculto
-    } else {
-      poLiderDniInput.value = ''; // Limpia el valor si no hay selección
-    }
-  });
-
-  // Tu script de validación de archivos existente
   function validateFiles() {
     const fileInput = document.getElementById("archivo");
     const files = fileInput.files;

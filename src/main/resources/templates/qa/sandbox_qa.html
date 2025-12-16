@@ -57,9 +57,16 @@
                             Modo Manual habilitado. Selecciona una API para activar el Modo QA (requiere token).
                         </div>
                     </div>
-                    <div class="col-auto ms-auto">
-                        <span class="status-dot status-dot-animated bg-green d-inline-block me-1" id="status-dot"></span>
-                        <span id="mode-label">Modo Público/Manual</span>
+                    <div class="col-auto ms-auto d-flex gap-2 align-items-center">
+                        <div>
+                            <span class="status-dot status-dot-animated bg-green d-inline-block me-1" id="status-dot"></span>
+                            <span id="mode-label">Modo Público/Manual</span>
+                        </div>
+                        <div class="col-md-auto">
+                            <a class="btn btn-danger" th:href="@{/qa/crearReporte}">
+                                <i class="fas fa-clipboard me-2"></i>Crear reporte
+                            </a>
+                        </div>
                     </div>
                     <div class="col-md-auto">
                         <a class="btn btn-danger" th:href="@{/qa/crearReporte}">

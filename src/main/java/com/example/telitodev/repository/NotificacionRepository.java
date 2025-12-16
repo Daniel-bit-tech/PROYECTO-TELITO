@@ -23,4 +23,7 @@ public interface NotificacionRepository extends JpaRepository<Notificacion, Inte
     // Todas las notificaciones leídas y no leídas con paginación
     Page<Notificacion> findByUsuarioDniOrderByFechaDesc(String dni, Pageable pageable);
 
+    // Obtener todas las notificaciones no leídas de un usuario
+    List<Notificacion> findByUsuarioDniAndLeidoFalse(String dni);
+
 }

@@ -59,7 +59,7 @@ public class SecurityConfig {
     private OAuth2AuthenticationSuccessHandler oauth2AuthenticationSuccessHandler;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, SessionRegistry sessionRegistry) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, SessionRegistry sessionRegistry, javax.sql.DataSource dataSource) throws Exception {
 
         http
                 .authorizeHttpRequests(authz -> authz
@@ -134,6 +134,7 @@ public class SecurityConfig {
                         .key("remember-me-telito-key-2025")
                         .rememberMeParameter("remember-me")
                         .tokenValiditySeconds(604800) // 7 días
+                        .tokenRepository(persistentTokenRepository(dataSource)) // Tokens persistentes en BD
                         .userDetailsService(usuarioDetailService))
                 .exceptionHandling(exception -> exception
                         .accessDeniedPage("/acceso-denegado")
@@ -227,6 +228,21 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(10);
+    }
+
+    /**
+     * Bean para persistir tokens de Remember-Me en base de datos
+     * Utiliza la tabla persistent_logins para almacenar los tokens
+     * Esto permite que los tokens sobrevivan al reinicio del servidor
+     */
+    @Bean
+    public org.springframework.security.web.authentication.rememberme.PersistentTokenRepository persistentTokenRepository(javax.sql.DataSource dataSource) {
+        org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl tokenRepository = 
+            new org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl();
+        tokenRepository.setDataSource(dataSource);
+        // No crear tabla automáticamente, ya la creamos con SQL
+        tokenRepository.setCreateTableOnStartup(false);
+        return tokenRepository;
     }
 
     /**
