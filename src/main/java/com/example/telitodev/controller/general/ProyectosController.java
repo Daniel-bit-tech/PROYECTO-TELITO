@@ -159,7 +159,7 @@ public class ProyectosController extends BaseController {
 
         if (usuario.getEquipo()==null) {
             redirectAttributes.addFlashAttribute("msg", "No puedes crear proyectos hasta pertenecer a un equipo");
-            return "redirect:/proyectos";
+            return "redirect:/po/proyectos";
         }
 
         proyecto.setEquipo(usuario.getEquipo());
