@@ -134,7 +134,7 @@ public class SecurityConfig {
                         .key("remember-me-telito-key-2025")
                         .rememberMeParameter("remember-me")
                         .tokenValiditySeconds(604800) // 7 días
-                        .tokenRepository(persistentTokenRepository(dataSource)) // Tokens persistentes en BD
+//                        .tokenRepository(persistentTokenRepository(dataSource)) // Tokens persistentes en BD
                         .userDetailsService(usuarioDetailService))
                 .exceptionHandling(exception -> exception
                         .accessDeniedPage("/acceso-denegado")
