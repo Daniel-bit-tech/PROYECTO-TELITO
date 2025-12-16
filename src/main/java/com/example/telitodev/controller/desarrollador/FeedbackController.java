@@ -71,6 +71,14 @@ public class FeedbackController {
 
         model.addAttribute("apis", apis);
 
+        // Enviar mis feedbacks
+        List<Feedback> misFeedback = feedbackRepository.findByUsuario_Dni(usuario.getDni());
+        model.addAttribute("misFeedback", misFeedback);
+
+        // Traer feedbacks que fueron hechos a las APIs del equipo de este usuario
+        List<Feedback> apisFeedback = feedbackRepository.findByApiEquipoUsuarioDni(usuario.getDni());
+        model.addAttribute("apisFeedback", apisFeedback);
+
         // (si luego quieres mostrar feedbacks, aquí añades los model.addAttribute comentados)
         return "desarrollador/feedback";
     }
