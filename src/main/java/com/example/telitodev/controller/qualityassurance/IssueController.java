@@ -64,6 +64,12 @@ public class IssueController extends BaseController {
         addImpersonationAttributes(model, session);
         model.addAttribute("usuario", usuario);
 
+        // Limpiar parámetros vacíos: convertir cadenas vacías y listas vacías en null
+        if (estados != null && estados.isEmpty()) estados = null;
+        if (nombre != null && nombre.trim().isEmpty()) nombre = null;
+        if (fechaInicio != null && fechaInicio.trim().isEmpty()) fechaInicio = null;
+        if (fechaFin != null && fechaFin.trim().isEmpty()) fechaFin = null;
+
         Timestamp inicio = null;
         Timestamp fin = null;
         try {

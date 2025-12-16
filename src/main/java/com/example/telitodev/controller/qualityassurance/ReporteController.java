@@ -75,6 +75,12 @@ public class ReporteController extends BaseController {
         addImpersonationAttributes(model, session);
         model.addAttribute("usuario", usuario);
 
+        // Limpiar parámetros vacíos: convertir cadenas vacías y listas vacías en null
+        if (estados != null && estados.isEmpty()) estados = null;
+        if (nombreApi != null && nombreApi.trim().isEmpty()) nombreApi = null;
+        if (fechaInicio != null && fechaInicio.trim().isEmpty()) fechaInicio = null;
+        if (fechaFin != null && fechaFin.trim().isEmpty()) fechaFin = null;
+
         // Convertir fechas a Timestamp
         Timestamp inicio = null;
         Timestamp fin = null;
